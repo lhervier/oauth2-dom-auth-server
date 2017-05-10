@@ -1,6 +1,14 @@
 package fr.asso.afer.oauth2.utils;
 
+import java.util.Map;
+
 import javax.faces.context.FacesContext;
+
+import com.ibm.xsp.designer.context.XSPContext;
+
+import fr.asso.afer.oauth2.app.AppBean;
+import fr.asso.afer.oauth2.app.AppGroupBean;
+import fr.asso.afer.oauth2.params.ParamsBean;
 
 import lotus.domino.Database;
 import lotus.domino.Session;
@@ -45,4 +53,46 @@ public class JSFUtils {
 	public static final Database getDatabase() {
 		return (Database) getBean("database");
 	}
+	
+	/**
+	 * Retourne le contexte utilisateur
+	 * @return le contexte utilisateur
+	 */
+	public static final XSPContext getContext() {
+		return (XSPContext) getBean("context");
+	}
+	
+	/**
+	 * Retourne les paramètres de la requête
+	 * @return les paramètres de la requête
+	 */
+	@SuppressWarnings("unchecked")
+	public static final Map<String, String> getParam() {
+		return (Map<String, String>) getBean("param");
+	}
+	
+	/**
+	 * Retourne la bean de paramétrage
+	 * @return la bean de paramétrage
+	 */
+	public static final ParamsBean getParamsBean() {
+		return (ParamsBean) getBean("paramsBean");
+	}
+	
+	/**
+	 * Retourne la bean pour gérer le groupe des apps
+	 * @return la bean pour gérer le groupe des apps
+	 */
+	public static final AppGroupBean getAppGroupBean() {
+		return (AppGroupBean) getBean("appGroupBean");
+	}
+	
+	/**
+	 * Retourne la bean pour gérer les apps
+	 * @return la bean pour gérer les apps
+	 */
+	public static final AppBean getAppBean() {
+		return (AppBean) getBean("appBean");
+	}
+	
 }

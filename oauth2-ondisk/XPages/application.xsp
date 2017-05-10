@@ -21,7 +21,7 @@
 					if( param.name == null || param.name == "" ) {
 						requestScope.secret = appBean.addApplication(viewScope.app);
 					} else {
-						appBean.saveApplication(viewScope.app);
+						appBean.updateApplication(viewScope.app);
 						context.redirectToPage("/applications.xsp");
 					}
 				}]]></xp:this.action>

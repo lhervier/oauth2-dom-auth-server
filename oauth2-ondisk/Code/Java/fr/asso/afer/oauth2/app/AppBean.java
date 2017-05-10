@@ -287,6 +287,7 @@ public class AppBean {
 			if( person == null )
 				throw new RuntimeException("Ne devrait pas se produire...");		// On a vérifié qu'il existe juste avant...
 			this.appToDoc(app, person);
+			DominoUtils.computeAndSave(person);
 		} finally {
 			DominoUtils.recycleQuietly(person);
 		}

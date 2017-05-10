@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xp:view xmlns:xp="http://www.ibm.com/xsp/core">
+	<xp:this.beforePageLoad><![CDATA[#{javascript:
+		if( !context.getUser().getRoles().contains("[AppsManager]") )
+			throw "Vous n'êtes pas autorisé à gérer les applications depuis cette base";
+		
+		if( param.client_id != "" && param.client_id != null )
+			viewScope.app = appsReg.getApplication(param.client_id);
+		else
+			viewScope.app = appsReg.prepareApplication();
+	}]]></xp:this.beforePageLoad>
+	
+	<xp:div>
+		<h1>
+			<xp:label value="Créer une nouvelle application" rendered="#{empty param.client_id}"/>
+			<xp:label value="Editer une application" rendered="#{!empty param.client_id}"/>
+		</h1>
+	</xp:div>
+	
+	<xp:div>
+		<xp:button id="saveBtn" value="Enregistrer" rendered="#{empty requestScope.secret}">
+			<xp:eventHandler event="onclick" submit="true" refreshMode="complete">
+				<xp:this.action><![CDATA[#{javascript:
+					if( param.client_id == null || param.clientId == "" ) {
+						requestScope.secret = appsReg.addApplication(viewScope.app);
+					} else {
+						appsReg.saveApplication(viewScope.app);
+						context.redirectToPage("/applications.xsp");
+					}
+				}]]></xp:this.action>
+			</xp:eventHandler>
+		</xp:button>
+		
+		<xp:button id="cancelBtn" value="#{javascript: requestScope.secret == null ? 'Annuler' : 'Fermer'}">
+			<xp:eventHandler event="onclick" submit="true" refreshMode="complete" immediate="true">
+				<xp:this.action><![CDATA[#{javascript:
+					context.redirectToPage("/applications.xsp");
+				}]]></xp:this.action>
+			</xp:eventHandler>
+		</xp:button>
+	</xp:div>
+	
+	<xp:div rendered="#{!empty requestScope.secret}">
+		<xp:label value="Copiez/collez le secret maintenant car il ne pourra plus vous être fourni ultérieurement"/>
+	</xp:div>
+	
+	<xp:panel readonly="#{!empty requestScope.secret}">
+		<xp:table>
+			<xp:tr>
+				<xp:td>
+					<xp:label value="client_id :"/>
+				</xp:td>
+				<xp:td>
+					<xp:text value="#{viewScope.app.clientId}"/>
+				</xp:td>
+			</xp:tr>
+			<xp:tr rendered="#{!empty requestScope.secret}">
+				<xp:td>
+					<xp:label value="Secret :"/>
+				</xp:td>
+				<xp:td>
+					<xp:text style="color:red" value="#{requestScope.secret}"/>
+				</xp:td>
+			</xp:tr>
+			<xp:tr>
+				<xp:td>
+					<xp:label for="nameField" value="Nom :"/>
+				</xp:td>
+				<xp:td>
+					<xp:inputText id="nameField" value="#{viewScope.app.name}" required="true" rendered="#{empty param.client_id}">
+						<xp:this.validators>
+							<xp:validateRequired message="Le nom est obligatoire"/>
+						</xp:this.validators>
+					</xp:inputText>
+					<xp:message for="nameField"/>
+					<xp:text value="#{viewScope.app.name}"/>
+				</xp:td>
+			</xp:tr>
+			<xp:tr>
+				<xp:td>
+					<xp:label for="redirectUriField" value="URI de redirection :"/>
+				</xp:td>
+				<xp:td>
+					<xp:inputText id="redirectUriField" value="#{viewScope.app.redirectUri}" required="true">
+						<xp:this.validators>
+							<xp:validateRequired message="L'url de redirection par défaut est obligatoire"/>
+						</xp:this.validators>
+					</xp:inputText>
+					<xp:message for="redirectUriField"/>
+				</xp:td>
+			</xp:tr>
+			<xp:tr>
+				<xp:td colspan="2">
+					<xp:div id="uris">
+						<xp:div>
+							<xp:label value="URIs de redirection supplémentaires :"/>
+						</xp:div>
+						<xp:repeat value="#{viewScope.app.redirectUris}" var="uri" rows="5000">
+							<xp:div>
+								<xp:text value="#{uri}"/>
+								<xp:link text="Supprimer" id="removeUriLnk" rendered="#{empty requestScope.secret}">
+									<xp:eventHandler event="onclick" submit="true" refreshMode="partial" refreshId="uris" immediate="true">
+										<xp:this.action><![CDATA[#{javascript:
+											viewScope.app.redirectUris.remove(uri);
+										}]]></xp:this.action>
+									</xp:eventHandler>
+								</xp:link>
+							</xp:div>
+						</xp:repeat>
+						<xp:div>
+							<xp:inputText id="newUri" value="#{viewScope.uri}"/>
+							<xp:button id="newUriBtn" value="Ajouter" rendered="#{empty requestScope.secret}">
+								<xp:eventHandler event="onclick" submit="true" immediate="true" refreshMode="partial" refreshId="uris">
+									<xp:this.action><![CDATA[#{javascript:
+										var uri = getComponent("newUri").submittedValue;
+										if( uri == "" )
+											return;
+										viewScope.app.redirectUris.add(uri);
+										getComponent("newUri").submittedValue = null;
+										getComponent("newUri").value = null;
+									}]]></xp:this.action>
+								</xp:eventHandler>
+							</xp:button>
+						</xp:div>
+					</xp:div>
+				</xp:td>
+			</xp:tr>
+		</xp:table>
+	</xp:panel>
+</xp:view>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?><note class="form" maintenanceversion="1.8" replicaid="C125811C003E1A7C" version="9.0" xmlns="http://www.lotus.com/dxl">
+<noteinfo noteid="18a" sequence="3" unid="FD7FF938E00E8D46C125811C0044D4F4">
+<created><datetime dst="true">20170510T143149,64+02</datetime></created>
+<modified><datetime dst="true">20170510T143149,72+02</datetime></modified>
+<revised><datetime dst="true">20170510T143149,71+02</datetime></revised>
+<lastaccessed><datetime dst="true">20170510T143149,72+02</datetime></lastaccessed>
+<addedtofile><datetime dst="true">20170510T143149,65+02</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=admin admin/O=AFER</name></updatedby>
+<wassignedby><name>CN=admin admin/O=AFER</name></wassignedby>
+<item name="$Flags"><text>34567Cg~[</text></item>
+<item name="$TITLE"><text>fr/asso/afer/oauth2/Constants.java</text></item>
+<item name="$DesignerVersion"><text>8.5.3</text></item>
+
+
+<item name="$FileNames" sign="true"><text>fr/asso/afer/oauth2/Constants.java</text></item></note>

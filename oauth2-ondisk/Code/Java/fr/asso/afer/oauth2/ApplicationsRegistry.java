@@ -17,6 +17,8 @@ import lotus.domino.Session;
 import lotus.domino.View;
 import sun.misc.BASE64Encoder;
 import fr.asso.afer.oauth2.model.Application;
+import fr.asso.afer.oauth2.utils.DominoUtils;
+import fr.asso.afer.oauth2.utils.JSFUtils;
 
 /**
  * Bean pour gérer la liste des applications déclarées
@@ -40,14 +42,22 @@ public class ApplicationsRegistry {
 	private static final SecureRandom RANDOM = new SecureRandom();
 	
 	/**
-	 * Retourne la base carnet d'adresse
+	 * La session (injectée par JSF)
+	 */
+	private Session session;
+	
+	/**
+	 * Retourne la base carnet d'adresse.
 	 * @return le NAB
 	 * @throws NotesException en cas de pb
 	 */
 	private Database getNab() throws NotesException {
-		Database names = DominoUtils.openDatabase(JSFUtils.getSession(), Constants.PATH_NAMES);
+		Database names = DominoUtils.openDatabase(
+				this.session, 
+				JSFUtils.getParamsBean().getNab()
+		);
 		if( names == null )
-			throw new RuntimeException("Je n'arrive pas à ouvrir la base " + Constants.PATH_NAMES);
+			throw new RuntimeException("Je n'arrive pas à ouvrir la base '" + JSFUtils.getParamsBean().getNab() + "'");
 		return names;
 	}
 	
@@ -60,7 +70,7 @@ public class ApplicationsRegistry {
 		Database names = this.getNab();
 		View v = names.getView(VIEW_USERS_GROUPS);
 		if( v == null )
-			throw new RuntimeException("Je ne trouve pas la vue '" + VIEW_USERS_GROUPS + "' dans '" + Constants.PATH_NAMES + "'");
+			throw new RuntimeException("Je ne trouve pas la vue '" + VIEW_USERS_GROUPS + "' dans le carnet d'adresse.");
 		v.setAutoUpdate(false);
 		return v;
 	}
@@ -89,7 +99,7 @@ public class ApplicationsRegistry {
 			v = this.getUsersGroupsView();
 			Document groupDoc = v.getDocumentByKey(Constants.GROUP_APPLICATIONS);
 			if( groupDoc == null )
-				throw new RuntimeException("Je ne trouve pas le groupe '" + Constants.GROUP_APPLICATIONS + "' dans la base '" + Constants.PATH_NAMES + "'");
+				throw new RuntimeException("Je ne trouve pas le groupe '" + Constants.GROUP_APPLICATIONS + "' dans le carnet d'adresse");
 			return groupDoc;
 		} finally {
 			DominoUtils.recycleQuietly(v);
@@ -119,7 +129,6 @@ public class ApplicationsRegistry {
 	 */
 	private Document getAppDocFromClientId(String clientId) throws NotesException {
 		List<String> applications = this.getApplicationNames();
-		Session session = JSFUtils.getSession();
 		
 		View usersGroupsView = null;
 		try {
@@ -128,7 +137,7 @@ public class ApplicationsRegistry {
 			for( String appName : applications ) {
 				Name appNotesName = null;
 				try {
-					appNotesName = session.createName(appName);
+					appNotesName = this.session.createName(appName);
 					Document appDoc = usersGroupsView.getDocumentByKey(appNotesName.getAbbreviated());
 					if( appDoc == null )
 						return null;
@@ -153,13 +162,11 @@ public class ApplicationsRegistry {
 	 * @throws NotesException en cas de pb
 	 */
 	private Document getAppDocFromName(String appName) throws NotesException {
-		Session session = JSFUtils.getSession();
-		
 		View usersGroupsView = null;
 		Name appNotesName = null;
 		try {
 			usersGroupsView = this.getUsersGroupsView();
-			appNotesName = session.createName(appName);
+			appNotesName = this.session.createName(appName);
 			return usersGroupsView.getDocumentByKey(appNotesName.getAbbreviated());
 		} finally {
 			DominoUtils.recycleQuietly(appNotesName);
@@ -213,7 +220,8 @@ public class ApplicationsRegistry {
 	 * @throws NotesException en cas de pb
 	 */
 	private void refreshNab() throws NotesException {
-		Session session = JSFUtils.getSession();
+		// FIXME: Attendre que les updall se terminent !!
+		Session session = this.session;
 		session.sendConsoleCommand(session.getServerName(), "load updall -R names.nsf");
 //		session.sendConsoleCommand(session.getServerName(), "load updall names.nsf -t \"($Users)\" -r");
 //		session.sendConsoleCommand(session.getServerName(), "dbcache flush");
@@ -312,7 +320,6 @@ public class ApplicationsRegistry {
 	 * @throws NotesException en cas de pb
 	 */
 	public String addApplication(Application app) throws NotesException {
-		Session session = JSFUtils.getSession();
 		Database nab = this.getNab();
 		Document person = null;
 		Document group = null;
@@ -330,7 +337,7 @@ public class ApplicationsRegistry {
 			// Créé une nouvelle application (un nouvel utilisateur)
 			person = nab.createDocument();
 			String abbreviated = app.getName() + Constants.SUFFIX_APP;
-			String fullName = session.createName(abbreviated).toString();
+			String fullName = this.session.createName(abbreviated).toString();
 			
 			person.replaceItemValue("Form", "Person");
 			person.replaceItemValue("Type", "Person");
@@ -339,11 +346,11 @@ public class ApplicationsRegistry {
 			person.replaceItemValue("MailSystem", "100");		// None
 			person.replaceItemValue("FullName", fullName);
 			String password = this.generatePassword();
-			person.replaceItemValue("HTTPPassword", session.evaluate("@Password(\"" + password + "\")"));
-			person.replaceItemValue("HTTPPasswordChangeDate", session.createDateTime(new Date()));
+			person.replaceItemValue("HTTPPassword", this.session.evaluate("@Password(\"" + password + "\")"));
+			person.replaceItemValue("HTTPPasswordChangeDate", this.session.createDateTime(new Date()));
 			person.replaceItemValue("$SecurePassword", "1");
-			person.replaceItemValue("Owner", session.getEffectiveUserName());
-			person.replaceItemValue("LocalAdmin", session.getEffectiveUserName());
+			person.replaceItemValue("Owner", this.session.getEffectiveUserName());
+			person.replaceItemValue("LocalAdmin", this.session.getEffectiveUserName());
 			person.replaceItemValue(Constants.FIELD_CLIENT_ID, app.getClientId());
 			
 			this.updateDoc(person, app);
@@ -405,5 +412,21 @@ public class ApplicationsRegistry {
 		} finally {
 			DominoUtils.recycleQuietly(person);
 		}
+	}
+
+	// =========================================================================================
+	
+	/**
+	 * @return the session
+	 */
+	public Session getSession() {
+		return session;
+	}
+
+	/**
+	 * @param session the session to set
+	 */
+	public void setSession(Session session) {
+		this.session = session;
 	}
 }

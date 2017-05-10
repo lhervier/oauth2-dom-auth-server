@@ -1,4 +1,4 @@
-package fr.asso.afer.oauth2;
+package fr.asso.afer.oauth2.utils;
 
 import java.util.ArrayList;
 import java.util.List;

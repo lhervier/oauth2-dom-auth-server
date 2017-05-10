@@ -1,4 +1,4 @@
-package fr.asso.afer.oauth2;
+package fr.asso.afer.oauth2.utils;
 
 import javax.faces.context.FacesContext;
 
@@ -27,6 +27,15 @@ public class JSFUtils {
 	 */
 	public static final Session getSession() {
 		return (Session) getBean("session");
+	}
+	
+	/**
+	 * Retourne la session ouverte avec les infos
+	 * du signataire de la XPages courante
+	 * @return la session
+	 */
+	public static final Session getSessionAsSigner() {
+		return (Session) getBean("sessionAsSigner");
 	}
 	
 	/**

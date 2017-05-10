@@ -1,5 +1,7 @@
 package fr.asso.afer.oauth2;
 
+import fr.asso.afer.oauth2.utils.DominoUtils;
+import fr.asso.afer.oauth2.utils.JSFUtils;
 import lotus.domino.Database;
 import lotus.domino.Document;
 import lotus.domino.NotesException;
@@ -28,6 +30,14 @@ public class SecretRegistry {
 	public static final String SECRET_FIELD_NAME = "LTPA_DominoSecret";
 	
 	/**
+	 * Retourne la session
+	 * @return la session
+	 */
+	private Session getSession() {
+		return JSFUtils.getSessionAsSigner();
+	}
+	
+	/**
 	 * Retourne le document config SSO
 	 * @param config le nom de la config à extraire
 	 * @return la config SSO
@@ -40,13 +50,13 @@ public class SecretRegistry {
 		if( !db.queryAccessRoles(session.getEffectiveUserName()).contains(ROLE) )
 			throw new RuntimeException("Vous n'avez pas les droits pour extraire les secrets");
 		
-		Database names = DominoUtils.openDatabase(session, Constants.PATH_NAMES);
+		Database names = DominoUtils.openDatabase(this.getSession(), JSFUtils.getParamsBean().getNab());
 		if( names == null )
-			throw new RuntimeException("Je n'arrive pas à accéder à la base " + Constants.PATH_NAMES);
+			throw new RuntimeException("Je n'arrive pas à accéder à la base " + JSFUtils.getParamsBean().getNab());
 		
 		View v = names.getView(WEBSSOCONFIG_VIEW);
 		if( v == null )
-			throw new RuntimeException("La vue " + WEBSSOCONFIG_VIEW + " n'existe pas dans la base " + Constants.PATH_NAMES + ". Impossible de continuer.");
+			throw new RuntimeException("La vue " + WEBSSOCONFIG_VIEW + " n'existe pas dans la base '" + JSFUtils.getParamsBean().getNab() + "'. Impossible de continuer.");
 		Document ssoConfig = v.getDocumentByKey("AFER:AccessToken");
 		if( ssoConfig == null )
 			throw new RuntimeException("Je ne trouve pas la confg SSO '" + config + "'");

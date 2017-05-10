@@ -7,11 +7,6 @@ package fr.asso.afer.oauth2;
 public class Constants {
 
 	/**
-	 * Le names dans lequel rechercher les configs SSO
-	 */
-	public static final String PATH_NAMES = "names.nsf";
-	
-	/**
 	 * Le nom du groupe qui contient l'ensemble des applications
 	 */
 	public static final String GROUP_APPLICATIONS = "OAUTH2Applications";

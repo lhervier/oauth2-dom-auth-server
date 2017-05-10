@@ -4,14 +4,13 @@ import java.util.Map;
 
 import javax.faces.context.FacesContext;
 
+import lotus.domino.Database;
+import lotus.domino.Session;
+
 import com.ibm.xsp.designer.context.XSPContext;
 
 import fr.asso.afer.oauth2.app.AppBean;
-import fr.asso.afer.oauth2.app.AppGroupBean;
 import fr.asso.afer.oauth2.params.ParamsBean;
-
-import lotus.domino.Database;
-import lotus.domino.Session;
 
 /**
  * Méthodes pratiques pour JSF
@@ -77,14 +76,6 @@ public class JSFUtils {
 	 */
 	public static final ParamsBean getParamsBean() {
 		return (ParamsBean) getBean("paramsBean");
-	}
-	
-	/**
-	 * Retourne la bean pour gérer le groupe des apps
-	 * @return la bean pour gérer le groupe des apps
-	 */
-	public static final AppGroupBean getAppGroupBean() {
-		return (AppGroupBean) getBean("appGroupBean");
 	}
 	
 	/**

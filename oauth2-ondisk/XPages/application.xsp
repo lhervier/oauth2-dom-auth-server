@@ -74,6 +74,22 @@
 			</xp:tr>
 			<xp:tr>
 				<xp:td>
+					<xp:label for="readersField" value="Lecteurs :"/>
+				</xp:td>
+				<xp:td>
+					<xp:inputText id="readersField" value="#{viewScope.app.readers}" required="true">
+						<xp:this.validators>
+							<xp:validateRequired message="Lecteurs vide = Personne ne voit !!" />
+						</xp:this.validators>
+						<xp:this.converter>
+							<xp:customConverter getAsObject="#{javascript:return value.split(',')}" getAsString="#{javascript: return value.join(',')}"/>
+						</xp:this.converter>
+					</xp:inputText>
+					<xp:message for="readersField"/>
+				</xp:td>
+			</xp:tr>
+			<xp:tr>
+				<xp:td>
 					<xp:label for="redirectUriField" value="URI de redirection :"/>
 				</xp:td>
 				<xp:td>

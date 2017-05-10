@@ -33,6 +33,25 @@ public class Application implements Serializable {
 	 * Ses autres URIs de redirection
 	 */
 	private List<String> redirectUris;
+	
+	/**
+	 * Les personnes autorisées à se logger sur cette application
+	 */
+	private List<String> readers;
+
+	/**
+	 * @return the readers
+	 */
+	public List<String> getReaders() {
+		return readers;
+	}
+
+	/**
+	 * @param readers the readers to set
+	 */
+	public void setReaders(List<String> readers) {
+		this.readers = readers;
+	}
 
 	/**
 	 * @return the name

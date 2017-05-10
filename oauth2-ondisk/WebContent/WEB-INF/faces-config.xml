@@ -11,11 +11,6 @@
     <managed-bean-scope>request</managed-bean-scope>
   </managed-bean>
   <managed-bean>
-    <managed-bean-name>appGroupBean</managed-bean-name>
-    <managed-bean-class>fr.asso.afer.oauth2.app.AppGroupBean</managed-bean-class>
-    <managed-bean-scope>request</managed-bean-scope>
-  </managed-bean>
-  <managed-bean>
     <managed-bean-name>appBean</managed-bean-name>
     <managed-bean-class>fr.asso.afer.oauth2.app.AppBean</managed-bean-class>
     <managed-bean-scope>request</managed-bean-scope>

@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xp:view xmlns:xp="http://www.ibm.com/xsp/core">
 	<xp:this.beforePageLoad><![CDATA[#{javascript:
-		print(context.getUser().getRoles());
-		if( !context.getUser().getRoles().contains("[AppsManager]") )
-			throw "Vous n'êtes pas autorisé à gérer les applications depuis cette base";
-		viewScope.apps = appsReg.getApplications();
+		viewScope.apps = appGroupBean.getApplications();
 	}]]></xp:this.beforePageLoad>
 	
 	<xp:div>
@@ -14,12 +11,12 @@
 	</xp:div>
 	<xp:repeat value="#{viewScope.apps}" var="app" rows="5000">
 		<xp:div>
-			<xp:text value="#{app.name}"/>
-			<xp:link text="Ouvrir" value="/application.xsp?client_id=#{app.clientId}"/>
+			<xp:text value="#{app}"/>
+			<xp:link text="Ouvrir" value="/application.xsp?name=#{app}"/>
 			<xp:link id="removeLnk" text="Supprimer">
 				<xp:eventHandler event="onclick" submit="true" refreshMode="complete">
 					<xp:this.action><![CDATA[#{javascript:
-						appsReg.removeApplication(app.clientId);
+						appBean.removeApplication(app);
 						context.redirectToPage("/applications.xsp");		// Sinon, pas de mise à jour de l'affichage...
 					}]]></xp:this.action>
 				</xp:eventHandler>

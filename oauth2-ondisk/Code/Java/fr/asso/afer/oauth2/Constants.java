@@ -7,11 +7,6 @@ package fr.asso.afer.oauth2;
 public class Constants {
 
 	/**
-	 * Le nom du groupe qui contient l'ensemble des applications
-	 */
-	public static final String GROUP_APPLICATIONS = "OAUTH2Applications";
-	
-	/**
 	 * Le nom de la config SSO depuis laquelle on va extraire le secret pour signer le access token
 	 */
 	public static final String CONFIG_NAME_ACCESS_TOKEN = "AFER:AccessToken";
@@ -40,5 +35,10 @@ public class Constants {
 	 * Le suffixe des noms des applications
 	 */
 	public static final String SUFFIX_APP = "/APPLICATION/WEB";
+	
+	/**
+	 * Le nom du rôle pour pouvoir gérer les applications
+	 */
+	public static final String ROLE_APPSMANAGER = "[AppsManager]";
 	
 }

@@ -32,12 +32,12 @@ public class DominoUtils {
 	
 	/**
 	 * Ouvre une database
+	 * @param session la session pour ouvrir la base
 	 * @param filePath le chemin vers la base
 	 * @return la database ou null si elle n'existe pas
 	 * @throws NotesException si on n'a pas les droits
 	 */
-	public static final Database openDatabase(String name) throws NotesException {
-		Session session = JSFUtils.getSession();
+	public static final Database openDatabase(Session session, String name) throws NotesException {
 		Database db = session.getDatabase(null, name, false);		// createOnFail = false
 		if( db == null )
 			return null;

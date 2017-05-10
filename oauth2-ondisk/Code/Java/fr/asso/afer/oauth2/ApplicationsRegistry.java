@@ -45,7 +45,7 @@ public class ApplicationsRegistry {
 	 * @throws NotesException en cas de pb
 	 */
 	private Database getNab() throws NotesException {
-		Database names = DominoUtils.openDatabase(Constants.PATH_NAMES);
+		Database names = DominoUtils.openDatabase(JSFUtils.getSession(), Constants.PATH_NAMES);
 		if( names == null )
 			throw new RuntimeException("Je n'arrive pas à ouvrir la base " + Constants.PATH_NAMES);
 		return names;

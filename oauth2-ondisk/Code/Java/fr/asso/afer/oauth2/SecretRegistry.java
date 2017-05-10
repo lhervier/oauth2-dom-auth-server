@@ -40,7 +40,7 @@ public class SecretRegistry {
 		if( !db.queryAccessRoles(session.getEffectiveUserName()).contains(ROLE) )
 			throw new RuntimeException("Vous n'avez pas les droits pour extraire les secrets");
 		
-		Database names = DominoUtils.openDatabase(Constants.PATH_NAMES);
+		Database names = DominoUtils.openDatabase(session, Constants.PATH_NAMES);
 		if( names == null )
 			throw new RuntimeException("Je n'arrive pas à accéder à la base " + Constants.PATH_NAMES);
 		

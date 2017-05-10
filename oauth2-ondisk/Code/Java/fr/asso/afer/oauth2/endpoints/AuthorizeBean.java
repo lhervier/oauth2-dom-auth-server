@@ -8,7 +8,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletResponse;
 
 import lotus.domino.Database;
@@ -54,16 +53,22 @@ public class AuthorizeBean {
 	
 	/**
 	 * Génère le code autorization
+	 * @param response la réponse http
 	 * @throws NotesException en cas de pb
 	 * @throws IOException en cas de pb
 	 */
-	public void authorize() throws NotesException, IOException {
+	public void authorize(HttpServletResponse response) throws NotesException, IOException {
 		Map<String, String> param = JSFUtils.getParam();
 		String responseType = param.get("response_type");
+		
+		String redirectUri;
 		if( "code".equals(responseType) )
-			this.authorizationCode();
+			redirectUri = this.authorizationCode();
 		else
 			throw new RuntimeException("Type de réponse inconnu '" + responseType + "'");
+		
+		// Redirige
+		response.sendRedirect(redirectUri);
 	}
 	
 	// ===========================================================================================================
@@ -79,10 +84,11 @@ public class AuthorizeBean {
 	
 	/**
 	 * Traitement d'une demande d'authorisation pour un code autorization.
+	 * @return l'url de redirection
 	 * @throws NotesException en cas de pb
 	 * @throws IOException en cas de pb
 	 */
-	private void authorizationCode() throws NotesException, IOException {
+	private String authorizationCode() throws NotesException, IOException {
 		Map<String, String> param = JSFUtils.getParam();
 		String clientId = param.get("client_id");
 		String redirectUri = param.get("redirect_uri");
@@ -118,7 +124,9 @@ public class AuthorizeBean {
 			authDoc.replaceItemValue("iss", "https://afer.asso.fr/oauth2/domino");
 			authDoc.replaceItemValue("sub", this.session.getEffectiveUserName());
 			authDoc.replaceItemValue("aud", app.getClientId());
-			authDoc.replaceItemValue("exp", System.currentTimeMillis() + (10 * 60 * 1000));		// Expiration dans 10 minutes
+			authDoc.replaceItemValue("accessExp", System.currentTimeMillis() + (10 * 60 * 1000));		// Expiration dans 10 minutes
+			authDoc.replaceItemValue("refreshExp", System.currentTimeMillis() + (10 * 60 * 60 * 1000));		// Expiration dans 10 heures
+			authDoc.replaceItemValue("authDate", System.currentTimeMillis());
 			authDoc.replaceItemValue("iat", System.currentTimeMillis());
 			authDoc.replaceItemValue("auth_time", System.currentTimeMillis());
 			
@@ -138,10 +146,7 @@ public class AuthorizeBean {
 		if( state != null && state.length() != 0 )
 			redirectUri += "&state=" + URLEncoder.encode(state, "UTF-8");
 		
-		// Redirige
-		FacesContext ctx = FacesContext.getCurrentInstance();
-		HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
-		response.sendRedirect(redirectUri);
+		return redirectUri;
 	}
 	
 }

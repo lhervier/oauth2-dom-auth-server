@@ -11,6 +11,7 @@ import com.ibm.xsp.designer.context.XSPContext;
 
 import fr.asso.afer.oauth2.app.AppBean;
 import fr.asso.afer.oauth2.params.ParamsBean;
+import fr.asso.afer.oauth2.secret.SecretBean;
 
 /**
  * Méthodes pratiques pour JSF
@@ -84,6 +85,14 @@ public class JSFUtils {
 	 */
 	public static final AppBean getAppBean() {
 		return (AppBean) getBean("appBean");
+	}
+	
+	/**
+	 * Retourne la bean pour accéder aux secrets
+	 * @return la secretBean
+	 */
+	public static final SecretBean getSecretBean() {
+		return (SecretBean) getBean("secretBean");
 	}
 	
 }

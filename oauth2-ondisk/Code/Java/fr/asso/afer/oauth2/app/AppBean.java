@@ -183,15 +183,6 @@ public class AppBean {
 		return new BigInteger(130, RANDOM).toString(32);
 	}
 	
-	/**
-	 * Vérifie que l'utilisateur courant peut gérer les applications
-	 * @throws RuntimeException si ce n'est pas le cas
-	 */
-	private void check() {
-		if( !JSFUtils.getContext().getUser().getRoles().contains(Constants.ROLE_APPSMANAGER) )
-			throw new RuntimeException("Vous n'êtes pas autorisé à gérer les applications sur ce serveur");
-	}
-	
 	// ====================================================================================================
 	
 	/**
@@ -219,7 +210,6 @@ public class AppBean {
 	 * @throws NotesException en cas de pb
 	 */
 	public Application getApplicationFromName(String appName) throws NotesException {
-		this.check();
 		Document doc = null;
 		try {
 			doc = this.getAppDocFromName(appName);
@@ -238,7 +228,6 @@ public class AppBean {
 	 * @throws NotesException en cas de pb
 	 */
 	public Application getApplicationFromClientId(String clientId) throws NotesException {
-		this.check();
 		Document doc = null;
 		try {
 			doc = this.getAppDocFromClientId(clientId);
@@ -255,7 +244,6 @@ public class AppBean {
 	 * @return une nouvelle app (avec un client_id seulement)
 	 */
 	public Application prepareApplication() {
-		this.check();
 		Application ret = new Application();
 		ret.setClientId(UUID.randomUUID().toString());
 		ret.setRedirectUris(new ArrayList<String>());
@@ -271,8 +259,6 @@ public class AppBean {
 	 * @throws NotesException en cas de pb
 	 */
 	public String addApplication(Application app) throws NotesException {
-		this.check();
-		
 		// Vérifie qu'il n'existe pas déjà une app avec ce nom
 		Application existing = this.getApplicationFromName(app.getName());
 		if( existing != null )
@@ -344,8 +330,6 @@ public class AppBean {
 	 * @throws NotesException en cas de pb
 	 */
 	public void updateApplication(Application app) throws NotesException {
-		this.check();
-		
 		// Sanity check: Vérifie qu'on n'essaie pas de changer son nom ou son clientId
 		Application existing = this.getApplicationFromName(app.getName());
 		if( existing == null )
@@ -379,7 +363,6 @@ public class AppBean {
 	 * @throws NotesException en cas de pb
 	 */
 	public void removeApplication(String name) throws NotesException {
-		this.check();
 		Document personDoc = null;
 		Document appDoc = null;
 		try {

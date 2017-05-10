@@ -232,6 +232,8 @@ public class DominoUtils {
 					setter.invoke(o, new Object[] {doc.getItemValueInteger(name)});
 				else if( paramClass.isAssignableFrom(Double.class) )
 					setter.invoke(o, new Object[] {doc.getItemValueDouble(name)});
+				else if( paramClass.isAssignableFrom(Long.class) )
+					setter.invoke(o, new Object[] {(long) doc.getItemValueDouble(name)});
 				
 				// Boolean: On regarde la valeur "1"
 				else if( paramClass.isAssignableFrom(Boolean.class) )

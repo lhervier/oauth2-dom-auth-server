@@ -27,12 +27,12 @@ public class ApplicationsRegistry {
 	/**
 	 * Le nom de la vue ($Groups)
 	 */
-	public static final String USERS_GROUPS_VIEW_NAME = "($VIMPeopleAndGroups)";
+	public static final String VIEW_USERS_GROUPS = "($VIMPeopleAndGroups)";
 	
 	/**
 	 * Le nom du champ qui contient la liste des membres
 	 */
-	public static final String MEMBERS_FIELD_NAME = "Members";
+	public static final String FIELD_MEMBERS = "Members";
 	
 	/**
 	 * Notre générateur de nombres aléatoires
@@ -45,9 +45,9 @@ public class ApplicationsRegistry {
 	 * @throws NotesException en cas de pb
 	 */
 	private Database getNab() throws NotesException {
-		Database names = DominoUtils.openDatabase(Constants.NAMES_PATH);
+		Database names = DominoUtils.openDatabase(Constants.PATH_NAMES);
 		if( names == null )
-			throw new RuntimeException("Je n'arrive pas à ouvrir la base " + Constants.NAMES_PATH);
+			throw new RuntimeException("Je n'arrive pas à ouvrir la base " + Constants.PATH_NAMES);
 		return names;
 	}
 	
@@ -58,9 +58,9 @@ public class ApplicationsRegistry {
 	 */
 	private View getUsersGroupsView() throws NotesException {
 		Database names = this.getNab();
-		View v = names.getView(USERS_GROUPS_VIEW_NAME);
+		View v = names.getView(VIEW_USERS_GROUPS);
 		if( v == null )
-			throw new RuntimeException("Je ne trouve pas la vue '" + USERS_GROUPS_VIEW_NAME + "' dans '" + Constants.NAMES_PATH + "'");
+			throw new RuntimeException("Je ne trouve pas la vue '" + VIEW_USERS_GROUPS + "' dans '" + Constants.PATH_NAMES + "'");
 		v.setAutoUpdate(false);
 		return v;
 	}
@@ -87,9 +87,9 @@ public class ApplicationsRegistry {
 		View v = null;
 		try {
 			v = this.getUsersGroupsView();
-			Document groupDoc = v.getDocumentByKey(Constants.APPLICATIONS_GROUP);
+			Document groupDoc = v.getDocumentByKey(Constants.GROUP_APPLICATIONS);
 			if( groupDoc == null )
-				throw new RuntimeException("Je ne trouve pas le groupe '" + Constants.APPLICATIONS_GROUP + "' dans la base '" + Constants.NAMES_PATH + "'");
+				throw new RuntimeException("Je ne trouve pas le groupe '" + Constants.GROUP_APPLICATIONS + "' dans la base '" + Constants.PATH_NAMES + "'");
 			return groupDoc;
 		} finally {
 			DominoUtils.recycleQuietly(v);
@@ -105,7 +105,7 @@ public class ApplicationsRegistry {
 		Document groupDoc = null;
 		try {
 			groupDoc = this.getGroupDoc();
-			return DominoUtils.getItemValue(groupDoc, MEMBERS_FIELD_NAME, String.class);
+			return DominoUtils.getItemValue(groupDoc, FIELD_MEMBERS, String.class);
 		} finally {
 			DominoUtils.recycleQuietly(groupDoc);
 		}
@@ -132,7 +132,7 @@ public class ApplicationsRegistry {
 					Document appDoc = usersGroupsView.getDocumentByKey(appNotesName.getAbbreviated());
 					if( appDoc == null )
 						return null;
-					String currClientId = appDoc.getItemValueString(Constants.CLIENT_ID_FIELD_NAME);
+					String currClientId = appDoc.getItemValueString(Constants.FIELD_CLIENT_ID);
 					if( clientId.equals(currClientId) )
 						return appDoc;
 					appDoc.recycle();
@@ -176,9 +176,9 @@ public class ApplicationsRegistry {
 	private Application appFromDoc(Document doc) throws NotesException {
 		Application app = new Application();
 		app.setName(doc.getItemValueString("LastName"));
-		app.setClientId(doc.getItemValueString(Constants.CLIENT_ID_FIELD_NAME));
-		app.setRedirectUri(doc.getItemValueString(Constants.REDIRECT_URI_FIELD_NAME));
-		app.setRedirectUris(DominoUtils.getItemValue(doc, Constants.REDIRECT_URIS_FIELD_NAME, String.class));
+		app.setClientId(doc.getItemValueString(Constants.FIELD_CLIENT_ID));
+		app.setRedirectUri(doc.getItemValueString(Constants.FIELF_REDIRECT_URI));
+		app.setRedirectUris(DominoUtils.getItemValue(doc, Constants.FIELD_REDIRECT_URIS, String.class));
 		return app;
 	}
 	
@@ -198,10 +198,10 @@ public class ApplicationsRegistry {
 	 * @throws NotesException en cas de pb
 	 */
 	private void updateDoc(Document doc, Application app) throws NotesException {
-		doc.replaceItemValue(Constants.REDIRECT_URI_FIELD_NAME, app.getRedirectUri());
+		doc.replaceItemValue(Constants.FIELF_REDIRECT_URI, app.getRedirectUri());
 		Vector<String> values = new Vector<String>();
 		values.addAll(app.getRedirectUris());
-		doc.replaceItemValue(Constants.REDIRECT_URIS_FIELD_NAME, values);
+		doc.replaceItemValue(Constants.FIELD_REDIRECT_URIS, values);
 		
 		if( !doc.computeWithForm(true, true) )
 			throw new RuntimeException("Erreur à la création du document Person");
@@ -291,9 +291,9 @@ public class ApplicationsRegistry {
 			
 			// Met à jour le groupe
 			groupDoc = this.getGroupDoc();
-			List<String> members = DominoUtils.getItemValue(groupDoc, MEMBERS_FIELD_NAME, String.class);
-			members.remove(app.getName() + Constants.APP_NAME_SUFFIX);
-			DominoUtils.replaceItemValue(groupDoc, MEMBERS_FIELD_NAME, members);
+			List<String> members = DominoUtils.getItemValue(groupDoc, FIELD_MEMBERS, String.class);
+			members.remove(app.getName() + Constants.SUFFIX_APP);
+			DominoUtils.replaceItemValue(groupDoc, FIELD_MEMBERS, members);
 			if( !groupDoc.computeWithForm(true, true) )
 				throw new RuntimeException("Erreur pendant la mise à jour du groupe");
 			groupDoc.save();
@@ -329,7 +329,7 @@ public class ApplicationsRegistry {
 			
 			// Créé une nouvelle application (un nouvel utilisateur)
 			person = nab.createDocument();
-			String abbreviated = app.getName() + Constants.APP_NAME_SUFFIX;
+			String abbreviated = app.getName() + Constants.SUFFIX_APP;
 			String fullName = session.createName(abbreviated).toString();
 			
 			person.replaceItemValue("Form", "Person");
@@ -344,15 +344,15 @@ public class ApplicationsRegistry {
 			person.replaceItemValue("$SecurePassword", "1");
 			person.replaceItemValue("Owner", session.getEffectiveUserName());
 			person.replaceItemValue("LocalAdmin", session.getEffectiveUserName());
-			person.replaceItemValue(Constants.CLIENT_ID_FIELD_NAME, app.getClientId());
+			person.replaceItemValue(Constants.FIELD_CLIENT_ID, app.getClientId());
 			
 			this.updateDoc(person, app);
 			
 			// Ajoute le nom de cet utilisateur dans le groupe
 			group = this.getGroupDoc();
-			List<String> apps = DominoUtils.getItemValue(group, MEMBERS_FIELD_NAME, String.class);
+			List<String> apps = DominoUtils.getItemValue(group, FIELD_MEMBERS, String.class);
 			apps.add(fullName);
-			DominoUtils.replaceItemValue(group, MEMBERS_FIELD_NAME, apps);
+			DominoUtils.replaceItemValue(group, FIELD_MEMBERS, apps);
 			if( !group.computeWithForm(true, true) )
 				throw new RuntimeException("Erreur pendant l'ajout de l'application '" + app.getName() + "' au groupe des applications");
 			group.save();
@@ -392,7 +392,7 @@ public class ApplicationsRegistry {
 				throw new RuntimeException("L'application '" + app.getName() + "' n'existe pas...");			
 			
 			// Vérifie que le client Id est OK
-			String clientId = person.getItemValueString(Constants.CLIENT_ID_FIELD_NAME);
+			String clientId = person.getItemValueString(Constants.FIELD_CLIENT_ID);
 			if( !clientId.equals(app.getClientId()) )
 				throw new RuntimeException("Le client_id ne peut pas être changé !");
 			

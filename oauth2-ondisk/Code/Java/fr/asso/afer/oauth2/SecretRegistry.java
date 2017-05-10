@@ -40,13 +40,13 @@ public class SecretRegistry {
 		if( !db.queryAccessRoles(session.getEffectiveUserName()).contains(ROLE) )
 			throw new RuntimeException("Vous n'avez pas les droits pour extraire les secrets");
 		
-		Database names = DominoUtils.openDatabase(Constants.NAMES_PATH);
+		Database names = DominoUtils.openDatabase(Constants.PATH_NAMES);
 		if( names == null )
-			throw new RuntimeException("Je n'arrive pas à accéder à la base " + Constants.NAMES_PATH);
+			throw new RuntimeException("Je n'arrive pas à accéder à la base " + Constants.PATH_NAMES);
 		
 		View v = names.getView(WEBSSOCONFIG_VIEW);
 		if( v == null )
-			throw new RuntimeException("La vue " + WEBSSOCONFIG_VIEW + " n'existe pas dans la base " + Constants.NAMES_PATH + ". Impossible de continuer.");
+			throw new RuntimeException("La vue " + WEBSSOCONFIG_VIEW + " n'existe pas dans la base " + Constants.PATH_NAMES + ". Impossible de continuer.");
 		Document ssoConfig = v.getDocumentByKey("AFER:AccessToken");
 		if( ssoConfig == null )
 			throw new RuntimeException("Je ne trouve pas la confg SSO '" + config + "'");
@@ -58,13 +58,13 @@ public class SecretRegistry {
 	 * Retourne le secret utilisé pour signer l'access token
 	 */
 	public String getAccessTokenSecret() throws NotesException {
-		return this.getSsoConfig(Constants.ACCESS_TOKEN_CONFIG_NAME).getItemValueString(SECRET_FIELD_NAME);
+		return this.getSsoConfig(Constants.CONFIG_NAME_ACCESS_TOKEN).getItemValueString(SECRET_FIELD_NAME);
 	}
 	
 	/**
 	 * Retourne le secret utilisé pour crypter le refresh token
 	 */
 	public String getRefreshTokenSecret() throws NotesException {
-		return this.getSsoConfig(Constants.REFRESH_TOKEN_CONFIG_NAME).getItemValueString(SECRET_FIELD_NAME);
+		return this.getSsoConfig(Constants.CONFIG_NAME_REFRESH_TOKEN).getItemValueString(SECRET_FIELD_NAME);
 	}
 }

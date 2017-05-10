@@ -113,6 +113,7 @@ public class AuthorizeBean {
 			authDoc.replaceItemValue("Form", "AuthorizationCode");
 			authDoc.replaceItemValue("Application", nn.toString());
 			authDoc.replaceItemValue("ID", id);
+			authDoc.replaceItemValue("RedirectUri", redirectUri);
 			
 			authDoc.replaceItemValue("iss", "https://afer.asso.fr/oauth2/domino");
 			authDoc.replaceItemValue("sub", this.session.getEffectiveUserName());

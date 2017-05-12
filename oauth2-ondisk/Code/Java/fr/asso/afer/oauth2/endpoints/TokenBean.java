@@ -32,7 +32,7 @@ import com.nimbusds.jose.crypto.MACSigner;
 import fr.asso.afer.oauth2.app.AppBean;
 import fr.asso.afer.oauth2.model.AccessToken;
 import fr.asso.afer.oauth2.model.Application;
-import fr.asso.afer.oauth2.model.AuthorizationCodeResponse;
+import fr.asso.afer.oauth2.model.GrantResponse;
 import fr.asso.afer.oauth2.model.RefreshToken;
 import fr.asso.afer.oauth2.secret.SecretBean;
 import fr.asso.afer.oauth2.utils.DominoUtils;
@@ -95,6 +95,34 @@ public class TokenBean {
 	}
 	
 	/**
+	 * Pour supprimer un code authorization.
+	 * On se sert de la session ouverte par le signataire de la XPage car
+	 * l'application n'a pas le droit.
+	 * @param code le code
+	 * @throws NotesException 
+	 */
+	private void removeCode(String code) throws NotesException {
+		Database db = null;
+		View v = null;
+		Document authDoc = null;
+		try {
+			db = DominoUtils.openDatabase(this.sessionAsSigner, this.database.getFilePath());
+			v = DominoUtils.getView(db, VIEW_AUTHCODES);
+			authDoc = v.getDocumentByKey(code, true);
+			if( authDoc == null )
+				throw new RuntimeException("Erreur à la suppression du document contenant les infos du code authorization");
+			if( !authDoc.remove(true) )
+				throw new RuntimeException("Je n'arrive pas à supprimer le document contenant les infos du code authorization");
+		} finally {
+			DominoUtils.recycleQuietly(authDoc);
+			DominoUtils.recycleQuietly(v);
+			DominoUtils.recycleQuietly(db);
+		}
+	}
+	
+	// =============================================================================
+	
+	/**
 	 * Gestion du token.
 	 * @param out la stream dans laquelle envoyer la réponse
 	 */
@@ -129,32 +157,6 @@ public class TokenBean {
 	}
 	
 	/**
-	 * Pour supprimer un code authorization.
-	 * On se sert de la session ouverte par le signataire de la XPage car
-	 * l'application n'a pas le droit.
-	 * @param code le code
-	 * @throws NotesException 
-	 */
-	private void removeCode(String code) throws NotesException {
-		Database db = null;
-		View v = null;
-		Document authDoc = null;
-		try {
-			db = DominoUtils.openDatabase(this.sessionAsSigner, this.database.getFilePath());
-			v = DominoUtils.getView(db, VIEW_AUTHCODES);
-			authDoc = v.getDocumentByKey(code, true);
-			if( authDoc == null )
-				throw new RuntimeException("Erreur à la suppression du document contenant les infos du code authorization");
-			if( !authDoc.remove(true) )
-				throw new RuntimeException("Je n'arrive pas à supprimer le document contenant les infos du code authorization");
-		} finally {
-			DominoUtils.recycleQuietly(authDoc);
-			DominoUtils.recycleQuietly(v);
-			DominoUtils.recycleQuietly(db);
-		}
-	}
-	
-	/**
 	 * Génération d'un token à partir d'un code autorisation
 	 * @throws NotesException en cas de pb
 	 * @throws JOSEException 
@@ -165,8 +167,8 @@ public class TokenBean {
 	 * @throws IntrospectionException 
 	 * @throws IllegalArgumentException 
 	 */
-	public AuthorizationCodeResponse authorizationCode() throws NotesException, KeyLengthException, JOSEException, IOException, IllegalArgumentException, IntrospectionException, IllegalAccessException, InvocationTargetException {
-		AuthorizationCodeResponse resp = new AuthorizationCodeResponse();
+	public GrantResponse authorizationCode() throws NotesException, KeyLengthException, JOSEException, IOException, IllegalArgumentException, IntrospectionException, IllegalAccessException, InvocationTargetException {
+		GrantResponse resp = new GrantResponse();
 		
 		Map<String, String> param = JSFUtils.getParam();
 		String code = param.get("code");
@@ -237,4 +239,9 @@ public class TokenBean {
 			this.removeCode(code);
 		}
 	}
+	
+	/**
+	 * Génération d'un token à partir d'un refresh token
+	 */
+	
 }

@@ -6,7 +6,7 @@ import fr.asso.afer.oauth2.utils.JsonUtils.SerializedName;
  * Réponse pour les types de grant "authorization code"
  * @author Lionel HERVIER
  */
-public class AuthorizationCodeResponse {
+public class GrantResponse {
 
 	/**
 	 * Le token d'acces

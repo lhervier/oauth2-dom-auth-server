@@ -8,9 +8,11 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -157,4 +159,298 @@ public class JsonUtils {
 		return "\"" + fmt.format(d) + "\"";
 	}
 	
+	// ==============================================================================
+	
+	private static class JsonParser {
+		private int pos = 0;
+		private String json;
+		
+		public JsonParser(String json) {
+			this.pos = 0;
+			this.json = json;
+		}
+		
+		public void next() {
+			this.pos++;
+		}
+		
+		public char element() {
+			return this.json.charAt(this.pos);
+		}
+		
+		public boolean eof() {
+			return this.pos > this.json.length() - 1;
+		}
+		
+		public void forward() {
+			if( this.eof() )
+				return;
+			
+			char el = this.element();
+			if( el != ' ' && el != '\t' && el != '\n' && el != '\r' )
+				return;
+			
+			this.next();
+			forward();
+		}
+	}
+	
+	/**
+	 * Transforme une chaîne Json en un objet
+	 * @param json la chaîne Json
+	 * @param cl l'objet à retourner
+	 * @return une instance de l'objet
+	 * @throws InvocationTargetException 
+	 * @throws IntrospectionException 
+	 * @throws InstantiationException 
+	 * @throws IllegalAccessException 
+	 * @throws IllegalArgumentException 
+	 */
+	public static final <T> T fromJson(String json, Class<T> cl) throws IllegalArgumentException, IllegalAccessException, InstantiationException, IntrospectionException, InvocationTargetException {
+		return fromJson(new JsonParser(json), cl);
+	}
+	
+	/**
+	 * Transforme une chaîne Json en un objet
+	 * @param json la chaîne Json
+	 * @param cl l'objet à retourner
+	 * @return une instance de l'objet
+	 * @throws InvocationTargetException 
+	 * @throws IntrospectionException 
+	 * @throws InstantiationException 
+	 * @throws IllegalAccessException 
+	 * @throws IllegalArgumentException 
+	 */
+	@SuppressWarnings("unchecked")
+	private static final <T> T fromJson(JsonParser json, Class<T> cl) throws IllegalArgumentException, IllegalAccessException, InstantiationException, IntrospectionException, InvocationTargetException {
+		if( cl.isAssignableFrom(String.class) )
+			return (T) stringFromJson(json);
+		
+		if( cl.isAssignableFrom(Integer.class) || cl.isAssignableFrom(int.class) )
+			return (T) intFromJson(json);
+		
+		if( cl.isAssignableFrom(Long.class) || cl.isAssignableFrom(long.class) )
+			return (T) longFromJson(json);
+		
+		if( cl.isAssignableFrom(Double.class) || cl.isAssignableFrom(double.class) )
+			return (T) doubleFromJson(json);
+		
+		if( cl.isAssignableFrom(Date.class) )
+			return (T) dateFromJson(json);
+		
+		if( cl.isAssignableFrom(Boolean.class) || cl.isAssignableFrom(boolean.class) )
+			return (T) boolFromJson(json);
+		
+		if( cl.isAssignableFrom(List.class) )
+			return (T) listFromJson(json, cl);
+		
+		if( cl.isArray() )
+			return (T) arrayFromJson(json, cl.getComponentType());
+		
+		return (T) objectFromJson(json, cl);
+	}
+	
+	/**
+	 * Récupère une chaîne
+	 * @param json le json
+	 * @return la chaîne
+	 */
+	private static final String stringFromJson(JsonParser json) {
+		json.forward();
+		
+		char el = json.element();
+		if( el != '"' )
+			throw new RuntimeException("Json incorrect...");
+		
+		json.next();
+		StringBuffer sb = new StringBuffer();
+		while( json.element() != '"' ) {
+			if( json.element() == '\\' ) {
+				json.next();
+			}
+			sb.append(json.element());
+			json.next();
+		}
+		json.next();
+		return sb.toString();
+	}
+	
+	/**
+	 * Récupère un booleen
+	 * @return le booleen
+	 */
+	private static final Boolean boolFromJson(JsonParser json) {
+		json.forward();
+		
+		String s = "";
+		for( int i=0; i<4; i++ ) {
+			s += json.element();
+			json.next();
+		}
+		if( !"true".equals(s) && !"false".equals(s) )
+			throw new RuntimeException("Json incorrect");
+		return Boolean.parseBoolean(s);
+	}
+	
+	/**
+	 * Récupère un entier
+	 * @param json le json
+	 * @return l'entier
+	 */
+	private static final Integer intFromJson(JsonParser json) {
+		json.forward();
+		
+		StringBuffer sb = new StringBuffer();
+		boolean first = true;
+		while( !json.eof() && ((json.element() >= '0' && json.element() < '9') || json.element() == '-') ) {
+			if( !first && json.element() == '-' )
+				throw new RuntimeException("Json incorrect");
+			sb.append(json.element());
+			json.next();
+			first = false;
+		}
+		return Integer.parseInt(sb.toString());
+	}
+	
+	/**
+	 * Récupère un long
+	 * @param json le json
+	 * @return le long
+	 */
+	private static final Long longFromJson(JsonParser json) {
+		json.forward();
+		
+		StringBuffer sb = new StringBuffer();
+		boolean first = true;
+		while( !json.eof() && ((json.element() >= '0' && json.element() <= '9') || json.element() == '-') ) {
+			if( !first && json.element() == '-' )
+				throw new RuntimeException("Json incorrect");
+			sb.append(json.element());
+			json.next();
+			first = false;
+		}
+		return Long.parseLong(sb.toString());
+	}
+	
+	/**
+	 * Récupère un double
+	 * @param json le json
+	 * @return le double
+	 */
+	private static final Double doubleFromJson(JsonParser json) {
+		json.forward();
+		
+		StringBuffer sb = new StringBuffer();
+		boolean first = true;
+		while( !json.eof() && ((json.element() >= '0' && json.element() < '9') || json.element() == '-' || json.element() == '.' ) ) {
+			if( !first && json.element() == '-' )
+				throw new RuntimeException("Json incorrect");
+			sb.append(json.element());
+			json.next();
+			first = false;
+		}
+		return Double.parseDouble(sb.toString());
+	}
+	
+	/**
+	 * Récupère une date
+	 * @param json le json
+	 * @return la date
+	 */
+	private static final Date dateFromJson(JsonParser json) {
+		json.forward();
+		
+		String dt = stringFromJson(json);
+		DateFormat fmt = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+		try {
+			return fmt.parse(dt);
+		} catch (ParseException e) {
+			throw new RuntimeException("Json incorrect");
+		}
+	}
+	
+	/**
+	 * Retourne une liste depuis un json
+	 * @param json le json
+	 * @param cl la classe
+	 * @throws InvocationTargetException 
+	 * @throws IntrospectionException 
+	 * @throws InstantiationException 
+	 * @throws IllegalAccessException 
+	 * @throws IllegalArgumentException 
+	 */
+	private static final <T> List<T> listFromJson(JsonParser json, Class<T> cl) throws IllegalArgumentException, IllegalAccessException, InstantiationException, IntrospectionException, InvocationTargetException {
+		json.forward();
+		char el = json.element();
+		if( el != '[' )
+			throw new RuntimeException("Json incorrect");
+		json.next();
+		List<T> ret = new ArrayList<T>();
+		while( json.element() != ']' ) {
+			T obj = fromJson(json, cl);
+			ret.add(obj);
+			json.forward();
+			if( json.element() == ',' ) {
+				json.next();
+				json.forward();
+			}
+		}
+		return ret;
+	}
+	
+	/**
+	 * Retourne un tableau depuis un json
+	 * @param json le json
+	 * @param cl la classe
+	 * @return le tableau
+	 * @throws InvocationTargetException 
+	 * @throws IntrospectionException 
+	 * @throws InstantiationException 
+	 * @throws IllegalAccessException 
+	 * @throws IllegalArgumentException 
+	 */
+	@SuppressWarnings("unchecked")
+	private static final <T> T[] arrayFromJson(JsonParser json, Class<T> cl) throws IllegalArgumentException, IllegalAccessException, InstantiationException, IntrospectionException, InvocationTargetException {
+		List<T> ret = listFromJson(json, cl);
+		T[] tbl = (T[]) Array.newInstance(cl, ret.size());
+		ret.toArray(tbl);
+		return tbl;
+	}
+	
+	/**
+	 * Retourne une objet à partir d'un json
+	 * @param json le json
+	 * @param cl la classe à retourner
+	 * @return l'objet
+	 * @throws InstantiationException 
+	 * @throws IllegalAccessException 
+	 * @throws IntrospectionException 
+	 * @throws InvocationTargetException 
+	 * @throws IllegalArgumentException 
+	 */
+	private static final <T> T objectFromJson(JsonParser json, Class<T> cl) throws IllegalAccessException, InstantiationException, IntrospectionException, IllegalArgumentException, InvocationTargetException {
+		json.forward();
+		if( json.element() != '{' )
+			throw new RuntimeException("Json incorrect");
+		json.next();
+		
+		T ret = cl.newInstance();
+		while( json.element() != '}' ) {
+			String prop = stringFromJson(json);
+			json.forward();
+			if( json.element() != ':' )
+				throw new RuntimeException("Json incorrect");
+			json.next();
+			
+			Class<?> type = ReflectionUtils.getPropType(cl, prop);
+			Object value = fromJson(json, type);
+			Method wrt = ReflectionUtils.getWriteMethod(cl, prop);
+			wrt.invoke(ret, new Object[] {value});
+			
+			json.forward();
+			if( json.element() == ',' )
+				json.next();
+		}
+		return ret;
+	}
 }

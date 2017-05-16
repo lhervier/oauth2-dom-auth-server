@@ -59,6 +59,8 @@ public class DominoUtils {
 		supported.add(Integer.class);
 		supported.add(double.class);
 		supported.add(Double.class);
+		supported.add(Long.class);
+		supported.add(long.class);
 		supported.add(Date.class);
 		supported.add(boolean.class);
 		supported.add(Boolean.class);
@@ -299,6 +301,17 @@ public class DominoUtils {
 	 * On créé un champ par propriété.
 	 * @param doc le document à remplir
 	 * @param o la bean d'où extraire les propriétés
+	 * @throws NotesException en cas de problème
+	 */
+	public final static void fillDocument(Document doc, Object o) throws NotesException {
+		fillDocument(doc, o, null, null, null);
+	}
+	
+	/**
+	 * Rempli un document à partir d'une bean.
+	 * On créé un champ par propriété.
+	 * @param doc le document à remplir
+	 * @param o la bean d'où extraire les propriétés
 	 * @param prefix un préfixe à ajouter devant les noms de champs
 	 * @throws NotesException en cas de problème
 	 */
@@ -369,7 +382,7 @@ public class DominoUtils {
 				
 				// Gestion du cas null => On supprime le champ
 				if( v == null ) {
-					doc.removeItem(prefix + name);
+					doc.removeItem(prefix == null ? name : prefix + name);
 					continue;
 				}
 				
@@ -425,11 +438,11 @@ public class DominoUtils {
 							inRichText = true;
 				
 				if( inRichText ) {
-					doc.removeItem(prefix + name);
-					RichTextItem rtit = doc.createRichTextItem(prefix + name);
+					doc.removeItem(prefix == null ? name : prefix + name);
+					RichTextItem rtit = doc.createRichTextItem(prefix == null ? name : prefix + name);
 					rtit.appendText((String) convertedValues.get(0));
 				} else
-					doc.replaceItemValue(prefix + name , convertedValues);
+					doc.replaceItemValue(prefix == null ? name : prefix + name, convertedValues);
 			}
 		} catch (IntrospectionException e) {
 			throw new RuntimeException(e);

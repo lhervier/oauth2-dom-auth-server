@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='utf-8'?>
 <note class='form' xmlns='http://www.lotus.com/dxl' version='9.0' maintenanceversion='1.8'
  replicaid='C125811C003E1A7C'>
-<noteinfo noteid='166' unid='1D2CC31FE235E591C125811C003E1FE9' sequence='18'>
+<noteinfo noteid='166' unid='1D2CC31FE235E591C125811C003E1FE9' sequence='20'>
 <created><datetime dst='true'>20170510T131834,01+02</datetime></created>
-<modified><datetime dst='true'>20170516T164924,25+02</datetime></modified>
-<revised><datetime dst='true'>20170516T164924,24+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20170516T164924,25+02</datetime></lastaccessed>
+<modified><datetime dst='true'>20170516T165838,43+02</datetime></modified>
+<revised><datetime dst='true'>20170516T165838,42+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20170516T165838,43+02</datetime></lastaccessed>
 <addedtofile><datetime dst='true'>20170510T131834,55+02</datetime></addedtofile></noteinfo>
 <updatedby><name>CN=admin admin/O=AFER</name></updatedby>
 <wassignedby><name>CN=admin admin/O=AFER</name></wassignedby>
@@ -14,7 +14,7 @@
 <item name='accessExp' summary='false'><number>0</number></item>
 <item name='refreshExp' summary='false'><number>0</number></item>
 <item name='auth_time' summary='false'><number>0</number></item>
-<item name='authTime' summary='false'><number>0</number></item>
+<item name='authDate' summary='false'><number>0</number></item>
 <item name='$HTMLCode' sign='true'>
 <rawitemdata type='1'>
 X/8QAAIADwAHAAAAAAAAAA==
@@ -37,6 +37,7 @@ hhgBAIAAAAAAgAAAAQABAP///wAQAAAA
 <item name='RedirectUri' placeholder='true'>
 <rawitemdata type='0'>
 </rawitemdata></item>
+<item name='Expires' summary='false'><number>0</number></item>
 <item name='iss' placeholder='true'>
 <rawitemdata type='0'>
 </rawitemdata></item>
@@ -47,13 +48,12 @@ hhgBAIAAAAAAgAAAAQABAP///wAQAAAA
 <rawitemdata type='0'>
 </rawitemdata></item>
 <item name='iat' summary='false'><number>0</number></item>
-<item name='authDate' summary='false'><number>0</number></item>
+<item name='authTime' summary='false'><number>0</number></item>
 <item name='AdminReaders' placeholder='true'>
 <rawitemdata type='0'>
 </rawitemdata></item>
-<item name='Expires' summary='false'><number>0</number></item>
-<item name='$Fields'><textlist><text>Expires</text><text>AdminReaders</text><text
->authDate</text><text>iat</text><text>aud</text><text>sub</text><text>iss</text><text
+<item name='$Fields'><textlist><text>AdminReaders</text><text>authTime</text><text
+>iat</text><text>aud</text><text>sub</text><text>iss</text><text>Expires</text><text
 >RedirectUri</text><text>ID</text><text>Application</text></textlist></item>
 <item name='$Body' sign='true'>
 <rawitemdata type='1'>
@@ -117,16 +117,16 @@ AAAAAAAAAAAAeAB4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACK/ygAigAA
 AwAwAgAAAAAAAAIBAAAKAAAAAAAAAAADAAAAAABpYXQA3gYAAIr/hf8IAAEAAAqkEggCLBinPAAA
 VQIREQEBAACBAoMEBQCF/0oAAQAACklzc3VlZCBBdC4gRGF0ZSCFIGxhcXVlbGxlIGxlIHRva2Vu
 IGEggnSCIGeCboJygi4gQXUgZm9ybWF0IGVwb2NoLqQSCQCgBWMPAABVAhERAQEAAIECgwQDAIX/
-EwABAAAKYXV0aF90aW1lIDoApBIJAWMPLBgAAFUCEREBAQAAgQKDBAQAhf8IAAEAAArdBgAAiv/+
-/1AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB4AHgAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAIr/LACKAAADADACAAAAAAAAAgEAAAoAAAAAAAAAAAgAAAAA
-AGF1dGhEYXRl3gYAAIr/hf8IAAEAAAqkEgkCLBinPAAAVQIREQEBAACBAoMEBQCF/0gAAQAACkRh
-dGUghSBsYXF1ZWxsZSBsJ3V0aWxpc2F0ZXVyIHMnZXN0IGF1dGVudGlmaYIuIEF1IGZvcm1hdCBl
-cG9jaC6lBgAAAACBAoMEAQCF/wgAAQAACoECgwQBAIX/dAABAAAKTGUgc2lnbmF0YWlyZSBkZXMg
-WFBhZ2VzIGRvaXQgcG91dm9pciBzYXZvaXIgcXVlIGNlIGRvYyBleGlzdGUgcG91ciBsZSBzdXBw
-cmltZXIgdW5lIGZvaXMgbGUgY29kZSB1dGlsaXOCIDog3QYAAIr//v9QAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAeAB4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAACK/04AngAABQAwAgAAAAAAAAIBAAAKHgAAAAAAAAAMAAAAAAAeAAAAHAABABEAW0F1dGhD
-b2RlTWFuYWdlcl0AAwBBZG1pblJlYWRlcnPeBgAAiv+F/wgAAQAACg==
+EgABAAAKYXV0aFRpbWUgOqQSCQFjDywYAABVAhERAQEAAIECgwQEAIX/CAABAAAK3QYAAIr//v9Q
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAeAB4AAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAACK/ywAigAAAwAwAgAAAAAAAAIBAAAKAAAAAAAAAAAIAAAAAABh
+dXRoVGltZd4GAACK/4X/CAABAAAKpBIJAiwYpzwAAFUCEREBAQAAgQKDBAUAhf9IAAEAAApEYXRl
+IIUgbGFxdWVsbGUgbCd1dGlsaXNhdGV1ciBzJ2VzdCBhdXRlbnRpZmmCLiBBdSBmb3JtYXQgZXBv
+Y2gupQYAAAAAgQKDBAEAhf8IAAEAAAqBAoMEAQCF/3QAAQAACkxlIHNpZ25hdGFpcmUgZGVzIFhQ
+YWdlcyBkb2l0IHBvdXZvaXIgc2F2b2lyIHF1ZSBjZSBkb2MgZXhpc3RlIHBvdXIgbGUgc3VwcHJp
+bWVyIHVuZSBmb2lzIGxlIGNvZGUgdXRpbGlzgiA6IN0GAACK//7/UAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAHgAeAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAiv9OAJ4AAAUAMAIAAAAAAAACAQAACh4AAAAAAAAADAAAAAAAHgAAABwAAQARAFtBdXRoQ29k
+ZU1hbmFnZXJdAAMAQWRtaW5SZWFkZXJz3gYAAIr/hf8IAAEAAAo=
 </rawitemdata></item></note>
 

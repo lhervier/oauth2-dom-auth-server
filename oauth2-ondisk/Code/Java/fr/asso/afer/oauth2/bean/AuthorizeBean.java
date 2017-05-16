@@ -189,7 +189,7 @@ public class AuthorizeBean {
 			database = JSFUtils.getDatabase();
 			authDoc = database.createDocument();
 			authDoc.replaceItemValue("Form", "AuthorizationCode");
-			DominoUtils.fillObject(authCode, authDoc);
+			DominoUtils.fillDocument(authDoc, authCode);
 			
 			DominoUtils.computeAndSave(authDoc);
 		} catch (NotesException e) {

@@ -1,4 +1,4 @@
-package fr.asso.afer.oauth2.endpoints;
+package fr.asso.afer.oauth2.bean;
 
 import java.beans.IntrospectionException;
 import java.io.IOException;
@@ -31,7 +31,6 @@ import com.nimbusds.jose.crypto.DirectDecrypter;
 import com.nimbusds.jose.crypto.DirectEncrypter;
 import com.nimbusds.jose.crypto.MACSigner;
 
-import fr.asso.afer.oauth2.app.AppBean;
 import fr.asso.afer.oauth2.model.AccessToken;
 import fr.asso.afer.oauth2.model.Application;
 import fr.asso.afer.oauth2.model.GrantResponse;

@@ -9,9 +9,9 @@ import lotus.domino.Session;
 
 import com.ibm.xsp.designer.context.XSPContext;
 
-import fr.asso.afer.oauth2.app.AppBean;
-import fr.asso.afer.oauth2.params.ParamsBean;
-import fr.asso.afer.oauth2.secret.SecretBean;
+import fr.asso.afer.oauth2.bean.AppBean;
+import fr.asso.afer.oauth2.bean.ParamsBean;
+import fr.asso.afer.oauth2.bean.SecretBean;
 
 /**
  * Méthodes pratiques pour JSF

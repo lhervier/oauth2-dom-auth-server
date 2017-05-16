@@ -1,4 +1,4 @@
-package fr.asso.afer.oauth2.app;
+package fr.asso.afer.oauth2.bean;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;

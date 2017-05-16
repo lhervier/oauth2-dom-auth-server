@@ -1,4 +1,4 @@
-package fr.asso.afer.oauth2.endpoints;
+package fr.asso.afer.oauth2.bean;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -17,7 +17,6 @@ import lotus.domino.Name;
 import lotus.domino.NotesException;
 import lotus.domino.Session;
 import fr.asso.afer.oauth2.Constants;
-import fr.asso.afer.oauth2.app.AppBean;
 import fr.asso.afer.oauth2.ex.AuthorizeException;
 import fr.asso.afer.oauth2.ex.InvalidUriException;
 import fr.asso.afer.oauth2.ex.authorize.AccessDeniedException;

@@ -1,4 +1,4 @@
-package fr.asso.afer.oauth2.secret;
+package fr.asso.afer.oauth2.bean;
 
 import java.io.IOException;
 
@@ -10,7 +10,6 @@ import lotus.domino.Document;
 import lotus.domino.NotesException;
 import lotus.domino.Session;
 import lotus.domino.View;
-import fr.asso.afer.oauth2.params.ParamsBean;
 import fr.asso.afer.oauth2.utils.DominoUtils;
 import fr.asso.afer.oauth2.utils.JSFUtils;
 

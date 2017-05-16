@@ -1,4 +1,4 @@
-package fr.asso.afer.oauth2.params;
+package fr.asso.afer.oauth2.bean;
 
 import java.io.Serializable;
 

@@ -10,6 +10,7 @@ import lotus.domino.Document;
 import lotus.domino.NotesException;
 import lotus.domino.Session;
 import lotus.domino.View;
+import fr.asso.afer.oauth2.params.ParamsBean;
 import fr.asso.afer.oauth2.utils.DominoUtils;
 import fr.asso.afer.oauth2.utils.JSFUtils;
 
@@ -30,16 +31,6 @@ public class SecretBean {
 	public static final String SECRET_FIELD_NAME = "LTPA_DominoSecret";
 	
 	/**
-	 * Le nom de la config SSO depuis laquelle on va extraire le secret pour signer le access token
-	 */
-	public static final String CONFIG_NAME_ACCESS_TOKEN = "AFER:AccessToken";
-	
-	/**
-	 * Le nom de la config SSO depuis laquelle on va extraire le secret pour crypter le refresh token
-	 */
-	public static final String CONFIG_NAME_REFRESH_TOKEN = "AFER:RefreshToken";
-	
-	/**
 	 * Le décodeur base64
 	 */
 	private static final BASE64Decoder BASE64DECODER = new BASE64Decoder();
@@ -48,6 +39,18 @@ public class SecretBean {
 	 * L'encodeur base64
 	 */
 	private static final BASE64Encoder BASE64ENCODER = new BASE64Encoder();
+	
+	/**
+	 * La bean pour accéder aux paramètres
+	 */
+	private ParamsBean paramsBean;
+	
+	/**
+	 * Constructeur
+	 */
+	public SecretBean() {
+		this.paramsBean = JSFUtils.getParamsBean();
+	}
 	
 	/**
 	 * Retourne la session
@@ -64,13 +67,13 @@ public class SecretBean {
 	 * @throws NotesException en cas de pb
 	 */
 	private Document getSsoConfig(String config) throws NotesException {
-		Database names = DominoUtils.openDatabase(this.getSession(), JSFUtils.getParamsBean().getNab());
+		Database names = DominoUtils.openDatabase(this.getSession(), this.paramsBean.getNab());
 		if( names == null )
-			throw new RuntimeException("Je n'arrive pas à accéder à la base " + JSFUtils.getParamsBean().getNab());
+			throw new RuntimeException("Je n'arrive pas à accéder à la base " + this.paramsBean.getNab());
 		
 		View v = names.getView(WEBSSOCONFIG_VIEW);
 		if( v == null )
-			throw new RuntimeException("La vue " + WEBSSOCONFIG_VIEW + " n'existe pas dans la base '" + JSFUtils.getParamsBean().getNab() + "'. Impossible de continuer.");
+			throw new RuntimeException("La vue " + WEBSSOCONFIG_VIEW + " n'existe pas dans la base '" + this.paramsBean.getNab() + "'. Impossible de continuer.");
 		Document ssoConfig = v.getDocumentByKey(config);
 		if( ssoConfig == null )
 			throw new RuntimeException("Je ne trouve pas la confg SSO '" + config + "'");
@@ -97,7 +100,7 @@ public class SecretBean {
 	 * @throws IOException 
 	 */
 	public byte[] getAccessTokenSecret() throws NotesException, IOException {
-		String secret = this.getSsoConfig(CONFIG_NAME_ACCESS_TOKEN).getItemValueString(SECRET_FIELD_NAME);
+		String secret = this.getSsoConfig(this.paramsBean.getAccessTokenConfig()).getItemValueString(SECRET_FIELD_NAME);
 		return this.getSecret(secret, 32);
 	}
 	
@@ -115,7 +118,7 @@ public class SecretBean {
 	 * @throws IOException 
 	 */
 	public byte[] getRefreshTokenSecret() throws NotesException, IOException {
-		String secret = this.getSsoConfig(CONFIG_NAME_REFRESH_TOKEN).getItemValueString(SECRET_FIELD_NAME);
+		String secret = this.getSsoConfig(this.paramsBean.getRefreshTokenConfig()).getItemValueString(SECRET_FIELD_NAME);
 		return this.getSecret(secret, 16);
 	}
 	

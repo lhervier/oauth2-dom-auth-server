@@ -42,6 +42,16 @@ public class ParamsBean implements Serializable {
 	private long refreshTokenLifetime;
 	
 	/**
+	 * Le nom de la config SSO qui contient la clé pour l'access token
+	 */
+	private String accessTokenConfig;
+	
+	/**
+	 * Le nom de la config SSO qui contient la clé pour le refresh token
+	 */
+	private String refreshTokenConfig;
+	
+	/**
 	 * Constructeur
 	 * @throws NotesException en cas de pb
 	 */
@@ -104,5 +114,33 @@ public class ParamsBean implements Serializable {
 	 */
 	public void setRefreshTokenLifetime(long refreshTokenLifetime) {
 		this.refreshTokenLifetime = refreshTokenLifetime;
+	}
+
+	/**
+	 * @return the accessTokenConfig
+	 */
+	public String getAccessTokenConfig() {
+		return accessTokenConfig;
+	}
+
+	/**
+	 * @param accessTokenConfig the accessTokenConfig to set
+	 */
+	public void setAccessTokenConfig(String accessTokenConfig) {
+		this.accessTokenConfig = accessTokenConfig;
+	}
+
+	/**
+	 * @return the refreshTokenConfig
+	 */
+	public String getRefreshTokenConfig() {
+		return refreshTokenConfig;
+	}
+
+	/**
+	 * @param refreshTokenConfig the refreshTokenConfig to set
+	 */
+	public void setRefreshTokenConfig(String refreshTokenConfig) {
+		this.refreshTokenConfig = refreshTokenConfig;
 	}
 }

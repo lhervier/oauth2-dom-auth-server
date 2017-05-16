@@ -31,7 +31,7 @@ public class Token {
 	/**
 	 * La date à laquelle l'utilisateur s'est authentifié
 	 */
-	private long authDate;
+	private long authTime;
 
 	/**
 	 * @return the iss
@@ -90,17 +90,17 @@ public class Token {
 	}
 
 	/**
-	 * @return the authDate
+	 * @return the authTime
 	 */
-	@JsonName("auth_date")
-	public long getAuthDate() {
-		return authDate;
+	@JsonName("auth_time")
+	public long getAuthTime() {
+		return authTime;
 	}
 
 	/**
-	 * @param authDate the authDate to set
+	 * @param authTime the authTime to set
 	 */
-	public void setAuthDate(long authDate) {
-		this.authDate = authDate;
+	public void setAuthTime(long authDate) {
+		this.authTime = authDate;
 	}
 }

@@ -42,6 +42,11 @@ public class ParamsBean implements Serializable {
 	private long refreshTokenLifetime;
 	
 	/**
+	 * La durée de vie des codes autorisation
+	 */
+	private long authCodeLifetime;
+	
+	/**
 	 * Le nom de la config SSO qui contient la clé pour l'access token
 	 */
 	private String accessTokenConfig;
@@ -142,5 +147,19 @@ public class ParamsBean implements Serializable {
 	 */
 	public void setRefreshTokenConfig(String refreshTokenConfig) {
 		this.refreshTokenConfig = refreshTokenConfig;
+	}
+
+	/**
+	 * @return the authCodeLifetime
+	 */
+	public long getAuthCodeLifetime() {
+		return authCodeLifetime;
+	}
+
+	/**
+	 * @param authCodeLifetime the authCodeLifetime to set
+	 */
+	public void setAuthCodeLifetime(long authCodeLifetime) {
+		this.authCodeLifetime = authCodeLifetime;
 	}
 }

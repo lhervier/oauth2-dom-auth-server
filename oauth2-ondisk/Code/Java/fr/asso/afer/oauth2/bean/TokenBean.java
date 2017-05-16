@@ -37,6 +37,7 @@ import fr.asso.afer.oauth2.ex.grant.InvalidRequestException;
 import fr.asso.afer.oauth2.ex.grant.UnsupportedGrantTypeException;
 import fr.asso.afer.oauth2.model.AccessToken;
 import fr.asso.afer.oauth2.model.Application;
+import fr.asso.afer.oauth2.model.AuthorizationCode;
 import fr.asso.afer.oauth2.model.GrantResponse;
 import fr.asso.afer.oauth2.model.RefreshToken;
 import fr.asso.afer.oauth2.utils.DominoUtils;
@@ -221,23 +222,23 @@ public class TokenBean {
 			authDoc = this.v.getDocumentByKey(code, true);
 			if( authDoc == null )
 				throw new InvalidGrantException();
+			AuthorizationCode authCode = DominoUtils.fillObject(new AuthorizationCode(), authDoc);
 			
 			// Vérifie qu'il n'est pas expiré
-			long expired = (long) authDoc.getItemValueDouble("accessExp");
+			long expired = (long) authCode.getExpires();
 			if( expired < System.currentTimeMillis() )
 				throw new InvalidGrantException();
 			
 			// Vérifie que le clientId est le bon
-			if( !clientId.equals(authDoc.getItemValueString("aud")) )
+			if( !clientId.equals(authCode.getAud()) )
 				throw new InvalidClientException();
 			
 			// Vérifie que l'uri de redirection est la même
-			if( !redirectUri.equals(authDoc.getItemValueString("RedirectUri")) )
+			if( !redirectUri.equals(authCode.getRedirectUri()) )
 				throw new InvalidGrantException();
 			
 			// Génère le access token. Il est signé avec la clé partagée avec les serveurs de ressources.
-			AccessToken accessToken = new AccessToken();
-			DominoUtils.fillObject(accessToken, authDoc);
+			AccessToken accessToken = DominoUtils.fillObject(new AccessToken(), authDoc);
 			accessToken.setAccessExp(System.currentTimeMillis() + this.paramsBean.getAccessTokenLifetime());
 			JWSObject jwsObject = new JWSObject(
 					new JWSHeader(JWSAlgorithm.HS256),
@@ -249,8 +250,7 @@ public class TokenBean {
 			resp.setAccessToken(jwsObject.serialize());
 			
 			// Génère le refresh token
-			RefreshToken refreshToken = new RefreshToken();
-			DominoUtils.fillObject(refreshToken, authDoc);
+			RefreshToken refreshToken = DominoUtils.fillObject(new RefreshToken(), authDoc);
 			refreshToken.setRefreshExp(System.currentTimeMillis() + this.paramsBean.getRefreshTokenLifetime());
 			JWEObject jweObject = new JWEObject(
 					new JWEHeader(JWEAlgorithm.DIR, EncryptionMethod.A128GCM), 
@@ -314,7 +314,7 @@ public class TokenBean {
 			AccessToken accessToken = new AccessToken();
 			accessToken.setAccessExp(System.currentTimeMillis() + this.paramsBean.getAccessTokenLifetime());
 			accessToken.setAud(refreshToken.getAud());
-			accessToken.setAuthDate(refreshToken.getAuthDate());
+			accessToken.setAuthTime(refreshToken.getAuthTime());
 			accessToken.setIat(refreshToken.getIat());
 			accessToken.setIss(refreshToken.getIss());
 			accessToken.setSub(refreshToken.getSub());

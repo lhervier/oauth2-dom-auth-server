@@ -24,6 +24,7 @@ import fr.asso.afer.oauth2.ex.authorize.InvalidRequestException;
 import fr.asso.afer.oauth2.ex.authorize.ServerErrorException;
 import fr.asso.afer.oauth2.ex.authorize.UnsupportedResponseTypeException;
 import fr.asso.afer.oauth2.model.Application;
+import fr.asso.afer.oauth2.model.AuthorizationCode;
 import fr.asso.afer.oauth2.model.AuthorizeResponse;
 import fr.asso.afer.oauth2.model.StateResponse;
 import fr.asso.afer.oauth2.utils.DominoUtils;
@@ -52,12 +53,18 @@ public class AuthorizeBean {
 	private AppBean appBean;
 	
 	/**
+	 * La bean pour accéder au paramétrage
+	 */
+	private ParamsBean paramsBean;
+	
+	/**
 	 * Constructeur
 	 * @throws NotesException en cas de pb
 	 */
 	public AuthorizeBean() throws NotesException {
 		this.session = JSFUtils.getSession();
 		this.appBean = JSFUtils.getAppBean();
+		this.paramsBean = JSFUtils.getParamsBean();
 	}
 	
 	/**
@@ -164,20 +171,25 @@ public class AuthorizeBean {
 		Database database = null;
 		Name nn = null;
 		try {
-			database = JSFUtils.getDatabase();
 			nn = this.session.createName(app.getName() + Constants.SUFFIX_APP);
+			
+			// Créé le code authorization
+			AuthorizationCode authCode = new AuthorizationCode();
+			authCode.setApplication(nn.toString());
+			authCode.setId(id);
+			authCode.setRedirectUri(redirectUri);
+			authCode.setExpires(System.currentTimeMillis() + this.paramsBean.getAuthCodeLifetime());
+			authCode.setIss(Constants.NAMESPACE);
+			authCode.setSub(this.session.getEffectiveUserName());
+			authCode.setAud(app.getClientId());
+			authCode.setIat(System.currentTimeMillis());
+			authCode.setAuthTime(System.currentTimeMillis());
+			
+			// On le persiste dans la base
+			database = JSFUtils.getDatabase();
 			authDoc = database.createDocument();
 			authDoc.replaceItemValue("Form", "AuthorizationCode");
-			authDoc.replaceItemValue("Application", nn.toString());
-			authDoc.replaceItemValue("ID", id);
-			authDoc.replaceItemValue("RedirectUri", redirectUri);
-			
-			authDoc.replaceItemValue("iss", Constants.NAMESPACE);
-			authDoc.replaceItemValue("sub", this.session.getEffectiveUserName());
-			authDoc.replaceItemValue("aud", app.getClientId());
-			authDoc.replaceItemValue("authDate", System.currentTimeMillis());
-			authDoc.replaceItemValue("iat", System.currentTimeMillis());
-			authDoc.replaceItemValue("auth_time", System.currentTimeMillis());
+			DominoUtils.fillObject(authCode, authDoc);
 			
 			DominoUtils.computeAndSave(authDoc);
 		} catch (NotesException e) {

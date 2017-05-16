@@ -291,4 +291,154 @@ public class DominoUtils {
 			throw new RuntimeException(e);
 		}
 	}
+	
+	// ===========================================================================================
+	
+	/**
+	 * Rempli un document à partir d'une bean.
+	 * On créé un champ par propriété.
+	 * @param doc le document à remplir
+	 * @param o la bean d'où extraire les propriétés
+	 * @param prefix un préfixe à ajouter devant les noms de champs
+	 * @throws NotesException en cas de problème
+	 */
+	public final static void fillDocument(Document doc, Object o, String prefix) throws NotesException {
+		fillDocument(doc, o, prefix, null, null);
+	}
+	
+	/**
+	 * Rempli un document à partir d'une bean.
+	 * On créé un champ par propriété.
+	 * @param doc le document à remplir
+	 * @param o la bean d'où extraire les propriétés
+	 * @param prefix un préfixe à ajouter devant les noms de champs
+	 * @param fmt un formateur pour transformer les dates en texte (si null, on créé des champs NotesDateTime)
+	 * @throws NotesException en cas de problème
+	 */
+	public final static void fillDocument(Document doc, Object o, String prefix, DateFormat fmt) throws NotesException {
+		fillDocument(doc, o, prefix, fmt, null);
+	}
+	
+	/**
+	 * Rempli un document à partir d'une bean.
+	 * On créé un champ par propriété.
+	 * @param doc le document à remplir
+	 * @param o la bean d'où extraire les propriétés
+	 * @param prefix un préfixe à ajouter devant les noms de champs
+	 * @param fmt un formateur pour transformer les dates en texte (si null, on créé des champs NotesDateTime)
+	 * @param rtFields champs rich text à générer
+	 * @throws NotesException en cas de problème
+	 */
+	@SuppressWarnings("unchecked")
+	public final static void fillDocument(Document doc, Object o, String prefix, DateFormat fmt, String[] rtFields) throws NotesException {
+		try {
+			Set<String> sRtFields = new HashSet<String>();
+			if( rtFields != null ) {
+				for( int i=0; i<rtFields.length; i++ )
+					sRtFields.add(rtFields[i]);
+			}
+			
+			// La session courante
+			Session session = doc.getParentDatabase().getParent();
+			
+			// On l'introspecte pour ne pas mettre les champs en dur
+			Class<?> cl = o.getClass();
+			BeanInfo beanInfo = Introspector.getBeanInfo(cl);
+			PropertyDescriptor[] descriptors = beanInfo.getPropertyDescriptors();
+			
+			// Parcours les propriétés de l'objet
+			for( int i=0; i<descriptors.length; i++ ) {
+				PropertyDescriptor descriptor = descriptors[i];
+				String name = descriptor.getName();
+				
+				// On ne tient pas compte de "class"
+				if( "class".equals(name) )
+					continue;
+				
+				// Récupère le getter et son type de retour
+				Method getter = descriptor.getReadMethod();
+				Class<?> returnType = getter.getReturnType();
+				
+				// On ne traite que les types supportés
+				if( !supported.contains(returnType) )
+					continue;
+				
+				// Récupère la future valeure du champ. On récupère quoi qu'il se passe une valeur multi 
+				// (quitte à n'avoir qu'un élément dans ce vecteur)
+				Object v = getter.invoke(o, new Object[] {});
+				
+				// Gestion du cas null => On supprime le champ
+				if( v == null ) {
+					doc.removeItem(prefix + name);
+					continue;
+				}
+				
+				// Pas null, on transforme la valeur
+				Vector<Object> values;
+				if( returnType.isAssignableFrom(Vector.class) )
+					values = (Vector<Object>) v;
+				else {
+					values = new Vector<Object>();
+					values.add(v);
+				}
+			
+				// Converti les dates, et on vérifie qu'on n'a que des types supportés
+				Vector<Object> convertedValues = new Vector<Object>();
+				for( Object value : values ) {
+					Object convertedValue;
+					Class<?> valueClass = value.getClass();
+					
+					// Domino ne supporte pas les vecteurs dans les vecteurs
+					if( valueClass.isAssignableFrom(Vector.class) )
+						throw new RuntimeException("Impossible de remplir le document. La bean contient un vecteur de vecteur...");
+					
+					// Il ne supporte pas non plus l'ensemble des types java
+					if( !supported.contains(valueClass) )
+						throw new RuntimeException("Impossible de remplir le document. La bean contient un " + valueClass.getName() + "...");
+					
+					// Si c'est une date, et qu'on a un DateFormat, on la converti en chaîne
+					if( returnType.isAssignableFrom(Date.class) && fmt != null ) {
+						convertedValue = fmt.format(value);
+					
+					// Si c'est une date, mais qu'on n'a pas de DateFormat, on en fait un NotesDateTime
+					} else if( returnType.isAssignableFrom(Date.class) ) {
+						convertedValue = session.createDateTime((Date) value);
+					
+					// Si c'est un boolean, on le converti en chaîne
+					} else if( valueClass.isAssignableFrom(Boolean.class) ) {
+						boolean b = ((Boolean) v).booleanValue();
+						convertedValue = b ? "1" : "0";
+						
+					// Sinon, on prend la valeur telle quelle
+					} else {
+						convertedValue = value;
+					}
+					
+					convertedValues.add(convertedValue);
+				}
+				
+				// Stock la valeur dans le champ.
+				boolean inRichText = false;
+				if( convertedValues.size() == 1 )
+					if( convertedValues.get(0).getClass().equals(String.class) )
+						if( sRtFields.contains(name) )
+							inRichText = true;
+				
+				if( inRichText ) {
+					doc.removeItem(prefix + name);
+					RichTextItem rtit = doc.createRichTextItem(prefix + name);
+					rtit.appendText((String) convertedValues.get(0));
+				} else
+					doc.replaceItemValue(prefix + name , convertedValues);
+			}
+		} catch (IntrospectionException e) {
+			throw new RuntimeException(e);
+		} catch (IllegalArgumentException e) {
+			throw new RuntimeException(e);
+		} catch (IllegalAccessException e) {
+			throw new RuntimeException(e);
+		} catch (InvocationTargetException e) {
+			throw new RuntimeException(e);
+		}
+	}
 }

@@ -216,6 +216,7 @@ public class TokenBean {
 			// Génère le access token. Il est signé avec la clé partagée avec les serveurs de ressources.
 			AccessToken accessToken = new AccessToken();
 			DominoUtils.fillObject(accessToken, authDoc);
+			accessToken.setAccessExp(System.currentTimeMillis() + this.paramsBean.getAccessTokenLifetime());
 			JWSObject jwsObject = new JWSObject(
 					new JWSHeader(JWSAlgorithm.HS256),
                     new Payload(JsonUtils.toJson(accessToken))
@@ -228,6 +229,7 @@ public class TokenBean {
 			// Génère le refresh token
 			RefreshToken refreshToken = new RefreshToken();
 			DominoUtils.fillObject(refreshToken, authDoc);
+			refreshToken.setRefreshExp(System.currentTimeMillis() + this.paramsBean.getRefreshTokenLifetime());
 			JWEObject jweObject = new JWEObject(
 					new JWEHeader(JWEAlgorithm.DIR, EncryptionMethod.A128GCM), 
 					new Payload(JsonUtils.toJson(refreshToken))
@@ -278,7 +280,7 @@ public class TokenBean {
 		if( refreshToken.getRefreshExp() < System.currentTimeMillis() )
 			throw new RuntimeException("Refresh Token expiré");
 		
-		// Prolonge sa durée de vie
+		// Prolonge la durée de vie du refresh token
 		refreshToken.setRefreshExp(System.currentTimeMillis() + this.paramsBean.getRefreshTokenLifetime());		// 10 heures
 		
 		// Génère l'access token
@@ -309,7 +311,7 @@ public class TokenBean {
 		GrantResponse resp = new GrantResponse();
 		resp.setAccessToken(jwsObject.serialize());
 		resp.setRefreshToken(jweObject.serialize());
-		resp.setExpiresIn(accessToken.getAccessExp());
+		resp.setExpiresIn(accessToken.getAccessExp());		// Expiration en même temps que le refresh token
 		
 		return resp;
 	}

@@ -157,14 +157,35 @@ public class DominoUtils {
 	}
 	
 	/**
+	 * Attend que la tâche updall ai terminé
+	 * @param session la session Notes
+	 */
+	public static final void waitForUpdall(Session session) throws NotesException {
+		String tasks = session.sendConsoleCommand(session.getServerName(), "sh ta");
+		while( tasks.indexOf("Index All") != -1 ) {
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			}
+			tasks = session.sendConsoleCommand(session.getServerName(), "sh ta");
+		}
+	}
+	
+	/**
 	 * Pour forcer un rafraîchissement du NAB
 	 * @param nab la nab à rafraîchir
 	 * @throws NotesException en cas de pb
 	 */
 	public static final void refreshNab(Database nab) throws NotesException {
 		Session session = nab.getParent();
-		session.sendConsoleCommand(session.getServerName(), "load updall -R " + nab.getFilePath());
-		// FIXME: Attendre que le updall soit terminé !!
+		
+		session.sendConsoleCommand(session.getServerName(), "load updall " + nab.getFilePath() + " -t \"($ServerAccess)\"");
+		waitForUpdall(session);
+		
+		session.sendConsoleCommand(session.getServerName(), "load updall " + nab.getFilePath() + " -t \"($Users)\"");
+		waitForUpdall(session);
+		
 		session.sendConsoleCommand(session.getServerName(), "dbcache flush");
 		session.sendConsoleCommand(session.getServerName(), "show nlcache reset");
 	}

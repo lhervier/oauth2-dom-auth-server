@@ -2,7 +2,8 @@ package fr.asso.afer.oauth2.endpoints;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.net.URLEncoder;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.SecureRandom;
 import java.util.HashSet;
 import java.util.Map;
@@ -17,9 +18,18 @@ import lotus.domino.NotesException;
 import lotus.domino.Session;
 import fr.asso.afer.oauth2.Constants;
 import fr.asso.afer.oauth2.app.AppBean;
+import fr.asso.afer.oauth2.ex.AuthorizeException;
+import fr.asso.afer.oauth2.ex.InvalidUriException;
+import fr.asso.afer.oauth2.ex.authorize.AccessDeniedException;
+import fr.asso.afer.oauth2.ex.authorize.InvalidRequestException;
+import fr.asso.afer.oauth2.ex.authorize.ServerErrorException;
+import fr.asso.afer.oauth2.ex.authorize.UnsupportedResponseTypeException;
 import fr.asso.afer.oauth2.model.Application;
+import fr.asso.afer.oauth2.model.AuthorizeResponse;
+import fr.asso.afer.oauth2.model.StateResponse;
 import fr.asso.afer.oauth2.utils.DominoUtils;
 import fr.asso.afer.oauth2.utils.JSFUtils;
+import fr.asso.afer.oauth2.utils.QueryStringUtils;
 
 /**
  * Bean pour gérer le endpoint "authorize"
@@ -54,21 +64,61 @@ public class AuthorizeBean {
 	/**
 	 * Génère le code autorization
 	 * @param response la réponse http
-	 * @throws NotesException en cas de pb
-	 * @throws IOException en cas de pb
+	 * @throws IOException 
 	 */
-	public void authorize(HttpServletResponse response) throws NotesException, IOException {
+	public void authorize(HttpServletResponse response) throws IOException {
 		Map<String, String> param = JSFUtils.getParam();
-		String responseType = param.get("response_type");
+		StateResponse ret;
+		String redirectUri = null;
+		try {
+			// Valide le redirectUri
+			// => On ne doit pas (MUST NOT dans la RFC!) rediriger vers une uri invalide !
+			redirectUri = param.get("redirect_uri");
+			if( redirectUri == null )
+				throw new InvalidUriException("No redirect_uri in query string.");
+			try {
+				new URI(redirectUri);
+			} catch (URISyntaxException e) {
+				throw new InvalidUriException("Invalid redirect_uri", e);
+			}
+			
+			// Valide le clientId
+			String clientId = param.get("client_id");
+			if( clientId == null )
+				throw new InvalidRequestException();
+			
+			// Valide le responseType
+			String responseType = param.get("response_type");
+			if( responseType == null )
+				throw new InvalidRequestException();
+			
+			// Exécute le code grant
+			if( "code".equals(responseType) )
+				ret = this.authorizationCode(clientId, redirectUri);
+			else
+				throw new UnsupportedResponseTypeException();
 		
-		String redirectUri;
-		if( "code".equals(responseType) )
-			redirectUri = this.authorizationCode();
-		else
-			throw new RuntimeException("Type de réponse inconnu '" + responseType + "'");
+		// Cas particulier (cf RFC) si l'uri de redirection est invalide
+		} catch(InvalidUriException e) {
+			e.printStackTrace(System.err);			// FIXME: Où envoyer ça ???
+			JSFUtils.getRequestScope().put("error", e);
+			ret = null;
+		
+		// Erreur pendant l'autorisation
+		} catch(AuthorizeException e) {
+			e.printStackTrace(System.err);			// FIXME: Où envoyer ça ???
+			ret = e.getError();
+		}
+		
+		// Pas de réponse => Pas de redirection
+		if( ret == null )
+			return;
+		
+		// Ajoute le state
+		ret.setState(param.get("state"));		// Eventuellement null
 		
 		// Redirige
-		response.sendRedirect(redirectUri);
+		response.sendRedirect(QueryStringUtils.addBeanToQueryString(redirectUri, ret));
 	}
 	
 	// ===========================================================================================================
@@ -84,20 +134,22 @@ public class AuthorizeBean {
 	
 	/**
 	 * Traitement d'une demande d'authorisation pour un code autorization.
+	 * @param clientId l'id du client
+	 * @param redirectUri l'uri de redirection
 	 * @return l'url de redirection
-	 * @throws NotesException en cas de pb
-	 * @throws IOException en cas de pb
+	 * @throws AuthorizeException en cas de pb
+	 * @throws InvalidUriException si l'uri est invalide
 	 */
-	private String authorizationCode() throws NotesException, IOException {
-		Map<String, String> param = JSFUtils.getParam();
-		String clientId = param.get("client_id");
-		String redirectUri = param.get("redirect_uri");
-		String state = param.get("state");
-		
+	private AuthorizeResponse authorizationCode(String clientId, String redirectUri) throws AuthorizeException, InvalidUriException {
 		// Récupère l'application
-		Application app = this.appBean.getApplicationFromClientId(clientId);
+		Application app;
+		try {
+			app = this.appBean.getApplicationFromClientId(clientId);
+		} catch (NotesException e) {
+			throw new ServerErrorException(e);
+		}
 		if( app == null )
-			throw new RuntimeException("Le client_id '" + clientId + "' ne correspond à aucune application...");
+			throw new AccessDeniedException();
 		
 		// Vérifie que l'uri de redirection est bien dans la liste
 		Set<String> redirectUris = new HashSet<String>();
@@ -105,7 +157,7 @@ public class AuthorizeBean {
 		for( String uri : app.getRedirectUris() )
 			redirectUris.add(uri);
 		if( !redirectUris.contains(redirectUri) )
-			throw new RuntimeException("Adresse de redirection invalide");
+			throw new InvalidUriException("invalid redirect_uri");		// Cf RFC. On ne doit pas (MUST NOT) rediriger vers une uri invalide
 		
 		// Créé le document authorization
 		String id = this.generateCode();
@@ -121,7 +173,7 @@ public class AuthorizeBean {
 			authDoc.replaceItemValue("ID", id);
 			authDoc.replaceItemValue("RedirectUri", redirectUri);
 			
-			authDoc.replaceItemValue("iss", "https://afer.asso.fr/oauth2/domino");
+			authDoc.replaceItemValue("iss", Constants.NAMESPACE);
 			authDoc.replaceItemValue("sub", this.session.getEffectiveUserName());
 			authDoc.replaceItemValue("aud", app.getClientId());
 			authDoc.replaceItemValue("authDate", System.currentTimeMillis());
@@ -129,22 +181,17 @@ public class AuthorizeBean {
 			authDoc.replaceItemValue("auth_time", System.currentTimeMillis());
 			
 			DominoUtils.computeAndSave(authDoc);
+		} catch (NotesException e) {
+			throw new ServerErrorException();
 		} finally {
 			DominoUtils.recycleQuietly(nn);
 			DominoUtils.recycleQuietly(authDoc);
 			DominoUtils.recycleQuietly(database);
 		}
 		
-		// Construit l'url de redirection
-		if( redirectUri.indexOf('?') == -1 )
-			redirectUri += "?";
-		else
-			redirectUri += "&";
-		redirectUri += "code=" + URLEncoder.encode(id, "UTF-8");
-		if( state != null && state.length() != 0 )
-			redirectUri += "&state=" + URLEncoder.encode(state, "UTF-8");
-		
-		return redirectUri;
+		AuthorizeResponse ret = new AuthorizeResponse();
+		ret.setCode(id);
+		return ret;
 	}
 	
 }

@@ -72,6 +72,15 @@ public class JSFUtils {
 	}
 	
 	/**
+	 * Retourne le requestScope
+	 * @return le requestScope
+	 */
+	@SuppressWarnings("unchecked")
+	public static final Map<String, Object> getRequestScope() {
+		return (Map<String, Object>) getBean("requestScope");
+	}
+	
+	/**
 	 * Retourne la bean de paramétrage
 	 * @return la bean de paramétrage
 	 */

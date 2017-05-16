@@ -18,6 +18,7 @@ import lotus.domino.Session;
 import fr.asso.afer.oauth2.Constants;
 import fr.asso.afer.oauth2.app.AppBean;
 import fr.asso.afer.oauth2.model.Application;
+import fr.asso.afer.oauth2.params.ParamsBean;
 import fr.asso.afer.oauth2.utils.DominoUtils;
 import fr.asso.afer.oauth2.utils.JSFUtils;
 
@@ -43,12 +44,18 @@ public class AuthorizeBean {
 	private AppBean appBean;
 	
 	/**
+	 * La bean pour accéder aux paramètres
+	 */
+	private ParamsBean paramsBean;
+	
+	/**
 	 * Constructeur
 	 * @throws NotesException en cas de pb
 	 */
 	public AuthorizeBean() throws NotesException {
 		this.session = JSFUtils.getSession();
 		this.appBean = JSFUtils.getAppBean();
+		this.paramsBean = JSFUtils.getParamsBean();
 	}
 	
 	/**
@@ -124,8 +131,8 @@ public class AuthorizeBean {
 			authDoc.replaceItemValue("iss", "https://afer.asso.fr/oauth2/domino");
 			authDoc.replaceItemValue("sub", this.session.getEffectiveUserName());
 			authDoc.replaceItemValue("aud", app.getClientId());
-			authDoc.replaceItemValue("accessExp", System.currentTimeMillis() + (10 * 60 * 1000));		// Expiration dans 10 minutes
-			authDoc.replaceItemValue("refreshExp", System.currentTimeMillis() + (10 * 60 * 60 * 1000));		// Expiration dans 10 heures
+			authDoc.replaceItemValue("accessExp", System.currentTimeMillis() + this.paramsBean.getAccessTokenLifetime());
+			authDoc.replaceItemValue("refreshExp", System.currentTimeMillis() + this.paramsBean.getRefreshTokenLifetime());
 			authDoc.replaceItemValue("authDate", System.currentTimeMillis());
 			authDoc.replaceItemValue("iat", System.currentTimeMillis());
 			authDoc.replaceItemValue("auth_time", System.currentTimeMillis());

@@ -32,6 +32,16 @@ public class ParamsBean implements Serializable {
 	private String nab;
 	
 	/**
+	 * La durée de vie de l'access token
+	 */
+	private long accessTokenLifetime;
+	
+	/**
+	 * La durée de vie du refresh token
+	 */
+	private long refreshTokenLifetime;
+	
+	/**
 	 * Constructeur
 	 * @throws NotesException en cas de pb
 	 */
@@ -66,5 +76,33 @@ public class ParamsBean implements Serializable {
 	 */
 	public void setNab(String nab) {
 		this.nab = nab;
+	}
+
+	/**
+	 * @return the accessTokenLifetime
+	 */
+	public long getAccessTokenLifetime() {
+		return accessTokenLifetime;
+	}
+
+	/**
+	 * @param accessTokenLifetime the accessTokenLifetime to set
+	 */
+	public void setAccessTokenLifetime(long accessTokenLifetime) {
+		this.accessTokenLifetime = accessTokenLifetime;
+	}
+
+	/**
+	 * @return the refreshTokenLifetime
+	 */
+	public long getRefreshTokenLifetime() {
+		return refreshTokenLifetime;
+	}
+
+	/**
+	 * @param refreshTokenLifetime the refreshTokenLifetime to set
+	 */
+	public void setRefreshTokenLifetime(long refreshTokenLifetime) {
+		this.refreshTokenLifetime = refreshTokenLifetime;
 	}
 }

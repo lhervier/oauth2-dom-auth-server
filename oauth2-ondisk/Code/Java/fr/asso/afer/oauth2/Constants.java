@@ -10,5 +10,4 @@ public class Constants {
 	 * Le suffixe des noms des applications
 	 */
 	public static final String SUFFIX_APP = "/APPLICATION/WEB";
-	
 }

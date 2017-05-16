@@ -26,7 +26,7 @@ public class QueryStringUtils {
 	 */
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target({ElementType.METHOD})
-	public static @interface QueryParamName {
+	public static @interface QueryStringName {
 		String value();
 	}
 	
@@ -54,7 +54,7 @@ public class QueryStringUtils {
 					continue;
 				
 				// Récupère le nom de la propriété
-				QueryParamName ann = m.getAnnotation(QueryParamName.class);
+				QueryStringName ann = m.getAnnotation(QueryStringName.class);
 				String prop = ann == null ? name: ann.value();
 				
 				// Le nom de la propriété doit pouvoir être un paramètre

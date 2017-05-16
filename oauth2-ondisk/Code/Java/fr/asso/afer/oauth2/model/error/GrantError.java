@@ -1,16 +1,11 @@
 package fr.asso.afer.oauth2.model.error;
 
-import fr.asso.afer.oauth2.model.StateResponse;
-import fr.asso.afer.oauth2.utils.QueryStringUtils.QueryStringName;
+import fr.asso.afer.oauth2.utils.JsonUtils.JsonName;
 
-/**
- * Bean pour décrire une erreur d'autorisation
- * @author Lionel HERVIER
- */
-public abstract class AuthorizeError extends StateResponse {
+public class GrantError {
 
 	/**
-	 * L'erreur. Cf RFC OAUTH2 pour la liste possible des valeurs
+	 * L'erreur
 	 */
 	private String error;
 	
@@ -20,10 +15,10 @@ public abstract class AuthorizeError extends StateResponse {
 	private String errorDescription;
 	
 	/**
-	 * L'Uri de l'erreur
+	 * L'uri de l'erreur
 	 */
 	private String errorUri;
-	
+
 	/**
 	 * @return the error
 	 */
@@ -41,7 +36,7 @@ public abstract class AuthorizeError extends StateResponse {
 	/**
 	 * @return the errorDescription
 	 */
-	@QueryStringName("error_description")
+	@JsonName("error_description")
 	public String getErrorDescription() {
 		return errorDescription;
 	}
@@ -56,7 +51,7 @@ public abstract class AuthorizeError extends StateResponse {
 	/**
 	 * @return the errorUri
 	 */
-	@QueryStringName("error_uri")
+	@JsonName("error_uri")
 	public String getErrorUri() {
 		return errorUri;
 	}

@@ -1,6 +1,6 @@
 package fr.asso.afer.oauth2.model;
 
-import fr.asso.afer.oauth2.utils.JsonUtils.SerializedName;
+import fr.asso.afer.oauth2.utils.JsonUtils.JsonName;
 
 /**
  * Classe de base pour les tokens (refresh et access)
@@ -92,7 +92,7 @@ public class Token {
 	/**
 	 * @return the authDate
 	 */
-	@SerializedName("auth_date")
+	@JsonName("auth_date")
 	public long getAuthDate() {
 		return authDate;
 	}

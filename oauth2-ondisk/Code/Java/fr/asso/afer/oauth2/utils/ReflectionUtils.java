@@ -6,7 +6,7 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 
-import fr.asso.afer.oauth2.utils.JsonUtils.SerializedName;
+import fr.asso.afer.oauth2.utils.JsonUtils.JsonName;
 
 public class ReflectionUtils {
 
@@ -27,7 +27,7 @@ public class ReflectionUtils {
 			Method read = desc.getReadMethod();
 			if( read == null )
 				continue;
-			SerializedName ann = read.getAnnotation(SerializedName.class);
+			JsonName ann = read.getAnnotation(JsonName.class);
 			if( ann != null && ann.value().equals(prop) )
 				return desc.getWriteMethod();
 		}
@@ -51,7 +51,7 @@ public class ReflectionUtils {
 			Method read = desc.getReadMethod();
 			if( read == null )
 				continue;
-			SerializedName ann = read.getAnnotation(SerializedName.class);
+			JsonName ann = read.getAnnotation(JsonName.class);
 			if( ann != null && ann.value().equals(prop) )
 				return desc.getPropertyType();
 		}

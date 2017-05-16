@@ -1,10 +1,8 @@
 package fr.asso.afer.oauth2.bean;
 
-import java.beans.IntrospectionException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
 import java.util.Map;
 
@@ -31,6 +29,12 @@ import com.nimbusds.jose.crypto.DirectDecrypter;
 import com.nimbusds.jose.crypto.DirectEncrypter;
 import com.nimbusds.jose.crypto.MACSigner;
 
+import fr.asso.afer.oauth2.ex.GrantException;
+import fr.asso.afer.oauth2.ex.ServerErrorException;
+import fr.asso.afer.oauth2.ex.grant.InvalidClientException;
+import fr.asso.afer.oauth2.ex.grant.InvalidGrantException;
+import fr.asso.afer.oauth2.ex.grant.InvalidRequestException;
+import fr.asso.afer.oauth2.ex.grant.UnsupportedGrantTypeException;
 import fr.asso.afer.oauth2.model.AccessToken;
 import fr.asso.afer.oauth2.model.Application;
 import fr.asso.afer.oauth2.model.GrantResponse;
@@ -39,6 +43,8 @@ import fr.asso.afer.oauth2.utils.DominoUtils;
 import fr.asso.afer.oauth2.utils.IOUtils;
 import fr.asso.afer.oauth2.utils.JSFUtils;
 import fr.asso.afer.oauth2.utils.JsonUtils;
+import fr.asso.afer.oauth2.utils.JsonUtils.JsonDeserializeException;
+import fr.asso.afer.oauth2.utils.JsonUtils.JsonSerializeException;
 
 /**
  * Bean pour le endpoint "token"
@@ -105,9 +111,9 @@ public class TokenBean {
 	 * On se sert de la session ouverte par le signataire de la XPage car
 	 * l'application n'a pas le droit.
 	 * @param code le code
-	 * @throws NotesException 
+	 * @throws ServerErrorException
 	 */
-	private void removeCode(String code) throws NotesException {
+	private void removeCode(String code) throws ServerErrorException {
 		Database db = null;
 		View v = null;
 		Document authDoc = null;
@@ -119,6 +125,8 @@ public class TokenBean {
 				throw new RuntimeException("Erreur à la suppression du document contenant les infos du code authorization");
 			if( !authDoc.remove(true) )
 				throw new RuntimeException("Je n'arrive pas à supprimer le document contenant les infos du code authorization");
+		} catch (NotesException e) {
+			throw new ServerErrorException(e);
 		} finally {
 			DominoUtils.recycleQuietly(authDoc);
 			DominoUtils.recycleQuietly(v);
@@ -130,33 +138,51 @@ public class TokenBean {
 	
 	/**
 	 * Gestion du token.
-	 * @param out la stream dans laquelle envoyer la réponse
+	 * @param response la réponse http
+	 * @throws IOException
 	 */
-	public void token(HttpServletResponse response) {
-		OutputStream out = null;
-		OutputStreamWriter wrt = null;
+	public void token(HttpServletResponse response) throws IOException {
+		// Calcul l'objet réponse
+		Object resp;
 		try {
 			Map<String, String> param = JSFUtils.getParam();
 			String grantType = param.get("grant_type");
+			if( grantType == null )
+				throw new InvalidRequestException();
 			
 			// L'objet pour la réponse
-			Object resp;
 			if( "authorization_code".equals(grantType) )
-				resp = this.authorizationCode();
+				resp = this.authorizationCode(
+						param.get("code"),
+						param.get("redirect_uri"),
+						param.get("client_id")
+				);
 			else if( "refresh_token".equals(grantType) )
-				resp = this.refreshToken();
+				resp = this.refreshToken(param.get("refresh_token"));
 			else
-				throw new RuntimeException("Type de grant '" + grantType + "' inconnu...");
-			
-			// Envoi dans la stream http
+				throw new UnsupportedGrantTypeException();
+		} catch(GrantException e) {
+			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+			resp = e.getError();
+		} catch (ServerErrorException e) {
+			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			resp = null;
+		}
+		
+		// Envoi dans la stream http
+		OutputStream out = null;
+		OutputStreamWriter wrt = null;
+		try {
 			response.setContentType("application/json;charset=UTF-8");
 			response.setHeader("Cache-Control", "no-store");
 			response.setHeader("Pragma", "no-cache");
-			out = response.getOutputStream();
-			wrt = new OutputStreamWriter(out, "UTF-8");
-			wrt.write(JsonUtils.toJson(resp));
-		} catch(Throwable e) {
-			e.printStackTrace(System.err);
+			if( resp != null ) {
+				out = response.getOutputStream();
+				wrt = new OutputStreamWriter(out, "UTF-8");
+				wrt.write(JsonUtils.toJson(resp));
+			}
+		} catch (JsonSerializeException e) {
+			throw new RuntimeException(e);
 		} finally {
 			IOUtils.closeQuietly(wrt);
 			IOUtils.closeQuietly(out);
@@ -165,22 +191,21 @@ public class TokenBean {
 	
 	/**
 	 * Génération d'un token à partir d'un code autorisation
-	 * @throws NotesException en cas de pb
-	 * @throws JOSEException 
-	 * @throws KeyLengthException 
-	 * @throws IOException 
-	 * @throws InvocationTargetException 
-	 * @throws IllegalAccessException 
-	 * @throws IntrospectionException 
-	 * @throws IllegalArgumentException 
+	 * @param code le code autorisation
+	 * @param redirectUri l'uri de redirection
+	 * @param clientId l'id de l'appli cliente
+	 * @throws GrantException en cas de pb das le grant
+	 * @throws ServerErrorException en cas d'erreur pendant l'accès au serveur
 	 */
-	public GrantResponse authorizationCode() throws NotesException, KeyLengthException, JOSEException, IOException, IllegalArgumentException, IntrospectionException, IllegalAccessException, InvocationTargetException {
-		GrantResponse resp = new GrantResponse();
+	public GrantResponse authorizationCode(String code, String redirectUri, String clientId) throws GrantException, ServerErrorException {
+		if( code == null )
+			throw new InvalidRequestException();
+		if( redirectUri == null )
+			throw new InvalidRequestException();
+		if( clientId == null )
+			throw new InvalidRequestException();
 		
-		Map<String, String> param = JSFUtils.getParam();
-		String code = param.get("code");
-		String redirectUri = param.get("redirect_uri");
-		String clientId = param.get("client_id");
+		GrantResponse resp = new GrantResponse();
 		
 		Name nn = null;
 		Document authDoc = null;
@@ -190,25 +215,25 @@ public class TokenBean {
 			// Récupère l'application
 			Application app = this.appBean.getApplicationFromName(nn.getCommon());
 			if( app == null )
-				throw new RuntimeException("Application '" + nn.getCommon() + "' inconnue...");
+				throw new InvalidClientException();
 			
 			// Récupère le document correspondant au code authorization
 			authDoc = this.v.getDocumentByKey(code, true);
 			if( authDoc == null )
-				throw new RuntimeException("Code autorisation incorrect");
+				throw new InvalidGrantException();
 			
 			// Vérifie qu'il n'est pas expiré
 			long expired = (long) authDoc.getItemValueDouble("accessExp");
 			if( expired < System.currentTimeMillis() )
-				throw new RuntimeException("Code autorisation incorrect");
+				throw new InvalidGrantException();
 			
 			// Vérifie que le clientId est le bon
 			if( !clientId.equals(authDoc.getItemValueString("aud")) )
-				throw new RuntimeException("Code autorisation incorrect");
+				throw new InvalidClientException();
 			
 			// Vérifie que l'uri de redirection est la même
 			if( !redirectUri.equals(authDoc.getItemValueString("RedirectUri")) )
-				throw new RuntimeException("Code autorisation incorrect");
+				throw new InvalidGrantException();
 			
 			// Génère le access token. Il est signé avec la clé partagée avec les serveurs de ressources.
 			AccessToken accessToken = new AccessToken();
@@ -243,6 +268,16 @@ public class TokenBean {
 			resp.setTokenType("bearer");
 			
 			return resp;
+		} catch (NotesException e) {
+			throw new ServerErrorException(e);
+		} catch (JsonSerializeException e) {
+			throw new ServerErrorException(e);
+		} catch (KeyLengthException e) {
+			throw new ServerErrorException(e);
+		} catch (JOSEException e) {
+			throw new ServerErrorException(e);
+		} catch (IOException e) {
+			throw new ServerErrorException(e);
 		} finally {
 			DominoUtils.recycleQuietly(nn);
 			DominoUtils.recycleQuietly(authDoc);
@@ -254,66 +289,73 @@ public class TokenBean {
 	
 	/**
 	 * Génération d'un token à partir d'un refresh token
-	 * @throws ParseException 
-	 * @throws IOException 
-	 * @throws JOSEException 
-	 * @throws NotesException 
-	 * @throws KeyLengthException 
-	 * @throws InvocationTargetException 
-	 * @throws IntrospectionException 
-	 * @throws InstantiationException 
-	 * @throws IllegalAccessException 
-	 * @throws IllegalArgumentException 
+	 * @throws GrantException 
+	 * @throws ServerErrorException
 	 */
-	public GrantResponse refreshToken() throws ParseException, KeyLengthException, NotesException, JOSEException, IOException, IllegalArgumentException, IllegalAccessException, InstantiationException, IntrospectionException, InvocationTargetException {
-		String sRefreshToken = JSFUtils.getParam().get("refresh_token");
+	public GrantResponse refreshToken(String sRefreshToken) throws GrantException, ServerErrorException {
 		if( sRefreshToken == null )
-			throw new RuntimeException("Le refresh_token est vide");
+			throw new InvalidGrantException();
 		
-		// Décrypte le refresh token
-		JWEObject jweObject = JWEObject.parse(sRefreshToken);
-		jweObject.decrypt(new DirectDecrypter(this.secretBean.getRefreshTokenSecret()));
-		String json = jweObject.getPayload().toString();
-		RefreshToken refreshToken = JsonUtils.fromJson(json, RefreshToken.class);
-		
-		// Vérifie qu'il est valide
-		if( refreshToken.getRefreshExp() < System.currentTimeMillis() )
-			throw new RuntimeException("Refresh Token expiré");
-		
-		// Prolonge la durée de vie du refresh token
-		refreshToken.setRefreshExp(System.currentTimeMillis() + this.paramsBean.getRefreshTokenLifetime());		// 10 heures
-		
-		// Génère l'access token
-		AccessToken accessToken = new AccessToken();
-		accessToken.setAccessExp(System.currentTimeMillis() + this.paramsBean.getAccessTokenLifetime());
-		accessToken.setAud(refreshToken.getAud());
-		accessToken.setAuthDate(refreshToken.getAuthDate());
-		accessToken.setIat(refreshToken.getIat());
-		accessToken.setIss(refreshToken.getIss());
-		accessToken.setSub(refreshToken.getSub());
-		
-		// Créé les jwt et jwe
-		JWSObject jwsObject = new JWSObject(
-				new JWSHeader(JWSAlgorithm.HS256),
-                new Payload(JsonUtils.toJson(accessToken))
-		);
-		jwsObject.sign(new MACSigner(
-				this.secretBean.getAccessTokenSecret()
-		));
-		jweObject = new JWEObject(
-				new JWEHeader(JWEAlgorithm.DIR, EncryptionMethod.A128GCM), 
-				new Payload(JsonUtils.toJson(refreshToken))
-		);
-		jweObject.encrypt(new DirectEncrypter(
-				this.secretBean.getRefreshTokenSecret()
-		));
-		
-		GrantResponse resp = new GrantResponse();
-		resp.setAccessToken(jwsObject.serialize());
-		resp.setRefreshToken(jweObject.serialize());
-		resp.setExpiresIn(accessToken.getAccessExp());		// Expiration en même temps que le refresh token
-		
-		return resp;
+		try {
+			// Décrypte le refresh token
+			JWEObject jweObject = JWEObject.parse(sRefreshToken);
+			jweObject.decrypt(new DirectDecrypter(this.secretBean.getRefreshTokenSecret()));
+			String json = jweObject.getPayload().toString();
+			RefreshToken refreshToken = JsonUtils.fromJson(json, RefreshToken.class);
+			
+			// Vérifie qu'il est valide
+			if( refreshToken.getRefreshExp() < System.currentTimeMillis() )
+				throw new InvalidGrantException();
+			
+			// Prolonge la durée de vie du refresh token
+			refreshToken.setRefreshExp(System.currentTimeMillis() + this.paramsBean.getRefreshTokenLifetime());		// 10 heures
+			
+			// Génère l'access token
+			AccessToken accessToken = new AccessToken();
+			accessToken.setAccessExp(System.currentTimeMillis() + this.paramsBean.getAccessTokenLifetime());
+			accessToken.setAud(refreshToken.getAud());
+			accessToken.setAuthDate(refreshToken.getAuthDate());
+			accessToken.setIat(refreshToken.getIat());
+			accessToken.setIss(refreshToken.getIss());
+			accessToken.setSub(refreshToken.getSub());
+			
+			// Créé les jwt et jwe
+			JWSObject jwsObject = new JWSObject(
+					new JWSHeader(JWSAlgorithm.HS256),
+	                new Payload(JsonUtils.toJson(accessToken))
+			);
+			jwsObject.sign(new MACSigner(
+					this.secretBean.getAccessTokenSecret()
+			));
+			jweObject = new JWEObject(
+					new JWEHeader(JWEAlgorithm.DIR, EncryptionMethod.A128GCM), 
+					new Payload(JsonUtils.toJson(refreshToken))
+			);
+			jweObject.encrypt(new DirectEncrypter(
+					this.secretBean.getRefreshTokenSecret()
+			));
+			
+			GrantResponse resp = new GrantResponse();
+			resp.setAccessToken(jwsObject.serialize());
+			resp.setRefreshToken(jweObject.serialize());
+			resp.setExpiresIn(accessToken.getAccessExp());		// Expiration en même temps que le refresh token
+			
+			return resp;
+		} catch (ParseException e) {
+			throw new ServerErrorException(e);
+		} catch (KeyLengthException e) {
+			throw new ServerErrorException(e);
+		} catch (NotesException e) {
+			throw new ServerErrorException(e);
+		} catch (JOSEException e) {
+			throw new ServerErrorException(e);
+		} catch (IOException e) {
+			throw new ServerErrorException(e);
+		} catch (JsonSerializeException e) {
+			throw new ServerErrorException(e);
+		} catch (JsonDeserializeException e) {
+			throw new ServerErrorException(e);
+		}
 	}
 	
 }

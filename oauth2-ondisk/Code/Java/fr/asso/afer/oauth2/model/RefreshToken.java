@@ -1,6 +1,6 @@
 package fr.asso.afer.oauth2.model;
 
-import fr.asso.afer.oauth2.utils.JsonUtils.SerializedName;
+import fr.asso.afer.oauth2.utils.JsonUtils.JsonName;
 
 /**
  * Le token de rafraîchissement
@@ -16,7 +16,7 @@ public class RefreshToken extends Token {
 	/**
 	 * @return the refreshExp
 	 */
-	@SerializedName("exp")
+	@JsonName("exp")
 	public long getRefreshExp() {
 		return refreshExp;
 	}

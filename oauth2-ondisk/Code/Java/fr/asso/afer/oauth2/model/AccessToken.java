@@ -1,6 +1,6 @@
 package fr.asso.afer.oauth2.model;
 
-import fr.asso.afer.oauth2.utils.JsonUtils.SerializedName;
+import fr.asso.afer.oauth2.utils.JsonUtils.JsonName;
 
 /**
  * Le access token
@@ -16,7 +16,7 @@ public class AccessToken extends Token {
 	/**
 	 * @return the accessExp
 	 */
-	@SerializedName("exp")
+	@JsonName("exp")
 	public long getAccessExp() {
 		return accessExp;
 	}

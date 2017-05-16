@@ -1,6 +1,6 @@
 package fr.asso.afer.oauth2.model;
 
-import fr.asso.afer.oauth2.utils.JsonUtils.SerializedName;
+import fr.asso.afer.oauth2.utils.JsonUtils.JsonName;
 
 /**
  * Réponse pour les types de grant "authorization code"
@@ -31,7 +31,7 @@ public class GrantResponse {
 	/**
 	 * @return the accessToken
 	 */
-	@SerializedName("access_token")
+	@JsonName("access_token")
 	public String getAccessToken() {
 		return accessToken;
 	}
@@ -46,7 +46,7 @@ public class GrantResponse {
 	/**
 	 * @return the expiresIn
 	 */
-	@SerializedName("expires_in")
+	@JsonName("expires_in")
 	public long getExpiresIn() {
 		return expiresIn;
 	}
@@ -61,7 +61,7 @@ public class GrantResponse {
 	/**
 	 * @return the refreshToken
 	 */
-	@SerializedName("refresh_token")
+	@JsonName("refresh_token")
 	public String getRefreshToken() {
 		return refreshToken;
 	}
@@ -76,7 +76,7 @@ public class GrantResponse {
 	/**
 	 * @return the tokenType
 	 */
-	@SerializedName("token_type")
+	@JsonName("token_type")
 	public String getTokenType() {
 		return tokenType;
 	}

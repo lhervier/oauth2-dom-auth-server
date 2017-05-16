@@ -1,10 +1,12 @@
 package fr.asso.afer.oauth2.model.error;
 
+import fr.asso.afer.oauth2.model.StateResponse;
+
 /**
  * Bean pour décrire une erreur d'autorisation
  * @author Lionel HERVIER
  */
-public abstract class AuthorizeError {
+public abstract class AuthorizeError extends StateResponse {
 
 	/**
 	 * L'erreur. Cf RFC OAUTH2 pour la liste possible des valeurs

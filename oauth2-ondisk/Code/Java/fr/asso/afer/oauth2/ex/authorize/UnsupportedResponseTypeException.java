@@ -12,38 +12,33 @@ public class UnsupportedResponseTypeException extends AuthorizeException {
 
 	/**
 	 * Constructeur
-	 * @param state
 	 */
-	public UnsupportedResponseTypeException(String state) {
-		super(new UnsupportedResponseTypeError(state));
+	public UnsupportedResponseTypeException() {
+		super(new UnsupportedResponseTypeError());
 	}
 
 	/**
 	 * Constructeur
 	 * @param message
-	 * @param state
 	 */
-	public UnsupportedResponseTypeException(String message, String state) {
-		super(message, new UnsupportedResponseTypeError(state));
+	public UnsupportedResponseTypeException(String message) {
+		super(message, new UnsupportedResponseTypeError());
 	}
 
 	/**
 	 * Constructeur
 	 * @param message
 	 * @param cause
-	 * @param state
 	 */
-	public UnsupportedResponseTypeException(String message, Throwable cause, String state) {
-		super(message, cause, new UnsupportedResponseTypeError(state));
+	public UnsupportedResponseTypeException(String message, Throwable cause) {
+		super(message, cause, new UnsupportedResponseTypeError());
 	}
 
 	/**
 	 * Constructeur
 	 * @param cause
-	 * @param state
 	 */
-	public UnsupportedResponseTypeException(Throwable cause, String state) {
-		super(cause, new UnsupportedResponseTypeError(state));
+	public UnsupportedResponseTypeException(Throwable cause) {
+		super(cause, new UnsupportedResponseTypeError());
 	}
-
 }

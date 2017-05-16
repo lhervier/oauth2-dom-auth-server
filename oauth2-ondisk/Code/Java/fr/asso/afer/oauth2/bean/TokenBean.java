@@ -35,8 +35,6 @@ import fr.asso.afer.oauth2.model.AccessToken;
 import fr.asso.afer.oauth2.model.Application;
 import fr.asso.afer.oauth2.model.GrantResponse;
 import fr.asso.afer.oauth2.model.RefreshToken;
-import fr.asso.afer.oauth2.params.ParamsBean;
-import fr.asso.afer.oauth2.secret.SecretBean;
 import fr.asso.afer.oauth2.utils.DominoUtils;
 import fr.asso.afer.oauth2.utils.IOUtils;
 import fr.asso.afer.oauth2.utils.JSFUtils;
@@ -241,7 +239,10 @@ public class TokenBean {
 			// La durée d'expiration. On prend celle du accessToken
 			resp.setExpiresIn(accessToken.getAccessExp() - System.currentTimeMillis());
 			
-			return resp;		
+			// Le type de token
+			resp.setTokenType("bearer");
+			
+			return resp;
 		} finally {
 			DominoUtils.recycleQuietly(nn);
 			DominoUtils.recycleQuietly(authDoc);

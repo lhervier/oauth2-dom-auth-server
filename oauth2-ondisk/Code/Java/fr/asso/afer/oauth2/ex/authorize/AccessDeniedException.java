@@ -12,39 +12,33 @@ public class AccessDeniedException extends AuthorizeException {
 
 	/**
 	 * Constructeur
-	 * @param state
 	 */
-	public AccessDeniedException(String state) {
-		super(new AccessDeniedError(state));
+	public AccessDeniedException() {
+		super(new AccessDeniedError());
 	}
 
 	/**
 	 * Constructeur
 	 * @param message
-	 * @param state
 	 */
-	public AccessDeniedException(String message, String state) {
-		super(message, new AccessDeniedError(state));
+	public AccessDeniedException(String message) {
+		super(message, new AccessDeniedError());
 	}
 
 	/**
 	 * Constructeur
 	 * @param message
 	 * @param cause
-	 * @param state
 	 */
-	public AccessDeniedException(String message, Throwable cause, String state) {
-		super(message, cause, new AccessDeniedError(state));
+	public AccessDeniedException(String message, Throwable cause) {
+		super(message, cause, new AccessDeniedError());
 	}
 
 	/**
 	 * Constructeur
 	 * @param cause
-	 * @param state
 	 */
-	public AccessDeniedException(Throwable cause, String state) {
-		super(cause, new AccessDeniedError(state));
+	public AccessDeniedException(Throwable cause) {
+		super(cause, new AccessDeniedError());
 	}
-
-	
 }

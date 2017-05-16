@@ -22,6 +22,11 @@ public class GrantResponse {
 	 * Le refresh token
 	 */
 	private String refreshToken;
+	
+	/**
+	 * Le type de token
+	 */
+	private String tokenType;
 
 	/**
 	 * @return the accessToken
@@ -66,5 +71,20 @@ public class GrantResponse {
 	 */
 	public void setRefreshToken(String refreshToken) {
 		this.refreshToken = refreshToken;
+	}
+
+	/**
+	 * @return the tokenType
+	 */
+	@SerializedName("token_type")
+	public String getTokenType() {
+		return tokenType;
+	}
+
+	/**
+	 * @param tokenType the tokenType to set
+	 */
+	public void setTokenType(String tokenType) {
+		this.tokenType = tokenType;
 	}
 }

@@ -12,39 +12,33 @@ public class ServerErrorException extends AuthorizeException {
 
 	/**
 	 * Constructeur
-	 * @param state
 	 */
-	public ServerErrorException(String state) {
-		super(new ServerError(state));
+	public ServerErrorException() {
+		super(new ServerError());
 	}
 
 	/**
 	 * Constructeur
 	 * @param message
-	 * @param state
 	 */
-	public ServerErrorException(String message, String state) {
-		super(message, new ServerError(state));
+	public ServerErrorException(String message) {
+		super(message, new ServerError());
 	}
 
 	/**
 	 * Constructeur
 	 * @param message
 	 * @param cause
-	 * @param state
 	 */
-	public ServerErrorException(String message, Throwable cause, String state) {
-		super(message, cause, new ServerError(state));
+	public ServerErrorException(String message, Throwable cause) {
+		super(message, cause, new ServerError());
 	}
 
 	/**
 	 * Constructeur
 	 * @param cause
-	 * @param state
 	 */
-	public ServerErrorException(Throwable cause, String state) {
-		super(cause, new ServerError(state));
+	public ServerErrorException(Throwable cause) {
+		super(cause, new ServerError());
 	}
-
-	
 }

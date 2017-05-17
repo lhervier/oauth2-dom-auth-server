@@ -15,9 +15,10 @@ import lotus.domino.NotesException;
 import lotus.domino.Session;
 import lotus.domino.View;
 
+import org.apache.commons.io.IOUtils;
+
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
 import com.github.lhervier.domino.oauth.common.utils.GsonUtils;
-import com.github.lhervier.domino.oauth.common.utils.IOUtils;
 import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
 import com.github.lhervier.domino.oauth.library.server.ex.GrantException;
 import com.github.lhervier.domino.oauth.library.server.ex.ServerErrorException;

@@ -13,8 +13,9 @@ import lotus.domino.Database;
 import lotus.domino.NotesException;
 import lotus.domino.Session;
 
+import org.apache.commons.io.IOUtils;
+
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
-import com.github.lhervier.domino.oauth.common.utils.IOUtils;
 import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
 import com.github.lhervier.domino.oauth.library.server.bean.AppBean;
 import com.github.lhervier.domino.oauth.library.server.bean.ParamsBean;

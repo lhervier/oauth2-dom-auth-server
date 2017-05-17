@@ -3,10 +3,13 @@ package fr.asso.afer.oauth2.utils;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import lotus.domino.Database;
 import lotus.domino.Session;
 
+import com.ibm.xsp.component.UIViewRootEx;
 import com.ibm.xsp.designer.context.XSPContext;
 
 import fr.asso.afer.oauth2.bean.AppBean;
@@ -70,6 +73,34 @@ public class JSFUtils {
 	public static final Map<String, String> getParam() {
 		return (Map<String, String>) getBean("param");
 	}
+	
+	/**
+	 * Retourne le view root
+	 * @return le view root
+	 */
+	public static final UIViewRootEx getView() {
+		return (UIViewRootEx) getBean("view");
+	}
+	
+	/**
+	 * Retourne la requête http
+	 * @return la requête http
+	 */
+	public static final HttpServletRequest getServletRequest() {
+		FacesContext ctx = FacesContext.getCurrentInstance();
+		return (HttpServletRequest) ctx.getExternalContext().getRequest();
+	}
+	
+	/**
+	 * Retourne la réponse http
+	 * @return la réponse http
+	 */
+	public static final HttpServletResponse getServletResponse() {
+		FacesContext ctx = FacesContext.getCurrentInstance();
+		return (HttpServletResponse) ctx.getExternalContext().getResponse();
+	}
+	
+	// =====================================================================
 	
 	/**
 	 * Retourne le requestScope

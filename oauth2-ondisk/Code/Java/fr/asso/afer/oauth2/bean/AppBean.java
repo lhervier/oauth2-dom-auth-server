@@ -80,14 +80,14 @@ public class AppBean {
 	private static final SecureRandom RANDOM = new SecureRandom();
 	
 	/**
-	 * La session
-	 */
-	private Session session;
-	
-	/**
 	 * La database courante
 	 */
 	private Database database;
+	
+	/**
+	 * La session
+	 */
+	private Session sessionAsSigner;
 	
 	/**
 	 * Le nab
@@ -99,12 +99,10 @@ public class AppBean {
 	 * @throws NotesException en cas de pb
 	 */
 	public AppBean() throws NotesException {
-		this.session = JSFUtils.getSessionAsSigner();
-		this.nab = Utils.getNab(this.session);
-		this.database = DominoUtils.openDatabase(
-				this.session, 
-				JSFUtils.getDatabase().getFilePath()
-		);
+		this.sessionAsSigner = JSFUtils.getSessionAsSigner();
+		this.nab = Utils.getNab(this.sessionAsSigner);
+		
+		this.database = JSFUtils.getDatabase();
 	}
 	
 	/**
@@ -117,7 +115,7 @@ public class AppBean {
 		Name appNotesName = null;
 		View v = null;
 		try {
-			appNotesName = this.session.createName(appName + Constants.SUFFIX_APP);
+			appNotesName = this.sessionAsSigner.createName(appName + Constants.SUFFIX_APP);
 			v = DominoUtils.getView(this.nab, VIEW_USERS);
 			return v.getDocumentByKey(appNotesName.getAbbreviated());
 		} finally {
@@ -281,7 +279,7 @@ public class AppBean {
 				throw new RuntimeException("Une application avec ce nom existe déjà.");
 			
 			String abbreviated = app.getName() + Constants.SUFFIX_APP;
-			nn = this.session.createName(abbreviated);
+			nn = this.sessionAsSigner.createName(abbreviated);
 			String fullName = nn.toString();
 			
 			// Créé une nouvelle application (un nouvel utilisateur)
@@ -293,11 +291,11 @@ public class AppBean {
 			person.replaceItemValue("MailSystem", "100");		// None
 			person.replaceItemValue("FullName", fullName);
 			String password = this.generatePassword();
-			person.replaceItemValue("HTTPPassword", this.session.evaluate("@Password(\"" + password + "\")"));
-			person.replaceItemValue("HTTPPasswordChangeDate", this.session.createDateTime(new Date()));
+			person.replaceItemValue("HTTPPassword", this.sessionAsSigner.evaluate("@Password(\"" + password + "\")"));
+			person.replaceItemValue("HTTPPasswordChangeDate", this.sessionAsSigner.createDateTime(new Date()));
 			person.replaceItemValue("$SecurePassword", "1");
-			person.replaceItemValue("Owner", this.session.getEffectiveUserName());
-			person.replaceItemValue("LocalAdmin", this.session.getEffectiveUserName());
+			person.replaceItemValue("Owner", this.sessionAsSigner.getEffectiveUserName());
+			person.replaceItemValue("LocalAdmin", this.sessionAsSigner.getEffectiveUserName());
 			DominoUtils.computeAndSave(person);
 			
 			// Créé un nouveau document pour l'application dans la base

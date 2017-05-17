@@ -12,10 +12,6 @@ import lotus.domino.Session;
 import com.ibm.xsp.component.UIViewRootEx;
 import com.ibm.xsp.designer.context.XSPContext;
 
-import fr.asso.afer.oauth2.bean.AppBean;
-import fr.asso.afer.oauth2.bean.ParamsBean;
-import fr.asso.afer.oauth2.bean.SecretBean;
-
 /**
  * Méthodes pratiques pour JSF
  * @author Lionel HERVIER
@@ -83,6 +79,15 @@ public class JSFUtils {
 	}
 	
 	/**
+	 * Retourne le request scope
+	 * @return le request scope
+	 */
+	@SuppressWarnings("unchecked")
+	public static final Map<String, Object> getRequestScope() {
+		return (Map<String, Object>) getBean("requestScope");
+	}
+	
+	/**
 	 * Retourne la requête http
 	 * @return la requête http
 	 */
@@ -99,40 +104,4 @@ public class JSFUtils {
 		FacesContext ctx = FacesContext.getCurrentInstance();
 		return (HttpServletResponse) ctx.getExternalContext().getResponse();
 	}
-	
-	// =====================================================================
-	
-	/**
-	 * Retourne le requestScope
-	 * @return le requestScope
-	 */
-	@SuppressWarnings("unchecked")
-	public static final Map<String, Object> getRequestScope() {
-		return (Map<String, Object>) getBean("requestScope");
-	}
-	
-	/**
-	 * Retourne la bean de paramétrage
-	 * @return la bean de paramétrage
-	 */
-	public static final ParamsBean getParamsBean() {
-		return (ParamsBean) getBean("paramsBean");
-	}
-	
-	/**
-	 * Retourne la bean pour gérer les apps
-	 * @return la bean pour gérer les apps
-	 */
-	public static final AppBean getAppBean() {
-		return (AppBean) getBean("appBean");
-	}
-	
-	/**
-	 * Retourne la bean pour accéder aux secrets
-	 * @return la secretBean
-	 */
-	public static final SecretBean getSecretBean() {
-		return (SecretBean) getBean("secretBean");
-	}
-	
 }

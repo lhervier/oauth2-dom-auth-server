@@ -4,9 +4,14 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.Map;
 
 import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletResponse;
+
+import fr.asso.afer.oauth2.bean.AppBean;
+import fr.asso.afer.oauth2.bean.ParamsBean;
+import fr.asso.afer.oauth2.bean.SecretBean;
 
 import lotus.domino.Database;
 import lotus.domino.NotesException;
@@ -19,6 +24,39 @@ import lotus.domino.Session;
 public class Utils {
 
 	/**
+	 * Retourne le requestScope
+	 * @return le requestScope
+	 */
+	@SuppressWarnings("unchecked")
+	public static final Map<String, Object> getRequestScope() {
+		return (Map<String, Object>) JSFUtils.getBean("requestScope");
+	}
+	
+	/**
+	 * Retourne la bean de paramétrage
+	 * @return la bean de paramétrage
+	 */
+	public static final ParamsBean getParamsBean() {
+		return (ParamsBean) JSFUtils.getBean("paramsBean");
+	}
+	
+	/**
+	 * Retourne la bean pour gérer les apps
+	 * @return la bean pour gérer les apps
+	 */
+	public static final AppBean getAppBean() {
+		return (AppBean) JSFUtils.getBean("appBean");
+	}
+	
+	/**
+	 * Retourne la bean pour accéder aux secrets
+	 * @return la secretBean
+	 */
+	public static final SecretBean getSecretBean() {
+		return (SecretBean) JSFUtils.getBean("secretBean");
+	}
+	
+	/**
 	 * Retourne la base carnet d'adresse.
 	 * @param session la session Notes
 	 * @return le NAB
@@ -27,10 +65,10 @@ public class Utils {
 	public static final Database getNab(Session session) throws NotesException {
 		Database names = DominoUtils.openDatabase(
 				session, 
-				JSFUtils.getParamsBean().getNab()
+				getParamsBean().getNab()
 		);
 		if( names == null )
-			throw new RuntimeException("Je n'arrive pas à ouvrir la base '" + JSFUtils.getParamsBean().getNab() + "'");
+			throw new RuntimeException("Je n'arrive pas à ouvrir la base '" + getParamsBean().getNab() + "'");
 		return names;
 	}
 	

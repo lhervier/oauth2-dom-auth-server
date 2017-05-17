@@ -44,6 +44,7 @@ import fr.asso.afer.oauth2.utils.DominoUtils;
 import fr.asso.afer.oauth2.utils.IOUtils;
 import fr.asso.afer.oauth2.utils.JSFUtils;
 import fr.asso.afer.oauth2.utils.JsonUtils;
+import fr.asso.afer.oauth2.utils.Utils;
 import fr.asso.afer.oauth2.utils.JsonUtils.JsonDeserializeException;
 import fr.asso.afer.oauth2.utils.JsonUtils.JsonSerializeException;
 
@@ -101,9 +102,9 @@ public class TokenBean {
 		this.session = JSFUtils.getSession();
 		this.sessionAsSigner = JSFUtils.getSessionAsSigner();
 		this.database = JSFUtils.getDatabase();
-		this.appBean = JSFUtils.getAppBean();
-		this.secretBean = JSFUtils.getSecretBean();
-		this.paramsBean = JSFUtils.getParamsBean();
+		this.appBean = Utils.getAppBean();
+		this.secretBean = Utils.getSecretBean();
+		this.paramsBean = Utils.getParamsBean();
 		this.v = DominoUtils.getView(this.database, VIEW_AUTHCODES);
 	}
 	

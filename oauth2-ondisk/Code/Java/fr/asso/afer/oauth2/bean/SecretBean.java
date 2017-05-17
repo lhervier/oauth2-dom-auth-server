@@ -12,6 +12,7 @@ import lotus.domino.Session;
 import lotus.domino.View;
 import fr.asso.afer.oauth2.utils.DominoUtils;
 import fr.asso.afer.oauth2.utils.JSFUtils;
+import fr.asso.afer.oauth2.utils.Utils;
 
 /**
  * Registre pour mémoriser les secrets
@@ -48,7 +49,7 @@ public class SecretBean {
 	 * Constructeur
 	 */
 	public SecretBean() {
-		this.paramsBean = JSFUtils.getParamsBean();
+		this.paramsBean = Utils.getParamsBean();
 	}
 	
 	/**

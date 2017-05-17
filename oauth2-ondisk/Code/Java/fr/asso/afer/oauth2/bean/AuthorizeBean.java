@@ -30,6 +30,7 @@ import fr.asso.afer.oauth2.model.StateResponse;
 import fr.asso.afer.oauth2.utils.DominoUtils;
 import fr.asso.afer.oauth2.utils.JSFUtils;
 import fr.asso.afer.oauth2.utils.QueryStringUtils;
+import fr.asso.afer.oauth2.utils.Utils;
 
 /**
  * Bean pour gérer le endpoint "authorize"
@@ -63,8 +64,8 @@ public class AuthorizeBean {
 	 */
 	public AuthorizeBean() throws NotesException {
 		this.session = JSFUtils.getSession();
-		this.appBean = JSFUtils.getAppBean();
-		this.paramsBean = JSFUtils.getParamsBean();
+		this.appBean = Utils.getAppBean();
+		this.paramsBean = Utils.getParamsBean();
 	}
 	
 	/**

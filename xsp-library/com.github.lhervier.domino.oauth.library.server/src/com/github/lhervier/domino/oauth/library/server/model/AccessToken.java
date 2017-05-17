@@ -1,6 +1,6 @@
 package com.github.lhervier.domino.oauth.library.server.model;
 
-import com.github.lhervier.domino.oauth.common.utils.JsonUtils.JsonName;
+import com.google.gson.annotations.SerializedName;
 
 /**
  * Le access token
@@ -11,12 +11,12 @@ public class AccessToken extends Token {
 	/**
 	 * La date d'expiration
 	 */
+	@SerializedName("exp")
 	private long accessExp;
 
 	/**
 	 * @return the accessExp
 	 */
-	@JsonName("exp")
 	public long getAccessExp() {
 		return accessExp;
 	}

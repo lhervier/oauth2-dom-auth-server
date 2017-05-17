@@ -1,6 +1,6 @@
 package com.github.lhervier.domino.oauth.library.server.model;
 
-import com.github.lhervier.domino.oauth.common.utils.JsonUtils.JsonName;
+import com.google.gson.annotations.SerializedName;
 
 /**
  * Réponse pour les types de grant "authorization code"
@@ -11,27 +11,30 @@ public class GrantResponse {
 	/**
 	 * Le token d'acces
 	 */
+	@SerializedName("access_token")
 	private String accessToken;
 	
 	/**
 	 * La durée de validité
 	 */
+	@SerializedName("expires_in")
 	private long expiresIn;
 	
 	/**
 	 * Le refresh token
 	 */
+	@SerializedName("refresh_token")
 	private String refreshToken;
 	
 	/**
 	 * Le type de token
 	 */
+	@SerializedName("token_type")
 	private String tokenType;
 
 	/**
 	 * @return the accessToken
 	 */
-	@JsonName("access_token")
 	public String getAccessToken() {
 		return accessToken;
 	}
@@ -46,7 +49,6 @@ public class GrantResponse {
 	/**
 	 * @return the expiresIn
 	 */
-	@JsonName("expires_in")
 	public long getExpiresIn() {
 		return expiresIn;
 	}
@@ -61,7 +63,6 @@ public class GrantResponse {
 	/**
 	 * @return the refreshToken
 	 */
-	@JsonName("refresh_token")
 	public String getRefreshToken() {
 		return refreshToken;
 	}
@@ -76,7 +77,6 @@ public class GrantResponse {
 	/**
 	 * @return the tokenType
 	 */
-	@JsonName("token_type")
 	public String getTokenType() {
 		return tokenType;
 	}

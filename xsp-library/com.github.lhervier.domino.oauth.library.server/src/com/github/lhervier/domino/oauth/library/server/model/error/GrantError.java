@@ -1,6 +1,6 @@
 package com.github.lhervier.domino.oauth.library.server.model.error;
 
-import com.github.lhervier.domino.oauth.common.utils.JsonUtils.JsonName;
+import com.google.gson.annotations.SerializedName;
 
 public class GrantError {
 
@@ -12,11 +12,13 @@ public class GrantError {
 	/**
 	 * La description de l'erreur
 	 */
+	@SerializedName("error_description")
 	private String errorDescription;
 	
 	/**
 	 * L'uri de l'erreur
 	 */
+	@SerializedName("error_uri")
 	private String errorUri;
 
 	/**
@@ -36,7 +38,6 @@ public class GrantError {
 	/**
 	 * @return the errorDescription
 	 */
-	@JsonName("error_description")
 	public String getErrorDescription() {
 		return errorDescription;
 	}
@@ -51,7 +52,6 @@ public class GrantError {
 	/**
 	 * @return the errorUri
 	 */
-	@JsonName("error_uri")
 	public String getErrorUri() {
 		return errorUri;
 	}

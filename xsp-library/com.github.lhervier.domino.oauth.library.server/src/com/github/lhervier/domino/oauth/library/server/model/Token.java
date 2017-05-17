@@ -1,6 +1,6 @@
 package com.github.lhervier.domino.oauth.library.server.model;
 
-import com.github.lhervier.domino.oauth.common.utils.JsonUtils.JsonName;
+import com.google.gson.annotations.SerializedName;
 
 /**
  * Classe de base pour les tokens (refresh et access)
@@ -31,6 +31,7 @@ public class Token {
 	/**
 	 * La date à laquelle l'utilisateur s'est authentifié
 	 */
+	@SerializedName("auth_time")
 	private long authTime;
 
 	/**
@@ -92,7 +93,6 @@ public class Token {
 	/**
 	 * @return the authTime
 	 */
-	@JsonName("auth_time")
 	public long getAuthTime() {
 		return authTime;
 	}

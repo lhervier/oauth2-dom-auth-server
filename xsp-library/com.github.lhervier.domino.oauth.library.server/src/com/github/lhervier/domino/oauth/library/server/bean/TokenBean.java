@@ -16,11 +16,9 @@ import lotus.domino.Session;
 import lotus.domino.View;
 
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
+import com.github.lhervier.domino.oauth.common.utils.GsonUtils;
 import com.github.lhervier.domino.oauth.common.utils.IOUtils;
 import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
-import com.github.lhervier.domino.oauth.common.utils.JsonUtils;
-import com.github.lhervier.domino.oauth.common.utils.JsonUtils.JsonDeserializeException;
-import com.github.lhervier.domino.oauth.common.utils.JsonUtils.JsonSerializeException;
 import com.github.lhervier.domino.oauth.library.server.ex.GrantException;
 import com.github.lhervier.domino.oauth.library.server.ex.ServerErrorException;
 import com.github.lhervier.domino.oauth.library.server.ex.grant.InvalidClientException;
@@ -180,10 +178,8 @@ public class TokenBean {
 			if( resp != null ) {
 				out = response.getOutputStream();
 				wrt = new OutputStreamWriter(out, "UTF-8");
-				wrt.write(JsonUtils.toJson(resp));
+				wrt.write(GsonUtils.toJson(resp));
 			}
-		} catch (JsonSerializeException e) {
-			throw new RuntimeException(e);
 		} finally {
 			IOUtils.closeQuietly(wrt);
 			IOUtils.closeQuietly(out);
@@ -242,7 +238,7 @@ public class TokenBean {
 			accessToken.setAccessExp(System.currentTimeMillis() + this.paramsBean.getAccessTokenLifetime());
 			JWSObject jwsObject = new JWSObject(
 					new JWSHeader(JWSAlgorithm.HS256),
-                    new Payload(JsonUtils.toJson(accessToken))
+                    new Payload(GsonUtils.toJson(accessToken))
 			);
 			jwsObject.sign(new MACSigner(
 					this.secretBean.getAccessTokenSecret()
@@ -254,7 +250,7 @@ public class TokenBean {
 			refreshToken.setRefreshExp(System.currentTimeMillis() + this.paramsBean.getRefreshTokenLifetime());
 			JWEObject jweObject = new JWEObject(
 					new JWEHeader(JWEAlgorithm.DIR, EncryptionMethod.A128GCM), 
-					new Payload(JsonUtils.toJson(refreshToken))
+					new Payload(GsonUtils.toJson(refreshToken))
 			);
 			jweObject.encrypt(new DirectEncrypter(
 					this.secretBean.getRefreshTokenSecret()
@@ -269,8 +265,6 @@ public class TokenBean {
 			
 			return resp;
 		} catch (NotesException e) {
-			throw new ServerErrorException(e);
-		} catch (JsonSerializeException e) {
 			throw new ServerErrorException(e);
 		} catch (KeyLengthException e) {
 			throw new ServerErrorException(e);
@@ -301,7 +295,7 @@ public class TokenBean {
 			JWEObject jweObject = JWEObject.parse(sRefreshToken);
 			jweObject.decrypt(new DirectDecrypter(this.secretBean.getRefreshTokenSecret()));
 			String json = jweObject.getPayload().toString();
-			RefreshToken refreshToken = JsonUtils.fromJson(json, RefreshToken.class);
+			RefreshToken refreshToken = GsonUtils.fromJson(json, RefreshToken.class);
 			
 			// Vérifie qu'il est valide
 			if( refreshToken.getRefreshExp() < System.currentTimeMillis() )
@@ -322,14 +316,14 @@ public class TokenBean {
 			// Créé les jwt et jwe
 			JWSObject jwsObject = new JWSObject(
 					new JWSHeader(JWSAlgorithm.HS256),
-	                new Payload(JsonUtils.toJson(accessToken))
+	                new Payload(GsonUtils.toJson(accessToken))
 			);
 			jwsObject.sign(new MACSigner(
 					this.secretBean.getAccessTokenSecret()
 			));
 			jweObject = new JWEObject(
 					new JWEHeader(JWEAlgorithm.DIR, EncryptionMethod.A128GCM), 
-					new Payload(JsonUtils.toJson(refreshToken))
+					new Payload(GsonUtils.toJson(refreshToken))
 			);
 			jweObject.encrypt(new DirectEncrypter(
 					this.secretBean.getRefreshTokenSecret()
@@ -350,10 +344,6 @@ public class TokenBean {
 		} catch (JOSEException e) {
 			throw new ServerErrorException(e);
 		} catch (IOException e) {
-			throw new ServerErrorException(e);
-		} catch (JsonSerializeException e) {
-			throw new ServerErrorException(e);
-		} catch (JsonDeserializeException e) {
 			throw new ServerErrorException(e);
 		}
 	}

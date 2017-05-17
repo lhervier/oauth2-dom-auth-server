@@ -1,6 +1,6 @@
 package com.github.lhervier.domino.oauth.library.server.model;
 
-import com.github.lhervier.domino.oauth.common.utils.JsonUtils.JsonName;
+import com.google.gson.annotations.SerializedName;
 
 /**
  * Le token de rafraîchissement
@@ -11,12 +11,12 @@ public class RefreshToken extends Token {
 	/**
 	 * La date d'expiration
 	 */
+	@SerializedName("exp")
 	private long refreshExp;
 
 	/**
 	 * @return the refreshExp
 	 */
-	@JsonName("exp")
 	public long getRefreshExp() {
 		return refreshExp;
 	}

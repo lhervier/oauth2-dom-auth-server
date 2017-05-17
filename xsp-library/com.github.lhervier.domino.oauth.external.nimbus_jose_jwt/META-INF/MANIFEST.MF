@@ -1,0 +1,26 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Nimbus_jose_jwt Plug-in
+Bundle-SymbolicName: com.github.lhervier.domino.oauth.external.nimbus_jose_jwt
+Bundle-Version: 4.37.1
+Bundle-ClassPath: accessors-smart-1.2.jar,
+ asm-5.0.4.jar,
+ bcpkix-jdk15on-1.55.jar,
+ bcprov-jdk15on-1.55.jar,
+ jcip-annotations-1.0-1.jar,
+ json-smart-2.3.jar,
+ nimbus-jose-jwt-4.37.1-jdk16.jar
+Export-Package: com.nimbusds.jose,
+ com.nimbusds.jose.crypto,
+ com.nimbusds.jose.crypto.bc,
+ com.nimbusds.jose.crypto.factories,
+ com.nimbusds.jose.crypto.utils,
+ com.nimbusds.jose.jca,
+ com.nimbusds.jose.jwk,
+ com.nimbusds.jose.jwk.source,
+ com.nimbusds.jose.proc,
+ com.nimbusds.jose.util,
+ com.nimbusds.jwt,
+ com.nimbusds.jwt.proc,
+ com.nimbusds.jwt.util
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6

@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Gson Plug-in
+Bundle-SymbolicName: com.github.lhervier.domino.oauth.external.gson
+Bundle-Version: 2.8.0
+Bundle-ClassPath: gson-2.8.0.jar
+Export-Package: com.google.gson,
+ com.google.gson.annotations,
+ com.google.gson.internal,
+ com.google.gson.internal.bind,
+ com.google.gson.internal.bind.util,
+ com.google.gson.reflect,
+ com.google.gson.stream
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6

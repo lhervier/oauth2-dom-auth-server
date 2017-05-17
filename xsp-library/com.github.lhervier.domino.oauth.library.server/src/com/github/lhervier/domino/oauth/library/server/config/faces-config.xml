@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<faces-config>
+  <managed-bean>
+    <managed-bean-name>paramsBean</managed-bean-name>
+    <managed-bean-class>com.github.lhervier.domino.oauth.library.server.bean.ParamsBean</managed-bean-class>
+    <managed-bean-scope>application</managed-bean-scope>
+  </managed-bean>
+  <managed-bean>
+    <managed-bean-name>secretBean</managed-bean-name>
+    <managed-bean-class>com.github.lhervier.domino.oauth.library.server.bean.SecretBean</managed-bean-class>
+    <managed-bean-scope>request</managed-bean-scope>
+  </managed-bean>
+  <managed-bean>
+    <managed-bean-name>appBean</managed-bean-name>
+    <managed-bean-class>com.github.lhervier.domino.oauth.library.server.bean.AppBean</managed-bean-class>
+    <managed-bean-scope>request</managed-bean-scope>
+  </managed-bean>
+  <managed-bean>
+    <managed-bean-name>authorizeBean</managed-bean-name>
+    <managed-bean-class>com.github.lhervier.domino.oauth.library.server.bean.AuthorizeBean</managed-bean-class>
+    <managed-bean-scope>request</managed-bean-scope>
+  </managed-bean>
+  <managed-bean>
+    <managed-bean-name>tokenBean</managed-bean-name>
+    <managed-bean-class>com.github.lhervier.domino.oauth.library.server.bean.TokenBean</managed-bean-class>
+    <managed-bean-scope>request</managed-bean-scope>
+  </managed-bean>
+  <managed-bean>
+    <managed-bean-name>utils</managed-bean-name>
+    <managed-bean-class>com.github.lhervier.domino.oauth.library.server.utils.Utils</managed-bean-class>
+    <managed-bean-scope>request</managed-bean-scope>
+  </managed-bean>
+</faces-config>

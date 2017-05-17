@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='utf-8'?>
 <note class='view' xmlns='http://www.lotus.com/dxl' version='9.0' maintenanceversion='1.8'
- replicaid='C125811C003E1A7C'>
-<noteinfo noteid='206' unid='95F9BCD38B09A0B7C125811D00545A71' sequence='7'>
+ replicaid='C125812300595872'>
+<noteinfo noteid='18e' unid='95F9BCD38B09A0B7C125811D00545A71' sequence='9'>
 <created><datetime dst='true'>20170511T172121,77+02</datetime></created>
-<modified><datetime dst='true'>20170511T181804,59+02</datetime></modified>
-<revised><datetime dst='true'>20170511T181804,58+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20170511T181804,59+02</datetime></lastaccessed>
-<addedtofile><datetime dst='true'>20170511T172121,81+02</datetime></addedtofile></noteinfo>
+<modified><datetime dst='true'>20170517T181956,65+02</datetime></modified>
+<revised><datetime dst='true'>20170517T181956,64+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20170517T181956,65+02</datetime></lastaccessed>
+<addedtofile><datetime dst='true'>20170517T181554,10+02</datetime></addedtofile></noteinfo>
 <updatedby><name>CN=admin admin/O=AFER</name></updatedby>
 <wassignedby><name>CN=admin admin/O=AFER</name></wassignedby>
 <item name='$FormulaClass' sign='true'><text>1</text></item>
@@ -38,7 +38,6 @@ QgAAAAAAAQD///8ABQD///8AAQAAAAAAAAAAAAAAAAABAP///wABAP///wAAAAEAAAAAAAEAAAAA
 AAEAAAAAAAAACAAAAAAAAQA=
 </rawitemdata></item>
 <item name='$Comment' sign='true'><text/></item>
-<item name='$XPageAlt'><text>empty.xsp</text></item>
-<item name='$Flags'><text>PY</text></item>
-<item name='$DesignerVersion'><text>8.5.3</text></item></note>
+<item name='$DesignerVersion'><text>8.5.3</text></item>
+<item name='$Flags'><text>PYw</text></item></note>
 

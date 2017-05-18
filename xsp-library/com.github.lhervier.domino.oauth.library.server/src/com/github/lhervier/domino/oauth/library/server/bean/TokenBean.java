@@ -17,6 +17,7 @@ import lotus.domino.View;
 
 import org.apache.commons.io.IOUtils;
 
+import com.github.lhervier.domino.oauth.common.model.GrantResponse;
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
 import com.github.lhervier.domino.oauth.common.utils.GsonUtils;
 import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
@@ -29,7 +30,6 @@ import com.github.lhervier.domino.oauth.library.server.ex.grant.UnsupportedGrant
 import com.github.lhervier.domino.oauth.library.server.model.AccessToken;
 import com.github.lhervier.domino.oauth.library.server.model.Application;
 import com.github.lhervier.domino.oauth.library.server.model.AuthorizationCode;
-import com.github.lhervier.domino.oauth.library.server.model.GrantResponse;
 import com.github.lhervier.domino.oauth.library.server.model.RefreshToken;
 import com.github.lhervier.domino.oauth.library.server.utils.Utils;
 import com.nimbusds.jose.EncryptionMethod;

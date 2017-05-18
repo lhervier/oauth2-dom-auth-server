@@ -1,26 +1,135 @@
 <HTML>
 <HEAD>
-</HEAD>
-<BODY>
 <script type="text/javascript">
-	var xmlhttp = new XMLHttpRequest();
-	xmlhttp.onreadystatechange = function() {
-		if (this.readyState == 4 && this.status == 200) {
-			var resp = JSON.parse(this.responseText);
-			myFunction(resp);
+	var accessToken = null;
+
+	/**
+	 * Initialisation de la page. On charge le token
+	 * en forçant une éventuelle reconnexion.
+	 */
+	function init() {
+		runWithToken(function(){}, true);
+	}
+	
+	/**
+	 * Exécute une callback en lui passant le token.
+	 * @param callback le callback à exécuter. On lui passera le token en paramètre.
+	 * @param force force le redirect si le token est expiré ? Affiche un message pour se re-connecter sinon.
+	 */
+	function runWithToken(callback, force) {
+		if( accessToken != null ) {
+			callback(accessToken);
+			return;
 		}
-	};
+		
+		var xmlhttp = new XMLHttpRequest();
+		xmlhttp.onreadystatechange = function() {
+			if( this.readyState != 4 )
+				return;
 
-	xmlhttp.open("GET", "accessToken.xsp", true);
-	xmlhttp.send();
-
-	function myFunction(resp) {
-		alert(resp.access_token);
-
-		if( !resp.access_token ) {
+			// On a le token => On le renseigne
+			if( this.status == 200) {
+				var resp = JSON.parse(this.responseText);
+				accessToken = resp.access_token;
+				callback(accessToken);
+				
+			// On ne l'a pas => On doit se reconnecter et l'action est avortée
+			} else if( this.status == 403 ) {
+				reconnect(force);
+			}
+		};
+		
+		xmlhttp.open("GET", "accessToken.xsp", true);
+		xmlhttp.send();
+	}
+	function reconnect(force) {
+		if( force == true ) {
 			window.location = "init.xsp?redirect_url=" + encodeURIComponent(window.location);
+			document.getElementById("reconnect").style.display = "none";
+		} else {
+			document.getElementById("reconnect").style.display = "inherit";
 		}
 	}
+	
+	/**
+	 * Indique que l'utilisateur a fait une action
+	 * et qu'on doit donc prolonger sa session
+	 */
+	function action() {
+		var xmlhttp = new XMLHttpRequest();
+		xmlhttp.open("GET", "xsp/.ibmmodres/ping?dojo.preventCache=" + (new Date().getTime()), true);
+		xmlhttp.send();
+	}
+
+	/**
+	 * Appel un service rest
+	 */
+	function callRest(method, url, callback) {
+		runWithToken(function(token) {
+			var xmlhttp = new XMLHttpRequest();
+			xmlhttp.onreadystatechange = function() {
+				if( this.readyState != 4 )
+					return;
+
+				// On a le résultat => On l'affiche
+				if( this.status == 200) {
+					var resp = JSON.parse(this.responseText);
+					callback(resp);
+					
+				// Token expiré => On le rafraîchit
+				} else if( this.status == 403 ) {
+					var xmlhttp = new XMLHttpRequest();
+					xmlhttp.onreadystatechange = function() {
+						if( this.readyState != 4 )
+							return;
+
+						// Le refresh a fonctionné => On a un nouveau access token => On continue
+						if( this.status == 200) {
+							var resp = JSON.parse(this.responseText);
+							accessToken = resp.access_token;
+							callRest(method, url, callback);
+
+						// Le refresh token n'a pas fonctionné (session expirée, ou refresh token expiré même si c'est plus rare) => On a été déconnecté
+						} else if( this.status == 403 ) {
+							reconnect(false);
+						}
+					}
+					xmlhttp.open("GET", "refresh.xsp", true);
+					xmlhttp.send();
+				}
+			};
+			xmlhttp.open("GET", url, true);
+			xmlhttp.setRequestHeader("Authorization", "Bearer " + token);
+			xmlhttp.send();
+		});
+	}
+
+	/**
+	 * Affiche les infos utilisateur
+	 */
+	function userInfo() {
+		callRest('GET', 'http://apis.privatenetwork.net/sample-rest/userInfo', function(res) {
+			alert(res.name);
+		});
+	}
 </script>
+</HEAD>
+<BODY onload="init()">
+
+<div id="reconnect" style="display:none">
+	Vous devez vous reconnecter ! <a onclick="reconnect()">Cliquez ici</a>
+	<hr/>
+</div>
+
+<button onclick="action()">
+	Faire une action qui prolongera la session
+</button>
+
+<hr/>
+
+<button onclick="userInfo()">
+	Charge les infos sur l'utilisateur (via un appel Rest Cors)
+</button>
+
 </BODY>
 </HTML>

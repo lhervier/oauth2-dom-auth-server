@@ -284,6 +284,16 @@ public class TokenBean {
 			if( refreshToken.getRefreshExp() < System.currentTimeMillis() )
 				throw new InvalidGrantException();
 			
+			// Vérifie qu'il existe bien une application pour ce login
+			String appName = JSFUtils.getContext().getUser().getCommonName();
+			Application app = this.appBean.getApplicationFromName(appName);
+			if( app == null )
+				throw new InvalidGrantException();
+			
+			// Vérifie que le token a bien été généré pour cette application
+			if( !app.getClientId().equals(refreshToken.getAud()) )
+				throw new InvalidGrantException();
+			
 			// Prolonge la durée de vie du refresh token
 			refreshToken.setRefreshExp(System.currentTimeMillis() + this.paramsBean.getRefreshTokenLifetime());		// 10 heures
 			

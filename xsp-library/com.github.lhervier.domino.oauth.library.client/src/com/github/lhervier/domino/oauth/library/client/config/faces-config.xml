@@ -20,4 +20,9 @@
   	<managed-bean-class>com.github.lhervier.domino.oauth.library.client.bean.AccessTokenBean</managed-bean-class>
   	<managed-bean-scope>request</managed-bean-scope>
   </managed-bean>
+  <managed-bean>
+  	<managed-bean-name>refreshBean</managed-bean-name>
+  	<managed-bean-class>com.github.lhervier.domino.oauth.library.client.bean.RefreshToken</managed-bean-class>
+  	<managed-bean-scope>request</managed-bean-scope>
+  </managed-bean>
 </faces-config>

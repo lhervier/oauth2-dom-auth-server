@@ -143,4 +143,24 @@ public class JSFUtils {
 		}
 		FacesContext.getCurrentInstance().responseComplete();
 	}
+	
+	/**
+	 * Envoi un 403
+	 */
+	public static final void send403() {
+		HttpServletResponse resp = JSFUtils.getServletResponse();
+		resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+		FacesContext.getCurrentInstance().responseComplete();
+	}
+	
+	/**
+	 * Redirige
+	 * @param url l'url où rediriger
+	 */
+	public static final void sendRedirect(String location) {
+		HttpServletResponse response = JSFUtils.getServletResponse();
+		response.setStatus(302);
+		response.setHeader("Location", location);
+		FacesContext.getCurrentInstance().responseComplete();
+	}
 }

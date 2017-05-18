@@ -126,7 +126,7 @@ public class AuthorizeBean {
 		ret.setState(param.get("state"));		// Eventuellement null
 		
 		// Redirige
-		response.sendRedirect(QueryStringUtils.addBeanToQueryString(redirectUri, ret));
+		JSFUtils.sendRedirect(QueryStringUtils.addBeanToQueryString(redirectUri, ret));
 	}
 	
 	// ===========================================================================================================

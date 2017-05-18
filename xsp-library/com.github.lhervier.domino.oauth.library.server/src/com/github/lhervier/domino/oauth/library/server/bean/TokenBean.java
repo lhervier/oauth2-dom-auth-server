@@ -6,6 +6,7 @@ import java.io.OutputStreamWriter;
 import java.text.ParseException;
 import java.util.Map;
 
+import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletResponse;
 
 import lotus.domino.Database;
@@ -122,7 +123,7 @@ public class TokenBean {
 			v = DominoUtils.getView(db, VIEW_AUTHCODES);
 			authDoc = v.getDocumentByKey(code, true);
 			if( authDoc == null )
-				throw new RuntimeException("Erreur à la suppression du document contenant les infos du code authorization");
+				return;
 			if( !authDoc.remove(true) )
 				throw new RuntimeException("Je n'arrive pas à supprimer le document contenant les infos du code authorization");
 		} catch (NotesException e) {
@@ -185,6 +186,8 @@ public class TokenBean {
 			IOUtils.closeQuietly(wrt);
 			IOUtils.closeQuietly(out);
 		}
+		
+		FacesContext.getCurrentInstance().responseComplete();
 	}
 	
 	/**

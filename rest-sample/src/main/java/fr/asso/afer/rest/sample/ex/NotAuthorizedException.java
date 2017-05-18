@@ -11,24 +11,7 @@ public class NotAuthorizedException extends Exception {
 	 * Constructeur
 	 */
 	public NotAuthorizedException() {
-		super();
-	}
-
-	/**
-	 * Constructeur
-	 * @param message
-	 * @param cause
-	 */
-	public NotAuthorizedException(String message, Throwable cause) {
-		super(message, cause);
-	}
-
-	/**
-	 * Constructeur
-	 * @param message
-	 */
-	public NotAuthorizedException(String message) {
-		super(message);
+		super("not_authorized");
 	}
 
 	/**
@@ -36,6 +19,6 @@ public class NotAuthorizedException extends Exception {
 	 * @param cause
 	 */
 	public NotAuthorizedException(Throwable cause) {
-		super(cause);
+		super("not_authorized", cause);
 	}
 }

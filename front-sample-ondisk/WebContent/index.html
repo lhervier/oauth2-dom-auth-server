@@ -108,7 +108,7 @@
 	 * Affiche les infos utilisateur
 	 */
 	function userInfo() {
-		callRest('GET', 'http://apis.privatenetwork.net/sample-rest/userInfo', function(res) {
+		callRest('GET', 'http://apis.privatenetwork.net:8080/rest-sample/userInfo', function(res) {
 			alert(res.name);
 		});
 	}
@@ -117,7 +117,7 @@
 <BODY onload="init()">
 
 <div id="reconnect" style="display:none">
-	Vous devez vous reconnecter ! <a onclick="reconnect()">Cliquez ici</a>
+	Vous devez vous reconnecter ! <button onclick="reconnect()">Cliquez ici</button>
 	<hr/>
 </div>
 

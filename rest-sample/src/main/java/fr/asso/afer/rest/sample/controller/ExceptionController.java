@@ -19,7 +19,7 @@ public class ExceptionController {
 	 * @return une erreur 403
 	 */
 	@ExceptionHandler(NotAuthorizedException.class)
-	public ResponseEntity<?> handleNotAuthorizedException() {
-		return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+	public ResponseEntity<?> handleNotAuthorizedException(NotAuthorizedException e) {
+		return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
 	}
 }

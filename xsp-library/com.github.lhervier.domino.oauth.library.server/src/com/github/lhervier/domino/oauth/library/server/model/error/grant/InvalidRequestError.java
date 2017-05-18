@@ -1,7 +1,7 @@
 package com.github.lhervier.domino.oauth.library.server.model.error.grant;
 
+import com.github.lhervier.domino.oauth.common.model.error.GrantError;
 import com.github.lhervier.domino.oauth.library.server.Constants;
-import com.github.lhervier.domino.oauth.library.server.model.error.GrantError;
 
 public class InvalidRequestError extends GrantError {
 

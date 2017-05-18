@@ -1,0 +1,26 @@
+<HTML>
+<HEAD>
+</HEAD>
+<BODY>
+<script type="text/javascript">
+	var xmlhttp = new XMLHttpRequest();
+	xmlhttp.onreadystatechange = function() {
+		if (this.readyState == 4 && this.status == 200) {
+			var resp = JSON.parse(this.responseText);
+			myFunction(resp);
+		}
+	};
+
+	xmlhttp.open("GET", "accessToken.xsp", true);
+	xmlhttp.send();
+
+	function myFunction(resp) {
+		alert(resp.access_token);
+
+		if( !resp.access_token ) {
+			window.location = "init.xsp?redirect_url=" + encodeURIComponent(window.location);
+		}
+	}
+</script>
+</BODY>
+</HTML>

@@ -21,4 +21,6 @@ Require-Bundle: com.ibm.xsp.core;visibility:=reexport,
  com.github.lhervier.domino.oauth.external.nimbus_jose_jwt;visibility:=reexport,
  org.apache.commons.codec;visibility:=reexport
 Export-Package: com.github.lhervier.domino.oauth.common,
+ com.github.lhervier.domino.oauth.common.model,
+ com.github.lhervier.domino.oauth.common.model.error,
  com.github.lhervier.domino.oauth.common.utils

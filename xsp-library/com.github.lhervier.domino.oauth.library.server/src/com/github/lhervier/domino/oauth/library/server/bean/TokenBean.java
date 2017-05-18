@@ -1,12 +1,9 @@
 package com.github.lhervier.domino.oauth.library.server.bean;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.text.ParseException;
 import java.util.Map;
 
-import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletResponse;
 
 import lotus.domino.Database;
@@ -15,8 +12,6 @@ import lotus.domino.Name;
 import lotus.domino.NotesException;
 import lotus.domino.Session;
 import lotus.domino.View;
-
-import org.apache.commons.io.IOUtils;
 
 import com.github.lhervier.domino.oauth.common.model.GrantResponse;
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
@@ -171,23 +166,7 @@ public class TokenBean {
 		}
 		
 		// Envoi dans la stream http
-		OutputStream out = null;
-		OutputStreamWriter wrt = null;
-		try {
-			response.setContentType("application/json;charset=UTF-8");
-			response.setHeader("Cache-Control", "no-store");
-			response.setHeader("Pragma", "no-cache");
-			if( resp != null ) {
-				out = response.getOutputStream();
-				wrt = new OutputStreamWriter(out, "UTF-8");
-				wrt.write(GsonUtils.toJson(resp));
-			}
-		} finally {
-			IOUtils.closeQuietly(wrt);
-			IOUtils.closeQuietly(out);
-		}
-		
-		FacesContext.getCurrentInstance().responseComplete();
+		JSFUtils.sendJson(resp);
 	}
 	
 	/**

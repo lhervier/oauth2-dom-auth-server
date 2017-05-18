@@ -1,4 +1,4 @@
-package com.github.lhervier.domino.oauth.library.server.model.error;
+package com.github.lhervier.domino.oauth.common.model.error;
 
 import com.google.gson.annotations.SerializedName;
 

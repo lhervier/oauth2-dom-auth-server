@@ -312,7 +312,7 @@ public class AppBean {
 			DominoUtils.refreshNab(this.nab);
 			
 			// Génère le secret
-			return Base64Utils.decodeToUTF8String(abbreviated + ":" + password);
+			return Base64Utils.encodeFromUTF8String(abbreviated + ":" + password);
 		} finally {
 			DominoUtils.recycleQuietly(appDoc);
 			DominoUtils.recycleQuietly(nn);

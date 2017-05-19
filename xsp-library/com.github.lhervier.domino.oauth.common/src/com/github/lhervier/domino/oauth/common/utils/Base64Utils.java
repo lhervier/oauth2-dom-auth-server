@@ -20,6 +20,19 @@ public class Base64Utils {
 	}
 	
 	/**
+	 * Encode une chaîne UTF-8
+	 * @param s la chaîne
+	 * @return la version base64
+	 */
+	public static final String encodeFromUTF8String(String s) {
+		try {
+			return encode(s.getBytes("UTF-8"));
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	/**
 	 * Décode une chaîne base 64
 	 * @param s la chaîne à décoder
 	 * @return le buffer

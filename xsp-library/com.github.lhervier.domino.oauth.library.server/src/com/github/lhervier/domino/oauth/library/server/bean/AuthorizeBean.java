@@ -23,7 +23,6 @@ import com.github.lhervier.domino.oauth.common.utils.QueryStringUtils;
 import com.github.lhervier.domino.oauth.library.server.Constants;
 import com.github.lhervier.domino.oauth.library.server.ex.AuthorizeException;
 import com.github.lhervier.domino.oauth.library.server.ex.InvalidUriException;
-import com.github.lhervier.domino.oauth.library.server.ex.authorize.AccessDeniedException;
 import com.github.lhervier.domino.oauth.library.server.ex.authorize.InvalidRequestException;
 import com.github.lhervier.domino.oauth.library.server.ex.authorize.ServerErrorException;
 import com.github.lhervier.domino.oauth.library.server.ex.authorize.UnsupportedResponseTypeException;
@@ -157,7 +156,7 @@ public class AuthorizeBean {
 			throw new ServerErrorException(e);
 		}
 		if( app == null )
-			throw new AccessDeniedException();
+			throw new ServerErrorException();
 		
 		// Vérifie que l'uri de redirection est bien dans la liste
 		Set<String> redirectUris = new HashSet<String>();

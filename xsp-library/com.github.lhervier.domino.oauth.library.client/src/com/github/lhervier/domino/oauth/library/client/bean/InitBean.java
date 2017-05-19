@@ -39,12 +39,18 @@ public class InitBean {
 		
 		// Pas de code autorisation => On renvoi vers la page de login
 		String code = param.get("code");
-		if( code == null )
-			this.login(param.get("redirect_url"));
 		
 		// Si on a un code autorisation, on le traite
-		else
+		if( param.containsKey("code") )
 			this.processAuthorizationCode(code, param.get("state"));		// dans state, on retrouve notre url de redirection initiale
+		
+		// Si on a n'a pas d'erreur, on traite le login
+		else if( !param.containsKey("error") )
+			this.login(param.get("redirect_url"));
+		
+		// Sinon, on affiche l'erreur
+		else
+			return;
 		
 		// Fin du traitement
 		FacesContext.getCurrentInstance().responseComplete();

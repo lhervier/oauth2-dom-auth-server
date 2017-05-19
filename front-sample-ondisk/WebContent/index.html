@@ -112,12 +112,27 @@
 			alert(res.name);
 		});
 	}
+
+	/**
+	 * Simule une expiration de session
+	 */
+	function expireSession() {
+		var xmlhttp = new XMLHttpRequest();
+		xmlhttp.onreadystatechange = function() {
+			if( this.readyState != 4 )
+				return;
+
+			alert('La session a été nettoyée. Redemarrez la tâche http pour effacer les infos de login.');
+		}
+		xmlhttp.open("GET", "expire.xsp", true);
+		xmlhttp.send();
+	}
 </script>
 </HEAD>
 <BODY onload="init()">
 
 <div id="reconnect" style="display:none">
-	Vous devez vous reconnecter ! <button onclick="reconnect()">Cliquez ici</button>
+	Vous devez vous reconnecter ! <button onclick="reconnect(true)">Cliquez ici</button>
 	<hr/>
 </div>
 
@@ -129,6 +144,18 @@
 
 <button onclick="userInfo()">
 	Charge les infos sur l'utilisateur (via un appel Rest Cors)
+</button>
+
+<hr/>
+
+<button onclick="accessToken = 'azerty'">
+	Simule un token qui a expiré
+</button>
+
+<hr/>
+
+<button onclick="expireSession()">
+	Simuler une expiration de session
 </button>
 
 </BODY>

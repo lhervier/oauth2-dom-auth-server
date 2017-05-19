@@ -101,8 +101,10 @@ public class AppBean {
 	public AppBean() throws NotesException {
 		this.sessionAsSigner = JSFUtils.getSessionAsSigner();
 		this.nab = Utils.getNab(this.sessionAsSigner);
-		
-		this.database = JSFUtils.getDatabase();
+		this.database = DominoUtils.openDatabase(
+				this.sessionAsSigner, 
+				JSFUtils.getDatabase().getFilePath()
+		);
 	}
 	
 	/**

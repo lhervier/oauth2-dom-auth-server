@@ -3,7 +3,7 @@
   <managed-bean>
     <managed-bean-name>paramsBean</managed-bean-name>
     <managed-bean-class>com.github.lhervier.domino.oauth.library.server.bean.ParamsBean</managed-bean-class>
-    <managed-bean-scope>application</managed-bean-scope>
+    <managed-bean-scope>session</managed-bean-scope>
   </managed-bean>
   <managed-bean>
     <managed-bean-name>secretBean</managed-bean-name>

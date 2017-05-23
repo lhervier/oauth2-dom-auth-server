@@ -36,7 +36,8 @@
 			// On ne l'a pas => On doit se reconnecter et l'action est avortée
 			} else if( this.status == 403 ) {
 				reconnect(force);
-			}
+			} else 
+				console.log(this);
 		};
 		
 		xmlhttp.open("GET", "accessToken.xsp", true);
@@ -92,11 +93,13 @@
 						// Le refresh token n'a pas fonctionné (session expirée, ou refresh token expiré même si c'est plus rare) => On a été déconnecté
 						} else if( this.status == 403 ) {
 							reconnect(false);
-						}
+						} else
+							console.log(this);
 					}
 					xmlhttp.open("GET", "refresh.xsp", true);
 					xmlhttp.send();
-				}
+				} else
+					console.log(this);
 			};
 			xmlhttp.open("GET", url, true);
 			xmlhttp.setRequestHeader("Authorization", "Bearer " + token);

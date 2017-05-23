@@ -8,19 +8,29 @@
 </head>
 <body ng-controller="SampleController as ctrl">
 	<div ng-show="ctrl.alerte != null">
-		{{ctrl.alerte.message}}
-		<a ng-href="{{ctrl.alerte.url}}" ng-show="ctrl.alerte.url != null">Cliquez ici</a>
+		{{ctrl.alerte.message}} ({{ctrl.alerte.level}})
+	</div>
+	<div ng-show="ctrl.reconnectUrl != null">
+		Vous devez vous reconnecter : 
+		<a ng-href="{{ctrl.reconnectUrl}}">Cliquez ici</a>
 	</div>
 	
-	<span>Infos utilisateur : {{ctrl.hello}}</span>
-	<ul>
-		<li>Nom : {{ctrl.userInfo.name}}</li>
-	</ul>
-	<button ng-click="ctrl.loadUserInfo()">
-		Charger les infos utilisateur
+	<hr/>
+	
+	<span>Access token :</span>
+	<span ng-show="ctrl.accessToken == null">Non récupére</span>
+	<span ng-show="ctrl.accessToken != null">{{ctrl.accessToken}}</span>
+	<button ng-click="ctrl.recupererAccessToken()">
+		Récupérer le access_token
 	</button>
-	<button ng-click="ctrl.test()">
-		Test
+	
+	<hr/>
+	
+	<span>Utilisateur courant :</span>
+	<span ng-show="ctrl.userInfo == null">Non récupéré</span>
+	<span ng-show="ctrl.userInfo != null">{{ctrl.userInfo.name}}</span>
+	<button ng-click="ctrl.loadUserInfo()">
+		Récupérer l'utilisateur courant
 	</button>
 </body>
 </html>

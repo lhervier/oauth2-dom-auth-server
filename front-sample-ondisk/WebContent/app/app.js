@@ -1,53 +1,72 @@
 var sampleApp = angular.module('sampleApp', ['ngResource']);
 
-sampleApp.controller('SampleController', ['$rootScope', '$resource', 'tokenService', function($rootScope, $resource, tokenService) {
+sampleApp.controller('SampleController', ['$rootScope', '$resource', 'tokenService', 'alerteService', function($rootScope, $resource, tokenService, alerteService) {
+	
 	var ths = this;
 	
-	this.hello = "Hello World !";
 	this.alerte = null;
+	this.reconnectUrl = null;
 	this.userInfo = null;
+	this.accessToken = null;
 	
 	this.loadUserInfo = function() {
-		$resource('http://apis.privatenetwork.net:8080/rest-sample/userInfo').query(function(userInfo) {
-			ths.userInfo = userInfo;
-		});
+		ths.userInfo = $resource('http://apis.privatenetwork.net:8080/rest-sample/userInfo').get(
+				function() {},
+				function(error) {
+					alerteService.error("Erreur à la récupération des infos utilisateur...");
+				});
 	};
 	
-	this.test = function() {
-		var promise = tokenService.getToken(false).then(
+	this.recupererAccessToken = function() {
+		tokenService.getToken(false).then(
 				function(token) {
-					alert(token.access_token);
+					ths.accessToken = token.access_token;
 				},
-				function(error) {
-					console.log(error);
+				function() {
+					ths.accessToken = null;
 				}
 		)
 	}
 	
-	$rootScope.$on("alerte", function(event, level, message, url) {
+	$rootScope.$on("alerte", function(event, level, message) {
 		ths.alerte = {
-			message: message,
-			level: level,
-			url: url
-		};
+				level: level,
+				message: message
+		}
+	});
+	
+	$rootScope.$on("reconnect", function(event, url) {
+		ths.reconnectUrl = url;
 	});
 }]);
 
-sampleApp.factory('alertService', ['$rootScope', function($rootScope) {
+sampleApp.factory('reconnectService', ['$rootScope', '$window', function($rootScope, $window) {
 	return {
-		info: function(message, url) {
-			$rootScope.$emit("alerte", "info", message, url);
+		reconnect: function(force) {
+			var connectUrl = "init.xsp?redirect_url=" + encodeURIComponent($window.location);
+			if( force )
+				$window.location = connectUrl;
+			else
+				$rootScope.$emit("reconnect", connectUrl);
+		}
+	};
+}]);
+
+sampleApp.factory('alerteService', ['$rootScope', function($rootScope) {
+	return {
+		info: function(message) {
+			$rootScope.$emit("alerte", "info", message);
 		},
 		warning: function(message, url) {
-			$rootScope.$emit("alerte", "warning", message, url);
+			$rootScope.$emit("alerte", "warning", message);
 		},
 		error: function(message, url) {
-			$rootScope.$emit("alerte", "error", message, url);
+			$rootScope.$emit("alerte", "error", message);
 		}
 	}
 }]);
 
-sampleApp.factory('tokenService', ['$q', '$resource', '$window', 'alertService', function($q, $resource, $window, alertService) {
+sampleApp.factory('tokenService', ['$q', '$resource', '$window', 'alerteService', 'reconnectService', function($q, $resource, $window, alerteService, reconnectService) {
 	var svc = {
 		token: null,
 		getToken: function(force) {
@@ -59,48 +78,49 @@ sampleApp.factory('tokenService', ['$q', '$resource', '$window', 'alertService',
 			}
 			
 			// On n'a pas le token, on va le chercher
-			var result = $resource('accessToken.xsp').get(
-					function(response) {
-						if( !result.access_token )
-							svc.reconnect(force);
-						else
+			var result = $resource('accessToken.xsp').get();
+			return result.$promise.then(
+					function() {
+						var deferred = $q.defer();
+						if( !result.access_token ) {	// On n'a pas le token, même si le serveur a repondu avec un code 200
+							reconnectService.reconnect(force);
+							deferred.reject();
+						} else {
 							svc.token = result.access_token;
+							deferred.resolve(result);
+						}
+						return deferred.promise;
 					},
-					function(error) {
-						result.token = null;
+					function() {						// Le serveur a répondu autre chose que 200
 						svc.reconnect(force);
 					}
 			);
-			
-			return result.$promise;
-		},
-		reconnect: function(force) {
-			if( force )
-				$window.location = "init.xsp?redirect_url=" + encodeURIComponent($window.location);
-			else
-				alertService.error("Reconnectez vous...", "init.xsp?redirect_url=" + encodeURIComponent($window.location));
 		}
 	};
 	return svc;
 }]);
 
-sampleApp.config(['$httpProvider', '$injector', function($httpProvider, $injector) {
-	$httpProvider.interceptors.push(function() {
+sampleApp.config(['$httpProvider', function($httpProvider) {
+	$httpProvider.interceptors.push(['$injector', '$location', function($injector, $location) {
 		return {
 			request: function(config) {
-				var external = RegExp('^((f|ht)tps?:)?//(?!' + location.host + ')');
+				var tokenService = $injector.get('tokenService');
+				
+				var external = RegExp('^((f|ht)tps?:)?//(?!' + $location.host() + ')');
 				if( !external.test(config.url) )
 					return config;
 				
-				var promise = $injector.get('tokenService').getToken();
-				return promise.then(
+				return tokenService.getToken(false).then(
 						function(token) {
-							config.headers.authorization = "Bearer " + token;
+							config.headers.authorization = "Bearer " + token.access_token;
+							return config;
+						},
+						function() {
 							return config;
 						}
 				);
 			}
 		};
-	});
+	}]);
 }]);
 

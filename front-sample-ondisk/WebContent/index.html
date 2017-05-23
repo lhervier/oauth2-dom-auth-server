@@ -86,13 +86,16 @@
 						if( this.readyState != 4 )
 							return;
 
-						// Le refresh a fonctionné => On a un nouveau access token => On continue
 						if( this.status == 200) {
 							var resp = JSON.parse(this.responseText);
-							accessToken = resp.access_token;
-							callRest(method, url, callback);
+							// Le refresh a fonctionné => On a un nouveau access token => On continue
+							if( resp.access_token ) {
+								accessToken = resp.access_token;
+								callRest(method, url, callback);
+							// Le refresh token n'a pas fonctionné (session expirée, ou refresh token expiré même si c'est plus rare) => On a été déconnecté
+							} else
+								reconnect(false);
 
-						// Le refresh token n'a pas fonctionné (session expirée, ou refresh token expiré même si c'est plus rare) => On a été déconnecté
 						} else if( this.status == 403 ) {
 							reconnect(false);
 						} else

@@ -69,12 +69,24 @@ public class ParamsBean implements Serializable {
 	 * @throws NotesException en cas de problème
 	 */
 	public void reload() throws NotesException {
-		Database database = JSFUtils.getDatabase();
-		View v = database.getView(VIEW_PARAMS);
-		Document doc = v.getFirstDocument();
-		if( doc == null )
-			throw new RuntimeException("Le document de paramétrage n'existe pas. Impossible de démarrer l'application.");
-		DominoUtils.fillObject(this, doc);
+		Database database = null;
+		View v = null;
+		Document doc = null;
+		try {
+			database = DominoUtils.openDatabase(
+					JSFUtils.getSessionAsSigner(), 
+					JSFUtils.getDatabase().getFilePath()
+			);
+			v = database.getView(VIEW_PARAMS);
+			doc = v.getFirstDocument();
+			if( doc == null )
+				throw new RuntimeException("Le document de paramétrage n'existe pas. Impossible de démarrer l'application.");
+			DominoUtils.fillObject(this, doc);
+		} finally {
+			DominoUtils.recycleQuietly(doc);
+			DominoUtils.recycleQuietly(v);
+			DominoUtils.recycleQuietly(database);
+		}
 	}
 	
 	// =============================================================

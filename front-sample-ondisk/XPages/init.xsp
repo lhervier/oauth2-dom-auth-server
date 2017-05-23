@@ -3,4 +3,7 @@
 	<xp:this.beforePageLoad><![CDATA[#{javascript:
 		initBean.init();
 	}]]></xp:this.beforePageLoad>
+	
+	<xp:label value="error :"/>
+	<xp:text value="#{requestScope.error}"/>
 </xp:view>

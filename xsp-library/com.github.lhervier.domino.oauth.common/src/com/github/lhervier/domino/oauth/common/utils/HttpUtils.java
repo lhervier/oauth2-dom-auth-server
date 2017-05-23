@@ -10,6 +10,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLSocketFactory;
+
 import org.apache.commons.io.IOUtils;
 
 public class HttpUtils<T, E> {
@@ -43,6 +47,16 @@ public class HttpUtils<T, E> {
 	 * Les headers à ajouter
 	 */
 	private Map<String, String> headers = new HashMap<String, String>();
+	
+	/**
+	 * Un éventuel hostname verifier (si connection https)
+	 */
+	private HostnameVerifier verifier = null;
+	
+	/**
+	 * Un éventuel SSLFactory (si connection https)
+	 */
+	private SSLSocketFactory factory = null;
 	
 	/**
 	 * Initialise une connection 
@@ -96,13 +110,41 @@ public class HttpUtils<T, E> {
 	}
 	
 	/**
+	 * Pour ajouter un verifier
+	 * @param verifier le verifier
+	 */
+	public HttpUtils<T, E> withVerifier(HostnameVerifier verifier) {
+		this.verifier = verifier;
+		return this;
+	}
+	
+	/**
+	 * Pour ajouter un SSLFactory
+	 * @param factory la factory
+	 */
+	public HttpUtils<T, E> withFactory(SSLSocketFactory factory) {
+		this.factory = factory;
+		return this;
+	}
+	
+	/**
 	 * Emet la requête
 	 * @param obj l'objet à envoyer
 	 * @throws IOException 
 	 */
 	public void execute(Object obj) throws IOException {
 		URL url = new URL(this.url);
-		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+		
+		HttpURLConnection conn = (HttpURLConnection) url.openConnection();;
+		if( "https".equals(url.getProtocol()) ) {
+			HttpsURLConnection conns = (HttpsURLConnection) conn;
+			if( this.verifier != null )
+				conns.setHostnameVerifier(this.verifier);
+			
+			if( this.factory != null )
+				conns.setSSLSocketFactory(this.factory);
+		}
+		
 		InputStream in = null;
 		Reader reader = null;
 		try {

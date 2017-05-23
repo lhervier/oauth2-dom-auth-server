@@ -1,7 +1,5 @@
 package com.github.lhervier.domino.oauth.library.client.bean;
 
-import static com.github.lhervier.domino.oauth.common.utils.HttpUtils.createConnection;
-
 import java.io.IOException;
 
 import com.github.lhervier.domino.oauth.common.model.GrantResponse;
@@ -48,8 +46,7 @@ public class RefreshBean {
 		authorizeUrl.append("grant_type=refresh_token&");
 		authorizeUrl.append("refresh_token=").append(refreshToken);
 		
-		createConnection(authorizeUrl.toString(), GrantResponse.class, GrantError.class)
-				.addHeader("Authorization", "Basic " + this.paramsBean.getSecret())
+		Utils.createConnection(authorizeUrl.toString())
 				
 				// OK => Met à jour la session et retourne le token
 				.onOk(new Callback<GrantResponse>() {
@@ -69,6 +66,7 @@ public class RefreshBean {
 						JSFUtils.send403();
 					}
 				})
+				
 				.execute();
 	}
 }

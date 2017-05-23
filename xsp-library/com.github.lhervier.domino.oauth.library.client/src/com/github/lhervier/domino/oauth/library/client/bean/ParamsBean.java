@@ -37,6 +37,12 @@ public class ParamsBean {
 	private String tokenEndPoint;
 	
 	/**
+	 * Est ce qu'il faut désactiver la vérification du nom d'hôte dans
+	 * les certificats SSL lors de l'appel du endpoint token avec un code autorisation
+	 */
+	private boolean disableHostNameVerifier = false;
+	
+	/**
 	 * Constructeur
 	 */
 	public ParamsBean() throws NotesException {
@@ -126,5 +132,19 @@ public class ParamsBean {
 	 */
 	public void setTokenEndPoint(String tokenEndPoint) {
 		this.tokenEndPoint = tokenEndPoint;
+	}
+
+	/**
+	 * @return the disableHostNameVerifier
+	 */
+	public boolean isDisableHostNameVerifier() {
+		return disableHostNameVerifier;
+	}
+
+	/**
+	 * @param disableHostNameVerifier the disableHostNameVerifier to set
+	 */
+	public void setDisableHostNameVerifier(boolean disableHostNameVerifier) {
+		this.disableHostNameVerifier = disableHostNameVerifier;
 	}
 }

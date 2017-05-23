@@ -1,7 +1,5 @@
 package com.github.lhervier.domino.oauth.library.client.bean;
 
-import static com.github.lhervier.domino.oauth.common.utils.HttpUtils.createConnection;
-
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -86,8 +84,7 @@ public class InitBean {
 		authorizeUrl.append("client_id=").append(this.paramsBean.getClientId()).append('&');
 		authorizeUrl.append("redirect_uri=").append(Utils.getEncodedRedirectUri());
 		
-		createConnection(authorizeUrl.toString(), GrantResponse.class, GrantError.class)
-				.addHeader("Authorization", "Basic " + this.paramsBean.getSecret())
+		Utils.createConnection(authorizeUrl.toString())
 				
 				// OK => Mémorise les tokens en session et redirige vers l'url initiale
 				.onOk(new Callback<GrantResponse>() {
@@ -106,6 +103,7 @@ public class InitBean {
 						JSFUtils.getRequestScope().put("error", error);
 					}
 				})
+				
 				.execute();
 	}
 }

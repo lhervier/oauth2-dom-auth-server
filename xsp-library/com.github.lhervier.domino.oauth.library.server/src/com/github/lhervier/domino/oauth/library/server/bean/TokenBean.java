@@ -133,10 +133,11 @@ public class TokenBean {
 	
 	/**
 	 * Gestion du token.
-	 * @param response la réponse http
 	 * @throws IOException
 	 */
-	public void token(HttpServletResponse response) throws IOException {
+	public void token() throws IOException {
+		HttpServletResponse response = JSFUtils.getServletResponse();
+		
 		// Calcul l'objet réponse
 		Object resp;
 		try {

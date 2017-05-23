@@ -9,8 +9,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletResponse;
-
 import lotus.domino.Database;
 import lotus.domino.Document;
 import lotus.domino.Name;
@@ -76,10 +74,9 @@ public class AuthorizeBean {
 	
 	/**
 	 * Génère le code autorization
-	 * @param response la réponse http
 	 * @throws IOException 
 	 */
-	public void authorize(HttpServletResponse response) throws IOException {
+	public void authorize() throws IOException {
 		Map<String, String> param = JSFUtils.getParam();
 		StateResponse ret;
 		String redirectUri = null;

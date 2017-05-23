@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html ng-app="sampleApp">
+<head>
+	<meta charset="utf-8">
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular-resource.js"></script>
+	<script src="app/app.js"></script>
+</head>
+<body ng-controller="SampleController as ctrl">
+	<div ng-show="ctrl.alerte != null">
+		{{ctrl.alerte.message}}
+		<a ng-href="{{ctrl.alerte.url}}" ng-show="ctrl.alerte.url != null">Cliquez ici</a>
+	</div>
+	
+	<span>Infos utilisateur : {{ctrl.hello}}</span>
+	<ul>
+		<li>Nom : {{ctrl.userInfo.name}}</li>
+	</ul>
+	<button ng-click="ctrl.loadUserInfo()">
+		Charger les infos utilisateur
+	</button>
+	<button ng-click="ctrl.test()">
+		Test
+	</button>
+</body>
+</html>

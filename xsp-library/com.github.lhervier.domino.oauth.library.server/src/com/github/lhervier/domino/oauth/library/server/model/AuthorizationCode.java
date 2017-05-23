@@ -4,7 +4,7 @@ package com.github.lhervier.domino.oauth.library.server.model;
  * Un code autorisation
  * @author Lionel HERVIER
  */
-public class AuthorizationCode extends Token {
+public class AuthorizationCode extends IdToken {
 
 	/**
 	 * Le champ lecteur qui contient le nom de l'application

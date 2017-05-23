@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 import springfox.documentation.builders.ParameterBuilder;
 import springfox.documentation.builders.PathSelectors;
@@ -22,7 +23,8 @@ public class SwaggerConfig {
 	 * @return le docket
 	 */
 	@Bean
-	public Docket api() {
+	@Profile("dev")
+    public Docket api() {
 		return new Docket(DocumentationType.SWAGGER_2)
 				.select()
 				.apis(RequestHandlerSelectors.any())

@@ -25,7 +25,7 @@ public class SpringBootConfig {
 	 * @return
 	 */
 	@Bean
-    public WebMvcConfigurer corsConfigurer() {
+	public WebMvcConfigurer corsConfigurer() {
 		return new WebMvcConfigurerAdapter() {
 			@Override
 			public void addCorsMappings(CorsRegistry registry) {

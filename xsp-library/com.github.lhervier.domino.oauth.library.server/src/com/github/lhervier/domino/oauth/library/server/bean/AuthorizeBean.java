@@ -54,12 +54,6 @@ public class AuthorizeBean {
 	private Session sessionAsSigner;
 	
 	/**
-	 * La base en tant que le signataire 
-	 * (pour créer les codes autorization)
-	 */
-	private Database databaseAsSigner;
-	
-	/**
 	 * La bean pour accéder aux applications
 	 */
 	private AppBean appBean;
@@ -76,10 +70,6 @@ public class AuthorizeBean {
 	public AuthorizeBean() throws NotesException {
 		this.session = JSFUtils.getSession();
 		this.sessionAsSigner = JSFUtils.getSessionAsSigner();
-		this.databaseAsSigner = DominoUtils.openDatabase(
-				this.sessionAsSigner, 
-				JSFUtils.getDatabase().getFilePath()
-		);
 		this.appBean = Utils.getAppBean();
 		this.paramsBean = Utils.getParamsBean();
 	}
@@ -184,9 +174,14 @@ public class AuthorizeBean {
 		
 		// Créé le document authorization
 		String id = this.generateCode();
+		Database db = null;
 		Document authDoc = null;
 		Name nn = null;
 		try {
+			db = DominoUtils.openDatabase(		// Si on ouvre cette dans le constructeur, parfois, elle est recyclée...
+					this.sessionAsSigner, 
+					JSFUtils.getDatabase().getFilePath()
+			);
 			nn = this.sessionAsSigner.createName(app.getName() + Constants.SUFFIX_APP);
 			
 			// Créé le code authorization
@@ -202,7 +197,7 @@ public class AuthorizeBean {
 			authCode.setAuthTime(System.currentTimeMillis());
 			
 			// On le persiste dans la base
-			authDoc = this.databaseAsSigner.createDocument();
+			authDoc = db.createDocument();
 			authDoc.replaceItemValue("Form", "AuthorizationCode");
 			DominoUtils.fillDocument(authDoc, authCode);
 			
@@ -213,6 +208,7 @@ public class AuthorizeBean {
 		} finally {
 			DominoUtils.recycleQuietly(nn);
 			DominoUtils.recycleQuietly(authDoc);
+			DominoUtils.recycleQuietly(db);
 		}
 		
 		AuthorizeResponse ret = new AuthorizeResponse();

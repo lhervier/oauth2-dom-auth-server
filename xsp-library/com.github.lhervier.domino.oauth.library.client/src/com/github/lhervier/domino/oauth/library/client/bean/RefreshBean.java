@@ -37,7 +37,7 @@ public class RefreshBean {
 		
 		// Refresh token pas présent (session non initialisés ou expirée)
 		if( refreshToken == null ) {
-			JSFUtils.send403();
+			this.accessTokenBean.sendToken();
 			return;
 		}
 		
@@ -63,7 +63,10 @@ public class RefreshBean {
 				.onError(new Callback<GrantError>() {
 					@Override
 					public void run(GrantError error) throws IOException {
-						JSFUtils.send403();
+						JSFUtils.getSessionScope().put("refresh_token", null);
+						JSFUtils.getSessionScope().put("access_token", null);
+						
+						RefreshBean.this.accessTokenBean.sendToken();
 					}
 				})
 				

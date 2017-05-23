@@ -69,6 +69,25 @@ sampleApp.factory('alerteService', ['$rootScope', function($rootScope) {
 sampleApp.factory('tokenService', ['$q', '$resource', '$window', 'alerteService', 'reconnectService', function($q, $resource, $window, alerteService, reconnectService) {
 	var svc = {
 		token: null,
+		_getToken: function(force, url) {
+			var result = $resource(url).get();
+			return result.$promise.then(
+				function() {
+					var deferred = $q.defer();
+					if( !result.access_token ) {	// On n'a pas le token, même si le serveur a repondu avec un code 200
+						reconnectService.reconnect(force);
+						deferred.reject();
+					} else {
+						svc.token = result.access_token;
+						deferred.resolve(result);
+					}
+					return deferred.promise;
+				},
+				function() {						// Le serveur a répondu autre chose que 200
+					reconnectService.reconnect(force);
+				}
+			);
+		},
 		getToken: function(force) {
 			// On a le token => On le retourne
 			if( svc.token ) {
@@ -77,46 +96,61 @@ sampleApp.factory('tokenService', ['$q', '$resource', '$window', 'alerteService'
 				return defer.promise;
 			}
 			
-			// On n'a pas le token, on va le chercher
-			var result = $resource('accessToken.xsp').get();
-			return result.$promise.then(
-					function() {
-						var deferred = $q.defer();
-						if( !result.access_token ) {	// On n'a pas le token, même si le serveur a repondu avec un code 200
-							reconnectService.reconnect(force);
-							deferred.reject();
-						} else {
-							svc.token = result.access_token;
-							deferred.resolve(result);
-						}
-						return deferred.promise;
-					},
-					function() {						// Le serveur a répondu autre chose que 200
-						svc.reconnect(force);
-					}
-			);
+			// On ne l'a pas, on va le chercher
+			return this._getToken(force, 'accessToken.xsp');
+		},
+		refreshToken: function() {
+			return this._getToken(false, 'refresh.xsp');
 		}
 	};
 	return svc;
 }]);
 
 sampleApp.config(['$httpProvider', function($httpProvider) {
-	$httpProvider.interceptors.push(['$injector', '$location', function($injector, $location) {
+	$httpProvider.interceptors.push(['$injector', '$location', '$q', function($injector, $location, $q) {
+		var external = RegExp('^((f|ht)tps?:)?//(?!' + $location.host() + ')');
+		var shouldProcess = function(url) {
+			if( external.test(url) )
+				return true;
+			if( url.endsWith('accessToken.xsp') )
+				return false;
+			if( url.endsWith('refresh.xsp') )
+				return false;
+			return true;
+		}
 		return {
 			request: function(config) {
-				var tokenService = $injector.get('tokenService');
-				
-				var external = RegExp('^((f|ht)tps?:)?//(?!' + $location.host() + ')');
-				if( !external.test(config.url) )
+				if( !shouldProcess(config.url) )
 					return config;
 				
+				var tokenService = $injector.get('tokenService');
 				return tokenService.getToken(false).then(
 						function(token) {
 							config.headers.authorization = "Bearer " + token.access_token;
 							return config;
 						},
 						function() {
+							// Bidouille pour annuler la requête courante.
+							var canceller = $q.defer();
+							canceller.resolve();
+							config.timeout = canceller.promise;
 							return config;
+						}
+				);
+			},
+			
+			responseError: function(rejection) {
+				if( rejection.status != 403 || !shouldProcess(rejection.config.url) )
+					return $q.reject(rejection);;
+				
+				var tokenService = $injector.get('tokenService');
+				var $http = $injector.get('$http');
+				return tokenService.refreshToken().then(
+						function(token) {
+							return $http(rejection.config);
+						},
+						function(error) {
+							console.log('XXX');
 						}
 				);
 			}

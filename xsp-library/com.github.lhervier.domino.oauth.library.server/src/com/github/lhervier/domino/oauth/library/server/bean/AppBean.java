@@ -19,7 +19,6 @@ import com.github.lhervier.domino.oauth.common.utils.Base64Utils;
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
 import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
 import com.github.lhervier.domino.oauth.common.utils.ViewIterator;
-import com.github.lhervier.domino.oauth.library.server.Constants;
 import com.github.lhervier.domino.oauth.library.server.model.Application;
 import com.github.lhervier.domino.oauth.library.server.utils.Utils;
 
@@ -91,7 +90,7 @@ public class AppBean {
 		Name appNotesName = null;
 		View v = null;
 		try {
-			appNotesName = this.session.createName(appName + Constants.SUFFIX_APP);
+			appNotesName = this.session.createName(appName + Utils.getParamsBean().getApplicationRoot());
 			v = DominoUtils.getView(this.nab, VIEW_USERS);
 			return v.getDocumentByKey(appNotesName.getAbbreviated());
 		} finally {
@@ -238,7 +237,7 @@ public class AppBean {
 			if( person != null )
 				throw new RuntimeException("Une application avec ce nom existe déjà.");
 			
-			String abbreviated = app.getName() + Constants.SUFFIX_APP;
+			String abbreviated = app.getName() + Utils.getParamsBean().getApplicationRoot();
 			nn = this.session.createName(abbreviated);
 			String fullName = nn.toString();
 			

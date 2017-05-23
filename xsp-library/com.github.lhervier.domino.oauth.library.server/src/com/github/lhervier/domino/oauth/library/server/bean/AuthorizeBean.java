@@ -182,7 +182,7 @@ public class AuthorizeBean {
 					this.sessionAsSigner, 
 					JSFUtils.getDatabase().getFilePath()
 			);
-			nn = this.sessionAsSigner.createName(app.getName() + Constants.SUFFIX_APP);
+			nn = this.sessionAsSigner.createName(app.getName() + Utils.getParamsBean().getApplicationRoot());
 			
 			// Créé le code authorization
 			AuthorizationCode authCode = new AuthorizationCode();

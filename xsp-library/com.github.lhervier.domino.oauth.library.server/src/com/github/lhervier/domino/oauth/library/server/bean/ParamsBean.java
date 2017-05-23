@@ -32,6 +32,11 @@ public class ParamsBean implements Serializable {
 	private String nab;
 	
 	/**
+	 * Pour compléter les noms des applications
+	 */
+	private String applicationRoot;
+	
+	/**
 	 * La durée de vie de l'access token
 	 */
 	private long accessTokenLifetime;
@@ -173,5 +178,19 @@ public class ParamsBean implements Serializable {
 	 */
 	public void setAuthCodeLifetime(long authCodeLifetime) {
 		this.authCodeLifetime = authCodeLifetime;
+	}
+
+	/**
+	 * @return the applicationRoot
+	 */
+	public String getApplicationRoot() {
+		return applicationRoot;
+	}
+
+	/**
+	 * @param applicationRoot the applicationRoot to set
+	 */
+	public void setApplicationRoot(String applicationRoot) {
+		this.applicationRoot = applicationRoot;
 	}
 }

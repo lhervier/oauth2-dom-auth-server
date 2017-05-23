@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<xp:view xmlns:xp="http://www.ibm.com/xsp/core">
-	<xp:this.beforePageLoad><![CDATA[#{javascript:
-		sessionScope.access_token = null;
-		sessionScope.refresh_token = null;
-	}]]></xp:this.beforePageLoad>
-</xp:view>

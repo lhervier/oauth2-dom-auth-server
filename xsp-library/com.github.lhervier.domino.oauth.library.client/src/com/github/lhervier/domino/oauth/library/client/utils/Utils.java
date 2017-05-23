@@ -21,7 +21,7 @@ import com.github.lhervier.domino.oauth.common.utils.HttpUtils;
 import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
 import com.github.lhervier.domino.oauth.library.client.Constants;
 import com.github.lhervier.domino.oauth.library.client.bean.AccessTokenBean;
-import com.github.lhervier.domino.oauth.library.client.bean.ParamsBean;
+import com.github.lhervier.domino.oauth.library.client.bean.InitParamsBean;
 
 public class Utils {
 
@@ -39,8 +39,8 @@ public class Utils {
 	 * Retourne la bean de paramétrage
 	 * @return la bean de paramétrage
 	 */
-	public static final ParamsBean getParamsBean() {
-		return (ParamsBean) JSFUtils.getBean("paramsBean");
+	public static final InitParamsBean getInitParamsBean() {
+		return (InitParamsBean) JSFUtils.getBean("initParamsBean");
 	}
 	
 	/**
@@ -56,7 +56,7 @@ public class Utils {
 	 * @throws UnsupportedEncodingException 
 	 */
 	public static final String getEncodedRedirectUri() throws UnsupportedEncodingException {
-		ParamsBean paramsBean = Utils.getParamsBean();
+		InitParamsBean paramsBean = Utils.getInitParamsBean();
 		StringBuffer redirectUri = new StringBuffer();
 		redirectUri.append(paramsBean.getBaseURI());
 		if( !paramsBean.getBaseURI().endsWith("/") )
@@ -140,7 +140,7 @@ public class Utils {
 	 * @return la connection
 	 */
 	public static final HttpUtils<GrantResponse, GrantError> createConnection(String url) {
-		ParamsBean paramsBean = getParamsBean();
+		InitParamsBean paramsBean = getInitParamsBean();
 		
 		HostnameVerifier verifier = null;
 		if( paramsBean.isDisableHostNameVerifier() ) {

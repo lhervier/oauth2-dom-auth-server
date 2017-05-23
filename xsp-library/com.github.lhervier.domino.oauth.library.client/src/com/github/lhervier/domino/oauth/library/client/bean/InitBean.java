@@ -20,13 +20,13 @@ public class InitBean {
 	/**
 	 * La bean pour accéder au paramétrage
 	 */
-	private ParamsBean paramsBean;
+	private InitParamsBean paramsBean;
 	
 	/**
 	 * Constructeur
 	 */
 	public InitBean() {
-		this.paramsBean = Utils.getParamsBean();
+		this.paramsBean = Utils.getInitParamsBean();
 	}
 	
 	/**

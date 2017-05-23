@@ -9,7 +9,7 @@ import lotus.domino.View;
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
 import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
 
-public class ParamsBean {
+public class InitParamsBean {
 
 	/**
 	 * L'id client de l'appli
@@ -45,7 +45,7 @@ public class ParamsBean {
 	/**
 	 * Constructeur
 	 */
-	public ParamsBean() throws NotesException {
+	public InitParamsBean() throws NotesException {
 		Database db = null;
 		View v = null;
 		Document doc = null;
@@ -56,7 +56,7 @@ public class ParamsBean {
 			if( v.getEntryCount() != 1 )
 				throw new RuntimeException("Il doit y avoir un seul document dans la vue Params");
 			doc = v.getFirstDocument();
-			DominoUtils.fillObject(this, doc);
+			DominoUtils.fillObject(this, doc, "INIT_");
 		} finally {
 			DominoUtils.recycleQuietly(doc);
 			DominoUtils.recycleQuietly(v);

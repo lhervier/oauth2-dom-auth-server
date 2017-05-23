@@ -13,7 +13,7 @@ public class RefreshBean {
 	/**
 	 * La bean pour accéder aux paramètres
 	 */
-	private ParamsBean paramsBean;
+	private InitParamsBean paramsBean;
 	
 	/**
 	 * La bean pour accéder a l'access token
@@ -24,7 +24,7 @@ public class RefreshBean {
 	 * Constructeur
 	 */
 	public RefreshBean() {
-		this.paramsBean = Utils.getParamsBean();
+		this.paramsBean = Utils.getInitParamsBean();
 		this.accessTokenBean = Utils.getAccessTokenBean();
 	}
 	

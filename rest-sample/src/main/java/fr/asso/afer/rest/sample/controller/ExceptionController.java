@@ -1,5 +1,8 @@
 package fr.asso.afer.rest.sample.controller;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -20,6 +23,8 @@ public class ExceptionController {
 	 */
 	@ExceptionHandler(NotAuthorizedException.class)
 	public ResponseEntity<?> handleNotAuthorizedException(NotAuthorizedException e) {
-		return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
+		Map<String, String> resp = new HashMap<>();
+		resp.put("error", e.getMessage());
+		return new ResponseEntity<>(resp, HttpStatus.FORBIDDEN);
 	}
 }

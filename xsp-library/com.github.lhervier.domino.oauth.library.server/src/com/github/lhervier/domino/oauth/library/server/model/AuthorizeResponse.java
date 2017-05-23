@@ -1,5 +1,7 @@
 package com.github.lhervier.domino.oauth.library.server.model;
 
+import com.github.lhervier.domino.oauth.common.model.StateResponse;
+
 /**
  * Réponse à l'appel du endpoint authorize
  * @author Lionel HERVIER

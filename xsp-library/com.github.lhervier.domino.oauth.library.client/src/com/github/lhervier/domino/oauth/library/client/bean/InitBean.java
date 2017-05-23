@@ -8,9 +8,11 @@ import java.util.Map;
 import javax.faces.context.FacesContext;
 
 import com.github.lhervier.domino.oauth.common.model.GrantResponse;
+import com.github.lhervier.domino.oauth.common.model.error.AuthorizeError;
 import com.github.lhervier.domino.oauth.common.model.error.GrantError;
 import com.github.lhervier.domino.oauth.common.utils.Callback;
 import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
+import com.github.lhervier.domino.oauth.common.utils.QueryStringUtils;
 import com.github.lhervier.domino.oauth.library.client.utils.Utils;
 
 public class InitBean {
@@ -39,19 +41,22 @@ public class InitBean {
 		String code = param.get("code");
 		
 		// Si on a un code autorisation, on le traite
-		if( param.containsKey("code") )
+		if( param.containsKey("code") ) {
 			this.processAuthorizationCode(code, param.get("state"));		// dans state, on retrouve notre url de redirection initiale
+			FacesContext.getCurrentInstance().responseComplete();
 		
-		// Si on a n'a pas d'erreur, on traite le login
-		else if( !param.containsKey("error") )
+		// Si on a une erreur, on l'affiche
+		} else if( param.containsKey("error") ) {
+			JSFUtils.getRequestScope().put(
+					"error", 
+					QueryStringUtils.createBean(JSFUtils.getParam(), AuthorizeError.class)
+			);
+		
+		// Sinon, on traite le login
+		} else {
 			this.login(param.get("redirect_url"));
-		
-		// Sinon, on affiche l'erreur
-		else
-			return;
-		
-		// Fin du traitement
-		FacesContext.getCurrentInstance().responseComplete();
+			FacesContext.getCurrentInstance().responseComplete();
+		}
 	}
 	
 	/**

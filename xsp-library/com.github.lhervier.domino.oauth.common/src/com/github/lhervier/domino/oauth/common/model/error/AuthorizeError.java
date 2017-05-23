@@ -1,13 +1,13 @@
-package com.github.lhervier.domino.oauth.library.server.model.error;
+package com.github.lhervier.domino.oauth.common.model.error;
 
+import com.github.lhervier.domino.oauth.common.model.StateResponse;
 import com.github.lhervier.domino.oauth.common.utils.QueryStringUtils.QueryStringName;
-import com.github.lhervier.domino.oauth.library.server.model.StateResponse;
 
 /**
  * Bean pour décrire une erreur d'autorisation
  * @author Lionel HERVIER
  */
-public abstract class AuthorizeError extends StateResponse {
+public class AuthorizeError extends StateResponse {
 
 	/**
 	 * L'erreur. Cf RFC OAUTH2 pour la liste possible des valeurs

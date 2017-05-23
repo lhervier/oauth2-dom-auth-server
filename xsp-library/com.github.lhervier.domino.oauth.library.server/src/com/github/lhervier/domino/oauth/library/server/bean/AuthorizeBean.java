@@ -17,6 +17,7 @@ import lotus.domino.Name;
 import lotus.domino.NotesException;
 import lotus.domino.Session;
 
+import com.github.lhervier.domino.oauth.common.model.StateResponse;
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
 import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
 import com.github.lhervier.domino.oauth.common.utils.QueryStringUtils;
@@ -29,7 +30,6 @@ import com.github.lhervier.domino.oauth.library.server.ex.authorize.UnsupportedR
 import com.github.lhervier.domino.oauth.library.server.model.Application;
 import com.github.lhervier.domino.oauth.library.server.model.AuthorizationCode;
 import com.github.lhervier.domino.oauth.library.server.model.AuthorizeResponse;
-import com.github.lhervier.domino.oauth.library.server.model.StateResponse;
 import com.github.lhervier.domino.oauth.library.server.utils.Utils;
 
 /**
@@ -49,6 +49,17 @@ public class AuthorizeBean {
 	private Session session;
 	
 	/**
+	 * La session en tant que le signataire
+	 */
+	private Session sessionAsSigner;
+	
+	/**
+	 * La base en tant que le signataire 
+	 * (pour créer les codes autorization)
+	 */
+	private Database databaseAsSigner;
+	
+	/**
 	 * La bean pour accéder aux applications
 	 */
 	private AppBean appBean;
@@ -64,6 +75,11 @@ public class AuthorizeBean {
 	 */
 	public AuthorizeBean() throws NotesException {
 		this.session = JSFUtils.getSession();
+		this.sessionAsSigner = JSFUtils.getSessionAsSigner();
+		this.databaseAsSigner = DominoUtils.openDatabase(
+				this.sessionAsSigner, 
+				JSFUtils.getDatabase().getFilePath()
+		);
 		this.appBean = Utils.getAppBean();
 		this.paramsBean = Utils.getParamsBean();
 	}
@@ -169,10 +185,9 @@ public class AuthorizeBean {
 		// Créé le document authorization
 		String id = this.generateCode();
 		Document authDoc = null;
-		Database database = null;
 		Name nn = null;
 		try {
-			nn = this.session.createName(app.getName() + Constants.SUFFIX_APP);
+			nn = this.sessionAsSigner.createName(app.getName() + Constants.SUFFIX_APP);
 			
 			// Créé le code authorization
 			AuthorizationCode authCode = new AuthorizationCode();
@@ -187,18 +202,17 @@ public class AuthorizeBean {
 			authCode.setAuthTime(System.currentTimeMillis());
 			
 			// On le persiste dans la base
-			database = JSFUtils.getDatabase();
-			authDoc = database.createDocument();
+			authDoc = this.databaseAsSigner.createDocument();
 			authDoc.replaceItemValue("Form", "AuthorizationCode");
 			DominoUtils.fillDocument(authDoc, authCode);
 			
 			DominoUtils.computeAndSave(authDoc);
 		} catch (NotesException e) {
+			e.printStackTrace(System.err);
 			throw new ServerErrorException();
 		} finally {
 			DominoUtils.recycleQuietly(nn);
 			DominoUtils.recycleQuietly(authDoc);
-			DominoUtils.recycleQuietly(database);
 		}
 		
 		AuthorizeResponse ret = new AuthorizeResponse();

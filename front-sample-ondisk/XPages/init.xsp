@@ -4,6 +4,8 @@
 		initBean.init();
 	}]]></xp:this.beforePageLoad>
 	
-	<xp:label value="error :"/>
-	<xp:text value="#{requestScope.error}"/>
+	<xp:label value="Error: "/><xp:text value="#{requestScope.error.error}"/><br/>
+	<xp:label value="Description: "/><xp:text value="#{requestScope.error.description}"/><br/>
+	<xp:label value="URI: "/><xp:text value="#{requestScope.error.errorUri}"/><br/>
+	<xp:label value="State: "/><xp:text value="#{requestScope.error.state}"/><br/>
 </xp:view>

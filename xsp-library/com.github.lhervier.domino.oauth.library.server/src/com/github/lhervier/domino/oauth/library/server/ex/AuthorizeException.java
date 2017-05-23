@@ -1,6 +1,6 @@
 package com.github.lhervier.domino.oauth.library.server.ex;
 
-import com.github.lhervier.domino.oauth.library.server.model.error.AuthorizeError;
+import com.github.lhervier.domino.oauth.common.model.error.AuthorizeError;
 
 /**
  * Erreur pendant l'exécution du code grand 'authorize'

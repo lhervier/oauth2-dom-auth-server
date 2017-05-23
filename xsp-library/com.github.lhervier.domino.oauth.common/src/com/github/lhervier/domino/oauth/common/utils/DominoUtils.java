@@ -10,11 +10,9 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
@@ -35,21 +33,6 @@ import lotus.domino.View;
 public class DominoUtils {
 
 	/**
-	 * Pour la convertion des types primitifs en types Objets
-	 */
-	private final static Map<Class<?>, Class<?>> primitives = new HashMap<Class<?>, Class<?>>();
-	static {
-		primitives.put(boolean.class, Boolean.class);
-		primitives.put(byte.class, Byte.class);
-		primitives.put(short.class, Short.class);
-		primitives.put(char.class, Character.class);
-		primitives.put(int.class, Integer.class);
-		primitives.put(long.class, Long.class);
-		primitives.put(float.class, Float.class);
-		primitives.put(double.class, Double.class);
-	}
-	
-	/**
 	 * La liste des objets supportés pour stocker dans un champ
 	 */
 	private final static Set<Class<?>> supported = new HashSet<Class<?>>();
@@ -65,6 +48,23 @@ public class DominoUtils {
 		supported.add(boolean.class);
 		supported.add(Boolean.class);
 		supported.add(Vector.class);
+		supported.add(List.class);
+	}
+	
+	/**
+	 * Pour savoir si un type est supporté
+	 * @param cl le type à vérifier
+	 * @return true si le type est supporté. False sinon
+	 */
+	private static final boolean isSupported(Class<?> cl) {
+		boolean supp = false;
+		for( Class<?> suppCl : supported ) {
+			if( cl.isAssignableFrom(suppCl) ) {
+				supp = true;
+				break;
+			}
+		}
+		return supp;
 	}
 	
 	/**
@@ -79,6 +79,17 @@ public class DominoUtils {
 		} catch(NotesException e) {
 			e.printStackTrace(System.err);
 		}
+	}
+	
+	/**
+	 * Pour recycler une liste d'objects Domino
+	 * @param v les objets à recycler
+	 */
+	public static final void recycleQuietly(List<? extends Base> o) {
+		if( o == null )
+			return;
+		for( Base b : o )
+			DominoUtils.recycleQuietly(b);
 	}
 	
 	/**
@@ -204,7 +215,6 @@ public class DominoUtils {
 	public final static <T> T fillObject(T o, Document doc, String prefix) throws NotesException {
 		return fillObject(o, doc, prefix, null);
 	}
-	@SuppressWarnings("unchecked")
 	public final static <T> T fillObject(T o, Document doc, String prefix, DateFormat fmt) throws NotesException {
 		try {
 			// On l'introspecte pour ne pas mettre les champs en dur
@@ -234,7 +244,7 @@ public class DominoUtils {
 					continue;			// Un setter avec 2 paramètres ???
 				Class<?> paramClass;
 				if( parameters[0].isPrimitive() )
-					paramClass = primitives.get(parameters[0]);
+					paramClass = ReflectionUtils.PRIMITIVES.get(parameters[0]);
 				else
 					paramClass = parameters[0];
 				
@@ -263,29 +273,32 @@ public class DominoUtils {
 					setter.invoke(o, new Object[] {"1".equals(doc.getItemValueString(name))});
 				
 				// Un champ multi valué => Attention aux DateTime qu'on converti en dates java
-				else if( paramClass.isAssignableFrom(Vector.class) ) {
+				else if( paramClass.isAssignableFrom(List.class) ) {
+					List<Object> values;
+					
 					Item it = doc.getFirstItem(name);
-					Vector<Object> values;
-					if( it.getType() == Item.DATETIMES ) {
-						Vector<Object> dts = doc.getItemValueDateTimeArray(name);
-						values = new Vector<Object>();
-						for( Iterator<?> iterator = dts.iterator(); iterator.hasNext(); ) {
-							DateTime dt = (DateTime) iterator.next();
+					if( it.getType() != Item.DATETIMES )
+						values = getItemValue(doc, name, Object.class);
+					else {
+						values = new ArrayList<Object>();
+						List<DateTime> dts = getItemValue(doc, name, DateTime.class);
+						for( Iterator<DateTime> iterator = dts.iterator(); iterator.hasNext(); ) {
+							DateTime dt = iterator.next();
 							values.add(dt.toJavaDate());
 						}
-					} else {
-						values = doc.getItemValue(name);
+						DominoUtils.recycleQuietly(dts);
 					}
+					
 					setter.invoke(o, new Object[] {values});
 					
 				// DateTime: On converti en date java
 				} else if( paramClass.isAssignableFrom(Date.class) ) {
-					Item it = doc.getFirstItem(name);
 					Date dt = null;
 					
 					// Un vrai champ date
+					Item it = doc.getFirstItem(name);
 					if( it.getType() == Item.DATETIMES ) {
-						Vector<DateTime> values = doc.getItemValueDateTimeArray(name);
+						List<DateTime> values = getItemValue(doc, name, DateTime.class);
 						if( values != null && values.size() != 0 )
 							dt = values.get(0).toJavaDate();
 						
@@ -295,7 +308,6 @@ public class DominoUtils {
 						try {
 							dt = fmt.parse(s);
 						} catch(ParseException e) {
-							dt = null;
 						}
 					}
 					setter.invoke(o, new Object[] {dt});
@@ -394,7 +406,8 @@ public class DominoUtils {
 				Class<?> returnType = getter.getReturnType();
 				
 				// On ne traite que les types supportés
-				if( !supported.contains(returnType) )
+				boolean supp = isSupported(returnType);
+				if( !supp )
 					continue;
 				
 				// Récupère la future valeure du champ. On récupère quoi qu'il se passe une valeur multi 
@@ -408,26 +421,24 @@ public class DominoUtils {
 				}
 				
 				// Pas null, on transforme la valeur
-				Vector<Object> values;
-				if( returnType.isAssignableFrom(Vector.class) )
-					values = (Vector<Object>) v;
+				List<Object> values;
+				if( returnType.isAssignableFrom(List.class) )
+					values = (List<Object>) v;
 				else {
-					values = new Vector<Object>();
+					values = new ArrayList<Object>();
 					values.add(v);
 				}
-			
+				
 				// Converti les dates, et on vérifie qu'on n'a que des types supportés
+				// Domino attend un vecteur
 				Vector<Object> convertedValues = new Vector<Object>();
 				for( Object value : values ) {
 					Object convertedValue;
 					Class<?> valueClass = value.getClass();
 					
-					// Domino ne supporte pas les vecteurs dans les vecteurs
-					if( valueClass.isAssignableFrom(Vector.class) )
-						throw new RuntimeException("Impossible de remplir le document. La bean contient un vecteur de vecteur...");
-					
 					// Il ne supporte pas non plus l'ensemble des types java
-					if( !supported.contains(valueClass) )
+					supp = isSupported(valueClass);
+					if( !supp )
 						throw new RuntimeException("Impossible de remplir le document. La bean contient un " + valueClass.getName() + "...");
 					
 					// Si c'est une date, et qu'on a un DateFormat, on la converti en chaîne
@@ -442,6 +453,19 @@ public class DominoUtils {
 					} else if( valueClass.isAssignableFrom(Boolean.class) ) {
 						boolean b = ((Boolean) v).booleanValue();
 						convertedValue = b ? "1" : "0";
+						
+					// Si c'est une liste, on le converti les dates
+					} else if( valueClass.isAssignableFrom(List.class) ) {
+						Vector<Object> vec = new Vector<Object>();
+						List<Object> lst = (List<Object>) value;
+						for( Object obj : lst ) {
+							if( obj.getClass().isAssignableFrom(Date.class) )
+								vec.add(session.createDateTime((Date) obj));
+							else
+								vec.add(obj);
+						}
+						vec.addAll((List<Object>) value);
+						convertedValue = vec;
 						
 					// Sinon, on prend la valeur telle quelle
 					} else {

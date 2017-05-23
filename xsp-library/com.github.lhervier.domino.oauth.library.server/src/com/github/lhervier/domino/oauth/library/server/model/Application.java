@@ -38,6 +38,11 @@ public class Application implements Serializable {
 	 * Les personnes autorisées à se logger sur cette application
 	 */
 	private List<String> readers;
+	
+	/**
+	 * L'application elle même (champ lecteur)
+	 */
+	private String appReader;
 
 	/**
 	 * @return the readers
@@ -107,5 +112,19 @@ public class Application implements Serializable {
 	 */
 	public void setRedirectUris(List<String> redirectUris) {
 		this.redirectUris = redirectUris;
+	}
+
+	/**
+	 * @return the appReader
+	 */
+	public String getAppReader() {
+		return appReader;
+	}
+
+	/**
+	 * @param appReader the appReader to set
+	 */
+	public void setAppReader(String appReader) {
+		this.appReader = appReader;
 	}
 }

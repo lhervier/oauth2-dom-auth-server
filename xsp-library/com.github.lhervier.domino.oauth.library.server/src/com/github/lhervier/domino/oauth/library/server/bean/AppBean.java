@@ -24,7 +24,9 @@ import com.github.lhervier.domino.oauth.library.server.model.Application;
 import com.github.lhervier.domino.oauth.library.server.utils.Utils;
 
 /**
- * Managed bean pour gérer les applications
+ * Managed bean pour gérer les applications.
+ * ATTENTION: Cette bean utilise les droits de l'utilisateur
+ * actuellement connecté.
  * @author Lionel HERVIER
  */
 public class AppBean {
@@ -50,31 +52,6 @@ public class AppBean {
 	private static final String COLUMN_CLIENTID = "ClientId";
 	
 	/**
-	 * Le nom du champ qui contient le nom des applications
-	 */
-	private static final String FIELD_NAME = "Name";
-	
-	/**
-	 * Le nom du champ qui contient le client_id des applications (dans un document Person)
-	 */
-	private static final String FIELD_CLIENT_ID = "ClientId";
-	
-	/**
-	 * Le nom du champ qui contient l'URL de redirection par défaut d'une application (dans un document Person)
-	 */
-	public static final String FIELD_REDIRECT_URI = "RedirectUri";
-	
-	/**
-	 * Le nom du champ qui contient les autres URL de redirection d'une application (dans un document Person)
-	 */
-	public static final String FIELD_REDIRECT_URIS = "RedirectUris";
-	
-	/**
-	 * Le nom du champ qui contient les lecteurs d'une application
-	 */
-	public static final String FIELD_READERS = "Readers";
-	
-	/**
 	 * Notre générateur de nombres aléatoires
 	 */
 	private static final SecureRandom RANDOM = new SecureRandom();
@@ -87,7 +64,7 @@ public class AppBean {
 	/**
 	 * La session
 	 */
-	private Session sessionAsSigner;
+	private Session session;
 	
 	/**
 	 * Le nab
@@ -99,12 +76,9 @@ public class AppBean {
 	 * @throws NotesException en cas de pb
 	 */
 	public AppBean() throws NotesException {
-		this.sessionAsSigner = JSFUtils.getSessionAsSigner();
-		this.nab = Utils.getNab(this.sessionAsSigner);
-		this.database = DominoUtils.openDatabase(
-				this.sessionAsSigner, 
-				JSFUtils.getDatabase().getFilePath()
-		);
+		this.session = JSFUtils.getSession();
+		this.nab = Utils.getNab(this.session);
+		this.database = JSFUtils.getDatabase();
 	}
 	
 	/**
@@ -117,7 +91,7 @@ public class AppBean {
 		Name appNotesName = null;
 		View v = null;
 		try {
-			appNotesName = this.sessionAsSigner.createName(appName + Constants.SUFFIX_APP);
+			appNotesName = this.session.createName(appName + Constants.SUFFIX_APP);
 			v = DominoUtils.getView(this.nab, VIEW_USERS);
 			return v.getDocumentByKey(appNotesName.getAbbreviated());
 		} finally {
@@ -161,22 +135,6 @@ public class AppBean {
 	}
 	
 	/**
-	 * Transforme un document en une application
-	 * @param doc le document
-	 * @return l'application
-	 * @throws NotesException en cas de pb
-	 */
-	private Application appFromDoc(Document doc) throws NotesException {
-		Application app = new Application();
-		app.setName(doc.getItemValueString(FIELD_NAME));
-		app.setClientId(doc.getItemValueString(FIELD_CLIENT_ID));
-		app.setRedirectUri(doc.getItemValueString(FIELD_REDIRECT_URI));
-		app.setRedirectUris(DominoUtils.getItemValue(doc, FIELD_REDIRECT_URIS, String.class));
-		app.setReaders(DominoUtils.getItemValue(doc, FIELD_READERS, String.class));
-		return app;
-	}
-	
-	/**
 	 * Génère un secret
 	 * @return un mot de passe aléatoire
 	 */
@@ -217,7 +175,7 @@ public class AppBean {
 			doc = this.getAppDocFromName(appName);
 			if( doc == null )
 				return null;
-			return this.appFromDoc(doc);
+			return DominoUtils.fillObject(new Application(), doc);
 		} finally {
 			DominoUtils.recycleQuietly(doc);
 		}
@@ -235,7 +193,7 @@ public class AppBean {
 			doc = this.getAppDocFromClientId(clientId);
 			if( doc == null )
 				return null;
-			return this.appFromDoc(doc);
+			return DominoUtils.fillObject(new Application(), doc);
 		} finally {
 			DominoUtils.recycleQuietly(doc);
 		}
@@ -281,10 +239,10 @@ public class AppBean {
 				throw new RuntimeException("Une application avec ce nom existe déjà.");
 			
 			String abbreviated = app.getName() + Constants.SUFFIX_APP;
-			nn = this.sessionAsSigner.createName(abbreviated);
+			nn = this.session.createName(abbreviated);
 			String fullName = nn.toString();
 			
-			// Créé une nouvelle application (un nouvel utilisateur)
+			// Créé une nouvelle application dans le NAB (un nouvel utilisateur)
 			person = this.nab.createDocument();
 			person.replaceItemValue("Form", "Person");
 			person.replaceItemValue("Type", "Person");
@@ -293,21 +251,18 @@ public class AppBean {
 			person.replaceItemValue("MailSystem", "100");		// None
 			person.replaceItemValue("FullName", fullName);
 			String password = this.generatePassword();
-			person.replaceItemValue("HTTPPassword", this.sessionAsSigner.evaluate("@Password(\"" + password + "\")"));
-			person.replaceItemValue("HTTPPasswordChangeDate", this.sessionAsSigner.createDateTime(new Date()));
+			person.replaceItemValue("HTTPPassword", this.session.evaluate("@Password(\"" + password + "\")"));
+			person.replaceItemValue("HTTPPasswordChangeDate", this.session.createDateTime(new Date()));
 			person.replaceItemValue("$SecurePassword", "1");
-			person.replaceItemValue("Owner", this.sessionAsSigner.getEffectiveUserName());
-			person.replaceItemValue("LocalAdmin", this.sessionAsSigner.getEffectiveUserName());
+			person.replaceItemValue("Owner", this.session.getEffectiveUserName());
+			person.replaceItemValue("LocalAdmin", this.session.getEffectiveUserName());
 			DominoUtils.computeAndSave(person);
 			
 			// Créé un nouveau document pour l'application dans la base
 			appDoc = this.database.createDocument();
 			appDoc.replaceItemValue("Form", "Application");
-			appDoc.replaceItemValue(FIELD_NAME, app.getName());
-			appDoc.replaceItemValue(FIELD_CLIENT_ID, app.getClientId());
-			appDoc.replaceItemValue(FIELD_REDIRECT_URI, app.getRedirectUri());
-			DominoUtils.replaceItemValue(appDoc, FIELD_REDIRECT_URIS, app.getRedirectUris());
-			DominoUtils.replaceItemValue(appDoc, FIELD_READERS, app.getReaders());
+			app.setAppReader(fullName);
+			DominoUtils.fillDocument(appDoc, app);
 			DominoUtils.computeAndSave(appDoc);
 			
 			// Rafraîchit le NAB pour prise en compte immédiate
@@ -346,9 +301,7 @@ public class AppBean {
 			if( appDoc == null )
 				throw new RuntimeException("Ne devrait pas se produire...");		// On a vérifié qu'il existe juste avant...
 			
-			appDoc.replaceItemValue(FIELD_REDIRECT_URIS, app.getRedirectUri());
-			DominoUtils.replaceItemValue(appDoc, FIELD_REDIRECT_URI, app.getRedirectUris());
-			DominoUtils.replaceItemValue(appDoc, "Readers", app.getReaders());
+			DominoUtils.fillDocument(appDoc, app);
 			DominoUtils.computeAndSave(appDoc);
 		} finally {
 			DominoUtils.recycleQuietly(appDoc);

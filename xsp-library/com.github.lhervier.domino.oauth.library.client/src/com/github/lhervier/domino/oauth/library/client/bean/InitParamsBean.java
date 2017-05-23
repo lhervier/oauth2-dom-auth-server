@@ -1,13 +1,8 @@
 package com.github.lhervier.domino.oauth.library.client.bean;
 
-import lotus.domino.Database;
-import lotus.domino.Document;
 import lotus.domino.NotesException;
-import lotus.domino.Session;
-import lotus.domino.View;
 
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
-import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
 
 public class InitParamsBean {
 
@@ -46,22 +41,7 @@ public class InitParamsBean {
 	 * Constructeur
 	 */
 	public InitParamsBean() throws NotesException {
-		Database db = null;
-		View v = null;
-		Document doc = null;
-		try {
-			Session session = JSFUtils.getSessionAsSigner();
-			db = DominoUtils.openDatabase(session, JSFUtils.getDatabase().getFilePath());
-			v = db.getView("Params");
-			if( v.getEntryCount() != 1 )
-				throw new RuntimeException("Il doit y avoir un seul document dans la vue Params");
-			doc = v.getFirstDocument();
-			DominoUtils.fillObject(this, doc, "INIT_");
-		} finally {
-			DominoUtils.recycleQuietly(doc);
-			DominoUtils.recycleQuietly(v);
-			DominoUtils.recycleQuietly(db);
-		}
+		DominoUtils.loadParamFromSigner(this, "Params", "INIT_");
 	}
 	
 	/**

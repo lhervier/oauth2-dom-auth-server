@@ -17,15 +17,6 @@
 	
 	<hr/>
 	
-	<span>Access token :</span>
-	<span ng-show="ctrl.accessToken == null">Non récupére</span>
-	<span ng-show="ctrl.accessToken != null">{{ctrl.accessToken}}</span>
-	<button ng-click="ctrl.recupererAccessToken()">
-		Récupérer le access_token
-	</button>
-	
-	<hr/>
-	
 	<span>Utilisateur courant :</span>
 	<span ng-show="ctrl.userInfo == null">Non récupéré</span>
 	<span ng-show="ctrl.userInfo != null">{{ctrl.userInfo.name}}</span>

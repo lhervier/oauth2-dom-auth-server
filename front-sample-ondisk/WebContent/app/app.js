@@ -17,17 +17,7 @@ sampleApp.controller('SampleController', ['$rootScope', '$resource', 'tokenServi
 				});
 	};
 	
-	this.recupererAccessToken = function() {
-		tokenService.getToken(false).then(
-				function(token) {
-					ths.accessToken = token.access_token;
-				},
-				function() {
-					ths.accessToken = null;
-				}
-		)
-	}
-	
+	// Abonnement aux évenements
 	$rootScope.$on("alerte", function(event, level, message) {
 		ths.alerte = {
 				level: level,
@@ -38,6 +28,17 @@ sampleApp.controller('SampleController', ['$rootScope', '$resource', 'tokenServi
 	$rootScope.$on("reconnect", function(event, url) {
 		ths.reconnectUrl = url;
 	});
+	
+	// Charge le access_token au démarrage de la page
+	// On force la reconnexion
+	tokenService.getToken(true).then(
+			function(token) {
+				ths.accessToken = token.access_token;
+			},
+			function() {
+				alerteService.error("Erreur à la récupération du access_token");
+			}
+	);
 }]);
 
 sampleApp.factory('reconnectService', ['$rootScope', '$window', function($rootScope, $window) {

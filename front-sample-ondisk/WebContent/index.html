@@ -28,15 +28,16 @@
 			if( this.readyState != 4 )
 				return;
 
-			// On a le token => On le renseigne
+			// Essaye de récupérer le token
 			if( this.status == 200) {
 				var resp = JSON.parse(this.responseText);
-				accessToken = resp.access_token;
-				callback(accessToken);
-				
-			// On ne l'a pas => On doit se reconnecter et l'action est avortée
-			} else if( this.status == 403 ) {
-				reconnect(force);
+				if( resp.access_token ) {		// On l'a
+					accessToken = resp.access_token;
+					callback(accessToken);
+				} else {						// Il n'est pas en session. On demande une reconnexion.
+					reconnect(force);
+				}
+			
 			} else 
 				console.log(this);
 		};

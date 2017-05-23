@@ -10,7 +10,7 @@ sampleApp.controller('SampleController', ['$rootScope', '$resource', 'tokenServi
 	this.accessToken = null;
 	
 	this.loadUserInfo = function() {
-		ths.userInfo = $resource('http://apis.privatenetwork.net:8080/rest-sample/userInfo').get(
+		ths.userInfo = $resource(ths.param.restServer + '/userInfo').get(
 				function() {},
 				function(error) {
 					alerteService.error("Erreur à la récupération des infos utilisateur...");
@@ -29,14 +29,22 @@ sampleApp.controller('SampleController', ['$rootScope', '$resource', 'tokenServi
 		ths.reconnectUrl = url;
 	});
 	
-	// Charge le access_token au démarrage de la page
+	// Charge le paramétrage, puis le access_token au démarrage de la page
 	// On force la reconnexion
-	tokenService.getToken(true).then(
-			function(token) {
-				ths.accessToken = token.access_token;
+	this.param = $resource('param.xsp').get();
+	this.param.$promise.then(
+			function() {
+				tokenService.getToken(true).then(
+						function(token) {
+							ths.accessToken = token.access_token;
+						},
+						function() {
+							alerteService.error("Erreur à la récupération du access_token");
+						}
+				);
 			},
 			function() {
-				alerteService.error("Erreur à la récupération du access_token");
+				alerteService.error("Erreur à la récupération des paramètres locaux");
 			}
 	);
 }]);
@@ -116,6 +124,8 @@ sampleApp.config(['$httpProvider', function($httpProvider) {
 			if( url.endsWith('accessToken.xsp') )
 				return false;
 			if( url.endsWith('refresh.xsp') )
+				return false;
+			if( url.endsWith('param.xsp') )
 				return false;
 			return true;
 		}

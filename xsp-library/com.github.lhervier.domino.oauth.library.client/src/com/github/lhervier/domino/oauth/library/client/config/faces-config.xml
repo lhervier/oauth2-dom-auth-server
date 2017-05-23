@@ -6,6 +6,11 @@
   	<managed-bean-scope>session</managed-bean-scope>
   </managed-bean>
   <managed-bean>
+  	<managed-bean-name>paramBean</managed-bean-name>
+  	<managed-bean-class>com.github.lhervier.domino.oauth.library.client.bean.ParamBean</managed-bean-class>
+  	<managed-bean-scope>session</managed-bean-scope>
+  </managed-bean>
+  <managed-bean>
   	<managed-bean-name>utils</managed-bean-name>
   	<managed-bean-class>com.github.lhervier.domino.oauth.library.client.utils.Utils</managed-bean-class>
   	<managed-bean-scope>request</managed-bean-scope>

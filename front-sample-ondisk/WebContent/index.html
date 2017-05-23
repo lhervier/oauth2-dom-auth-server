@@ -3,13 +3,35 @@
 <meta http-equiv="Content-Type" content="text/html charset=UTF-8" />
 <script type="text/javascript">
 	var accessToken = null;
-
+	var params = null;
+	
 	/**
 	 * Initialisation de la page. On charge le token
 	 * en forçant une éventuelle reconnexion.
 	 */
 	function init() {
 		runWithToken(function(){}, true);
+		loadParam();
+	}
+
+	/**
+	 * Charge le paramétrage local
+	 */
+	function loadParam() {
+		var xmlhttp = new XMLHttpRequest();
+		xmlhttp.onreadystatechange = function() {
+			if( this.readyState != 4 )
+				return;
+
+			// Essaye de récupérer le token
+			if( this.status == 200)
+				params = JSON.parse(this.responseText);
+			else 
+				console.log(this);
+		};
+		
+		xmlhttp.open("GET", "param.xsp", true);
+		xmlhttp.send();
 	}
 	
 	/**
@@ -116,7 +138,7 @@
 	 * Affiche les infos utilisateur
 	 */
 	function userInfo() {
-		callRest('GET', 'http://apis.privatenetwork.net:8080/rest-sample/userInfo', function(res) {
+		callRest('GET', params.restServer + '/userInfo', function(res) {
 			alert(res.name);
 		});
 	}
@@ -152,12 +174,6 @@
 
 <button onclick="userInfo()">
 	Charge les infos sur l'utilisateur (via un appel Rest Cors)
-</button>
-
-<hr/>
-
-<button onclick="expireSession()">
-	Simuler une expiration de session
 </button>
 
 </BODY>

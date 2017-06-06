@@ -20,14 +20,12 @@ public class InitBean {
 	/**
 	 * La bean pour accéder au paramétrage
 	 */
-	private InitParamsBean paramsBean;
+	private InitParamsBean initParamsBean;
 	
 	/**
-	 * Constructeur
+	 * Les paramétres de la requête
 	 */
-	public InitBean() {
-		this.paramsBean = Utils.getInitParamsBean();
-	}
+	private Map<String, String> param;
 	
 	/**
 	 * Initialisation
@@ -35,18 +33,16 @@ public class InitBean {
 	 * @throws JsonDeserializeException 
 	 */
 	public void init() throws IOException {
-		Map<String, String> param = JSFUtils.getParam();
-		
 		// Pas de code autorisation => On renvoi vers la page de login
-		String code = param.get("code");
+		String code = this.param.get("code");
 		
 		// Si on a un code autorisation, on le traite
-		if( param.containsKey("code") ) {
-			this.processAuthorizationCode(code, param.get("state"));		// dans state, on retrouve notre url de redirection initiale
+		if( this.param.containsKey("code") ) {
+			this.processAuthorizationCode(code, this.param.get("state"));		// dans state, on retrouve notre url de redirection initiale
 			FacesContext.getCurrentInstance().responseComplete();
 		
 		// Si on a une erreur, on l'affiche
-		} else if( param.containsKey("error") ) {
+		} else if( this.param.containsKey("error") ) {
 			JSFUtils.getRequestScope().put(
 					"error", 
 					QueryStringUtils.createBean(JSFUtils.getParam(), AuthorizeError.class)
@@ -54,7 +50,7 @@ public class InitBean {
 		
 		// Sinon, on traite le login
 		} else {
-			this.login(param.get("redirect_url"));
+			this.login(this.param.get("redirect_url"));
 			FacesContext.getCurrentInstance().responseComplete();
 		}
 	}
@@ -66,10 +62,10 @@ public class InitBean {
 	 */
 	private void login(String redirectUrl) throws UnsupportedEncodingException {
 		JSFUtils.sendRedirect(
-				this.paramsBean.getAuthorizeEndPoint() + "?" +
+				this.initParamsBean.getAuthorizeEndPoint() + "?" +
 					"response_type=code&" +
 					"redirect_uri=" + Utils.getEncodedRedirectUri() + "&" +
-					"client_id=" + this.paramsBean.getClientId() + "&" +
+					"client_id=" + this.initParamsBean.getClientId() + "&" +
 					"state=" + URLEncoder.encode(redirectUrl, "UTF-8")
 		);
 	}
@@ -83,10 +79,10 @@ public class InitBean {
 	 */
 	private void processAuthorizationCode(final String code, final String redirectUrl) throws IOException {
 		StringBuffer authorizeUrl = new StringBuffer();
-		authorizeUrl.append(this.paramsBean.getTokenEndPoint()).append('?');
+		authorizeUrl.append(this.initParamsBean.getTokenEndPoint()).append('?');
 		authorizeUrl.append("grant_type=authorization_code&");
 		authorizeUrl.append("code=").append(code).append('&');
-		authorizeUrl.append("client_id=").append(this.paramsBean.getClientId()).append('&');
+		authorizeUrl.append("client_id=").append(this.initParamsBean.getClientId()).append('&');
 		authorizeUrl.append("redirect_uri=").append(Utils.getEncodedRedirectUri());
 		
 		Utils.createConnection(authorizeUrl.toString())
@@ -110,5 +106,21 @@ public class InitBean {
 				})
 				
 				.execute();
+	}
+	
+	// =================================================================================
+
+	/**
+	 * @param initParamsBean the initParamsBean to set
+	 */
+	public void setInitParamsBean(InitParamsBean initParamsBean) {
+		this.initParamsBean = initParamsBean;
+	}
+
+	/**
+	 * @param param the param to set
+	 */
+	public void setParam(Map<String, String> param) {
+		this.param = param;
 	}
 }

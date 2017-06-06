@@ -1,35 +1,53 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <faces-config>
-  <!-- La bean pour accéder au doc de paramétrage -->
+  <!-- La bean pour accéder au paramétrage OAUTH -->
   <managed-bean>
   	<managed-bean-name>initParamsBean</managed-bean-name>
   	<managed-bean-class>com.github.lhervier.domino.oauth.library.client.bean.InitParamsBean</managed-bean-class>
   	<managed-bean-scope>session</managed-bean-scope>
   </managed-bean>
   
+  <!-- La bean pour accéder au paramétrage applicatif -->
   <managed-bean>
   	<managed-bean-name>paramsBean</managed-bean-name>
   	<managed-bean-class>com.github.lhervier.domino.oauth.library.client.bean.ParamsBean</managed-bean-class>
   	<managed-bean-scope>session</managed-bean-scope>
   </managed-bean>
-  <managed-bean>
-  	<managed-bean-name>utils</managed-bean-name>
-  	<managed-bean-class>com.github.lhervier.domino.oauth.library.client.utils.Utils</managed-bean-class>
-  	<managed-bean-scope>request</managed-bean-scope>
-  </managed-bean>
-  <managed-bean>
-    <managed-bean-name>initBean</managed-bean-name>
-    <managed-bean-class>com.github.lhervier.domino.oauth.library.client.bean.InitBean</managed-bean-class>
-    <managed-bean-scope>request</managed-bean-scope>
-  </managed-bean>
+  
+  <!-- La bean pour retourner le access_token -->
   <managed-bean>
   	<managed-bean-name>accessTokenBean</managed-bean-name>
   	<managed-bean-class>com.github.lhervier.domino.oauth.library.client.bean.AccessTokenBean</managed-bean-class>
   	<managed-bean-scope>request</managed-bean-scope>
   </managed-bean>
+  
+  <!-- La bean pour jouer la danse OAUTH -->
+  <managed-bean>
+    <managed-bean-name>initBean</managed-bean-name>
+    <managed-bean-class>com.github.lhervier.domino.oauth.library.client.bean.InitBean</managed-bean-class>
+    <managed-bean-scope>request</managed-bean-scope>
+    <managed-property>
+    	<property-name>initParamsBean</property-name>
+    	<value>#{initParamsBean}</value>
+    </managed-property>
+    <managed-property>
+    	<property-name>param</property-name>
+    	<value>#{param}</value>
+    </managed-property>
+  </managed-bean>
+  
+  <!-- La bean pour rafraîchir les tokens en session -->
   <managed-bean>
   	<managed-bean-name>refreshBean</managed-bean-name>
   	<managed-bean-class>com.github.lhervier.domino.oauth.library.client.bean.RefreshBean</managed-bean-class>
   	<managed-bean-scope>request</managed-bean-scope>
+  	<managed-property>
+  		<property-name>initParamsBean</property-name>
+  		<value>#{initParamsBean}</value>
+  	</managed-property>
+  	<managed-property>
+  		<property-name>accessTokenBean</property-name>
+  		<value>#{accessTokenBean}</value>
+  	</managed-property>
   </managed-bean>
 </faces-config>

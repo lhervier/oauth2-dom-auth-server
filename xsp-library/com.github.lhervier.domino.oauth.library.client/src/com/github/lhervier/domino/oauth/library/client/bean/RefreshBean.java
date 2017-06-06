@@ -13,20 +13,12 @@ public class RefreshBean {
 	/**
 	 * La bean pour accéder aux paramètres
 	 */
-	private InitParamsBean paramsBean;
+	private InitParamsBean initParamsBean;
 	
 	/**
 	 * La bean pour accéder a l'access token
 	 */
 	private AccessTokenBean accessTokenBean;
-	
-	/**
-	 * Constructeur
-	 */
-	public RefreshBean() {
-		this.paramsBean = Utils.getInitParamsBean();
-		this.accessTokenBean = Utils.getAccessTokenBean();
-	}
 	
 	/**
 	 * Rafraîchit les tokens
@@ -42,7 +34,7 @@ public class RefreshBean {
 		}
 		
 		StringBuffer authorizeUrl = new StringBuffer();
-		authorizeUrl.append(this.paramsBean.getTokenEndPoint()).append('?');
+		authorizeUrl.append(this.initParamsBean.getTokenEndPoint()).append('?');
 		authorizeUrl.append("grant_type=refresh_token&");
 		authorizeUrl.append("refresh_token=").append(refreshToken);
 		
@@ -71,5 +63,21 @@ public class RefreshBean {
 				})
 				
 				.execute();
+	}
+	
+	// ======================================================================
+
+	/**
+	 * @param accessTokenBean the accessTokenBean to set
+	 */
+	public void setAccessTokenBean(AccessTokenBean accessTokenBean) {
+		this.accessTokenBean = accessTokenBean;
+	}
+
+	/**
+	 * @param initParamsBean the initParamsBean to set
+	 */
+	public void setInitParamsBean(InitParamsBean initParamsBean) {
+		this.initParamsBean = initParamsBean;
 	}
 }

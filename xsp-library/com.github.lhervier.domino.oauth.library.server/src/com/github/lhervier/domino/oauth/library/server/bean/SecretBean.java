@@ -5,11 +5,9 @@ import java.io.IOException;
 import lotus.domino.Database;
 import lotus.domino.Document;
 import lotus.domino.NotesException;
-import lotus.domino.Session;
 import lotus.domino.View;
 
 import com.github.lhervier.domino.oauth.common.utils.Base64Utils;
-import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
 
 /**
  * Registre pour mémoriser les secrets
@@ -33,9 +31,9 @@ public class SecretBean {
 	private ParamsBean paramsBean;
 	
 	/**
-	 * La session
+	 * Le nabAsSigner
 	 */
-	private Session sessionAsSigner;
+	private Database nabAsSigner;
 	
 	/**
 	 * Retourne le document config SSO
@@ -44,13 +42,9 @@ public class SecretBean {
 	 * @throws NotesException en cas de pb
 	 */
 	private Document getSsoConfig(String config) throws NotesException {
-		Database names = DominoUtils.openDatabase(this.sessionAsSigner, this.paramsBean.getNab());
-		if( names == null )
-			throw new RuntimeException("Je n'arrive pas à accéder à la base " + this.paramsBean.getNab());
-		
-		View v = names.getView(WEBSSOCONFIG_VIEW);
+		View v = this.nabAsSigner.getView(WEBSSOCONFIG_VIEW);
 		if( v == null )
-			throw new RuntimeException("La vue " + WEBSSOCONFIG_VIEW + " n'existe pas dans la base '" + this.paramsBean.getNab() + "'. Impossible de continuer.");
+			throw new RuntimeException("La vue " + WEBSSOCONFIG_VIEW + " n'existe pas dans le NAB. Impossible de continuer.");
 		Document ssoConfig = v.getDocumentByKey(config);
 		if( ssoConfig == null )
 			throw new RuntimeException("Je ne trouve pas la confg SSO '" + config + "'");
@@ -118,9 +112,9 @@ public class SecretBean {
 	}
 
 	/**
-	 * @param sessionAsSigner the sessionAsSigner to set
+	 * @param nabAsSigner the nabAsSigner to set
 	 */
-	public void setSessionAsSigner(Session sessionAsSigner) {
-		this.sessionAsSigner = sessionAsSigner;
+	public void setNabAsSigner(Database nab) {
+		this.nabAsSigner = nab;
 	}
 }

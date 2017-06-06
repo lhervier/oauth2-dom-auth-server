@@ -41,16 +41,6 @@ public class AuthorizeBean {
 	private static final SecureRandom RANDOM = new SecureRandom();
 	
 	/**
-	 * La session
-	 */
-	private Session session;
-	
-	/**
-	 * La session en tant que le signataire
-	 */
-	private Session sessionAsSigner;
-	
-	/**
 	 * La bean pour accéder aux applications
 	 */
 	private AppBean appBean;
@@ -66,9 +56,14 @@ public class AuthorizeBean {
 	private Map<String, String> param;
 	
 	/**
-	 * La database courante
+	 * La databaseAsSigner courante
 	 */
-	private Database database;
+	private Database databaseAsSigner;
+	
+	/**
+	 * La session courante
+	 */
+	private Session session;
 	
 	/**
 	 * Le requestScope
@@ -173,15 +168,10 @@ public class AuthorizeBean {
 		
 		// Créé le document authorization
 		String id = this.generateCode();
-		Database db = null;
 		Document authDoc = null;
 		Name nn = null;
 		try {
-			db = DominoUtils.openDatabase(		// Si on ouvre cette dans le constructeur, parfois, elle est recyclée...
-					this.sessionAsSigner, 
-					this.database.getFilePath()
-			);
-			nn = this.sessionAsSigner.createName(app.getName() + this.paramsBean.getApplicationRoot());
+			nn = this.databaseAsSigner.getParent().createName(app.getName() + this.paramsBean.getApplicationRoot());
 			
 			// Créé le code authorization
 			AuthorizationCode authCode = new AuthorizationCode();
@@ -196,7 +186,7 @@ public class AuthorizeBean {
 			authCode.setAuthTime(System.currentTimeMillis());
 			
 			// On le persiste dans la base
-			authDoc = db.createDocument();
+			authDoc = this.databaseAsSigner.createDocument();
 			authDoc.replaceItemValue("Form", "AuthorizationCode");
 			DominoUtils.fillDocument(authDoc, authCode);
 			
@@ -207,7 +197,6 @@ public class AuthorizeBean {
 		} finally {
 			DominoUtils.recycleQuietly(nn);
 			DominoUtils.recycleQuietly(authDoc);
-			DominoUtils.recycleQuietly(db);
 		}
 		
 		AuthorizeResponse ret = new AuthorizeResponse();
@@ -216,20 +205,6 @@ public class AuthorizeBean {
 	}
 	
 	// ==============================================================================================
-
-	/**
-	 * @param session the session to set
-	 */
-	public void setSession(Session session) {
-		this.session = session;
-	}
-
-	/**
-	 * @param sessionAsSigner the sessionAsSigner to set
-	 */
-	public void setSessionAsSigner(Session sessionAsSigner) {
-		this.sessionAsSigner = sessionAsSigner;
-	}
 
 	/**
 	 * @param appBean the appBean to set
@@ -253,10 +228,10 @@ public class AuthorizeBean {
 	}
 
 	/**
-	 * @param database the database to set
+	 * @param databaseAsSigner the databaseAsSigner to set
 	 */
-	public void setDatabase(Database database) {
-		this.database = database;
+	public void setDatabaseAsSigner(Database database) {
+		this.databaseAsSigner = database;
 	}
 
 	/**
@@ -264,6 +239,13 @@ public class AuthorizeBean {
 	 */
 	public void setRequestScope(Map<String, Object> requestScope) {
 		this.requestScope = requestScope;
+	}
+
+	/**
+	 * @param session the session to set
+	 */
+	public void setSession(Session session) {
+		this.session = session;
 	}
 	
 }

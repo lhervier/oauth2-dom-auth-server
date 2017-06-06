@@ -47,8 +47,8 @@
     	<value>#{paramsBean}</value>
     </managed-property>
     <managed-property>
-    	<property-name>sessionAsSigner</property-name>
-    	<value>#{sessionAsSigner}</value>
+    	<property-name>nabAsSigner</property-name>
+    	<value>#{nabAsSigner}</value>
     </managed-property>
   </managed-bean>
   
@@ -57,10 +57,6 @@
     <managed-bean-name>appBean</managed-bean-name>
     <managed-bean-class>com.github.lhervier.domino.oauth.library.server.bean.AppBean</managed-bean-class>
     <managed-bean-scope>request</managed-bean-scope>
-    <managed-property>
-    	<property-name>session</property-name>
-    	<value>#{session}</value>
-    </managed-property>
     <managed-property>
     	<property-name>database</property-name>
     	<value>#{database}</value>
@@ -81,14 +77,6 @@
     <managed-bean-class>com.github.lhervier.domino.oauth.library.server.bean.AuthorizeBean</managed-bean-class>
     <managed-bean-scope>request</managed-bean-scope>
     <managed-property>
-    	<property-name>session</property-name>
-    	<value>#{session}</value>
-    </managed-property>
-    <managed-property>
-    	<property-name>sessionAsSigner</property-name>
-    	<value>#{sessionAsSigner}</value>
-    </managed-property>
-    <managed-property>
     	<property-name>appBean</property-name>
     	<value>#{appBean}</value>
     </managed-property>
@@ -101,8 +89,12 @@
     	<value>#{param}</value>
     </managed-property>
     <managed-property>
-    	<property-name>database</property-name>
-    	<value>#{database}</value>
+    	<property-name>databaseAsSigner</property-name>
+    	<value>#{databaseAsSigner}</value>
+    </managed-property>
+    <managed-property>
+    	<property-name>session</property-name>
+    	<value>#{session}</value>
     </managed-property>
     <managed-property>
     	<property-name>requestScope</property-name>
@@ -116,18 +108,6 @@
     <managed-bean-class>com.github.lhervier.domino.oauth.library.server.bean.TokenBean</managed-bean-class>
     <managed-bean-scope>request</managed-bean-scope>
     <managed-property>
-    	<property-name>session</property-name>
-    	<value>#{session}</value>
-    </managed-property>
-    <managed-property>
-    	<property-name>sessionAsSigner</property-name>
-    	<value>#{sessionAsSigner}</value>
-    </managed-property>
-    <managed-property>
-    	<property-name>database</property-name>
-    	<value>#{database}</value>
-    </managed-property>
-    <managed-property>
     	<property-name>appBean</property-name>
     	<value>#{appBean}</value>
     </managed-property>
@@ -138,6 +118,14 @@
     <managed-property>
     	<property-name>paramsBean</property-name>
     	<value>#{paramsBean}</value>
+    </managed-property>
+    <managed-property>
+    	<property-name>database</property-name>
+    	<value>#{database}</value>
+    </managed-property>
+    <managed-property>
+    	<property-name>databaseAsSigner</property-name>
+    	<value>#{databaseAsSigner}</value>
     </managed-property>
     <managed-property>
     	<property-name>param</property-name>

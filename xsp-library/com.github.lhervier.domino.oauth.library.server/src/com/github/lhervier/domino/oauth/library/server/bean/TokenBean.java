@@ -10,7 +10,6 @@ import lotus.domino.Database;
 import lotus.domino.Document;
 import lotus.domino.Name;
 import lotus.domino.NotesException;
-import lotus.domino.Session;
 import lotus.domino.View;
 
 import com.github.lhervier.domino.oauth.common.model.GrantResponse;
@@ -53,31 +52,6 @@ public class TokenBean {
 	private static final String VIEW_AUTHCODES = "AuthorizationCodes";
 	
 	/**
-	 * La session
-	 */
-	private Session session;
-	
-	/**
-	 * La session en tant que le signataire de la XPage
-	 */
-	private Session sessionAsSigner;
-	
-	/**
-	 * La base courante
-	 */
-	private Database database;
-	
-	/**
-	 * Les paramètres du query string
-	 */
-	private Map<String, String> param;
-	
-	/**
-	 * Le contexte utilisateur
-	 */
-	private XSPContext context;
-	
-	/**
 	 * La bean pour gérer les apps
 	 */
 	private AppBean appBean;
@@ -91,6 +65,26 @@ public class TokenBean {
 	 * La bean pour accéder aux paramètres
 	 */
 	private ParamsBean paramsBean;
+	
+	/**
+	 * La base courante
+	 */
+	private Database database;
+	
+	/**
+	 * La database courante (en tant que signer)
+	 */
+	private Database databaseAsSigner;
+	
+	/**
+	 * Les paramètres du query string
+	 */
+	private Map<String, String> param;
+	
+	/**
+	 * Le contexte utilisateur
+	 */
+	private XSPContext context;
 	
 	/**
 	 * La réponse http
@@ -114,12 +108,10 @@ public class TokenBean {
 	 * @throws ServerErrorException
 	 */
 	private void removeCode(String code) throws ServerErrorException {
-		Database db = null;
 		View v = null;
 		Document authDoc = null;
 		try {
-			db = DominoUtils.openDatabase(this.sessionAsSigner, this.database.getFilePath());
-			v = DominoUtils.getView(db, VIEW_AUTHCODES);
+			v = DominoUtils.getView(this.databaseAsSigner, VIEW_AUTHCODES);
 			authDoc = v.getDocumentByKey(code, true);
 			if( authDoc == null )
 				return;
@@ -130,7 +122,6 @@ public class TokenBean {
 		} finally {
 			DominoUtils.recycleQuietly(authDoc);
 			DominoUtils.recycleQuietly(v);
-			DominoUtils.recycleQuietly(db);
 		}
 	}
 	
@@ -193,7 +184,7 @@ public class TokenBean {
 		Document authDoc = null;
 		View v = null;
 		try {
-			nn = this.session.createName(this.session.getEffectiveUserName());
+			nn = this.database.getParent().createName(this.database.getParent().getEffectiveUserName());
 			v = this.getAuthCodeView();
 			
 			// Récupère l'application
@@ -349,20 +340,6 @@ public class TokenBean {
 	// =========================================================================================================
 
 	/**
-	 * @param session the session to set
-	 */
-	public void setSession(Session session) {
-		this.session = session;
-	}
-
-	/**
-	 * @param sessionAsSigner the sessionAsSigner to set
-	 */
-	public void setSessionAsSigner(Session sessionAsSigner) {
-		this.sessionAsSigner = sessionAsSigner;
-	}
-
-	/**
 	 * @param database the database to set
 	 */
 	public void setDatabase(Database database) {
@@ -409,6 +386,13 @@ public class TokenBean {
 	 */
 	public void setResponse(HttpServletResponse response) {
 		this.response = response;
+	}
+
+	/**
+	 * @param databaseAsSigner the databaseAsSigner to set
+	 */
+	public void setDatabaseAsSigner(Database databaseAsSigner) {
+		this.databaseAsSigner = databaseAsSigner;
 	}
 	
 }

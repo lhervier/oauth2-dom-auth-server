@@ -11,7 +11,6 @@ import lotus.domino.Database;
 import lotus.domino.Document;
 import lotus.domino.Name;
 import lotus.domino.NotesException;
-import lotus.domino.Session;
 import lotus.domino.View;
 import lotus.domino.ViewEntry;
 
@@ -54,11 +53,6 @@ public class AppBean {
 	private static final SecureRandom RANDOM = new SecureRandom();
 	
 	/**
-	 * La session
-	 */
-	private Session session;
-	
-	/**
 	 * La database courante
 	 */
 	private Database database;
@@ -83,7 +77,7 @@ public class AppBean {
 		Name appNotesName = null;
 		View v = null;
 		try {
-			appNotesName = this.session.createName(appName + this.paramsBean.getApplicationRoot());
+			appNotesName = this.database.getParent().createName(appName + this.paramsBean.getApplicationRoot());
 			v = DominoUtils.getView(this.nab, VIEW_USERS);
 			return v.getDocumentByKey(appNotesName.getAbbreviated());
 		} finally {
@@ -231,7 +225,7 @@ public class AppBean {
 				throw new RuntimeException("Une application avec ce nom existe déjà.");
 			
 			String abbreviated = app.getName() + this.paramsBean.getApplicationRoot();
-			nn = this.session.createName(abbreviated);
+			nn = this.database.getParent().createName(abbreviated);
 			String fullName = nn.toString();
 			
 			// Créé une nouvelle application dans le NAB (un nouvel utilisateur)
@@ -243,11 +237,11 @@ public class AppBean {
 			person.replaceItemValue("MailSystem", "100");		// None
 			person.replaceItemValue("FullName", fullName);
 			String password = this.generatePassword();
-			person.replaceItemValue("HTTPPassword", this.session.evaluate("@Password(\"" + password + "\")"));
-			person.replaceItemValue("HTTPPasswordChangeDate", this.session.createDateTime(new Date()));
+			person.replaceItemValue("HTTPPassword", this.database.getParent().evaluate("@Password(\"" + password + "\")"));
+			person.replaceItemValue("HTTPPasswordChangeDate", this.database.getParent().createDateTime(new Date()));
 			person.replaceItemValue("$SecurePassword", "1");
-			person.replaceItemValue("Owner", this.session.getEffectiveUserName());
-			person.replaceItemValue("LocalAdmin", this.session.getEffectiveUserName());
+			person.replaceItemValue("Owner", this.database.getParent().getEffectiveUserName());
+			person.replaceItemValue("LocalAdmin", this.database.getParent().getEffectiveUserName());
 			DominoUtils.computeAndSave(person);
 			
 			// Créé un nouveau document pour l'application dans la base
@@ -333,13 +327,6 @@ public class AppBean {
 	 */
 	public void setDatabase(Database database) {
 		this.database = database;
-	}
-
-	/**
-	 * @param session the session to set
-	 */
-	public void setSession(Session session) {
-		this.session = session;
 	}
 
 	/**

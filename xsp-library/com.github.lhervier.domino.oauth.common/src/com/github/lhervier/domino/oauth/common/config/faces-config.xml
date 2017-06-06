@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<faces-config>
+	<!-- Une bean qui donne la database courante, ouverte sur la session "as signer" -->
+	<managed-bean>
+		<managed-bean-name>databaseAsSigner</managed-bean-name>
+		<managed-bean-class>com.github.lhervier.domino.oauth.common.bean.DatabaseBean</managed-bean-class>
+		<managed-bean-scope>request</managed-bean-scope>
+		<managed-property>
+			<property-name>session</property-name>
+			<value>#{sessionAsSigner}</value>
+		</managed-property>
+		<managed-property>
+			<property-name>filePath</property-name>
+			<value>#{database.filePath}</value>
+		</managed-property>
+	</managed-bean>
+</faces-config>

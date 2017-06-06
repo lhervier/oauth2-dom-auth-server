@@ -14,6 +14,7 @@ public class OauthServerLibrary extends AbstractXspLibrary {
     @Override
     public String[] getFacesConfigFiles() {
         return new String[] {
+        		"/com/github/lhervier/domino/oauth/common/config/faces-config.xml",
         		"/com/github/lhervier/domino/oauth/library/server/config/faces-config.xml"
         };
     }

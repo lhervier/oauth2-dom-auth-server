@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <faces-config>
+  <!-- La bean pour accéder au doc de paramétrage -->
   <managed-bean>
   	<managed-bean-name>initParamsBean</managed-bean-name>
   	<managed-bean-class>com.github.lhervier.domino.oauth.library.client.bean.InitParamsBean</managed-bean-class>
   	<managed-bean-scope>session</managed-bean-scope>
   </managed-bean>
+  
   <managed-bean>
-  	<managed-bean-name>paramBean</managed-bean-name>
-  	<managed-bean-class>com.github.lhervier.domino.oauth.library.client.bean.ParamBean</managed-bean-class>
+  	<managed-bean-name>paramsBean</managed-bean-name>
+  	<managed-bean-class>com.github.lhervier.domino.oauth.library.client.bean.ParamsBean</managed-bean-class>
   	<managed-bean-scope>session</managed-bean-scope>
   </managed-bean>
   <managed-bean>

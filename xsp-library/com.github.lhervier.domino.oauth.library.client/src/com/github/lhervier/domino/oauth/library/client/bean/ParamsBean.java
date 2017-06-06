@@ -8,7 +8,7 @@ import lotus.domino.NotesException;
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
 import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
 
-public class ParamBean implements Serializable {
+public class ParamsBean implements Serializable {
 
 	/**
 	 * Serial UID
@@ -23,7 +23,7 @@ public class ParamBean implements Serializable {
 	/**
 	 * Constructeur
 	 */
-	public ParamBean() throws NotesException {
+	public ParamsBean() throws NotesException {
 		DominoUtils.loadParamFromSigner(this, "Params", "PARAM_");
 	}
 	

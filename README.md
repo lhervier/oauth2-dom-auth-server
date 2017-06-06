@@ -1,22 +1,39 @@
 # Domino OAUTH2 Authorization Server #
 
 Ce projet vous permet de transformer votre serveur Domino en un serveur d'autorisation OAUTH2.
+Seul le flux d'autorisation avec code autorisation est implémenté (pour l'instant !).
+
+Cela vous permettra de déployer des services Rest sur un serveur Tomcat (par exemple) tout en garantissant l'identité des appelants.
+En plus de l'infrastructure nécessaire à OAUTH2.0, vous trouverez deux exemples d'applications :
+- Une application Spring Boot pour tomcat qui publie un service Rest, et se sert de l'un des secrets Ltpa pour valider l'autentification.
+- Une application Notes qui montre comment appeler ce service Rest en Javascript pur, et via Angular.
+
 Les éléments fournis sont les suivants :
 
-- Une base oauth2.nsf qui vous permet de déclarer les applications, et qui définit les deux endpoints oauth2 (authorize et token).
-- Une application SpringBoot exemple qui héberge un service Rest trivial
+- Une base oauth2.nsf qui vous permet de déclarer les applications (au sens OAUTH2), et qui définit les deux endpoints (authorize et token).
+- Une application SpringBoot exemple qui héberge un service Rest trivial.
 - Une application exemple front, sous la forme d'une base Notes. Cette base authentifie l'utilisateur via OAUTH2, et fait des appels authentifiés au service Rest.
+
+## Note d'implémentation et limites connues ##
+
+Les deux tokens (access et refresh) sont des JWT. Le token d'acces est SIGNE en utilisant un secret Ltpa, et le token de refresh est crypté en en utilisant un autre.
+Cela permet de ne pas avoit à stocker d'information trop sensible dans la base principale. En reposant sur les secrets Ltpa, on ré-utilise la sécurité mise en place par IBM.
+
+Mais Domino lui même ne sera pas capable d'interprêter ces tokens pour l'identification des utilisateurs. En conclusion, vous ne pourrez pas héberger de services Rest sur
+Domino et les protéger par cette technique ! Ce projet est fait pour vous permettre de protéger via Domino des services rest implémentés sur un serveur autre que Domino.
 
 ## Environnement attendu ##
 
 Pour bien voir se dérouler la danse "OAUTH", associez un nom d'hôte différent à chaque serveur.
 
-- Un serveur Tomcat : par exemple apis.mon-domaine.com
-- Un serveur Domino 9.0.1 : par exemple accessible via deux noms d'hôtes 'login.mon-domaine.com' et 'front.mon-domaine.com'
+- Serveur Tomcat : Par exemple apis.mon-domaine.com
+- Serveur Domino 9.0.1 : Accessible via deux noms d'hôtes pour ben montrer les deux rôles :
+	- 'login.mon-domaine.com' : Serveur pour l'identification.
+	- 'front.mon-domaine.com' : Serveur pour héberger les bases front.
 
 ## Déclaration des configurations SSO ##
 
-Les jetons JWT générés seront signés en utilisant des clés SSO standard. Ainsi, elles restent stockées à un endroit sécurisé.
+Les tokens (access et refresh) sont des jetons JWT signés ou cryptés en utilisant des clés SSO standard. Ainsi, elles restent stockées à un endroit sécurisé.
 Vous devez commencer par déclarer deux configurations SSO. Notes bien qu'elles n'ont pas besoin d'être associées à un serveur car elles ne serviront pas à Ltpa.
 
 Dans la vue "Servers" du NAB, utilisez l'action "Web/Create Web SSO Configuration" pour créer deux configurations SSO.

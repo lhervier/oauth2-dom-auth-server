@@ -22,6 +22,21 @@
   	</managed-property>
   </managed-bean>
   
+  <!-- Bean pour accéder au NAB défini dans le paramétrage (via session "as signer") -->
+  <managed-bean>
+  	<managed-bean-name>nabAsSigner</managed-bean-name>
+  	<managed-bean-class>com.github.lhervier.domino.oauth.common.bean.DatabaseBean</managed-bean-class>
+  	<managed-bean-scope>request</managed-bean-scope>
+  	<managed-property>
+  		<property-name>session</property-name>
+  		<value>#{sessionAsSigner}</value>
+  	</managed-property>
+  	<managed-property>
+  		<property-name>filePath</property-name>
+  		<value>#{paramsBean.nab}</value>
+  	</managed-property>
+  </managed-bean>
+  
   <!-- Bean pour accéder au secret Ltpa -->
   <managed-bean>
     <managed-bean-name>secretBean</managed-bean-name>

@@ -3,6 +3,7 @@ package com.github.lhervier.domino.oauth.common.utils;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
@@ -161,6 +162,38 @@ public class JSFUtils {
 		HttpServletResponse response = JSFUtils.getServletResponse();
 		response.setStatus(302);
 		response.setHeader("Location", location);
+		FacesContext.getCurrentInstance().responseComplete();
+	}
+	
+	/**
+	 * Renvoi une erreur 404
+	 * @throws IOException 
+	 */
+	public static final void send404() throws IOException {
+		OutputStream out = null;
+		Writer writer = null;
+		try {
+			HttpServletResponse resp = JSFUtils.getServletResponse();
+			resp.setStatus(404);
+			out = resp.getOutputStream();
+			writer = new OutputStreamWriter(out, "UTF-8");
+			writer.write(
+					"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n" +
+					"<html>\n" +
+					"<head>\n" +
+					"<title>Error</title></head>\n" +
+					"<body text=\"#000000\">\n" +
+					"<h1>Error 404</h1>HTTP Web Server: Item Not Found Exception</body>\n" +
+					"</html>"
+			);
+		} finally {
+			IOUtils.closeQuietly(writer);
+			IOUtils.closeQuietly(out);
+		}
+		System.err.println(
+				"ATTENTION: L'utilisateur '" + JSFUtils.getContext().getUser().getFullName() + "' " +
+				"a tenté d'accéder à la page '" +JSFUtils.getView().getPageName() + "'"
+		);
 		FacesContext.getCurrentInstance().responseComplete();
 	}
 }

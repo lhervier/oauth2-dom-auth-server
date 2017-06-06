@@ -11,7 +11,6 @@ import lotus.domino.View;
 import com.github.lhervier.domino.oauth.common.utils.Base64Utils;
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
 import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
-import com.github.lhervier.domino.oauth.library.server.utils.Utils;
 
 /**
  * Registre pour mémoriser les secrets
@@ -33,13 +32,6 @@ public class SecretBean {
 	 * La bean pour accéder aux paramètres
 	 */
 	private ParamsBean paramsBean;
-	
-	/**
-	 * Constructeur
-	 */
-	public SecretBean() {
-		this.paramsBean = Utils.getParamsBean();
-	}
 	
 	/**
 	 * Retourne la session
@@ -118,5 +110,14 @@ public class SecretBean {
 	 */
 	public String getRefreshTokenSecretBase64() throws NotesException, IOException {
 		return Base64Utils.encode(this.getRefreshTokenSecret());
+	}
+	
+	// ==========================================================================
+
+	/**
+	 * @param paramsBean the paramsBean to set
+	 */
+	public void setParamsBean(ParamsBean paramsBean) {
+		this.paramsBean = paramsBean;
 	}
 }

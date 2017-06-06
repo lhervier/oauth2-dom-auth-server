@@ -28,7 +28,6 @@ import com.github.lhervier.domino.oauth.library.server.ex.authorize.UnsupportedR
 import com.github.lhervier.domino.oauth.library.server.model.Application;
 import com.github.lhervier.domino.oauth.library.server.model.AuthorizationCode;
 import com.github.lhervier.domino.oauth.library.server.model.AuthorizeResponse;
-import com.github.lhervier.domino.oauth.library.server.utils.Utils;
 
 /**
  * Bean pour gérer le endpoint "authorize"
@@ -168,7 +167,7 @@ public class AuthorizeBean {
 					this.sessionAsSigner, 
 					JSFUtils.getDatabase().getFilePath()
 			);
-			nn = this.sessionAsSigner.createName(app.getName() + Utils.getParamsBean().getApplicationRoot());
+			nn = this.sessionAsSigner.createName(app.getName() + this.paramsBean.getApplicationRoot());
 			
 			// Créé le code authorization
 			AuthorizationCode authCode = new AuthorizationCode();

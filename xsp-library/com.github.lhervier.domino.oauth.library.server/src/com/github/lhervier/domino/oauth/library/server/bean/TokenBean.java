@@ -26,7 +26,6 @@ import com.github.lhervier.domino.oauth.library.server.ex.grant.UnsupportedGrant
 import com.github.lhervier.domino.oauth.library.server.model.Application;
 import com.github.lhervier.domino.oauth.library.server.model.AuthorizationCode;
 import com.github.lhervier.domino.oauth.library.server.model.IdToken;
-import com.github.lhervier.domino.oauth.library.server.utils.Utils;
 import com.nimbusds.jose.EncryptionMethod;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWEAlgorithm;
@@ -68,11 +67,6 @@ public class TokenBean {
 	private Database database;
 	
 	/**
-	 * La vue des codes authorization
-	 */
-	private View v;
-	
-	/**
 	 * La bean pour gérer les apps
 	 */
 	private AppBean appBean;
@@ -88,17 +82,12 @@ public class TokenBean {
 	private ParamsBean paramsBean;
 	
 	/**
-	 * Constructeur
+	 * Retourne la vue qui contient les codes autorisation
+	 * @return la vue qui contient les codes autorisation
 	 * @throws NotesException en cas de pb
 	 */
-	public TokenBean() throws NotesException {
-		this.session = JSFUtils.getSession();
-		this.sessionAsSigner = JSFUtils.getSessionAsSigner();
-		this.database = JSFUtils.getDatabase();
-		this.appBean = Utils.getAppBean();
-		this.secretBean = Utils.getSecretBean();
-		this.paramsBean = Utils.getParamsBean();
-		this.v = DominoUtils.getView(this.database, VIEW_AUTHCODES);
+	private View getAuthCodeView() throws NotesException {
+		return DominoUtils.getView(this.database, VIEW_AUTHCODES);
 	}
 	
 	/**
@@ -189,8 +178,10 @@ public class TokenBean {
 		
 		Name nn = null;
 		Document authDoc = null;
+		View v = null;
 		try {
 			nn = this.session.createName(this.session.getEffectiveUserName());
+			v = this.getAuthCodeView();
 			
 			// Récupère l'application
 			Application app = this.appBean.getApplicationFromName(nn.getCommon());
@@ -198,7 +189,7 @@ public class TokenBean {
 				throw new InvalidClientException();
 			
 			// Récupère le document correspondant au code authorization
-			authDoc = this.v.getDocumentByKey(code, true);
+			authDoc = v.getDocumentByKey(code, true);
 			if( authDoc == null )
 				throw new InvalidGrantException();
 			AuthorizationCode authCode = DominoUtils.fillObject(new AuthorizationCode(), authDoc);
@@ -258,6 +249,7 @@ public class TokenBean {
 		} finally {
 			DominoUtils.recycleQuietly(nn);
 			DominoUtils.recycleQuietly(authDoc);
+			DominoUtils.recycleQuietly(v);
 			
 			// Supprime le code authorization pour empêcher une ré-utilisation
 			this.removeCode(code);
@@ -339,6 +331,50 @@ public class TokenBean {
 		} catch (IOException e) {
 			throw new ServerErrorException(e);
 		}
+	}
+	
+	// =========================================================================================================
+
+	/**
+	 * @param session the session to set
+	 */
+	public void setSession(Session session) {
+		this.session = session;
+	}
+
+	/**
+	 * @param sessionAsSigner the sessionAsSigner to set
+	 */
+	public void setSessionAsSigner(Session sessionAsSigner) {
+		this.sessionAsSigner = sessionAsSigner;
+	}
+
+	/**
+	 * @param database the database to set
+	 */
+	public void setDatabase(Database database) {
+		this.database = database;
+	}
+
+	/**
+	 * @param appBean the appBean to set
+	 */
+	public void setAppBean(AppBean appBean) {
+		this.appBean = appBean;
+	}
+
+	/**
+	 * @param secretBean the secretBean to set
+	 */
+	public void setSecretBean(SecretBean secretBean) {
+		this.secretBean = secretBean;
+	}
+
+	/**
+	 * @param paramsBean the paramsBean to set
+	 */
+	public void setParamsBean(ParamsBean paramsBean) {
+		this.paramsBean = paramsBean;
 	}
 	
 }

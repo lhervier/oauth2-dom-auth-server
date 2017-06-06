@@ -17,10 +17,8 @@ import lotus.domino.ViewEntry;
 
 import com.github.lhervier.domino.oauth.common.utils.Base64Utils;
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
-import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
 import com.github.lhervier.domino.oauth.common.utils.ViewIterator;
 import com.github.lhervier.domino.oauth.library.server.model.Application;
-import com.github.lhervier.domino.oauth.library.server.utils.Utils;
 
 /**
  * Managed bean pour gérer les applications.
@@ -56,14 +54,14 @@ public class AppBean {
 	private static final SecureRandom RANDOM = new SecureRandom();
 	
 	/**
-	 * La database courante
-	 */
-	private Database database;
-	
-	/**
 	 * La session
 	 */
 	private Session session;
+	
+	/**
+	 * La database courante
+	 */
+	private Database database;
 	
 	/**
 	 * Le nab
@@ -71,14 +69,9 @@ public class AppBean {
 	private Database nab;
 	
 	/**
-	 * Constructeur
-	 * @throws NotesException en cas de pb
+	 * La bean de paramétrage
 	 */
-	public AppBean() throws NotesException {
-		this.session = JSFUtils.getSession();
-		this.nab = Utils.getNab(this.session);
-		this.database = JSFUtils.getDatabase();
-	}
+	private ParamsBean paramsBean;
 	
 	/**
 	 * Retourne le document Person associé à une app
@@ -90,7 +83,7 @@ public class AppBean {
 		Name appNotesName = null;
 		View v = null;
 		try {
-			appNotesName = this.session.createName(appName + Utils.getParamsBean().getApplicationRoot());
+			appNotesName = this.session.createName(appName + this.paramsBean.getApplicationRoot());
 			v = DominoUtils.getView(this.nab, VIEW_USERS);
 			return v.getDocumentByKey(appNotesName.getAbbreviated());
 		} finally {
@@ -237,7 +230,7 @@ public class AppBean {
 			if( person != null )
 				throw new RuntimeException("Une application avec ce nom existe déjà.");
 			
-			String abbreviated = app.getName() + Utils.getParamsBean().getApplicationRoot();
+			String abbreviated = app.getName() + this.paramsBean.getApplicationRoot();
 			nn = this.session.createName(abbreviated);
 			String fullName = nn.toString();
 			
@@ -331,5 +324,35 @@ public class AppBean {
 			DominoUtils.recycleQuietly(appDoc);
 			DominoUtils.recycleQuietly(personDoc);
 		}
+	}
+	
+	// ===================================================================================
+
+	/**
+	 * @param database the database to set
+	 */
+	public void setDatabase(Database database) {
+		this.database = database;
+	}
+
+	/**
+	 * @param session the session to set
+	 */
+	public void setSession(Session session) {
+		this.session = session;
+	}
+
+	/**
+	 * @param nab the nab to set
+	 */
+	public void setNab(Database nab) {
+		this.nab = nab;
+	}
+
+	/**
+	 * @param paramsBean the paramsBean to set
+	 */
+	public void setParamsBean(ParamsBean paramsBean) {
+		this.paramsBean = paramsBean;
 	}
 }

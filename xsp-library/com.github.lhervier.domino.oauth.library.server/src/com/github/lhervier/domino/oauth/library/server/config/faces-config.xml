@@ -1,20 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <faces-config>
+  <!-- Bean pour accéder au paramétrage -->
   <managed-bean>
     <managed-bean-name>paramsBean</managed-bean-name>
     <managed-bean-class>com.github.lhervier.domino.oauth.library.server.bean.ParamsBean</managed-bean-class>
     <managed-bean-scope>session</managed-bean-scope>
   </managed-bean>
+  
+  <!-- Bean pour accéder au NAB défini dans le paramétrage (via la session courante) -->
+  <managed-bean>
+  	<managed-bean-name>nab</managed-bean-name>
+  	<managed-bean-class>com.github.lhervier.domino.oauth.library.server.bean.NabDatabase</managed-bean-class>
+  	<managed-bean-scope>request</managed-bean-scope>
+  	<managed-property>
+  		<property-name>session</property-name>
+  		<value>#{session}</value>
+  	</managed-property>
+  	<managed-property>
+  		<property-name>paramsBean</property-name>
+  		<value>#{paramsBean}</value>
+  	</managed-property>
+  </managed-bean>
+  
+  <!-- Bean pour accéder au secret Ltpa -->
   <managed-bean>
     <managed-bean-name>secretBean</managed-bean-name>
     <managed-bean-class>com.github.lhervier.domino.oauth.library.server.bean.SecretBean</managed-bean-class>
     <managed-bean-scope>request</managed-bean-scope>
+    <managed-property>
+    	<property-name>paramsBean</property-name>
+    	<value>#{paramsBean}</value>
+    </managed-property>
   </managed-bean>
+  
+  <!-- Bean pour manipuler les applications OAUTH -->
   <managed-bean>
     <managed-bean-name>appBean</managed-bean-name>
     <managed-bean-class>com.github.lhervier.domino.oauth.library.server.bean.AppBean</managed-bean-class>
     <managed-bean-scope>request</managed-bean-scope>
+    <managed-property>
+    	<property-name>session</property-name>
+    	<value>#{session}</value>
+    </managed-property>
+    <managed-property>
+    	<property-name>database</property-name>
+    	<value>#{database}</value>
+    </managed-property>
+    <managed-property>
+    	<property-name>nab</property-name>
+    	<value>#{nab}</value>
+    </managed-property>
+    <managed-property>
+    	<property-name>paramsBean</property-name>
+    	<value>#{paramsBean}</value>
+    </managed-property>
   </managed-bean>
+  
+  <!-- Bean pour gérer le endpoint Authorize -->
   <managed-bean>
     <managed-bean-name>authorizeBean</managed-bean-name>
     <managed-bean-class>com.github.lhervier.domino.oauth.library.server.bean.AuthorizeBean</managed-bean-class>
@@ -36,11 +78,40 @@
     	<value>#{paramsBean}</value>
     </managed-property>
   </managed-bean>
+  
+  <!-- Bean pour gérer le endpoint Token -->
   <managed-bean>
     <managed-bean-name>tokenBean</managed-bean-name>
     <managed-bean-class>com.github.lhervier.domino.oauth.library.server.bean.TokenBean</managed-bean-class>
     <managed-bean-scope>request</managed-bean-scope>
+    <managed-property>
+    	<property-name>session</property-name>
+    	<value>#{session}</value>
+    </managed-property>
+    <managed-property>
+    	<property-name>sessionAsSigner</property-name>
+    	<value>#{sessionAsSigner}</value>
+    </managed-property>
+    <managed-property>
+    	<property-name>database</property-name>
+    	<value>#{database}</value>
+    </managed-property>
+    <managed-property>
+    	<property-name>appBean</property-name>
+    	<value>#{appBean}</value>
+    </managed-property>
+    <managed-property>
+    	<property-name>secretBean</property-name>
+    	<value>#{secretBean}</value>
+    </managed-property>
+    <managed-property>
+    	<property-name>paramsBean</property-name>
+    	<value>#{paramsBean}</value>
+    </managed-property>
   </managed-bean>
+  
+  <!-- Vérification du rôle à chaque chargement de XPage -->
+  <!-- FIXME: Utilise un phaseListener à la place -->
   <managed-bean>
     <managed-bean-name>utils</managed-bean-name>
     <managed-bean-class>com.github.lhervier.domino.oauth.library.server.utils.Utils</managed-bean-class>

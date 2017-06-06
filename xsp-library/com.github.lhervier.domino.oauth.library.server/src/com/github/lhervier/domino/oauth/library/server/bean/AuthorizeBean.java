@@ -62,17 +62,6 @@ public class AuthorizeBean {
 	private ParamsBean paramsBean;
 	
 	/**
-	 * Constructeur
-	 * @throws NotesException en cas de pb
-	 */
-	public AuthorizeBean() throws NotesException {
-		this.session = JSFUtils.getSession();
-		this.sessionAsSigner = JSFUtils.getSessionAsSigner();
-		this.appBean = Utils.getAppBean();
-		this.paramsBean = Utils.getParamsBean();
-	}
-	
-	/**
 	 * Génère le code autorization
 	 * @throws IOException 
 	 */
@@ -211,6 +200,36 @@ public class AuthorizeBean {
 		AuthorizeResponse ret = new AuthorizeResponse();
 		ret.setCode(id);
 		return ret;
+	}
+	
+	// ==============================================================================================
+
+	/**
+	 * @param session the session to set
+	 */
+	public void setSession(Session session) {
+		this.session = session;
+	}
+
+	/**
+	 * @param sessionAsSigner the sessionAsSigner to set
+	 */
+	public void setSessionAsSigner(Session sessionAsSigner) {
+		this.sessionAsSigner = sessionAsSigner;
+	}
+
+	/**
+	 * @param appBean the appBean to set
+	 */
+	public void setAppBean(AppBean appBean) {
+		this.appBean = appBean;
+	}
+
+	/**
+	 * @param paramsBean the paramsBean to set
+	 */
+	public void setParamsBean(ParamsBean paramsBean) {
+		this.paramsBean = paramsBean;
 	}
 	
 }

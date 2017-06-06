@@ -19,6 +19,22 @@
     <managed-bean-name>authorizeBean</managed-bean-name>
     <managed-bean-class>com.github.lhervier.domino.oauth.library.server.bean.AuthorizeBean</managed-bean-class>
     <managed-bean-scope>request</managed-bean-scope>
+    <managed-property>
+    	<property-name>session</property-name>
+    	<value>#{session}</value>
+    </managed-property>
+    <managed-property>
+    	<property-name>sessionAsSigner</property-name>
+    	<value>#{sessionAsSigner}</value>
+    </managed-property>
+    <managed-property>
+    	<property-name>appBean</property-name>
+    	<value>#{appBean}</value>
+    </managed-property>
+    <managed-property>
+    	<property-name>paramsBean</property-name>
+    	<value>#{paramsBean}</value>
+    </managed-property>
   </managed-bean>
   <managed-bean>
     <managed-bean-name>tokenBean</managed-bean-name>

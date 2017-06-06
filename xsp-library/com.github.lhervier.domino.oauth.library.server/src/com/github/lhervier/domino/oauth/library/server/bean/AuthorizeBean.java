@@ -61,17 +61,31 @@ public class AuthorizeBean {
 	private ParamsBean paramsBean;
 	
 	/**
+	 * Les paramètres dans la requête
+	 */
+	private Map<String, String> param;
+	
+	/**
+	 * La database courante
+	 */
+	private Database database;
+	
+	/**
+	 * Le requestScope
+	 */
+	private Map<String, Object> requestScope;
+	
+	/**
 	 * Génère le code autorization
 	 * @throws IOException 
 	 */
 	public void authorize() throws IOException {
-		Map<String, String> param = JSFUtils.getParam();
 		StateResponse ret;
 		String redirectUri = null;
 		try {
 			// Valide le redirectUri
 			// => On ne doit pas (MUST NOT dans la RFC!) rediriger vers une uri invalide !
-			redirectUri = param.get("redirect_uri");
+			redirectUri = this.param.get("redirect_uri");
 			if( redirectUri == null )
 				throw new InvalidUriException("No redirect_uri in query string.");
 			try {
@@ -81,12 +95,12 @@ public class AuthorizeBean {
 			}
 			
 			// Valide le clientId
-			String clientId = param.get("client_id");
+			String clientId = this.param.get("client_id");
 			if( clientId == null )
 				throw new InvalidRequestException();
 			
 			// Valide le responseType
-			String responseType = param.get("response_type");
+			String responseType = this.param.get("response_type");
 			if( responseType == null )
 				throw new InvalidRequestException();
 			
@@ -99,7 +113,7 @@ public class AuthorizeBean {
 		// Cas particulier (cf RFC) si l'uri de redirection est invalide
 		} catch(InvalidUriException e) {
 			e.printStackTrace(System.err);			// FIXME: Où envoyer ça ???
-			JSFUtils.getRequestScope().put("error", e);
+			this.requestScope.put("error", e);
 			ret = null;
 		
 		// Erreur pendant l'autorisation
@@ -113,7 +127,7 @@ public class AuthorizeBean {
 			return;
 		
 		// Ajoute le state
-		ret.setState(param.get("state"));		// Eventuellement null
+		ret.setState(this.param.get("state"));		// Eventuellement null
 		
 		// Redirige
 		JSFUtils.sendRedirect(QueryStringUtils.addBeanToQueryString(redirectUri, ret));
@@ -165,7 +179,7 @@ public class AuthorizeBean {
 		try {
 			db = DominoUtils.openDatabase(		// Si on ouvre cette dans le constructeur, parfois, elle est recyclée...
 					this.sessionAsSigner, 
-					JSFUtils.getDatabase().getFilePath()
+					this.database.getFilePath()
 			);
 			nn = this.sessionAsSigner.createName(app.getName() + this.paramsBean.getApplicationRoot());
 			
@@ -229,6 +243,27 @@ public class AuthorizeBean {
 	 */
 	public void setParamsBean(ParamsBean paramsBean) {
 		this.paramsBean = paramsBean;
+	}
+
+	/**
+	 * @param param the param to set
+	 */
+	public void setParam(Map<String, String> param) {
+		this.param = param;
+	}
+
+	/**
+	 * @param database the database to set
+	 */
+	public void setDatabase(Database database) {
+		this.database = database;
+	}
+
+	/**
+	 * @param requestScope the requestScope to set
+	 */
+	public void setRequestScope(Map<String, Object> requestScope) {
+		this.requestScope = requestScope;
 	}
 	
 }

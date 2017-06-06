@@ -26,6 +26,7 @@ import com.github.lhervier.domino.oauth.library.server.ex.grant.UnsupportedGrant
 import com.github.lhervier.domino.oauth.library.server.model.Application;
 import com.github.lhervier.domino.oauth.library.server.model.AuthorizationCode;
 import com.github.lhervier.domino.oauth.library.server.model.IdToken;
+import com.ibm.xsp.designer.context.XSPContext;
 import com.nimbusds.jose.EncryptionMethod;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWEAlgorithm;
@@ -67,6 +68,16 @@ public class TokenBean {
 	private Database database;
 	
 	/**
+	 * Les paramètres du query string
+	 */
+	private Map<String, String> param;
+	
+	/**
+	 * Le contexte utilisateur
+	 */
+	private XSPContext context;
+	
+	/**
 	 * La bean pour gérer les apps
 	 */
 	private AppBean appBean;
@@ -80,6 +91,11 @@ public class TokenBean {
 	 * La bean pour accéder aux paramètres
 	 */
 	private ParamsBean paramsBean;
+	
+	/**
+	 * La réponse http
+	 */
+	private HttpServletResponse response;
 	
 	/**
 	 * Retourne la vue qui contient les codes autorisation
@@ -125,32 +141,29 @@ public class TokenBean {
 	 * @throws IOException
 	 */
 	public void token() throws IOException {
-		HttpServletResponse response = JSFUtils.getServletResponse();
-		
 		// Calcul l'objet réponse
 		Object resp;
 		try {
-			Map<String, String> param = JSFUtils.getParam();
-			String grantType = param.get("grant_type");
+			String grantType = this.param.get("grant_type");
 			if( grantType == null )
 				throw new InvalidRequestException();
 			
 			// L'objet pour la réponse
 			if( "authorization_code".equals(grantType) )
 				resp = this.authorizationCode(
-						param.get("code"),
-						param.get("redirect_uri"),
-						param.get("client_id")
+						this.param.get("code"),
+						this.param.get("redirect_uri"),
+						this.param.get("client_id")
 				);
 			else if( "refresh_token".equals(grantType) )
-				resp = this.refreshToken(param.get("refresh_token"));
+				resp = this.refreshToken(this.param.get("refresh_token"));
 			else
 				throw new UnsupportedGrantTypeException();
 		} catch(GrantException e) {
-			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+			this.response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 			resp = e.getError();
 		} catch (ServerErrorException e) {
-			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			this.response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			resp = null;
 		}
 		
@@ -277,7 +290,7 @@ public class TokenBean {
 				throw new InvalidGrantException();
 			
 			// Vérifie qu'il existe bien une application pour ce login
-			String appName = JSFUtils.getContext().getUser().getCommonName();
+			String appName = this.context.getUser().getCommonName();
 			Application app = this.appBean.getApplicationFromName(appName);
 			if( app == null )
 				throw new InvalidGrantException();
@@ -375,6 +388,27 @@ public class TokenBean {
 	 */
 	public void setParamsBean(ParamsBean paramsBean) {
 		this.paramsBean = paramsBean;
+	}
+
+	/**
+	 * @param param the param to set
+	 */
+	public void setParam(Map<String, String> param) {
+		this.param = param;
+	}
+
+	/**
+	 * @param context the context to set
+	 */
+	public void setContext(XSPContext context) {
+		this.context = context;
+	}
+
+	/**
+	 * @param response the response to set
+	 */
+	public void setResponse(HttpServletResponse response) {
+		this.response = response;
 	}
 	
 }

@@ -10,7 +10,6 @@ import lotus.domino.View;
 
 import com.github.lhervier.domino.oauth.common.utils.Base64Utils;
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
-import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
 
 /**
  * Registre pour mémoriser les secrets
@@ -34,12 +33,9 @@ public class SecretBean {
 	private ParamsBean paramsBean;
 	
 	/**
-	 * Retourne la session
-	 * @return la session
+	 * La session
 	 */
-	private Session getSession() {
-		return JSFUtils.getSessionAsSigner();
-	}
+	private Session sessionAsSigner;
 	
 	/**
 	 * Retourne le document config SSO
@@ -48,7 +44,7 @@ public class SecretBean {
 	 * @throws NotesException en cas de pb
 	 */
 	private Document getSsoConfig(String config) throws NotesException {
-		Database names = DominoUtils.openDatabase(this.getSession(), this.paramsBean.getNab());
+		Database names = DominoUtils.openDatabase(this.sessionAsSigner, this.paramsBean.getNab());
 		if( names == null )
 			throw new RuntimeException("Je n'arrive pas à accéder à la base " + this.paramsBean.getNab());
 		
@@ -119,5 +115,12 @@ public class SecretBean {
 	 */
 	public void setParamsBean(ParamsBean paramsBean) {
 		this.paramsBean = paramsBean;
+	}
+
+	/**
+	 * @param sessionAsSigner the sessionAsSigner to set
+	 */
+	public void setSessionAsSigner(Session sessionAsSigner) {
+		this.sessionAsSigner = sessionAsSigner;
 	}
 }

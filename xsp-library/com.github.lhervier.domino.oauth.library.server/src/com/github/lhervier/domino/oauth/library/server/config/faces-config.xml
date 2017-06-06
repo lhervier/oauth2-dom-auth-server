@@ -31,6 +31,10 @@
     	<property-name>paramsBean</property-name>
     	<value>#{paramsBean}</value>
     </managed-property>
+    <managed-property>
+    	<property-name>sessionAsSigner</property-name>
+    	<value>#{sessionAsSigner}</value>
+    </managed-property>
   </managed-bean>
   
   <!-- Bean pour manipuler les applications OAUTH -->
@@ -77,6 +81,18 @@
     	<property-name>paramsBean</property-name>
     	<value>#{paramsBean}</value>
     </managed-property>
+    <managed-property>
+    	<property-name>param</property-name>
+    	<value>#{param}</value>
+    </managed-property>
+    <managed-property>
+    	<property-name>database</property-name>
+    	<value>#{database}</value>
+    </managed-property>
+    <managed-property>
+    	<property-name>requestScope</property-name>
+    	<value>#{requestScope}</value>
+    </managed-property>
   </managed-bean>
   
   <!-- Bean pour gérer le endpoint Token -->
@@ -107,6 +123,18 @@
     <managed-property>
     	<property-name>paramsBean</property-name>
     	<value>#{paramsBean}</value>
+    </managed-property>
+    <managed-property>
+    	<property-name>param</property-name>
+    	<value>#{param}</value>
+    </managed-property>
+    <managed-property>
+    	<property-name>context</property-name>
+    	<value>#{context}</value>
+    </managed-property>
+    <managed-property>
+    	<property-name>response</property-name>
+    	<value>#{facesContext.externalContext.response}</value>
     </managed-property>
   </managed-bean>
   

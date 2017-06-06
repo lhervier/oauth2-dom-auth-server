@@ -1,5 +1,6 @@
 package com.github.lhervier.domino.oauth.common.utils;
 
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,5 +21,21 @@ public class ReflectionUtils {
 		PRIMITIVES.put(double.class, Double.class);
 	}
 	
-	
+	/**
+	 * Retourne la méthode nommée. On va chercher aussi dans 
+	 * les classes parentes
+	 * @param cl la classe dans laquelle chercher
+	 * @param m la méthode
+	 * @param args ses arguments
+	 * @return la méthode (ou null si elle n'existe pas).
+	 */
+	public static final Method getMethod(Class<?> cl, String m, Class<?>[] args) {
+		try {
+			return cl.getDeclaredMethod(m, args);
+		} catch(NoSuchMethodException e) {
+			if( cl.equals(Object.class) )
+				return null;
+			return getMethod(cl.getSuperclass(), m, args);
+		}
+	}
 }

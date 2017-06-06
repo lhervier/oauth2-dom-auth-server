@@ -13,8 +13,8 @@
   	<managed-bean-class>com.github.lhervier.domino.oauth.common.bean.DatabaseBean</managed-bean-class>
   	<managed-bean-scope>request</managed-bean-scope>
   	<managed-property>
-  		<property-name>session</property-name>
-  		<value>#{session}</value>
+  		<property-name>asSigner</property-name>
+  		<value>false</value>
   	</managed-property>
   	<managed-property>
   		<property-name>filePath</property-name>
@@ -28,8 +28,8 @@
   	<managed-bean-class>com.github.lhervier.domino.oauth.common.bean.DatabaseBean</managed-bean-class>
   	<managed-bean-scope>request</managed-bean-scope>
   	<managed-property>
-  		<property-name>session</property-name>
-  		<value>#{sessionAsSigner}</value>
+  		<property-name>asSigner</property-name>
+  		<value>true</value>
   	</managed-property>
   	<managed-property>
   		<property-name>filePath</property-name>

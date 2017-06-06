@@ -17,6 +17,7 @@ import lotus.domino.Session;
 import lotus.domino.View;
 
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
+import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
 
 public class DatabaseBean implements Database {
 
@@ -28,7 +29,7 @@ public class DatabaseBean implements Database {
 	/**
 	 * La session
 	 */
-	private Session session;
+	private Boolean asSigner;
 	
 	/**
 	 * Le chemin vers la base
@@ -36,16 +37,26 @@ public class DatabaseBean implements Database {
 	private String filePath;
 	
 	/**
+	 * Retourne la session
+	 * @return la session
+	 */
+	private Session getSession() {
+		if( this.asSigner != null && this.asSigner.booleanValue() )
+			return JSFUtils.getSessionAsSigner();
+		return JSFUtils.getSession();
+	}
+	
+	/**
 	 * Retourne la base
 	 * @return la base
 	 * @throws NotesException en cas de pb
 	 */
 	private synchronized Database getDelegate() throws NotesException {
-		if( this.delegated != null )
+		if( this.delegated != null && !DominoUtils.isRecycled(this.delegated) )
 			return this.delegated;
 		
 		this.delegated = DominoUtils.openDatabase(
-				this.session, 
+				this.getSession(), 
 				this.filePath
 		);
 		if( this.delegated == null )
@@ -54,10 +65,10 @@ public class DatabaseBean implements Database {
 	}
 	
 	/**
-	 * @param session the session to set
+	 * @param asSigner est ce qu'on doit ouvrir la base en tant que le signataire ?
 	 */
-	public void setSession(Session session) {
-		this.session = session;
+	public void setAsSigner(Boolean asSigner) {
+		this.asSigner = asSigner;
 	}
 
 	/**

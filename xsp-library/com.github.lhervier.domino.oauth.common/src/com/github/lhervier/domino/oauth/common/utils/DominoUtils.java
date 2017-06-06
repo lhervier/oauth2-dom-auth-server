@@ -6,6 +6,9 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -199,6 +202,26 @@ public class DominoUtils {
 		
 		session.sendConsoleCommand(session.getServerName(), "dbcache flush");
 		session.sendConsoleCommand(session.getServerName(), "show nlcache reset");
+	}
+	
+	/**
+	 * Pour savoir si un objet a été recyclé
+	 * @param o l'objet à tester
+	 * @return true si l'objet a été recyclé
+	 */
+	public static final boolean isRecycled(final Base o) {
+		try {
+			return AccessController.doPrivileged(new PrivilegedExceptionAction<Boolean>() {
+				@Override
+				public Boolean run() throws Exception {
+					Method isDead = ReflectionUtils.getMethod(o.getClass(), "isDead", new Class<?>[] {});
+					isDead.setAccessible(true);
+					return (Boolean) isDead.invoke(o);
+				}
+			});
+		} catch (PrivilegedActionException e) {
+			throw new RuntimeException(e);
+		}
 	}
 	
 	/**

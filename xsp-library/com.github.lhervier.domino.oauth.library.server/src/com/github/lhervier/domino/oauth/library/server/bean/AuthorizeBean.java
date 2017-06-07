@@ -19,6 +19,7 @@ import com.github.lhervier.domino.oauth.common.model.StateResponse;
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
 import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
 import com.github.lhervier.domino.oauth.common.utils.QueryStringUtils;
+import com.github.lhervier.domino.oauth.common.utils.SystemUtils;
 import com.github.lhervier.domino.oauth.library.server.Constants;
 import com.github.lhervier.domino.oauth.library.server.ex.AuthorizeException;
 import com.github.lhervier.domino.oauth.library.server.ex.InvalidUriException;
@@ -178,12 +179,12 @@ public class AuthorizeBean {
 			authCode.setApplication(nn.toString());
 			authCode.setId(id);
 			authCode.setRedirectUri(redirectUri);
-			authCode.setExpires(System.currentTimeMillis() + this.paramsBean.getAuthCodeLifetime());
+			authCode.setExpires(SystemUtils.currentTimeSeconds() + this.paramsBean.getAuthCodeLifetime());
 			authCode.setIss(Constants.NAMESPACE);
 			authCode.setSub(this.session.getEffectiveUserName());
 			authCode.setAud(app.getClientId());
-			authCode.setIat(System.currentTimeMillis());
-			authCode.setAuthTime(System.currentTimeMillis());
+			authCode.setIat(SystemUtils.currentTimeSeconds());
+			authCode.setAuthTime(SystemUtils.currentTimeSeconds());
 			
 			// On le persiste dans la base
 			authDoc = this.databaseAsSigner.createDocument();

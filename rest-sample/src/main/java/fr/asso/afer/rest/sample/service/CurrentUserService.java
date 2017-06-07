@@ -78,7 +78,7 @@ public class CurrentUserService {
 			ret.setSub(json.getAsString("sub"));
 			
 			// Vérifie qu'il n'est pas périmé
-			if( ret.getExp() < System.currentTimeMillis() )
+			if( ret.getExp() < (System.currentTimeMillis() / 1000L) )
 				return null;
 			
 			return ret;

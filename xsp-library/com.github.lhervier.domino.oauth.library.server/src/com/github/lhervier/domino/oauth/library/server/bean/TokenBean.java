@@ -16,6 +16,7 @@ import com.github.lhervier.domino.oauth.common.model.GrantResponse;
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
 import com.github.lhervier.domino.oauth.common.utils.GsonUtils;
 import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
+import com.github.lhervier.domino.oauth.common.utils.SystemUtils;
 import com.github.lhervier.domino.oauth.library.server.ex.GrantException;
 import com.github.lhervier.domino.oauth.library.server.ex.ServerErrorException;
 import com.github.lhervier.domino.oauth.library.server.ex.grant.InvalidClientException;
@@ -200,7 +201,7 @@ public class TokenBean {
 			
 			// Vérifie qu'il n'est pas expiré
 			long expired = (long) authCode.getExpires();
-			if( expired < System.currentTimeMillis() )
+			if( expired < SystemUtils.currentTimeSeconds() )
 				throw new InvalidGrantException();
 			
 			// Vérifie que le clientId est le bon
@@ -213,7 +214,7 @@ public class TokenBean {
 			
 			// Génère le access token. Il est signé avec la clé partagée avec les serveurs de ressources.
 			IdToken accessToken = DominoUtils.fillObject(new IdToken(), authDoc);
-			accessToken.setExp(System.currentTimeMillis() + this.paramsBean.getAccessTokenLifetime());
+			accessToken.setExp(SystemUtils.currentTimeSeconds() + this.paramsBean.getAccessTokenLifetime());
 			JWSObject jwsObject = new JWSObject(
 					new JWSHeader(JWSAlgorithm.HS256),
                     new Payload(GsonUtils.toJson(accessToken))
@@ -225,7 +226,7 @@ public class TokenBean {
 			
 			// Génère le refresh token
 			IdToken refreshToken = DominoUtils.fillObject(new IdToken(), authDoc);
-			refreshToken.setExp(System.currentTimeMillis() + this.paramsBean.getRefreshTokenLifetime());
+			refreshToken.setExp(SystemUtils.currentTimeSeconds() + this.paramsBean.getRefreshTokenLifetime());
 			JWEObject jweObject = new JWEObject(
 					new JWEHeader(JWEAlgorithm.DIR, EncryptionMethod.A128GCM), 
 					new Payload(GsonUtils.toJson(refreshToken))
@@ -236,7 +237,7 @@ public class TokenBean {
 			resp.setRefreshToken(jweObject.serialize());
 			
 			// La durée d'expiration. On prend celle du accessToken
-			resp.setExpiresIn(accessToken.getExp() - System.currentTimeMillis());
+			resp.setExpiresIn(accessToken.getExp() - SystemUtils.currentTimeSeconds());
 			
 			// Le type de token
 			resp.setTokenType("bearer");
@@ -277,7 +278,7 @@ public class TokenBean {
 			IdToken refreshToken = GsonUtils.fromJson(json, IdToken.class);
 			
 			// Vérifie qu'il est valide
-			if( refreshToken.getExp() < System.currentTimeMillis() )
+			if( refreshToken.getExp() < SystemUtils.currentTimeSeconds() )
 				throw new InvalidGrantException();
 			
 			// Vérifie qu'il existe bien une application pour ce login
@@ -291,11 +292,11 @@ public class TokenBean {
 				throw new InvalidGrantException();
 			
 			// Prolonge la durée de vie du refresh token
-			refreshToken.setExp(System.currentTimeMillis() + this.paramsBean.getRefreshTokenLifetime());		// 10 heures
+			refreshToken.setExp(SystemUtils.currentTimeSeconds() + this.paramsBean.getRefreshTokenLifetime());		// 10 heures
 			
 			// Génère l'access token
 			IdToken accessToken = new IdToken();
-			accessToken.setExp(System.currentTimeMillis() + this.paramsBean.getAccessTokenLifetime());
+			accessToken.setExp(SystemUtils.currentTimeSeconds() + this.paramsBean.getAccessTokenLifetime());
 			accessToken.setAud(refreshToken.getAud());
 			accessToken.setAuthTime(refreshToken.getAuthTime());
 			accessToken.setIat(refreshToken.getIat());

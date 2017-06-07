@@ -93,6 +93,8 @@ public class InitBean {
 				.onOk(new Callback<GrantResponse>() {
 					@Override
 					public void run(GrantResponse grant) throws IOException {
+						if( !"Bearer".equalsIgnoreCase(grant.getTokenType()) )
+							throw new RuntimeException("Le seul type de token géré est Bearer... (et j'ai '"  + grant.getTokenType() + "')");
 						JSFUtils.getSessionScope().put("refresh_token", grant.getRefreshToken());
 						JSFUtils.getSessionScope().put("access_token", grant.getAccessToken());
 						JSFUtils.sendRedirect(redirectUrl);

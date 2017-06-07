@@ -113,6 +113,11 @@
 							</xp:customConverter>
 						</xp:this.converter>
 						<xp:this.validators>
+							<xp:validateExpression message="L'URI ne doit pas contenir de fragment">
+								<xp:this.expression><![CDATA[#{javascript:
+									return value.toString().indexOf("#") == -1; 
+								}]]></xp:this.expression>
+							</xp:validateExpression>
 							<xp:validateExpression message="L'URI doit être absolue" expression="#{value.absolute}"/>
 							<xp:validateRequired message="L'URI est obligatoire"/>
 						</xp:this.validators>
@@ -161,6 +166,13 @@
 									</xp:customConverter>
 								</xp:this.converter>
 								<xp:this.validators>
+									<xp:validateExpression message="L'URI ne doit pas contenir de fragment">
+										<xp:this.expression><![CDATA[#{javascript:
+											if( value == null )
+												return true;
+											return value.toString().indexOf("#") == -1; 
+										}]]></xp:this.expression>
+									</xp:validateExpression>
 									<xp:validateExpression message="L'URI doit être absolue">
 										<xp:this.expression><![CDATA[#{javascript:
 											if( value == null )

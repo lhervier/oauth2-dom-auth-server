@@ -283,12 +283,15 @@ public class AppBean {
 			throw new RuntimeException("Impossible de changer le nom");
 		
 		// Vérifie que les URIs sont bien des URIs absolues
+		// Et qu'elles ne contiennent pas de fragments
 		List<URI> uris = new ArrayList<URI>();
 		uris.addAll(app.getRedirectUris());
 		uris.add(app.getRedirectUri());
 		for( URI uri : uris ) {
 			if( !uri.isAbsolute() )
 				throw new RuntimeException("L'uri '" + uri.toString() + "' n'est pas absolue");
+			if( uri.toString().indexOf('#') != -1 )
+				throw new RuntimeException("L'uri '" + uri.toString() + "' ne doit pas contenir de fragment (#)");
 		}
 		
 		Document appDoc = null;

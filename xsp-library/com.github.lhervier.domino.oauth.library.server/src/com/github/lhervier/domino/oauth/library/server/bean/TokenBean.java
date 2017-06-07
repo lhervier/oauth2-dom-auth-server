@@ -2,10 +2,15 @@ package com.github.lhervier.domino.oauth.library.server.bean;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.lang.StringUtils;
 
 import lotus.domino.Database;
 import lotus.domino.Document;
@@ -27,7 +32,8 @@ import com.github.lhervier.domino.oauth.library.server.ex.grant.InvalidScopeExce
 import com.github.lhervier.domino.oauth.library.server.ex.grant.UnsupportedGrantTypeException;
 import com.github.lhervier.domino.oauth.library.server.model.Application;
 import com.github.lhervier.domino.oauth.library.server.model.AuthorizationCode;
-import com.github.lhervier.domino.oauth.library.server.model.IdToken;
+import com.github.lhervier.domino.oauth.library.server.model.AccessToken;
+import com.github.lhervier.domino.oauth.library.server.model.RefreshToken;
 import com.ibm.xsp.designer.context.XSPContext;
 import com.nimbusds.jose.EncryptionMethod;
 import com.nimbusds.jose.JOSEException;
@@ -181,12 +187,17 @@ public class TokenBean {
 						this.param.get("redirect_uri"),
 						clientId
 				);
-			else if( "refresh_token".equals(grantType) )
+			else if( "refresh_token".equals(grantType) ) {
+				List<String> scopes;
+				if( this.param.get("scope") == null )
+					scopes = new ArrayList<String>();
+				else
+					scopes = Arrays.asList(StringUtils.split(this.param.get("scope"), " "));
 				resp = this.refreshToken(
 						this.param.get("refresh_token"),
-						this.param.get("scope")
+						scopes
 				);
-			else
+			} else
 				throw new UnsupportedGrantTypeException();
 		} catch(GrantException e) {
 			this.response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -198,6 +209,54 @@ public class TokenBean {
 		
 		// Envoi dans la stream http
 		JSFUtils.sendJson(resp);
+	}
+	
+	/**
+	 * Créé un refresh token
+	 * @param authCode le code autorisation
+	 * @return le refresh token
+	 * @throws IOException 
+	 * @throws JOSEException 
+	 * @throws NotesException 
+	 * @throws KeyLengthException 
+	 */
+	private String createRefreshToken(AuthorizationCode authCode) throws KeyLengthException, NotesException, JOSEException, IOException {
+		RefreshToken refreshToken = new RefreshToken();
+		refreshToken.setAuthCode(authCode);
+		refreshToken.setExp(SystemUtils.currentTimeSeconds() + this.paramsBean.getRefreshTokenLifetime());
+		JWEObject jweObject = new JWEObject(
+				new JWEHeader(JWEAlgorithm.DIR, EncryptionMethod.A128GCM), 
+				new Payload(GsonUtils.toJson(refreshToken))
+		);
+		jweObject.encrypt(new DirectEncrypter(
+				this.secretBean.getRefreshTokenSecret()
+		));
+		return jweObject.serialize();
+	}
+	
+	/**
+	 * Créé un access token
+	 * @param authCode le code autorisation
+	 * @return un access token
+	 * @throws IOException 
+	 * @throws JOSEException 
+	 * @throws NotesException 
+	 * @throws KeyLengthException 
+	 */
+	private String createAccessToken(AuthorizationCode authCode) throws KeyLengthException, NotesException, JOSEException, IOException {
+		AccessToken accessToken = new AccessToken();
+		accessToken.setIss(this.paramsBean.getIssuer());
+		accessToken.setAud(authCode.getClientId());
+		accessToken.setSub(authCode.getUser());
+		accessToken.setExp(SystemUtils.currentTimeSeconds() + this.paramsBean.getAccessTokenLifetime());
+		JWSObject jwsObject = new JWSObject(
+				new JWSHeader(JWSAlgorithm.HS256),
+                new Payload(GsonUtils.toJson(accessToken))
+		);
+		jwsObject.sign(new MACSigner(
+				this.secretBean.getAccessTokenSecret()
+		));
+		return jwsObject.serialize();
 	}
 	
 	/**
@@ -250,34 +309,20 @@ public class TokenBean {
 				throw new InvalidGrantException();
 			
 			// Génère le access token. Il est signé avec la clé partagée avec les serveurs de ressources.
-			IdToken accessToken = DominoUtils.fillObject(new IdToken(), authDoc);
-			accessToken.setExp(SystemUtils.currentTimeSeconds() + this.paramsBean.getAccessTokenLifetime());
-			JWSObject jwsObject = new JWSObject(
-					new JWSHeader(JWSAlgorithm.HS256),
-                    new Payload(GsonUtils.toJson(accessToken))
-			);
-			jwsObject.sign(new MACSigner(
-					this.secretBean.getAccessTokenSecret()
-			));
-			resp.setAccessToken(jwsObject.serialize());
+			String accessToken = this.createAccessToken(authCode);
+			resp.setAccessToken(accessToken);
 			
 			// Génère le refresh token
-			IdToken refreshToken = DominoUtils.fillObject(new IdToken(), authDoc);
-			refreshToken.setExp(SystemUtils.currentTimeSeconds() + this.paramsBean.getRefreshTokenLifetime());
-			JWEObject jweObject = new JWEObject(
-					new JWEHeader(JWEAlgorithm.DIR, EncryptionMethod.A128GCM), 
-					new Payload(GsonUtils.toJson(refreshToken))
-			);
-			jweObject.encrypt(new DirectEncrypter(
-					this.secretBean.getRefreshTokenSecret()
-			));
-			resp.setRefreshToken(jweObject.serialize());
+			String refreshToken = this.createRefreshToken(authCode);
+			resp.setRefreshToken(refreshToken);
 			
 			// La durée d'expiration. On prend celle du accessToken
-			resp.setExpiresIn(accessToken.getExp() - SystemUtils.currentTimeSeconds());
+			resp.setExpiresIn(this.paramsBean.getAccessTokenLifetime());
 			
 			// Le type de token
 			resp.setTokenType("Bearer");
+			
+			// FIXME: Faire ajouter des propriétés par des plugins externes
 			
 			// Définit les scopes s'il sont différents de ceux demandés lors de la requête à Authorize
 			if( !authCode.getScopes().containsAll(authCode.getGrantedScopes()) )
@@ -305,11 +350,11 @@ public class TokenBean {
 	/**
 	 * Génération d'un token à partir d'un refresh token
 	 * @param sRefreshToken le refresh token
-	 * @param scope un éventuel nouveau scope.
+	 * @param scopes d'éventuels nouveaux scopes.
 	 * @throws GrantException 
 	 * @throws ServerErrorException
 	 */
-	public GrantResponse refreshToken(String sRefreshToken, String scope) throws GrantException, ServerErrorException {
+	public GrantResponse refreshToken(String sRefreshToken, List<String> scopes) throws GrantException, ServerErrorException {
 		if( sRefreshToken == null )
 			throw new InvalidGrantException();
 		
@@ -318,13 +363,11 @@ public class TokenBean {
 			JWEObject jweObject = JWEObject.parse(sRefreshToken);
 			jweObject.decrypt(new DirectDecrypter(this.secretBean.getRefreshTokenSecret()));
 			String json = jweObject.getPayload().toString();
-			IdToken refreshToken = GsonUtils.fromJson(json, IdToken.class);
+			RefreshToken refreshToken = GsonUtils.fromJson(json, RefreshToken.class);
 			
-			// FIXME: Vérifie que les scopes demandés sont bien dans la liste des scopes déjà accordés
-			if( scope != null ) {
-				if( scope.length() != 0 )			// C'est le seul scope que l'on fournisse aujourd'hui...
-					throw new InvalidScopeException();
-			}
+			// Vérifie que les scopes demandés sont bien dans la liste des scopes déjà accordés
+			if( !refreshToken.getAuthCode().getGrantedScopes().containsAll(scopes) )
+				throw new InvalidScopeException();
 			
 			// Vérifie qu'il est valide
 			if( refreshToken.getExp() < SystemUtils.currentTimeSeconds() )
@@ -337,41 +380,31 @@ public class TokenBean {
 				throw new InvalidGrantException();
 			
 			// Vérifie que le token a bien été généré pour cette application
-			if( !app.getClientId().equals(refreshToken.getAud()) )
+			if( !app.getClientId().equals(refreshToken.getAuthCode().getClientId()) )
 				throw new InvalidGrantException();
 			
-			// Prolonge la durée de vie du refresh token
-			refreshToken.setExp(SystemUtils.currentTimeSeconds() + this.paramsBean.getRefreshTokenLifetime());		// 10 heures
+			// Prépare la réponse
+			GrantResponse resp = new GrantResponse();
+			
+			// Met à jour les scopes
+			if( scopes.size() != 0 ) {
+				if( !scopes.containsAll(refreshToken.getAuthCode().getGrantedScopes())) {
+					resp.setScopes(scopes);
+					refreshToken.getAuthCode().setGrantedScopes(scopes);
+				}
+			}
 			
 			// Génère l'access token
-			IdToken accessToken = new IdToken();
-			accessToken.setExp(SystemUtils.currentTimeSeconds() + this.paramsBean.getAccessTokenLifetime());
-			accessToken.setAud(refreshToken.getAud());
-			accessToken.setAuthTime(refreshToken.getAuthTime());
-			accessToken.setIat(refreshToken.getIat());
-			accessToken.setIss(refreshToken.getIss());
-			accessToken.setSub(refreshToken.getSub());
+			String newAccessToken = this.createAccessToken(refreshToken.getAuthCode());
+			resp.setAccessToken(newAccessToken);
 			
-			// Créé les jwt et jwe
-			JWSObject jwsObject = new JWSObject(
-					new JWSHeader(JWSAlgorithm.HS256),
-	                new Payload(GsonUtils.toJson(accessToken))
-			);
-			jwsObject.sign(new MACSigner(
-					this.secretBean.getAccessTokenSecret()
-			));
-			jweObject = new JWEObject(
-					new JWEHeader(JWEAlgorithm.DIR, EncryptionMethod.A128GCM), 
-					new Payload(GsonUtils.toJson(refreshToken))
-			);
-			jweObject.encrypt(new DirectEncrypter(
-					this.secretBean.getRefreshTokenSecret()
-			));
+			// Génère le refresh token
+			String newRefreshToken = this.createRefreshToken(refreshToken.getAuthCode());
+			resp.setRefreshToken(newRefreshToken);
 			
-			GrantResponse resp = new GrantResponse();
-			resp.setAccessToken(jwsObject.serialize());
-			resp.setRefreshToken(jweObject.serialize());
-			resp.setExpiresIn(accessToken.getExp());		// Expiration en même temps que le refresh token
+			// Les autres infos
+			resp.setExpiresIn(this.paramsBean.getAccessTokenLifetime());		// Expiration en même temps que le refresh token
+			resp.setTokenType("Bearer");
 			
 			return resp;
 		} catch (ParseException e) {

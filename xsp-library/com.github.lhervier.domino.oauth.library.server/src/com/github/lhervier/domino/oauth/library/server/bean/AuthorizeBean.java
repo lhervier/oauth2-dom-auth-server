@@ -5,8 +5,10 @@ import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -109,10 +111,15 @@ public class AuthorizeBean {
 				}
 				
 				// Exécution
+				List<String> scopes;
+				if( this.param.get("scope") == null )
+					scopes = new ArrayList<String>();
+				else
+					scopes = Arrays.asList(StringUtils.split(this.param.get("scope"), " "));
 				ret = this.authorizationCode(
 						clientId, 
 						redirectUri, 
-						this.param.get("scope")
+						scopes
 				);
 			} else
 				throw new UnsupportedResponseTypeException();
@@ -155,7 +162,7 @@ public class AuthorizeBean {
 	 * Traitement d'une demande d'authorisation pour un code autorization.
 	 * @param clientId l'id du client
 	 * @param redirectUri l'uri de redirection
-	 * @param scope le scope FIXME: Il n'est pas utilisé
+	 * @param scopes les scopes FIXME: Il ne sont pas utilisés
 	 * @return l'url de redirection
 	 * @throws AuthorizeException en cas de pb
 	 * @throws InvalidUriException si l'uri est invalide
@@ -163,7 +170,7 @@ public class AuthorizeBean {
 	private AuthorizeResponse authorizationCode(
 			String clientId, 
 			String redirectUri,
-			String scope) throws AuthorizeException, InvalidUriException {
+			List<String> scopes) throws AuthorizeException, InvalidUriException {
 		// Récupère l'application
 		Application app;
 		try {
@@ -195,15 +202,12 @@ public class AuthorizeBean {
 			authCode.setId(id);
 			authCode.setRedirectUri(redirectUri);
 			authCode.setExpires(SystemUtils.currentTimeSeconds() + this.paramsBean.getAuthCodeLifetime());
-			authCode.setIss(this.paramsBean.getIssuer());
-			authCode.setSub(this.session.getEffectiveUserName());
-			authCode.setAud(app.getClientId());
-			authCode.setIat(SystemUtils.currentTimeSeconds());
-			authCode.setAuthTime(SystemUtils.currentTimeSeconds());
+			authCode.setUser(this.session.getEffectiveUserName());
+			authCode.setClientId(app.getClientId());
 			
 			// FIXME: Défini le scope. Pour l'instant, ce n'est pas implémenté.
-			authCode.setScopes(Arrays.asList(StringUtils.split(scope, " ")));
-			authCode.setGrantedScopes(Arrays.asList(StringUtils.split(scope, " ")));
+			authCode.setScopes(scopes);
+			authCode.setGrantedScopes(scopes);
 			
 			// On le persiste dans la base
 			authDoc = this.databaseAsSigner.createDocument();

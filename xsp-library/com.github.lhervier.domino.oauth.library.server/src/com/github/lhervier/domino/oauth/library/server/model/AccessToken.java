@@ -6,9 +6,10 @@ import com.google.gson.annotations.SerializedName;
  * Classe de base pour les tokens (refresh et access).
  * Cette classe défini un IDToken au sens OpenID :
  * 	http://openid.net/specs/openid-connect-core-1_0.html#IDToken
+ * FIXME: Cette classe décrit un access_token. Pas un Idtoken openid !
  * @author Lionel HERVIER
  */
-public class IdToken {
+public class AccessToken {
 
 	/**
 	 * L'issuer.

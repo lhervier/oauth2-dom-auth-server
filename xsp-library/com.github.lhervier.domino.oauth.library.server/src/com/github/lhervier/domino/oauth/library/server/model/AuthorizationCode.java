@@ -3,10 +3,10 @@ package com.github.lhervier.domino.oauth.library.server.model;
 import java.util.List;
 
 /**
- * Un code autorisation
+ * Un code autorisation.
  * @author Lionel HERVIER
  */
-public class AuthorizationCode extends IdToken {
+public class AuthorizationCode extends AccessToken {
 
 	/**
 	 * Le champ lecteur qui contient le nom de l'application
@@ -24,9 +24,19 @@ public class AuthorizationCode extends IdToken {
 	private String redirectUri;
 	
 	/**
+	 * L'id client de l'application
+	 */
+	private String clientId;
+	
+	/**
 	 * La date d'expiration
 	 */
 	private long expires;
+	
+	/**
+	 * L'utilisateur pour lequel a été généré le code autorisation
+	 */
+	private String user;
 	
 	/**
 	 * Le scopes demandé
@@ -120,5 +130,33 @@ public class AuthorizationCode extends IdToken {
 	 */
 	public void setGrantedScopes(List<String> grantedScope) {
 		this.grantedScopes = grantedScope;
+	}
+
+	/**
+	 * @return the user
+	 */
+	public String getUser() {
+		return user;
+	}
+
+	/**
+	 * @param user the user to set
+	 */
+	public void setUser(String user) {
+		this.user = user;
+	}
+
+	/**
+	 * @return the clientId
+	 */
+	public String getClientId() {
+		return clientId;
+	}
+
+	/**
+	 * @param clientId the clientId to set
+	 */
+	public void setClientId(String clientId) {
+		this.clientId = clientId;
 	}
 }

@@ -1,31 +1,18 @@
 package com.github.lhervier.domino.oauth.library.server.bean;
 
-import java.io.Serializable;
-
-import lotus.domino.Database;
-import lotus.domino.Document;
-import lotus.domino.NotesException;
-import lotus.domino.View;
-
-import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
-import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
+import com.github.lhervier.domino.oauth.common.bean.BaseParamsBean;
 
 /**
  * Bean pour accéder aux paramètres de l'application
  * @author Lionel HERVIER
  */
-public class ParamsBean implements Serializable {
+public class ParamsBean extends BaseParamsBean {
 
 	/**
 	 * Serial UID
 	 */
 	private static final long serialVersionUID = 25035453476284192L;
 
-	/**
-	 * Le nom de la vue qui contient le doc de param
-	 */
-	private static final String VIEW_PARAMS = "Params";
-	
 	/**
 	 * Le carnet d'adresse où créer les applications
 	 */
@@ -60,39 +47,6 @@ public class ParamsBean implements Serializable {
 	 * Le nom de la config SSO qui contient la clé pour le refresh token
 	 */
 	private String refreshTokenConfig;
-	
-	/**
-	 * Constructeur
-	 * @throws NotesException en cas de pb
-	 */
-	public ParamsBean() throws NotesException {
-		this.reload();
-	}
-	
-	/**
-	 * Pour recharger la configuration
-	 * @throws NotesException en cas de problème
-	 */
-	public void reload() throws NotesException {
-		Database database = null;
-		View v = null;
-		Document doc = null;
-		try {
-			database = DominoUtils.openDatabase(
-					JSFUtils.getSessionAsSigner(), 
-					JSFUtils.getDatabase().getFilePath()
-			);
-			v = database.getView(VIEW_PARAMS);
-			doc = v.getFirstDocument();
-			if( doc == null )
-				throw new RuntimeException("Le document de paramétrage n'existe pas. Impossible de démarrer l'application.");
-			DominoUtils.fillObject(this, doc);
-		} finally {
-			DominoUtils.recycleQuietly(doc);
-			DominoUtils.recycleQuietly(v);
-			DominoUtils.recycleQuietly(database);
-		}
-	}
 	
 	// =============================================================
 

@@ -5,6 +5,14 @@
     <managed-bean-name>paramsBean</managed-bean-name>
     <managed-bean-class>com.github.lhervier.domino.oauth.library.server.bean.ParamsBean</managed-bean-class>
     <managed-bean-scope>session</managed-bean-scope>
+    <managed-property>
+    	<property-name>viewName</property-name>
+    	<value>Params</value>
+    </managed-property>
+    <managed-property>
+    	<property-name>prefix</property-name>
+    	<value></value>
+    </managed-property>
   </managed-bean>
   
   <!-- Bean pour accéder au NAB défini dans le paramétrage (via la session courante) -->

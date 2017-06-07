@@ -1,14 +1,11 @@
 package com.github.lhervier.domino.oauth.library.client.bean;
 
 import java.io.IOException;
-import java.io.Serializable;
 
-import lotus.domino.NotesException;
-
-import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
+import com.github.lhervier.domino.oauth.common.bean.BaseParamsBean;
 import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
 
-public class ParamsBean implements Serializable {
+public class ParamsBean extends BaseParamsBean {
 
 	/**
 	 * Serial UID
@@ -21,19 +18,14 @@ public class ParamsBean implements Serializable {
 	private String restServer;
 
 	/**
-	 * Constructeur
-	 */
-	public ParamsBean() throws NotesException {
-		DominoUtils.loadParamFromSigner(this, "Params", "PARAM_");
-	}
-	
-	/**
 	 * Envoi les paramètres en Json
 	 * @throws IOException 
 	 */
 	public void param() throws IOException {
 		JSFUtils.sendJson(this);
 	}
+	
+	// =================================================================================
 	
 	/**
 	 * @return the restServer

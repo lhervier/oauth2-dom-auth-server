@@ -1,10 +1,13 @@
 package com.github.lhervier.domino.oauth.library.client.bean;
 
-import lotus.domino.NotesException;
+import com.github.lhervier.domino.oauth.common.bean.BaseParamsBean;
 
-import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
+public class InitParamsBean extends BaseParamsBean {
 
-public class InitParamsBean {
+	/**
+	 * Serial UID
+	 */
+	private static final long serialVersionUID = 7790266154449466800L;
 
 	/**
 	 * L'id client de l'appli
@@ -37,12 +40,7 @@ public class InitParamsBean {
 	 */
 	private boolean disableHostNameVerifier = false;
 	
-	/**
-	 * Constructeur
-	 */
-	public InitParamsBean() throws NotesException {
-		DominoUtils.loadParamFromSigner(this, "Params", "INIT_");
-	}
+	// =========================================================================================
 	
 	/**
 	 * @return the clientId

@@ -15,13 +15,13 @@ import javax.net.ssl.X509TrustManager;
 
 import lotus.domino.NotesException;
 
-import com.github.lhervier.domino.oauth.common.model.GrantResponse;
 import com.github.lhervier.domino.oauth.common.model.error.GrantError;
 import com.github.lhervier.domino.oauth.common.utils.HttpUtils;
 import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
 import com.github.lhervier.domino.oauth.library.client.Constants;
 import com.github.lhervier.domino.oauth.library.client.bean.AccessTokenBean;
 import com.github.lhervier.domino.oauth.library.client.bean.InitParamsBean;
+import com.github.lhervier.domino.oauth.library.client.model.GrantResponse;
 
 public class Utils {
 

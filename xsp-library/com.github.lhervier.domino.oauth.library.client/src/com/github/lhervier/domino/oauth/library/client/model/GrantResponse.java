@@ -1,4 +1,4 @@
-package com.github.lhervier.domino.oauth.common.model;
+package com.github.lhervier.domino.oauth.library.client.model;
 
 import java.util.List;
 

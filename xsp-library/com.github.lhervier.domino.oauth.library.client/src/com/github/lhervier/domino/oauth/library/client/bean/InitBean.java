@@ -7,12 +7,12 @@ import java.util.Map;
 
 import javax.faces.context.FacesContext;
 
-import com.github.lhervier.domino.oauth.common.model.GrantResponse;
 import com.github.lhervier.domino.oauth.common.model.error.AuthorizeError;
 import com.github.lhervier.domino.oauth.common.model.error.GrantError;
 import com.github.lhervier.domino.oauth.common.utils.Callback;
 import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
 import com.github.lhervier.domino.oauth.common.utils.QueryStringUtils;
+import com.github.lhervier.domino.oauth.library.client.model.GrantResponse;
 import com.github.lhervier.domino.oauth.library.client.utils.Utils;
 
 public class InitBean {

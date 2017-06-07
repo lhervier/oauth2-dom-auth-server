@@ -10,15 +10,14 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang.StringUtils;
-
 import lotus.domino.Database;
 import lotus.domino.Document;
 import lotus.domino.Name;
 import lotus.domino.NotesException;
 import lotus.domino.View;
 
-import com.github.lhervier.domino.oauth.common.model.GrantResponse;
+import org.apache.commons.lang.StringUtils;
+
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
 import com.github.lhervier.domino.oauth.common.utils.GsonUtils;
 import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
@@ -30,10 +29,11 @@ import com.github.lhervier.domino.oauth.library.server.ex.grant.InvalidGrantExce
 import com.github.lhervier.domino.oauth.library.server.ex.grant.InvalidRequestException;
 import com.github.lhervier.domino.oauth.library.server.ex.grant.InvalidScopeException;
 import com.github.lhervier.domino.oauth.library.server.ex.grant.UnsupportedGrantTypeException;
+import com.github.lhervier.domino.oauth.library.server.model.AccessToken;
 import com.github.lhervier.domino.oauth.library.server.model.Application;
 import com.github.lhervier.domino.oauth.library.server.model.AuthorizationCode;
-import com.github.lhervier.domino.oauth.library.server.model.AccessToken;
 import com.github.lhervier.domino.oauth.library.server.model.RefreshToken;
+import com.google.gson.JsonObject;
 import com.ibm.xsp.designer.context.XSPContext;
 import com.nimbusds.jose.EncryptionMethod;
 import com.nimbusds.jose.JOSEException;
@@ -267,7 +267,7 @@ public class TokenBean {
 	 * @throws GrantException en cas de pb das le grant
 	 * @throws ServerErrorException en cas d'erreur pendant l'accès au serveur
 	 */
-	public GrantResponse authorizationCode(String code, String redirectUri, String clientId) throws GrantException, ServerErrorException {
+	public JsonObject authorizationCode(String code, String redirectUri, String clientId) throws GrantException, ServerErrorException {
 		if( code == null )
 			throw new InvalidRequestException();
 		if( redirectUri == null )
@@ -275,7 +275,7 @@ public class TokenBean {
 		if( clientId == null )
 			throw new InvalidRequestException();
 		
-		GrantResponse resp = new GrantResponse();
+		JsonObject resp = new JsonObject();
 		
 		Name nn = null;
 		Document authDoc = null;
@@ -301,7 +301,7 @@ public class TokenBean {
 				throw new InvalidGrantException();
 			
 			// Vérifie que le clientId est le bon
-			if( !clientId.equals(authCode.getAud()) )
+			if( !clientId.equals(authCode.getClientId()) )
 				throw new InvalidClientException();
 			
 			// Vérifie que l'uri de redirection est la même
@@ -310,23 +310,23 @@ public class TokenBean {
 			
 			// Génère le access token. Il est signé avec la clé partagée avec les serveurs de ressources.
 			String accessToken = this.createAccessToken(authCode);
-			resp.setAccessToken(accessToken);
+			resp.addProperty("access_token", accessToken);
 			
 			// Génère le refresh token
 			String refreshToken = this.createRefreshToken(authCode);
-			resp.setRefreshToken(refreshToken);
+			resp.addProperty("refresh_token", refreshToken);
 			
 			// La durée d'expiration. On prend celle du accessToken
-			resp.setExpiresIn(this.paramsBean.getAccessTokenLifetime());
+			resp.addProperty("expires_in", this.paramsBean.getAccessTokenLifetime());
 			
 			// Le type de token
-			resp.setTokenType("Bearer");
+			resp.addProperty("token_type", "Bearer");
 			
 			// FIXME: Faire ajouter des propriétés par des plugins externes
 			
 			// Définit les scopes s'il sont différents de ceux demandés lors de la requête à Authorize
 			if( !authCode.getScopes().containsAll(authCode.getGrantedScopes()) )
-				resp.setScopes(authCode.getGrantedScopes());
+				resp.addProperty("scope", StringUtils.join(authCode.getGrantedScopes().iterator(), " "));
 			
 			return resp;
 		} catch (NotesException e) {
@@ -354,7 +354,7 @@ public class TokenBean {
 	 * @throws GrantException 
 	 * @throws ServerErrorException
 	 */
-	public GrantResponse refreshToken(String sRefreshToken, List<String> scopes) throws GrantException, ServerErrorException {
+	public JsonObject refreshToken(String sRefreshToken, List<String> scopes) throws GrantException, ServerErrorException {
 		if( sRefreshToken == null )
 			throw new InvalidGrantException();
 		
@@ -384,27 +384,27 @@ public class TokenBean {
 				throw new InvalidGrantException();
 			
 			// Prépare la réponse
-			GrantResponse resp = new GrantResponse();
+			JsonObject resp = new JsonObject();
 			
 			// Met à jour les scopes
 			if( scopes.size() != 0 ) {
 				if( !scopes.containsAll(refreshToken.getAuthCode().getGrantedScopes())) {
-					resp.setScopes(scopes);
+					resp.addProperty("scope", StringUtils.join(scopes.iterator(), " "));
 					refreshToken.getAuthCode().setGrantedScopes(scopes);
 				}
 			}
 			
 			// Génère l'access token
 			String newAccessToken = this.createAccessToken(refreshToken.getAuthCode());
-			resp.setAccessToken(newAccessToken);
+			resp.addProperty("access_token", newAccessToken);
 			
 			// Génère le refresh token
 			String newRefreshToken = this.createRefreshToken(refreshToken.getAuthCode());
-			resp.setRefreshToken(newRefreshToken);
+			resp.addProperty("refresh_token", newRefreshToken);
 			
 			// Les autres infos
-			resp.setExpiresIn(this.paramsBean.getAccessTokenLifetime());		// Expiration en même temps que le refresh token
-			resp.setTokenType("Bearer");
+			resp.addProperty("expires_in", this.paramsBean.getAccessTokenLifetime());		// Expiration en même temps que le refresh token
+			resp.addProperty("token_type", "Bearer");
 			
 			return resp;
 		} catch (ParseException e) {

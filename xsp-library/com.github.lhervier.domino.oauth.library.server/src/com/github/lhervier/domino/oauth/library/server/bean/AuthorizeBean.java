@@ -12,13 +12,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
-
 import lotus.domino.Database;
 import lotus.domino.Document;
 import lotus.domino.Name;
 import lotus.domino.NotesException;
 import lotus.domino.Session;
+
+import org.apache.commons.lang.StringUtils;
 
 import com.github.lhervier.domino.oauth.common.model.StateResponse;
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
@@ -30,9 +30,13 @@ import com.github.lhervier.domino.oauth.library.server.ex.InvalidUriException;
 import com.github.lhervier.domino.oauth.library.server.ex.authorize.InvalidRequestException;
 import com.github.lhervier.domino.oauth.library.server.ex.authorize.ServerErrorException;
 import com.github.lhervier.domino.oauth.library.server.ex.authorize.UnsupportedResponseTypeException;
+import com.github.lhervier.domino.oauth.library.server.ext.IOAuthExtension;
+import com.github.lhervier.domino.oauth.library.server.ext.IScopeGranter;
 import com.github.lhervier.domino.oauth.library.server.model.Application;
 import com.github.lhervier.domino.oauth.library.server.model.AuthorizationCode;
 import com.github.lhervier.domino.oauth.library.server.model.AuthorizeResponse;
+import com.github.lhervier.domino.oauth.library.server.utils.Utils;
+import com.google.gson.JsonObject;
 
 /**
  * Bean pour gérer le endpoint "authorize"
@@ -205,9 +209,31 @@ public class AuthorizeBean {
 			authCode.setUser(this.session.getEffectiveUserName());
 			authCode.setClientId(app.getClientId());
 			
-			// FIXME: Défini le scope. Pour l'instant, ce n'est pas implémenté.
+			// Défini le scope. 
 			authCode.setScopes(scopes);
-			authCode.setGrantedScopes(scopes);
+			
+			// Appel les plugins pour générer les plugins, et mettre à jour les scopes autorisés
+			final List<String> grantedScopes = new ArrayList<String>();
+			JsonObject contexts = new JsonObject();
+			
+			List<IOAuthExtension> exts = Utils.getExtensions();
+			for( IOAuthExtension ext : exts ) {
+				JsonObject context = ext.authorize(
+						new IScopeGranter() {
+							@Override
+							public void grant(String scope) {
+								grantedScopes.add(scope);
+							}
+						}, 
+						clientId, 
+						scopes
+				);
+				if( context != null )
+					contexts.add(ext.getId(), context);
+			}
+			
+			authCode.setGrantedScopes(grantedScopes);
+			authCode.setContexts(contexts);
 			
 			// On le persiste dans la base
 			authDoc = this.databaseAsSigner.createDocument();

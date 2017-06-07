@@ -29,6 +29,12 @@ public class GrantResponse {
 	private String refreshToken;
 	
 	/**
+	 * Le id_token openid
+	 */
+	@SerializedName("id_token")
+	private String idToken;
+	
+	/**
 	 * Le type de token
 	 */
 	@SerializedName("token_type")
@@ -107,5 +113,19 @@ public class GrantResponse {
 	 */
 	public void setScopes(List<String> scope) {
 		this.scopes = scope;
+	}
+
+	/**
+	 * @return the idToken
+	 */
+	public String getIdToken() {
+		return idToken;
+	}
+
+	/**
+	 * @param idToken the idToken to set
+	 */
+	public void setIdToken(String idToken) {
+		this.idToken = idToken;
 	}
 }

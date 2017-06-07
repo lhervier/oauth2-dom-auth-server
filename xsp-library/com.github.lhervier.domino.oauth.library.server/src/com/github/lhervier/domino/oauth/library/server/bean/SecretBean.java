@@ -58,7 +58,7 @@ public class SecretBean {
 	 * @param size la taille finale
 	 * @throws IOException 
 	 */
-	private byte[] getSecret(String base64, int size) throws IOException {
+	private byte[] genSecret(String base64, int size) throws IOException {
 		byte[] min = Base64Utils.decode(base64);
 		byte[] ret = new byte[size];
 		for( int nb = 0; nb < size; nb++ )
@@ -67,12 +67,37 @@ public class SecretBean {
 	}
 	
 	/**
+	 * Retourne un secret
+	 * @param ssoConfig la config sso
+	 * @param size la taille
+	 */
+	private byte[] getSecret(String ssoConfig, int size) throws NotesException, IOException {
+		String secret = this.getSsoConfig(ssoConfig).getItemValueString(SECRET_FIELD_NAME);
+		return this.genSecret(secret, size);
+	}
+	
+	/**
+	 * Retourne un secret pour signer
+	 * @param ssoConfig la config sso
+	 */
+	public byte[] getSignSecret(String ssoConfig) throws NotesException, IOException {
+		return this.getSecret(ssoConfig, 32);
+	}
+	
+	/**
+	 * Retourne un secret pour crypter
+	 * @param ssoConfig la config sso
+	 */
+	public byte[] getCryptSecret(String ssoConfig) throws NotesException, IOException {
+		return this.getSecret(ssoConfig, 16);
+	}
+	
+	/**
 	 * Retourne le secret utilisé pour signer l'access token
 	 * @throws IOException 
 	 */
 	public byte[] getAccessTokenSecret() throws NotesException, IOException {
-		String secret = this.getSsoConfig(this.paramsBean.getAccessTokenConfig()).getItemValueString(SECRET_FIELD_NAME);
-		return this.getSecret(secret, 32);
+		return this.getSignSecret(this.paramsBean.getAccessTokenConfig());
 	}
 	
 	/**
@@ -89,8 +114,7 @@ public class SecretBean {
 	 * @throws IOException 
 	 */
 	public byte[] getRefreshTokenSecret() throws NotesException, IOException {
-		String secret = this.getSsoConfig(this.paramsBean.getRefreshTokenConfig()).getItemValueString(SECRET_FIELD_NAME);
-		return this.getSecret(secret, 16);
+		return this.getCryptSecret(this.paramsBean.getRefreshTokenConfig());
 	}
 	
 	/**

@@ -1,10 +1,10 @@
-package com.github.lhervier.domino.oauth.library.server;
+package com.github.lhervier.domino.oauth.openid;
 
 import org.eclipse.core.runtime.Plugin;
 
 public class Activator extends Plugin {
 	public static final String PLUGIN_ID = Activator.class.getPackage().getName();
-	public static final String SCOPE_EXT_ID = "com.github.lhervier.domino.oauth.library.server.scope";
+	
 	private static Activator instance;
 
 	public Activator() {

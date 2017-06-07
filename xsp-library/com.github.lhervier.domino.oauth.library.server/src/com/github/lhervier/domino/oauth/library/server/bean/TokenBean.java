@@ -29,10 +29,14 @@ import com.github.lhervier.domino.oauth.library.server.ex.grant.InvalidGrantExce
 import com.github.lhervier.domino.oauth.library.server.ex.grant.InvalidRequestException;
 import com.github.lhervier.domino.oauth.library.server.ex.grant.InvalidScopeException;
 import com.github.lhervier.domino.oauth.library.server.ex.grant.UnsupportedGrantTypeException;
+import com.github.lhervier.domino.oauth.library.server.ext.IOAuthExtension;
+import com.github.lhervier.domino.oauth.library.server.ext.IScopeGranter;
 import com.github.lhervier.domino.oauth.library.server.model.AccessToken;
 import com.github.lhervier.domino.oauth.library.server.model.Application;
 import com.github.lhervier.domino.oauth.library.server.model.AuthorizationCode;
 import com.github.lhervier.domino.oauth.library.server.model.RefreshToken;
+import com.github.lhervier.domino.oauth.library.server.utils.JsonObjectPropertyAdder;
+import com.github.lhervier.domino.oauth.library.server.utils.Utils;
 import com.google.gson.JsonObject;
 import com.ibm.xsp.designer.context.XSPContext;
 import com.nimbusds.jose.EncryptionMethod;
@@ -308,6 +312,23 @@ public class TokenBean {
 			if( !redirectUri.equals(authCode.getRedirectUri()) )
 				throw new InvalidGrantException();
 			
+			// Fait générer les propriétés supplémentaires par chaque plugin
+			// Ils peuvent modifier leur contexte.
+			List<IOAuthExtension> exts = Utils.getExtensions();
+			for( IOAuthExtension ext : exts ) {
+				JsonObject context = (JsonObject) authCode.getContexts().get(ext.getId());
+				if( context == null )
+					continue;
+				ext.token(
+						context, 
+						new JsonObjectPropertyAdder(
+								resp, 
+								secretBean.getSignSecret(Utils.getSsoConfigFor(ext.getId())),
+								secretBean.getCryptSecret(Utils.getSsoConfigFor(ext.getId()))
+						)
+				);
+			}
+			
 			// Génère le access token. Il est signé avec la clé partagée avec les serveurs de ressources.
 			String accessToken = this.createAccessToken(authCode);
 			resp.addProperty("access_token", accessToken);
@@ -321,8 +342,6 @@ public class TokenBean {
 			
 			// Le type de token
 			resp.addProperty("token_type", "Bearer");
-			
-			// FIXME: Faire ajouter des propriétés par des plugins externes
 			
 			// Définit les scopes s'il sont différents de ceux demandés lors de la requête à Authorize
 			if( !authCode.getScopes().containsAll(authCode.getGrantedScopes()) )
@@ -386,11 +405,35 @@ public class TokenBean {
 			// Prépare la réponse
 			JsonObject resp = new JsonObject();
 			
+			// Fait travailler les plugins
+			List<IOAuthExtension> exts = Utils.getExtensions();
+			final List<String> grantedScopes = new ArrayList<String>();
+			for( IOAuthExtension ext : exts ) {
+				JsonObject context = (JsonObject) refreshToken.getAuthCode().getContexts().get(ext.getId());
+				if( context == null )
+					continue;
+				ext.refresh(
+						context, 
+						new JsonObjectPropertyAdder(
+								resp,
+								secretBean.getSignSecret(Utils.getSsoConfigFor(ext.getId())),
+								secretBean.getCryptSecret(Utils.getSsoConfigFor(ext.getId()))
+						), 
+						new IScopeGranter() {
+							@Override
+							public void grant(String scope) {
+								grantedScopes.add(scope);
+							}
+						},
+						scopes
+				);
+			}
+			
 			// Met à jour les scopes
 			if( scopes.size() != 0 ) {
-				if( !scopes.containsAll(refreshToken.getAuthCode().getGrantedScopes())) {
-					resp.addProperty("scope", StringUtils.join(scopes.iterator(), " "));
-					refreshToken.getAuthCode().setGrantedScopes(scopes);
+				if( !grantedScopes.containsAll(refreshToken.getAuthCode().getGrantedScopes())) {
+					resp.addProperty("scope", StringUtils.join(grantedScopes.iterator(), " "));
+					refreshToken.getAuthCode().setGrantedScopes(grantedScopes);
 				}
 			}
 			

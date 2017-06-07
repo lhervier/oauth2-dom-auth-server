@@ -37,6 +37,13 @@
   	<managed-bean-scope>request</managed-bean-scope>
   </managed-bean>
   
+  <!-- La bean pour retourner les infos utilisateur -->
+  <managed-bean>
+  	<managed-bean-name>userInfoBean</managed-bean-name>
+  	<managed-bean-class>com.github.lhervier.domino.oauth.library.client.bean.UserInfoBean</managed-bean-class>
+  	<managed-bean-scope>request</managed-bean-scope>
+  </managed-bean>
+  
   <!-- La bean pour jouer la danse OAUTH -->
   <managed-bean>
     <managed-bean-name>initBean</managed-bean-name>

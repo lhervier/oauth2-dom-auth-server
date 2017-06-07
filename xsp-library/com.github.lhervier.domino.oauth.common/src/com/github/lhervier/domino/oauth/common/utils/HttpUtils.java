@@ -238,6 +238,10 @@ public class HttpUtils<T, E> {
 				E resp = GsonUtils.fromJson(sb.toString(), this.errorType);
 				this.errorCallback.run(resp);
 			}
+		} catch(IOException e) {
+			throw e;
+		} catch(Exception e) {
+			throw new RuntimeException(e);
 		} finally {
 			IOUtils.closeQuietly(reader);
 			IOUtils.closeQuietly(in);

@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 
+import com.google.gson.JsonObject;
+
 import lotus.domino.Base;
 import lotus.domino.Database;
 import lotus.domino.DateTime;
@@ -53,6 +55,7 @@ public class DominoUtils {
 		supported.add(Boolean.class);
 		supported.add(Vector.class);
 		supported.add(List.class);
+		supported.add(JsonObject.class);
 	}
 	
 	/**
@@ -394,8 +397,13 @@ public class DominoUtils {
 				else if( paramClass.isAssignableFrom(Boolean.class) )
 					setter.invoke(o, new Object[] {"1".equals(doc.getItemValueString(name))});
 				
-				// Un champ multi valué => Attention aux DateTime qu'on converti en dates java
-				else if( paramClass.isAssignableFrom(List.class) ) {
+				// JsonObject
+				else if( paramClass.isAssignableFrom(JsonObject.class) ) {
+					String json = doc.getItemValueString(name);
+					setter.invoke(o, new Object[] {GsonUtils.fromJson(json)});
+				
+				// Un champ multi valué => Attention aux DateTime qu'on converti en dates java 
+				} else if( paramClass.isAssignableFrom(List.class) ) {
 					List<Object> values;
 					
 					Item it = doc.getFirstItem(name);
@@ -581,6 +589,9 @@ public class DominoUtils {
 					} else if( valueClass.isAssignableFrom(Boolean.class) ) {
 						boolean b = ((Boolean) v).booleanValue();
 						convertedValue = b ? "1" : "0";
+						
+					} else if( valueClass.isAssignableFrom(JsonObject.class) ) {
+						convertedValue = GsonUtils.toJson(v);
 						
 					// Si c'est une liste, on le converti les dates
 					} else if( valueClass.isAssignableFrom(List.class) ) {

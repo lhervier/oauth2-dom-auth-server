@@ -2,6 +2,8 @@ package com.github.lhervier.domino.oauth.library.server.model;
 
 import java.util.List;
 
+import com.google.gson.JsonObject;
+
 /**
  * Un code autorisation.
  * @author Lionel HERVIER
@@ -47,6 +49,11 @@ public class AuthorizationCode extends AccessToken {
 	 * Le scopes autorisé
 	 */
 	private List<String> grantedScopes;
+	
+	/**
+	 * Le contexte
+	 */
+	private JsonObject contexts;
 	
 	/**
 	 * @return the application
@@ -158,5 +165,19 @@ public class AuthorizationCode extends AccessToken {
 	 */
 	public void setClientId(String clientId) {
 		this.clientId = clientId;
+	}
+
+	/**
+	 * @return the contexts
+	 */
+	public JsonObject getContexts() {
+		return contexts;
+	}
+
+	/**
+	 * @param contexts the contexts to set
+	 */
+	public void setContexts(JsonObject contexts) {
+		this.contexts = contexts;
 	}
 }

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="com.github.lhervier.domino.oauth.library.server.scope">
+      <scope
+            class="com.github.lhervier.domino.oauth.openid.OpenIDExt">
+      </scope>
+   </extension>
+
+</plugin>

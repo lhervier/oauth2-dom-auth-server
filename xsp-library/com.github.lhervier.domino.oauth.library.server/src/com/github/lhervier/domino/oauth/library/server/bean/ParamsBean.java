@@ -1,5 +1,7 @@
 package com.github.lhervier.domino.oauth.library.server.bean;
 
+import java.util.List;
+
 import com.github.lhervier.domino.oauth.common.bean.BaseParamsBean;
 
 /**
@@ -52,6 +54,16 @@ public class ParamsBean extends BaseParamsBean {
 	 * Le nom de la config SSO qui contient la clé pour le refresh token
 	 */
 	private String refreshTokenConfig;
+	
+	/**
+	 * Les ids de plugins pour lesquels on défini des clés
+	 */
+	private List<String> pluginsNames;
+	
+	/**
+	 * Les noms des clés à utiliser pour chaque plugin
+	 */
+	private List<String> pluginsKeys;
 	
 	// =============================================================
 
@@ -165,5 +177,33 @@ public class ParamsBean extends BaseParamsBean {
 	 */
 	public void setIssuer(String iss) {
 		this.issuer = iss;
+	}
+
+	/**
+	 * @return the pluginsNames
+	 */
+	public List<String> getPluginsNames() {
+		return pluginsNames;
+	}
+
+	/**
+	 * @param pluginsNames the pluginsNames to set
+	 */
+	public void setPluginsNames(List<String> pluginsNames) {
+		this.pluginsNames = pluginsNames;
+	}
+
+	/**
+	 * @return the pluginsKeys
+	 */
+	public List<String> getPluginsKeys() {
+		return pluginsKeys;
+	}
+
+	/**
+	 * @param pluginsKeys the pluginsKeys to set
+	 */
+	public void setPluginsKeys(List<String> pluginsKeys) {
+		this.pluginsKeys = pluginsKeys;
 	}
 }

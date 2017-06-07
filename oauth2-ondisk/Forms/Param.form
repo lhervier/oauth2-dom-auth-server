@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='utf-8'?>
 <note class='form' xmlns='http://www.lotus.com/dxl' version='9.0' maintenanceversion='1.8'
  replicaid='C125812300595872'>
-<noteinfo noteid='16a' unid='6B1CB95D2E441557C125811D003F87D0' sequence='28'>
+<noteinfo noteid='16a' unid='6B1CB95D2E441557C125811D003F87D0' sequence='31'>
 <created><datetime dst='true'>20170511T133355,36+02</datetime></created>
-<modified><datetime dst='true'>20170608T115853,05+02</datetime></modified>
-<revised><datetime dst='true'>20170608T115853,04+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20170608T115853,05+02</datetime></lastaccessed>
+<modified><datetime dst='true'>20170619T191014,64+02</datetime></modified>
+<revised><datetime dst='true'>20170619T191014,63+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20170619T191014,64+02</datetime></lastaccessed>
 <addedtofile><datetime dst='true'>20170517T181553,92+02</datetime></addedtofile></noteinfo>
 <updatedby><name>CN=admin admin/O=AFER</name></updatedby>
 <wassignedby><name>CN=admin admin/O=AFER</name></wassignedby>
@@ -40,9 +40,16 @@ hhgBAIAAAAAAgAAAAQABAP///wAQAAAA
 <item name='RefreshTokenConfig' placeholder='true'>
 <rawitemdata type='0'>
 </rawitemdata></item>
-<item name='$Fields'><textlist><text>RefreshTokenConfig</text><text>AccessTokenConfig</text><text
->AuthCodeLifetime</text><text>RefreshTokenLifetime</text><text>AccessTokenLifeTime</text><text
->ApplicationRoot</text><text>NAB</text><text>Issuer</text></textlist></item>
+<item name='PluginsNames' placeholder='true'>
+<rawitemdata type='0'>
+</rawitemdata></item>
+<item name='PluginsKeys' placeholder='true'>
+<rawitemdata type='0'>
+</rawitemdata></item>
+<item name='$Fields'><textlist><text>PluginsKeys</text><text>PluginsNames</text><text
+>RefreshTokenConfig</text><text>AccessTokenConfig</text><text>AuthCodeLifetime</text><text
+>RefreshTokenLifetime</text><text>AccessTokenLifeTime</text><text>ApplicationRoot</text><text
+>NAB</text><text>Issuer</text></textlist></item>
 <item name='$Body' sign='true'>
 <rawitemdata type='1'>
 gQKC/1oAAQAAAAAAAAAAAKAFAACgBQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -111,7 +118,25 @@ AAIBAAAKAAAAAAAAAAASAAAAAABSZWZyZXNoVG9rZW5Db25maWdiDgEAhAAAAAAAAAAAAN4GAACK
 /4X/CAABAAAKpBIHAkIY/DwAAFUCEREBAQAAgQKDBAUAhf9NAAEAAApOb20gZGUgbGEgY29uZmln
 IFNTTyBxdWkgY29udGllbnQgbGEgY2yCIHBvdXIgY3J5cHSCIGxlIHJlZnJlc2ggdG9rZW4AgQKD
 BAUAhf9ZAAEAAApEZSBsYSBmb3JtZSA8b3JnYW5pemF0aW9uPjo8Y29uZmlndXJhdGlvbiBuYW1l
-PiAoIkFGRVI6UmVmcmVzaFRva2VuIiBwYXIgZXhlbXBsZSkApQYAAAAAgQKDBAEAhf8IAAEAAAo=
+PiAoIkFGRVI6UmVmcmVzaFRva2VuIiBwYXIgZXhlbXBsZSkApQYAAAAAgQKDBAEAhf8IAAEAAAqB
+AoMEAQCF/yQAAQAACkNsgnMghSB1dGlsaXNlciBwYXIgcGx1Z2luIDqBAoMEAgDdBgEA+//7/ywA
+AAAAAAICAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAFz/PgAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOAAAAAAAAAAEAAAoAAAAAAQAAAAAA3gYBAPv/ow6gBSgA
+PAAAAAAAAgCkEgAAoAW9MgAAVQIREQEBAACBAoL/WgAGAAAAAAAAAAAAqgW9MqoFAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAhgEAAAAAVIcAAAAAAAAAAAAAAAABAAAA
+BAAAAIMEBgCF/yQAAQAACk5vbSBkdSBwbHVnaW4gKHVuIHBhciBsaWduZSmkEgABvTIgPQAAVQIR
+EQEBAACBAoL/WgAHAAAAAAAAAAAAxzIgPccyAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAhgEAAAAAVIcAAAAAAAAAAAAAAAABAAAABAAAAIMEBwCF/yUAAQAACkNsgiCF
+IHV0aWxpc2VyICh1biBwYXIgbGlnbmUpAKQSAQCgBb0yAABVAhERAQEAAIECgwQGAIX/CAABAAAK
+3QYAAIr//v9QAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAeAB4AAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACK/3IAigABBQhAAgAAAAAAAAIBAAAKQgAAAAAA
+AAAMAAAAAABCAAAAQAABADUAY29tLmdpdGh1Yi5saGVydmllci5kb21pbm8ub2F1dGgubGlicmFy
+eS5zZXJ2ZXIuc2NvcGUAAwBQbHVnaW5zTmFtZXNiDgEAhAAAAAAAAAAAAN4GAACK/4X/CAABAAAK
+pBIBAb0yID0AAFUCEREBAQAAgQKDBAcAhf8IAAEAAArdBgAAiv/+/1AAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAB4AHgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAIr/TgCKAAEFCEACAAAAAAAAAgEAAAoeAAAAAAAAAAsAAAAAAB4AAAAcAAEAEQA8T3JnPjo8
+U3NvQ29uZmlnPgADAFBsdWdpbnNLZXlzAGIOAQCEAAAAAAAAAAAA3gYAAIr/hf8IAAEAAAqlBgAA
+AACBAoMEAQCF/wgAAQAACg==
 </rawitemdata></item>
 <item name='$V5ACTIONS' sign='true'>
 <rawitemdata type='1'>

@@ -71,9 +71,7 @@ public class CurrentUserService {
 			JSONObject json = jwsObj.getPayload().toJSONObject();
 			AccessToken ret = new AccessToken();
 			ret.setAud(json.getAsString("aud"));
-			ret.setAuthTime(json.getAsNumber("auth_time").longValue());
 			ret.setExp(json.getAsNumber("exp").longValue());
-			ret.setIat(json.getAsNumber("iat").longValue());
 			ret.setIss(json.getAsString("iss"));
 			ret.setSub(json.getAsString("sub"));
 			

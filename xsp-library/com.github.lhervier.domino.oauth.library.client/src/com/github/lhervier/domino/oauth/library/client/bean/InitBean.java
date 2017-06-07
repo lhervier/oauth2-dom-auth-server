@@ -3,6 +3,7 @@ package com.github.lhervier.domino.oauth.library.client.bean;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.text.ParseException;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
@@ -10,10 +11,13 @@ import javax.faces.context.FacesContext;
 import com.github.lhervier.domino.oauth.common.model.error.AuthorizeError;
 import com.github.lhervier.domino.oauth.common.model.error.GrantError;
 import com.github.lhervier.domino.oauth.common.utils.Callback;
+import com.github.lhervier.domino.oauth.common.utils.GsonUtils;
 import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
 import com.github.lhervier.domino.oauth.common.utils.QueryStringUtils;
 import com.github.lhervier.domino.oauth.library.client.model.GrantResponse;
+import com.github.lhervier.domino.oauth.library.client.model.IdToken;
 import com.github.lhervier.domino.oauth.library.client.utils.Utils;
+import com.nimbusds.jose.JWSObject;
 
 public class InitBean {
 
@@ -66,6 +70,7 @@ public class InitBean {
 					"response_type=code&" +
 					"redirect_uri=" + Utils.getEncodedRedirectUri() + "&" +
 					"client_id=" + this.initParamsBean.getClientId() + "&" +
+					"scope=openid profile email address phone&" +
 					"state=" + URLEncoder.encode(redirectUrl, "UTF-8")
 		);
 	}
@@ -92,11 +97,20 @@ public class InitBean {
 				// OK => Mémorise les tokens en session et redirige vers l'url initiale
 				.onOk(new Callback<GrantResponse>() {
 					@Override
-					public void run(GrantResponse grant) throws IOException {
+					public void run(GrantResponse grant) throws IOException, ParseException {
 						if( !"Bearer".equalsIgnoreCase(grant.getTokenType()) )
 							throw new RuntimeException("Le seul type de token géré est Bearer... (et j'ai '"  + grant.getTokenType() + "')");
 						JSFUtils.getSessionScope().put("refresh_token", grant.getRefreshToken());
 						JSFUtils.getSessionScope().put("access_token", grant.getAccessToken());
+						
+						// Décode le id_token openid
+						JWSObject jwsObj = JWSObject.parse(grant.getIdToken());
+						// JWSVerifier verifier = new MACVerifier(this.getSecret());		// FIXME: Il faut vérifier le JWS
+						// if( jwsObj.verify(verifier) ) {
+							// Extrait le contenu du token
+							String json = jwsObj.getPayload().toString();
+							JSFUtils.getSessionScope().put("id_token", GsonUtils.fromJson(json, IdToken.class));
+						// }
 						JSFUtils.sendRedirect(redirectUrl);
 					}
 				})

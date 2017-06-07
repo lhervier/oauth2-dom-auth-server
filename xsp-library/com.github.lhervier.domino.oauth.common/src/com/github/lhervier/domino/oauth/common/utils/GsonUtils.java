@@ -4,6 +4,8 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 public class GsonUtils {
 
@@ -32,6 +34,20 @@ public class GsonUtils {
 			@Override
 			public T run() {
 				return new Gson().fromJson(json, cl);
+			}
+		});
+	}
+	
+	/**
+	 * Pour transformer du json en un objet
+	 * @param json le json
+	 * @return l'objet
+	 */
+	public static final JsonObject fromJson(final String json) {
+		return AccessController.doPrivileged(new PrivilegedAction<JsonObject>() {
+			@Override
+			public JsonObject run() {
+				return new JsonParser().parse(json).getAsJsonObject();
 			}
 		});
 	}

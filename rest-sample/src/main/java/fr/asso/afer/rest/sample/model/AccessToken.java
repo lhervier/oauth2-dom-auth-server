@@ -24,17 +24,6 @@ public class AccessToken {
 	private String aud;
 	
 	/**
-	 * La date a laquelle le token a été généré
-	 */
-	private long iat;
-	
-	/**
-	 * La date à laquelle l'utilisateur s'est authentifié
-	 */
-	@JsonProperty("auth_time")
-	private long authTime;
-	
-	/**
 	 * La date d'expiration
 	 */
 	private long exp;
@@ -79,34 +68,6 @@ public class AccessToken {
 	 */
 	public void setAud(String aud) {
 		this.aud = aud;
-	}
-
-	/**
-	 * @return the iat
-	 */
-	public long getIat() {
-		return iat;
-	}
-
-	/**
-	 * @param iat the iat to set
-	 */
-	public void setIat(long iat) {
-		this.iat = iat;
-	}
-
-	/**
-	 * @return the authTime
-	 */
-	public long getAuthTime() {
-		return authTime;
-	}
-
-	/**
-	 * @param authTime the authTime to set
-	 */
-	public void setAuthTime(long authTime) {
-		this.authTime = authTime;
 	}
 
 	/**

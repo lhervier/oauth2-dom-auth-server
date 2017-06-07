@@ -154,6 +154,7 @@ public class Utils {
 		
 		return HttpUtils.createConnection(url, GrantResponse.class, GrantError.class)
 				.addHeader("Authorization", "Basic " + paramsBean.getSecret())
+				.addHeader("Content-Type", "application/x-www-form-urlencoded")
 				.withVerifier(verifier)
 				.withFactory(getSSLSocketFactory());
 	}

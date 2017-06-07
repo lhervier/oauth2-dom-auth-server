@@ -23,6 +23,7 @@ import com.github.lhervier.domino.oauth.library.server.ex.ServerErrorException;
 import com.github.lhervier.domino.oauth.library.server.ex.grant.InvalidClientException;
 import com.github.lhervier.domino.oauth.library.server.ex.grant.InvalidGrantException;
 import com.github.lhervier.domino.oauth.library.server.ex.grant.InvalidRequestException;
+import com.github.lhervier.domino.oauth.library.server.ex.grant.InvalidScopeException;
 import com.github.lhervier.domino.oauth.library.server.ex.grant.UnsupportedGrantTypeException;
 import com.github.lhervier.domino.oauth.library.server.model.Application;
 import com.github.lhervier.domino.oauth.library.server.model.AuthorizationCode;
@@ -181,7 +182,10 @@ public class TokenBean {
 						clientId
 				);
 			else if( "refresh_token".equals(grantType) )
-				resp = this.refreshToken(this.param.get("refresh_token"));
+				resp = this.refreshToken(
+						this.param.get("refresh_token"),
+						this.param.get("scope")
+				);
 			else
 				throw new UnsupportedGrantTypeException();
 		} catch(GrantException e) {
@@ -300,10 +304,12 @@ public class TokenBean {
 	
 	/**
 	 * Génération d'un token à partir d'un refresh token
+	 * @param sRefreshToken le refresh token
+	 * @param scope un éventuel nouveau scope.
 	 * @throws GrantException 
 	 * @throws ServerErrorException
 	 */
-	public GrantResponse refreshToken(String sRefreshToken) throws GrantException, ServerErrorException {
+	public GrantResponse refreshToken(String sRefreshToken, String scope) throws GrantException, ServerErrorException {
 		if( sRefreshToken == null )
 			throw new InvalidGrantException();
 		
@@ -313,6 +319,12 @@ public class TokenBean {
 			jweObject.decrypt(new DirectDecrypter(this.secretBean.getRefreshTokenSecret()));
 			String json = jweObject.getPayload().toString();
 			IdToken refreshToken = GsonUtils.fromJson(json, IdToken.class);
+			
+			// FIXME: Vérifie que les scopes demandés sont bien dans la liste des scopes déjà accordés
+			if( scope != null ) {
+				if( scope.length() != 0 )			// C'est le seul scope que l'on fournisse aujourd'hui...
+					throw new InvalidScopeException();
+			}
 			
 			// Vérifie qu'il est valide
 			if( refreshToken.getExp() < SystemUtils.currentTimeSeconds() )

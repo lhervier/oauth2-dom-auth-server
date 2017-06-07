@@ -27,18 +27,20 @@ public class RefreshBean {
 	public void refresh() throws IOException {
 		String refreshToken = (String) JSFUtils.getSessionScope().get("refresh_token");
 		
-		// Refresh token pas présent (session non initialisés ou expirée)
+		// Refresh token pas présent (session non initialisée ou expirée)
 		if( refreshToken == null ) {
 			this.accessTokenBean.sendToken();
 			return;
 		}
 		
-		StringBuffer authorizeUrl = new StringBuffer();
-		authorizeUrl.append(this.initParamsBean.getTokenEndPoint()).append('?');
-		authorizeUrl.append("grant_type=refresh_token&");
-		authorizeUrl.append("refresh_token=").append(refreshToken);
-		
-		Utils.createConnection(authorizeUrl.toString())
+		Utils.createConnection(this.initParamsBean.getTokenEndPoint())
+				.setTextContent(
+						new StringBuffer()
+								.append("grant_type=refresh_token&")
+								.append("refresh_token=").append(refreshToken)
+								.toString(), 
+						"UTF-8"
+				)
 				
 				// OK => Met à jour la session et retourne le token
 				.onOk(new Callback<GrantResponse>() {

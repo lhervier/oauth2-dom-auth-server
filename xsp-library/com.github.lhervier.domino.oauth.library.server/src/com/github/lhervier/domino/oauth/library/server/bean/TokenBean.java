@@ -137,14 +137,36 @@ public class TokenBean {
 	/**
 	 * Gestion du token.
 	 * @throws IOException
+	 * @throws NotesException 
 	 */
-	public void token() throws IOException {
+	public void token() throws IOException, NotesException {
 		// Calcul l'objet réponse
 		Object resp;
 		try {
 			// On doit passer par un POST
 			if( !"POST".equals(this.request.getMethod()) )
 				throw new InvalidRequestException();
+			
+			// Récupère le client id à partir de l'authentification
+			Name nn = null;
+			String clientId;
+			try {
+				String fullName = this.database.getParent().getEffectiveUserName();
+				nn = this.database.getParent().createName(fullName);
+				String appName = nn.getCommon();
+				Application app = this.appBean.getApplicationFromName(appName);
+				if( app == null )
+					throw new InvalidClientException();
+				clientId = app.getClientId();
+			} finally {
+				DominoUtils.recycleQuietly(nn);
+			}
+			
+			// Si on a un client_id en paramètre, ça doit être le client_id courant
+			if( this.param.containsKey("client_id") ) {
+				if( !clientId.equals(this.param.get("client_id")) )
+					throw new InvalidClientException();
+			}
 			
 			// On doit avoir un grant_type
 			String grantType = this.param.get("grant_type");
@@ -156,7 +178,7 @@ public class TokenBean {
 				resp = this.authorizationCode(
 						this.param.get("code"),
 						this.param.get("redirect_uri"),
-						this.param.get("client_id")
+						clientId
 				);
 			else if( "refresh_token".equals(grantType) )
 				resp = this.refreshToken(this.param.get("refresh_token"));

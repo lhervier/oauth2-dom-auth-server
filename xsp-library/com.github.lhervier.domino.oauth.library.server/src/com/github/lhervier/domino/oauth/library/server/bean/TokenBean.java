@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import lotus.domino.Database;
@@ -88,6 +89,11 @@ public class TokenBean {
 	private XSPContext context;
 	
 	/**
+	 * La requête http
+	 */
+	private HttpServletRequest request;
+	
+	/**
 	 * La réponse http
 	 */
 	private HttpServletResponse response;
@@ -136,6 +142,11 @@ public class TokenBean {
 		// Calcul l'objet réponse
 		Object resp;
 		try {
+			// On doit passer par un POST
+			if( !"POST".equals(this.request.getMethod()) )
+				throw new InvalidRequestException();
+			
+			// On doit avoir un grant_type
 			String grantType = this.param.get("grant_type");
 			if( grantType == null )
 				throw new InvalidRequestException();
@@ -395,5 +406,11 @@ public class TokenBean {
 	public void setDatabaseAsSigner(Database databaseAsSigner) {
 		this.databaseAsSigner = databaseAsSigner;
 	}
-	
+
+	/**
+	 * @param request the request to set
+	 */
+	public void setRequest(HttpServletRequest request) {
+		this.request = request;
+	}
 }

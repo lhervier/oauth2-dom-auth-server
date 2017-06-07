@@ -147,6 +147,10 @@
     	<property-name>response</property-name>
     	<value>#{facesContext.externalContext.response}</value>
     </managed-property>
+    <managed-property>
+    	<property-name>request</property-name>
+    	<value>#{facesContext.externalContext.request}</value>
+    </managed-property>
   </managed-bean>
   
   <!-- Vérification du rôle à chaque chargement de XPage -->

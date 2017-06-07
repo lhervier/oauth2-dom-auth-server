@@ -1,9 +1,12 @@
 package com.github.lhervier.domino.oauth.common.utils;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
@@ -57,6 +60,11 @@ public class HttpUtils<T, E> {
 	 * Un éventuel SSLFactory (si connection https)
 	 */
 	private SSLSocketFactory factory = null;
+	
+	/**
+	 * Le contenu à envoyer
+	 */
+	private InputStream content;
 	
 	/**
 	 * Initialise une connection 
@@ -128,11 +136,50 @@ public class HttpUtils<T, E> {
 	}
 	
 	/**
+	 * Pour définir un contenu texte
+	 * @param content le contenu
+	 * @param encoding l'encodage à utiliser
+	 * @throws UnsupportedEncodingException 
+	 */
+	public HttpUtils<T, E> setTextContent(String content, String encoding) throws UnsupportedEncodingException {
+		this.content = new ByteArrayInputStream(content.getBytes(encoding));
+		return this;
+	}
+	
+	/**
+	 * Pour définir un contenu objet à serialiser en Json
+	 * @param content le contenu
+	 * @param encoding l'encodage
+	 * @throws UnsupportedEncodingException 
+	 */
+	public HttpUtils<T, E> setJsonContent(Object content, String encoding) throws UnsupportedEncodingException {
+		this.content = new ByteArrayInputStream(GsonUtils.toJson(content).getBytes(encoding));
+		return this;
+	}
+	
+	/**
+	 * Pour définir un contenu
+	 * @param content le contenu
+	 */
+	public HttpUtils<T, E> setContent(byte[] content) {
+		this.content = new ByteArrayInputStream(content);
+		return this;
+	}
+	
+	/**
+	 * Pour définir un contenu
+	 * @param in stream vers le contenu
+	 */
+	public HttpUtils<T, E> setContent(InputStream in) {
+		this.content = in;
+		return this;
+	}
+	
+	/**
 	 * Emet la requête
-	 * @param obj l'objet à envoyer
 	 * @throws IOException 
 	 */
-	public void execute(Object obj) throws IOException {
+	public void execute() throws IOException {
 		URL url = new URL(this.url);
 		
 		HttpURLConnection conn = (HttpURLConnection) url.openConnection();;
@@ -150,11 +197,23 @@ public class HttpUtils<T, E> {
 		try {
 			// Input et output. Va émettre un GET ou un POST
 			conn.setDoInput(this.okCallback != null || this.errorCallback != null);
-			conn.setDoOutput(obj != null);
+			conn.setDoOutput(this.content != null);
 			
-			// Ajoute le en tête http
+			// Ajoute les en têtes http
 			for( Entry<String, String> entry : this.headers.entrySet() )
 				conn.addRequestProperty(entry.getKey(), entry.getValue());
+			
+			// Envoi l'objet
+			if( this.content != null ) {
+				OutputStream out = null;
+				try {
+					out = conn.getOutputStream();
+					IOUtils.copy(this.content, out);
+				} finally {
+					IOUtils.closeQuietly(out);
+					IOUtils.closeQuietly(this.content);
+				}
+			}
 			
 			// Charge la réponse (du JSON)
 			StringBuffer sb = new StringBuffer();
@@ -185,8 +244,4 @@ public class HttpUtils<T, E> {
 			conn.disconnect();
 		}
 	}
-	public void execute() throws IOException {
-		this.execute(null);
-	}
-	
 }

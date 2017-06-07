@@ -78,14 +78,16 @@ public class InitBean {
 	 * @throws IOException 
 	 */
 	private void processAuthorizationCode(final String code, final String redirectUrl) throws IOException {
-		StringBuffer authorizeUrl = new StringBuffer();
-		authorizeUrl.append(this.initParamsBean.getTokenEndPoint()).append('?');
-		authorizeUrl.append("grant_type=authorization_code&");
-		authorizeUrl.append("code=").append(code).append('&');
-		authorizeUrl.append("client_id=").append(this.initParamsBean.getClientId()).append('&');
-		authorizeUrl.append("redirect_uri=").append(Utils.getEncodedRedirectUri());
-		
-		Utils.createConnection(authorizeUrl.toString())
+		Utils.createConnection(this.initParamsBean.getTokenEndPoint())
+				.setTextContent(
+						new StringBuffer()
+								.append("grant_type=authorization_code&")
+								.append("code=").append(code).append('&')
+								.append("client_id=").append(this.initParamsBean.getClientId()).append('&')
+								.append("redirect_uri=").append(Utils.getEncodedRedirectUri())
+								.toString(), 
+						"UTF-8"
+				)
 				
 				// OK => Mémorise les tokens en session et redirige vers l'url initiale
 				.onOk(new Callback<GrantResponse>() {

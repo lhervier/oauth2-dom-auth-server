@@ -4,6 +4,7 @@ import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.AccessController;
@@ -432,6 +433,12 @@ public class DominoUtils {
 						}
 					}
 					setter.invoke(o, new Object[] {dt});
+				
+				// Sinon, on utilise un constructeur depuis une chaîne
+				} else {
+					String v = doc.getItemValueString(name);
+					Constructor<?> c = paramClass.getConstructor(String.class);
+					setter.invoke(o, new Object[] {c.newInstance(v)});
 				}
 			}
 			
@@ -444,6 +451,12 @@ public class DominoUtils {
 		} catch (IllegalAccessException e) {
 			throw new RuntimeException(e);
 		} catch (InvocationTargetException e) {
+			throw new RuntimeException(e);
+		} catch (SecurityException e) {
+			throw new RuntimeException(e);
+		} catch (NoSuchMethodException e) {
+			throw new RuntimeException(e);
+		} catch (InstantiationException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -526,11 +539,6 @@ public class DominoUtils {
 				Method getter = descriptor.getReadMethod();
 				Class<?> returnType = getter.getReturnType();
 				
-				// On ne traite que les types supportés
-				boolean supp = isSupported(returnType);
-				if( !supp )
-					continue;
-				
 				// Récupère la future valeure du champ. On récupère quoi qu'il se passe une valeur multi 
 				// (quitte à n'avoir qu'un élément dans ce vecteur)
 				Object v = getter.invoke(o, new Object[] {});
@@ -557,13 +565,12 @@ public class DominoUtils {
 					Object convertedValue;
 					Class<?> valueClass = value.getClass();
 					
-					// Il ne supporte pas non plus l'ensemble des types java
-					supp = isSupported(valueClass);
-					if( !supp )
-						throw new RuntimeException("Impossible de remplir le document. La bean contient un " + valueClass.getName() + "...");
+					// Si on tombe sur un type qu'on ne supporte pas, on fait un toString
+					if( !isSupported(valueClass) ) {
+						convertedValue = value.toString();
 					
 					// Si c'est une date, et qu'on a un DateFormat, on la converti en chaîne
-					if( returnType.isAssignableFrom(Date.class) && fmt != null ) {
+					} else if( returnType.isAssignableFrom(Date.class) && fmt != null ) {
 						convertedValue = fmt.format(value);
 					
 					// Si c'est une date, mais qu'on n'a pas de DateFormat, on en fait un NotesDateTime

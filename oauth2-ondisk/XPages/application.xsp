@@ -96,8 +96,25 @@
 				</xp:td>
 				<xp:td>
 					<xp:inputText id="redirectUriField" value="#{viewScope.app.redirectUri}" required="true">
+						<xp:this.converter>
+							<xp:customConverter>
+								<xp:this.getAsObject><![CDATA[#{javascript:
+									try {
+										return new java.net.URI(value);
+									} catch(e) {
+										var msg = new javax.faces.application.FacesMessage("URI invalide");
+										facesContext.addMessage(getClientId(this.id), msg);
+										throw msg.getMessage();
+									}
+								}]]></xp:this.getAsObject>
+								<xp:this.getAsString><![CDATA[#{javascript:
+									return value.toString();
+								}]]></xp:this.getAsString>
+							</xp:customConverter>
+						</xp:this.converter>
 						<xp:this.validators>
-							<xp:validateRequired message="L'url de redirection par défaut est obligatoire"/>
+							<xp:validateExpression message="L'URI doit être absolue" expression="#{value.absolute}"/>
+							<xp:validateRequired message="L'URI est obligatoire"/>
 						</xp:this.validators>
 					</xp:inputText>
 					<xp:message for="redirectUriField"/>
@@ -122,16 +139,50 @@
 							</xp:div>
 						</xp:repeat>
 						<xp:div>
-							<xp:inputText id="newUri" value="#{viewScope.uri}"/>
+							<xp:inputText id="newUri" value="#{requestScope.uri}">
+								<xp:this.converter>
+									<xp:customConverter>
+										<xp:this.getAsObject><![CDATA[#{javascript:
+											if( value == "" )
+												return null;
+											try {
+												return new java.net.URI(value);
+											} catch(e) {
+												var msg = new javax.faces.application.FacesMessage("URI invalide");
+												facesContext.addMessage(getClientId(this.id), msg);
+												throw msg.getMessage();
+											}
+										}]]></xp:this.getAsObject>
+										<xp:this.getAsString><![CDATA[#{javascript:
+											if( value == null )
+												return "";
+											return value.toString();
+										}]]></xp:this.getAsString>
+									</xp:customConverter>
+								</xp:this.converter>
+								<xp:this.validators>
+									<xp:validateExpression message="L'URI doit être absolue">
+										<xp:this.expression><![CDATA[#{javascript:
+											if( value == null )
+												return true;
+											return value.isAbsolute();
+										}]]></xp:this.expression>
+									</xp:validateExpression>
+								</xp:this.validators>
+							</xp:inputText>
+							<xp:message for="newUri"/>
 							<xp:button id="newUriBtn" value="Ajouter" rendered="#{empty requestScope.secret}">
-								<xp:eventHandler event="onclick" submit="true" immediate="true" refreshMode="partial" refreshId="uris">
+								<xp:eventHandler event="onclick" submit="true" refreshMode="partial" refreshId="uris">
 									<xp:this.action><![CDATA[#{javascript:
-										var uri = getComponent("newUri").submittedValue;
-										if( uri == "" )
+										if( requestScope.uri == "" ) {
+											var msg = new javax.faces.application.FacesMessage("L'URI est obligatoire");
+											facesContext.addMessage(getClientId('newUri'), msg);
 											return;
-										viewScope.app.redirectUris.add(uri);
+										}
+										viewScope.app.redirectUris.add(requestScope.uri);
 										getComponent("newUri").submittedValue = null;
 										getComponent("newUri").value = null;
+										requestScope.uri = null;
 									}]]></xp:this.action>
 								</xp:eventHandler>
 							</xp:button>

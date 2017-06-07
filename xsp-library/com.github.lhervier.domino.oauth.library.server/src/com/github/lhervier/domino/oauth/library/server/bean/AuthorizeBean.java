@@ -161,9 +161,9 @@ public class AuthorizeBean {
 		
 		// Vérifie que l'uri de redirection est bien dans la liste
 		Set<String> redirectUris = new HashSet<String>();
-		redirectUris.add(app.getRedirectUri());
-		for( String uri : app.getRedirectUris() )
-			redirectUris.add(uri);
+		redirectUris.add(app.getRedirectUri().toString());
+		for( URI uri : app.getRedirectUris() )
+			redirectUris.add(uri.toString());
 		if( !redirectUris.contains(redirectUri) )
 			throw new InvalidUriException("invalid redirect_uri");		// Cf RFC. On ne doit pas (MUST NOT) rediriger vers une uri invalide
 		

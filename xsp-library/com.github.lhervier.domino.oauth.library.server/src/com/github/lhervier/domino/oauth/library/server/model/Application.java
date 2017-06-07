@@ -1,6 +1,7 @@
 package com.github.lhervier.domino.oauth.library.server.model;
 
 import java.io.Serializable;
+import java.net.URI;
 import java.util.List;
 
 /**
@@ -27,12 +28,12 @@ public class Application implements Serializable {
 	/**
 	 * Son URI de redirection par défaut
 	 */
-	private String redirectUri;
+	private URI redirectUri;
 	
 	/**
 	 * Ses autres URIs de redirection
 	 */
-	private List<String> redirectUris;
+	private List<URI> redirectUris;
 	
 	/**
 	 * Les personnes autorisées à se logger sur cette application
@@ -89,28 +90,28 @@ public class Application implements Serializable {
 	/**
 	 * @return the redirectUri
 	 */
-	public String getRedirectUri() {
+	public URI getRedirectUri() {
 		return redirectUri;
 	}
 
 	/**
 	 * @param redirectUrl the redirectUri to set
 	 */
-	public void setRedirectUri(String redirectUri) {
+	public void setRedirectUri(URI redirectUri) {
 		this.redirectUri = redirectUri;
 	}
 
 	/**
 	 * @return the redirectUris
 	 */
-	public List<String> getRedirectUris() {
+	public List<URI> getRedirectUris() {
 		return redirectUris;
 	}
 
 	/**
 	 * @param redirectUris the redirectUris to set
 	 */
-	public void setRedirectUris(List<String> redirectUris) {
+	public void setRedirectUris(List<URI> redirectUris) {
 		this.redirectUris = redirectUris;
 	}
 

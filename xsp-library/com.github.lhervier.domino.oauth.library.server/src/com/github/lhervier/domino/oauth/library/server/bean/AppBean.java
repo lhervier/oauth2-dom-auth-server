@@ -1,6 +1,7 @@
 package com.github.lhervier.domino.oauth.library.server.bean;
 
 import java.math.BigInteger;
+import java.net.URI;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Date;
@@ -192,7 +193,7 @@ public class AppBean {
 	public Application prepareApplication() {
 		Application ret = new Application();
 		ret.setClientId(UUID.randomUUID().toString());
-		ret.setRedirectUris(new ArrayList<String>());
+		ret.setRedirectUris(new ArrayList<URI>());
 		ret.setReaders(new ArrayList<String>());
 		ret.getReaders().add("*");
 		return ret;
@@ -280,6 +281,15 @@ public class AppBean {
 			throw new RuntimeException("Je ne toruve pas l'application avec le client_id '" + app.getClientId() + "'");
 		if( !existing.getName().equals(app.getName()) )
 			throw new RuntimeException("Impossible de changer le nom");
+		
+		// Vérifie que les URIs sont bien des URIs absolues
+		List<URI> uris = new ArrayList<URI>();
+		uris.addAll(app.getRedirectUris());
+		uris.add(app.getRedirectUri());
+		for( URI uri : uris ) {
+			if( !uri.isAbsolute() )
+				throw new RuntimeException("L'uri '" + uri.toString() + "' n'est pas absolue");
+		}
 		
 		Document appDoc = null;
 		try {

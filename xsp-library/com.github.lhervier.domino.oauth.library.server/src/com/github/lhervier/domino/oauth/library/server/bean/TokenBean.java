@@ -240,7 +240,7 @@ public class TokenBean {
 			resp.setExpiresIn(accessToken.getExp() - SystemUtils.currentTimeSeconds());
 			
 			// Le type de token
-			resp.setTokenType("bearer");
+			resp.setTokenType("Bearer");
 			
 			return resp;
 		} catch (NotesException e) {

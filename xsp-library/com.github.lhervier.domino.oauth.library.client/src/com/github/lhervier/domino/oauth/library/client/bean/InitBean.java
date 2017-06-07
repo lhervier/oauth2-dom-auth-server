@@ -83,7 +83,7 @@ public class InitBean {
 						new StringBuffer()
 								.append("grant_type=authorization_code&")
 								.append("code=").append(code).append('&')
-								.append("client_id=").append(this.initParamsBean.getClientId()).append('&')
+								// .append("client_id=").append(this.initParamsBean.getClientId()).append('&')		// Facultatif
 								.append("redirect_uri=").append(Utils.getEncodedRedirectUri())
 								.toString(), 
 						"UTF-8"

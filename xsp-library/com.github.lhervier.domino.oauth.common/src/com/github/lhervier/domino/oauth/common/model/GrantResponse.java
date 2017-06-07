@@ -33,6 +33,11 @@ public class GrantResponse {
 	private String tokenType;
 
 	/**
+	 * Le scope (s'il est différent de celui demandé par le client)
+	 */
+	private String scope;
+	
+	/**
 	 * @return the accessToken
 	 */
 	public String getAccessToken() {
@@ -86,5 +91,19 @@ public class GrantResponse {
 	 */
 	public void setTokenType(String tokenType) {
 		this.tokenType = tokenType;
+	}
+
+	/**
+	 * @return the scope
+	 */
+	public String getScope() {
+		return scope;
+	}
+
+	/**
+	 * @param scope the scope to set
+	 */
+	public void setScope(String scope) {
+		this.scope = scope;
 	}
 }

@@ -275,6 +275,10 @@ public class TokenBean {
 			// Le type de token
 			resp.setTokenType("Bearer");
 			
+			// Définit le scope s'il est différent de celui demandé lors de la requête à Authorize
+			if( !authCode.getScope().equals(authCode.getGrantedScope()) )
+				resp.setScope(authCode.getGrantedScope());
+			
 			return resp;
 		} catch (NotesException e) {
 			throw new ServerErrorException(e);

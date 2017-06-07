@@ -27,6 +27,16 @@ public class AuthorizationCode extends IdToken {
 	private long expires;
 	
 	/**
+	 * Le scope demandé
+	 */
+	private String scope;
+	
+	/**
+	 * Le scope autorisé
+	 */
+	private String grantedScope;
+	
+	/**
 	 * @return the application
 	 */
 	public String getApplication() {
@@ -80,5 +90,33 @@ public class AuthorizationCode extends IdToken {
 	 */
 	public void setExpires(long expires) {
 		this.expires = expires;
+	}
+
+	/**
+	 * @return the scope
+	 */
+	public String getScope() {
+		return scope;
+	}
+
+	/**
+	 * @param scope the scope to set
+	 */
+	public void setScope(String scope) {
+		this.scope = scope;
+	}
+
+	/**
+	 * @return the grantedScope
+	 */
+	public String getGrantedScope() {
+		return grantedScope;
+	}
+
+	/**
+	 * @param grantedScope the grantedScope to set
+	 */
+	public void setGrantedScope(String grantedScope) {
+		this.grantedScope = grantedScope;
 	}
 }

@@ -199,6 +199,10 @@ public class AuthorizeBean {
 			authCode.setIat(SystemUtils.currentTimeSeconds());
 			authCode.setAuthTime(SystemUtils.currentTimeSeconds());
 			
+			// FIXME: Défini le scope. Pour l'instant, ce n'est pas implémenté.
+			authCode.setScope(scope == null ? "" : scope);
+			authCode.setGrantedScope("");
+			
 			// On le persiste dans la base
 			authDoc = this.databaseAsSigner.createDocument();
 			authDoc.replaceItemValue("Form", "AuthorizationCode");

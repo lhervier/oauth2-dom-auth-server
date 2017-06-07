@@ -5,9 +5,12 @@ import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.SecureRandom;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.commons.lang.StringUtils;
 
 import lotus.domino.Database;
 import lotus.domino.Document;
@@ -199,8 +202,8 @@ public class AuthorizeBean {
 			authCode.setAuthTime(SystemUtils.currentTimeSeconds());
 			
 			// FIXME: Défini le scope. Pour l'instant, ce n'est pas implémenté.
-			authCode.setScope(scope == null ? "" : scope);
-			authCode.setGrantedScope("");
+			authCode.setScopes(Arrays.asList(StringUtils.split(scope, " ")));
+			authCode.setGrantedScopes(Arrays.asList(StringUtils.split(scope, " ")));
 			
 			// On le persiste dans la base
 			authDoc = this.databaseAsSigner.createDocument();

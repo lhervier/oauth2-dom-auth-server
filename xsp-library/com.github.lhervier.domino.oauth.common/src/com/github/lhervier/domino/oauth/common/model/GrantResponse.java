@@ -1,5 +1,7 @@
 package com.github.lhervier.domino.oauth.common.model;
 
+import java.util.List;
+
 import com.google.gson.annotations.SerializedName;
 
 /**
@@ -33,9 +35,9 @@ public class GrantResponse {
 	private String tokenType;
 
 	/**
-	 * Le scope (s'il est différent de celui demandé par le client)
+	 * Les scopes (s'il sont différents de ceux demandés par le client)
 	 */
-	private String scope;
+	private List<String> scopes;
 	
 	/**
 	 * @return the accessToken
@@ -94,16 +96,16 @@ public class GrantResponse {
 	}
 
 	/**
-	 * @return the scope
+	 * @return the scopes
 	 */
-	public String getScope() {
-		return scope;
+	public List<String> getScopes() {
+		return scopes;
 	}
 
 	/**
-	 * @param scope the scope to set
+	 * @param scopes the scopes to set
 	 */
-	public void setScope(String scope) {
-		this.scope = scope;
+	public void setScopes(List<String> scope) {
+		this.scopes = scope;
 	}
 }

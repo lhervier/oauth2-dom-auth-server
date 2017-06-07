@@ -1,5 +1,7 @@
 package com.github.lhervier.domino.oauth.library.server.model;
 
+import java.util.List;
+
 /**
  * Un code autorisation
  * @author Lionel HERVIER
@@ -27,14 +29,14 @@ public class AuthorizationCode extends IdToken {
 	private long expires;
 	
 	/**
-	 * Le scope demandé
+	 * Le scopes demandé
 	 */
-	private String scope;
+	private List<String> scopes;
 	
 	/**
-	 * Le scope autorisé
+	 * Le scopes autorisé
 	 */
-	private String grantedScope;
+	private List<String> grantedScopes;
 	
 	/**
 	 * @return the application
@@ -93,30 +95,30 @@ public class AuthorizationCode extends IdToken {
 	}
 
 	/**
-	 * @return the scope
+	 * @return the scopes
 	 */
-	public String getScope() {
-		return scope;
+	public List<String> getScopes() {
+		return scopes;
 	}
 
 	/**
-	 * @param scope the scope to set
+	 * @param scopes the scopes to set
 	 */
-	public void setScope(String scope) {
-		this.scope = scope;
+	public void setScopes(List<String> scope) {
+		this.scopes = scope;
 	}
 
 	/**
-	 * @return the grantedScope
+	 * @return the grantedScopes
 	 */
-	public String getGrantedScope() {
-		return grantedScope;
+	public List<String> getGrantedScopes() {
+		return grantedScopes;
 	}
 
 	/**
-	 * @param grantedScope the grantedScope to set
+	 * @param grantedScopes the grantedScopes to set
 	 */
-	public void setGrantedScope(String grantedScope) {
-		this.grantedScope = grantedScope;
+	public void setGrantedScopes(List<String> grantedScope) {
+		this.grantedScopes = grantedScope;
 	}
 }

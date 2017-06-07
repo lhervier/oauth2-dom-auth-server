@@ -1,7 +1,7 @@
 package com.github.lhervier.domino.oauth.library.server.model.error.grant;
 
 import com.github.lhervier.domino.oauth.common.model.error.GrantError;
-import com.github.lhervier.domino.oauth.library.server.Constants;
+import com.github.lhervier.domino.oauth.library.server.utils.Utils;
 
 public class InvalidScopeError extends GrantError {
 
@@ -14,6 +14,6 @@ public class InvalidScopeError extends GrantError {
 				"The requested scope is invalid, unknown, malformed, or " +
 				"exceeds the scope granted by the resource owner."
 		);
-		this.setErrorUri(Constants.NAMESPACE + "/error/grant/invalid_scope");
+		this.setErrorUri(Utils.getIssuer() + "/error/grant/invalid_scope");
 	}
 }

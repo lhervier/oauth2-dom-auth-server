@@ -1,7 +1,7 @@
 package com.github.lhervier.domino.oauth.library.server.model.error.grant;
 
 import com.github.lhervier.domino.oauth.common.model.error.GrantError;
-import com.github.lhervier.domino.oauth.library.server.Constants;
+import com.github.lhervier.domino.oauth.library.server.utils.Utils;
 
 public class InvalidClientError extends GrantError {
 
@@ -22,6 +22,6 @@ public class InvalidClientError extends GrantError {
 				"include the \"WWW-Authenticate\" response header field " + 
 				"matching the authentication scheme used by the client."
 		);
-		this.setErrorUri(Constants.NAMESPACE + "/error/grant/invalid_client");
+		this.setErrorUri(Utils.getIssuer() + "/error/grant/invalid_client");
 	}
 }

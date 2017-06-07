@@ -1,7 +1,7 @@
 package com.github.lhervier.domino.oauth.library.server.model.error.grant;
 
 import com.github.lhervier.domino.oauth.common.model.error.GrantError;
-import com.github.lhervier.domino.oauth.library.server.Constants;
+import com.github.lhervier.domino.oauth.library.server.utils.Utils;
 
 public class UnsupportedGrantTypeError extends GrantError {
 
@@ -14,6 +14,6 @@ public class UnsupportedGrantTypeError extends GrantError {
 				"The authorization grant type is not supported by the " +
 				"authorization server."
 		);
-		this.setErrorUri(Constants.NAMESPACE + "/error/grant/unsupported_grant_type");
+		this.setErrorUri(Utils.getIssuer() + "/error/grant/unsupported_grant_type");
 	}
 }

@@ -1,7 +1,7 @@
 package com.github.lhervier.domino.oauth.library.server.model.error.authorize;
 
 import com.github.lhervier.domino.oauth.common.model.error.AuthorizeError;
-import com.github.lhervier.domino.oauth.library.server.Constants;
+import com.github.lhervier.domino.oauth.library.server.utils.Utils;
 
 /**
  * Requête invalide
@@ -19,6 +19,6 @@ public class InvalidRequestError extends AuthorizeError {
 				"invalid parameter value, includes a parameter more than " +
 				"once, or is otherwise malformed"
 		);
-		this.setErrorUri(Constants.NAMESPACE + "/error/authorize/invalid_request");
+		this.setErrorUri(Utils.getIssuer() + "/error/authorize/invalid_request");
 	}
 }

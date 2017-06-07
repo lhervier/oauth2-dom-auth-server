@@ -14,6 +14,11 @@ public class ParamsBean extends BaseParamsBean {
 	private static final long serialVersionUID = 25035453476284192L;
 
 	/**
+	 * L'issuer
+	 */
+	private String issuer;
+	
+	/**
 	 * Le carnet d'adresse où créer les applications
 	 */
 	private String nab;
@@ -146,5 +151,19 @@ public class ParamsBean extends BaseParamsBean {
 	 */
 	public void setApplicationRoot(String applicationRoot) {
 		this.applicationRoot = applicationRoot;
+	}
+
+	/**
+	 * @return the issuer
+	 */
+	public String getIssuer() {
+		return issuer;
+	}
+
+	/**
+	 * @param issuer the issuer to set
+	 */
+	public void setIssuer(String iss) {
+		this.issuer = iss;
 	}
 }

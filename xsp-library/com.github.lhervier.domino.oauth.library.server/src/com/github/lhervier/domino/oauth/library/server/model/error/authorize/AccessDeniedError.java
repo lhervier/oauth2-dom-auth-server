@@ -1,7 +1,7 @@
 package com.github.lhervier.domino.oauth.library.server.model.error.authorize;
 
 import com.github.lhervier.domino.oauth.common.model.error.AuthorizeError;
-import com.github.lhervier.domino.oauth.library.server.Constants;
+import com.github.lhervier.domino.oauth.library.server.utils.Utils;
 
 /**
  * Erreur d'autorisation
@@ -15,6 +15,6 @@ public class AccessDeniedError extends AuthorizeError {
 	public AccessDeniedError() {
 		this.setError("access_denied");
 		this.setErrorDescription("The resource owner or authorization server denied the request.");
-		this.setErrorUri(Constants.NAMESPACE + "/error/authorize/access_denied");
+		this.setErrorUri(Utils.getIssuer() + "/error/authorize/access_denied");
 	}
 }

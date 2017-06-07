@@ -20,7 +20,6 @@ import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
 import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
 import com.github.lhervier.domino.oauth.common.utils.QueryStringUtils;
 import com.github.lhervier.domino.oauth.common.utils.SystemUtils;
-import com.github.lhervier.domino.oauth.library.server.Constants;
 import com.github.lhervier.domino.oauth.library.server.ex.AuthorizeException;
 import com.github.lhervier.domino.oauth.library.server.ex.InvalidUriException;
 import com.github.lhervier.domino.oauth.library.server.ex.authorize.InvalidRequestException;
@@ -193,7 +192,7 @@ public class AuthorizeBean {
 			authCode.setId(id);
 			authCode.setRedirectUri(redirectUri);
 			authCode.setExpires(SystemUtils.currentTimeSeconds() + this.paramsBean.getAuthCodeLifetime());
-			authCode.setIss(Constants.NAMESPACE);
+			authCode.setIss(this.paramsBean.getIssuer());
 			authCode.setSub(this.session.getEffectiveUserName());
 			authCode.setAud(app.getClientId());
 			authCode.setIat(SystemUtils.currentTimeSeconds());

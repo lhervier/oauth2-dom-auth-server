@@ -1,7 +1,7 @@
 package com.github.lhervier.domino.oauth.library.server.model.error.grant;
 
 import com.github.lhervier.domino.oauth.common.model.error.GrantError;
-import com.github.lhervier.domino.oauth.library.server.Constants;
+import com.github.lhervier.domino.oauth.library.server.utils.Utils;
 
 public class InvalidRequestError extends GrantError {
 
@@ -17,6 +17,6 @@ public class InvalidRequestError extends GrantError {
 				"utilizes more than one mechanism for authenticating the " +
 				"client, or is otherwise malformed."
 		);
-		this.setErrorUri(Constants.NAMESPACE + "/error/grant/invalid_request");
+		this.setErrorUri(Utils.getIssuer() + "/error/grant/invalid_request");
 	}
 }

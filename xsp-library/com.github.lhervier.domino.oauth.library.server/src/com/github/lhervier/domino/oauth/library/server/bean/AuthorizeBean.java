@@ -79,31 +79,40 @@ public class AuthorizeBean {
 		StateResponse ret;
 		String redirectUri = null;
 		try {
-			// Valide le redirectUri
-			// => On ne doit pas (MUST NOT dans la RFC!) rediriger vers une uri invalide !
-			redirectUri = this.param.get("redirect_uri");
-			if( redirectUri == null )
-				throw new InvalidUriException("No redirect_uri in query string.");
-			try {
-				new URI(redirectUri);
-			} catch (URISyntaxException e) {
-				throw new InvalidUriException("Invalid redirect_uri", e);
-			}
-			
-			// Valide le clientId
-			String clientId = this.param.get("client_id");
-			if( clientId == null )
-				throw new InvalidRequestException();
-			
-			// Valide le responseType
+			// Le responseType est obligatoire
 			String responseType = this.param.get("response_type");
 			if( responseType == null )
 				throw new InvalidRequestException();
 			
-			// Exécute le code grant
-			if( "code".equals(responseType) )
-				ret = this.authorizationCode(clientId, redirectUri);
-			else
+			// Authorization Code Grant
+			// ===========================
+			if( "code".equals(responseType) ) {
+				// Le clientId est obligatoire
+				String clientId = this.param.get("client_id");
+				if( clientId == null )
+					throw new InvalidRequestException("No client_id in query string.");
+				
+				// Le redirectUri est obligatoire
+				// FIXME: En fonction du response_type, le redirectUri peut être facultatif
+				// Voir https://tools.ietf.org/html/rfc6749#section-4.1.1
+				redirectUri = this.param.get("redirect_uri");
+				if( redirectUri == null )
+					throw new InvalidUriException("No redirect_uri in query string.");
+				try {
+					URI uri = new URI(redirectUri);
+					if( !uri.isAbsolute() )
+						throw new InvalidUriException("Invalid redirect_uri");
+				} catch (URISyntaxException e) {
+					throw new InvalidUriException("Invalid redirect_uri", e);
+				}
+				
+				// Exécution
+				ret = this.authorizationCode(
+						clientId, 
+						redirectUri, 
+						this.param.get("scope")
+				);
+			} else
 				throw new UnsupportedResponseTypeException();
 		
 		// Cas particulier (cf RFC) si l'uri de redirection est invalide
@@ -144,11 +153,15 @@ public class AuthorizeBean {
 	 * Traitement d'une demande d'authorisation pour un code autorization.
 	 * @param clientId l'id du client
 	 * @param redirectUri l'uri de redirection
+	 * @param scope le scope FIXME: Il n'est pas utilisé
 	 * @return l'url de redirection
 	 * @throws AuthorizeException en cas de pb
 	 * @throws InvalidUriException si l'uri est invalide
 	 */
-	private AuthorizeResponse authorizationCode(String clientId, String redirectUri) throws AuthorizeException, InvalidUriException {
+	private AuthorizeResponse authorizationCode(
+			String clientId, 
+			String redirectUri,
+			String scope) throws AuthorizeException, InvalidUriException {
 		// Récupère l'application
 		Application app;
 		try {

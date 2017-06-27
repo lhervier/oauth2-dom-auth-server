@@ -349,13 +349,20 @@ public class TokenBean {
 			
 			return resp;
 		} catch (NotesException e) {
+			e.printStackTrace(System.err);				// FIXME: Où envoyer ça ?
 			throw new ServerErrorException(e);
 		} catch (KeyLengthException e) {
+			e.printStackTrace(System.err);				// FIXME: Où envoyer ça ?
 			throw new ServerErrorException(e);
 		} catch (JOSEException e) {
+			e.printStackTrace(System.err);				// FIXME: Où envoyer ça ?
 			throw new ServerErrorException(e);
 		} catch (IOException e) {
+			e.printStackTrace(System.err);				// FIXME: Où envoyer ça ?
 			throw new ServerErrorException(e);
+		} catch(Throwable e) {
+			e.printStackTrace(System.err);				// FIXME: Où envoyer ça ?
+			throw new RuntimeException(e);
 		} finally {
 			DominoUtils.recycleQuietly(nn);
 			DominoUtils.recycleQuietly(authDoc);

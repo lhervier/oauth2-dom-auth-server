@@ -138,6 +138,11 @@ public class AuthorizeBean {
 		} catch(AuthorizeException e) {
 			e.printStackTrace(System.err);			// FIXME: Où envoyer ça ???
 			ret = e.getError();
+		
+		// Autre erreur
+		} catch(Throwable e) {
+			e.printStackTrace(System.err);			// FIXME: Où envoyer ça ???
+			throw new RuntimeException(e);
 		}
 		
 		// Pas de réponse => Pas de redirection

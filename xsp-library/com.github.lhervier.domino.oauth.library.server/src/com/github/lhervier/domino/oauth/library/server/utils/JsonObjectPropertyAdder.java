@@ -1,6 +1,11 @@
 package com.github.lhervier.domino.oauth.library.server.utils;
 
+import java.io.IOException;
+
+import lotus.domino.NotesException;
+
 import com.github.lhervier.domino.oauth.common.utils.GsonUtils;
+import com.github.lhervier.domino.oauth.library.server.bean.SecretBean;
 import com.github.lhervier.domino.oauth.library.server.ext.IPropertyAdder;
 import com.google.gson.JsonObject;
 import com.nimbusds.jose.EncryptionMethod;
@@ -26,24 +31,30 @@ public class JsonObjectPropertyAdder implements IPropertyAdder {
 	/**
 	 * La clé à utiliser pour signer
 	 */
-	private byte[] signKey;
+	private String signKey;
 	
 	/**
 	 * La clé à utiliser pour crypter
 	 */
-	private byte[] cryptKey;
+	private String cryptKey;
+	
+	/**
+	 * La bean pour accéder aux secrets
+	 */
+	private SecretBean secretBean;
 	
 	/**
 	 * Constructeur
-	 * @param dest l'objet dans lequel ajouter les propriétés
 	 */
 	public JsonObjectPropertyAdder(
 			JsonObject dest, 
-			byte[] signKey,
-			byte[] cryptKey) {
+			SecretBean secretBean,
+			String signKey,
+			String cryptKey) {
 		this.dest = dest;
 		this.signKey = signKey;
 		this.cryptKey = cryptKey;
+		this.secretBean = secretBean;
 	}
 	
 	/**
@@ -54,20 +65,25 @@ public class JsonObjectPropertyAdder implements IPropertyAdder {
 		if( dest.has(name) )
 			throw new RuntimeException("La propriété '" + name + "' est déjà définie dans la réponse au grant.");
 		
-		JWEObject jweObject = new JWEObject(
-				new JWEHeader(JWEAlgorithm.DIR, EncryptionMethod.A128GCM), 
-				new Payload(GsonUtils.toJson(obj))
-		);
 		try {
-			jweObject.encrypt(new DirectEncrypter(this.cryptKey));
+			byte[] secret = this.secretBean.getCryptSecret(this.cryptKey);
+			JWEHeader header = new JWEHeader(JWEAlgorithm.DIR, EncryptionMethod.A128GCM, null, null, null, null, null, null, null, null, null, this.cryptKey, null, null, null, null, null, 0, null, null, null, null);
+			JWEObject jweObject = new JWEObject(
+					header, 
+					new Payload(GsonUtils.toJson(obj))
+			);
+			jweObject.encrypt(new DirectEncrypter(secret));
+			String jwe = jweObject.serialize();
+			this.dest.addProperty(name, jwe);
 		} catch (KeyLengthException e) {
 			throw new RuntimeException(e);
 		} catch (JOSEException e) {
 			throw new RuntimeException(e);
+		} catch(IOException e) {
+			throw new RuntimeException(e);
+		} catch (NotesException e) {
+			throw new RuntimeException(e);
 		}
-		String jwe = jweObject.serialize();
-		
-		this.dest.addProperty(name, jwe);
 	}
 
 	/**
@@ -78,20 +94,26 @@ public class JsonObjectPropertyAdder implements IPropertyAdder {
 		if( dest.has(name) )
 			throw new RuntimeException("La propriété '" + name + "' est déjà définie dans la réponse au grant.");
 		
-		JWSObject jwsObject = new JWSObject(
-				new JWSHeader(JWSAlgorithm.HS256),
-                new Payload(GsonUtils.toJson(obj))
-		);
 		try {
-			jwsObject.sign(new MACSigner(this.signKey));
+			byte[] secret = this.secretBean.getSignSecret(this.signKey);
+			JWSHeader header = new JWSHeader(JWSAlgorithm.HS256, null, null, null, null, null, null, null, null, null, this.signKey, null, null);
+			JWSObject jwsObject = new JWSObject(
+					header,
+	                new Payload(GsonUtils.toJson(obj))
+			);
+			jwsObject.sign(new MACSigner(secret));
+			String jws = jwsObject.serialize();
+			
+			this.dest.addProperty(name, jws);
 		} catch (KeyLengthException e) {
 			throw new RuntimeException(e);
 		} catch (JOSEException e) {
 			throw new RuntimeException(e);
+		} catch (NotesException e) {
+			throw new RuntimeException(e);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
 		}
-		String jws = jwsObject.serialize();
-		
-		this.dest.addProperty(name, jws);
 	}
 
 }

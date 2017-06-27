@@ -295,8 +295,9 @@ public class TokenBean {
 						context, 
 						new JsonObjectPropertyAdder(
 								resp, 
-								secretBean.getSignSecret(jsonConf.get("sign_key").isJsonNull() ? null : jsonConf.get("sign_key").getAsString()),
-								secretBean.getCryptSecret(jsonConf.get("crypt_key").isJsonNull() ? null : jsonConf.get("crypt_key").getAsString())
+								this.secretBean,
+								jsonConf.get("sign_key").isJsonNull() ? null : jsonConf.get("sign_key").getAsString(),
+								jsonConf.get("crypt_key").isJsonNull() ? null : jsonConf.get("crypt_key").getAsString()
 						)
 				);
 			}
@@ -393,8 +394,9 @@ public class TokenBean {
 						context, 
 						new JsonObjectPropertyAdder(
 								resp,
-								secretBean.getSignSecret(jsonConf.get("sign_key") == null ? null : jsonConf.get("sign_key").getAsString()),
-								secretBean.getCryptSecret(jsonConf.get("crypt_key") == null ? null : jsonConf.get("crypt_key").getAsString())
+								this.secretBean,
+								jsonConf.get("sign_key") == null ? null : jsonConf.get("sign_key").getAsString(),
+								jsonConf.get("crypt_key") == null ? null : jsonConf.get("crypt_key").getAsString()
 						), 
 						new IScopeGranter() {
 							@Override

@@ -30,10 +30,10 @@ public class OpenIDExt implements IOAuthExtension {
 	}
 
 	/**
-	 * @see com.github.lhervier.domino.oauth.library.server.ext.IOAuthExtension#authorize(IScopeGranter, String, List)
+	 * @see com.github.lhervier.domino.oauth.library.server.ext.IOAuthExtension#authorize(JsonObject, IScopeGranter, String, List)
 	 */
 	@Override
-	public JsonObject authorize(IScopeGranter granter, String clientId, List<String> scopes) throws NotesException {
+	public JsonObject authorize(JsonObject conf, IScopeGranter granter, String clientId, List<String> scopes) throws NotesException {
 		// On ne réagit que si on nous demande le scope "openid"
 		if( !scopes.contains("openid") )
 			return null;
@@ -41,10 +41,10 @@ public class OpenIDExt implements IOAuthExtension {
 		
 		// Les attributs par défaut
 		JsonObject attrs = new JsonObject();
-		attrs.addProperty("iss", "");				// FIXME: Passer un issuer.
+		attrs.addProperty("iss", conf.get("iss").getAsString());
 		attrs.addProperty("sub", JSFUtils.getSession().getEffectiveUserName());
 		attrs.addProperty("aud", clientId);
-		attrs.addProperty("exp", SystemUtils.currentTimeSeconds() + 3600);		// FIXME: Paramétrer la durée
+		attrs.addProperty("exp", SystemUtils.currentTimeSeconds() + conf.get("expires_in").getAsLong());
 		attrs.addProperty("auth_time", SystemUtils.currentTimeSeconds());
 		attrs.addProperty("acr", "");				// TODO: acr non généré
 		attrs.addProperty("amr", "");				// TODO: amr non généré
@@ -96,10 +96,10 @@ public class OpenIDExt implements IOAuthExtension {
 	}
 
 	/**
-	 * @see com.github.lhervier.domino.oauth.library.server.ext.IOAuthExtension#token(com.google.gson.JsonObject, com.github.lhervier.domino.oauth.library.server.ext.IPropertyAdder)
+	 * @see com.github.lhervier.domino.oauth.library.server.ext.IOAuthExtension#token(JsonObject, JsonObject, IPropertyAdder)
 	 */
 	@Override
-	public void token(JsonObject context, IPropertyAdder adder) {
+	public void token(JsonObject conf, JsonObject context, IPropertyAdder adder) {
 		JsonObject idToken = new JsonObject();
 		for( Entry<String, JsonElement> entry : context.entrySet() )
 			idToken.add(entry.getKey(), entry.getValue());
@@ -109,10 +109,10 @@ public class OpenIDExt implements IOAuthExtension {
 	}
 
 	/**
-	 * @see com.github.lhervier.domino.oauth.library.server.ext.IOAuthExtension#refresh(com.google.gson.JsonObject, com.github.lhervier.domino.oauth.library.server.ext.IPropertyAdder, com.github.lhervier.domino.oauth.library.server.ext.IScopeGranter, java.util.List)
+	 * @see com.github.lhervier.domino.oauth.library.server.ext.IOAuthExtension#refresh(JsonObject, JsonObject, IPropertyAdder, IScopeGranter, List)
 	 */
 	@Override
-	public void refresh(JsonObject context, IPropertyAdder adder, IScopeGranter granter, List<String> scopes) {
+	public void refresh(JsonObject conf, JsonObject context, IPropertyAdder adder, IScopeGranter granter, List<String> scopes) {
 		if( !scopes.contains("openid") ) {
 			List<String> props = new ArrayList<String>();
 			for( Entry<String, JsonElement> entry : context.entrySet() )
@@ -158,6 +158,6 @@ public class OpenIDExt implements IOAuthExtension {
 		} else
 			granter.grant("phone");
 		
-		this.token(context, adder);
+		this.token(conf, context, adder);
 	}
 }

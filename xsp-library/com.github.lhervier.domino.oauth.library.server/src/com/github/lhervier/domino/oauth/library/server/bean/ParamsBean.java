@@ -1,8 +1,13 @@
 package com.github.lhervier.domino.oauth.library.server.bean;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import com.github.lhervier.domino.oauth.common.bean.BaseParamsBean;
+import com.github.lhervier.domino.oauth.common.utils.GsonUtils;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 /**
  * Bean pour accéder aux paramètres de l'application
@@ -15,6 +20,32 @@ public class ParamsBean extends BaseParamsBean {
 	 */
 	private static final long serialVersionUID = 25035453476284192L;
 
+	/**
+	 * La conf par plugin
+	 */
+	private Map<String, JsonObject> confByPlugin = null;
+	
+	/**
+	 * Retourne la conf d'un plugin
+	 * @param pluginId l'id du plugin
+	 * @return sa conf
+	 */
+	public synchronized JsonObject getPluginConf(String pluginId) {
+		if( this.confByPlugin == null ) {
+			this.confByPlugin = new HashMap<String, JsonObject>();
+			JsonObject conf = GsonUtils.fromJson(this.pluginsConfs);
+			for( Entry<String, JsonElement> entry : conf.entrySet() ) {
+				this.confByPlugin.put(entry.getKey(), (JsonObject) entry.getValue());
+			}
+		}
+		return this.confByPlugin.get(pluginId);
+	}
+	
+	
+	// ======================================================================
+	//				Propriété remplies par la classe parente
+	// ======================================================================
+	
 	/**
 	 * L'issuer
 	 */
@@ -56,14 +87,9 @@ public class ParamsBean extends BaseParamsBean {
 	private String refreshTokenConfig;
 	
 	/**
-	 * Les ids de plugins pour lesquels on défini des clés
-	 */
-	private List<String> pluginsNames;
-	
-	/**
 	 * Les noms des clés à utiliser pour chaque plugin
 	 */
-	private List<String> pluginsKeys;
+	private String pluginsConfs;
 	
 	// =============================================================
 
@@ -180,30 +206,16 @@ public class ParamsBean extends BaseParamsBean {
 	}
 
 	/**
-	 * @return the pluginsNames
+	 * @return the pluginsConfs
 	 */
-	public List<String> getPluginsNames() {
-		return pluginsNames;
+	public String getPluginsConfs() {
+		return pluginsConfs;
 	}
 
 	/**
-	 * @param pluginsNames the pluginsNames to set
+	 * @param pluginsConfs the pluginsConfs to set
 	 */
-	public void setPluginsNames(List<String> pluginsNames) {
-		this.pluginsNames = pluginsNames;
-	}
-
-	/**
-	 * @return the pluginsKeys
-	 */
-	public List<String> getPluginsKeys() {
-		return pluginsKeys;
-	}
-
-	/**
-	 * @param pluginsKeys the pluginsKeys to set
-	 */
-	public void setPluginsKeys(List<String> pluginsKeys) {
-		this.pluginsKeys = pluginsKeys;
+	public void setPluginsConfs(String pluginsKeys) {
+		this.pluginsConfs = pluginsKeys;
 	}
 }

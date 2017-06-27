@@ -8,6 +8,7 @@ import lotus.domino.NotesException;
 import lotus.domino.View;
 
 import com.github.lhervier.domino.oauth.common.utils.Base64Utils;
+import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
 
 /**
  * Registre pour mémoriser les secrets
@@ -72,8 +73,18 @@ public class SecretBean {
 	 * @param size la taille
 	 */
 	private byte[] getSecret(String ssoConfig, int size) throws NotesException, IOException {
-		String secret = this.getSsoConfig(ssoConfig).getItemValueString(SECRET_FIELD_NAME);
-		return this.genSecret(secret, size);
+		if( ssoConfig == null )
+			return null;
+		Document docSsoConfig = null;
+		try {
+			docSsoConfig = this.getSsoConfig(ssoConfig);
+			if( docSsoConfig == null )
+				return null;
+			String secret = docSsoConfig.getItemValueString(SECRET_FIELD_NAME);
+			return this.genSecret(secret, size);
+		} finally {
+			DominoUtils.recycleQuietly(docSsoConfig);
+		}
 	}
 	
 	/**
@@ -106,7 +117,10 @@ public class SecretBean {
 	 * @throws NotesException 
 	 */
 	public String getAccessTokenSecretBase64() throws NotesException, IOException {
-		return Base64Utils.encode(this.getAccessTokenSecret());
+		byte[] secret = this.getAccessTokenSecret();
+		if( secret == null )
+			return null;
+		return Base64Utils.encode(secret);
 	}
 	
 	/**
@@ -123,7 +137,10 @@ public class SecretBean {
 	 * @throws NotesException 
 	 */
 	public String getRefreshTokenSecretBase64() throws NotesException, IOException {
-		return Base64Utils.encode(this.getRefreshTokenSecret());
+		byte[] secret = this.getRefreshTokenSecret();
+		if( secret == null )
+			return null;
+		return Base64Utils.encode(secret);
 	}
 	
 	// ==========================================================================

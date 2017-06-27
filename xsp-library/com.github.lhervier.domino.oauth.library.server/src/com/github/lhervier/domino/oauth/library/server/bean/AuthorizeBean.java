@@ -223,7 +223,9 @@ public class AuthorizeBean {
 			
 			List<IOAuthExtension> exts = Utils.getExtensions();
 			for( IOAuthExtension ext : exts ) {
+				JsonObject jsonConf = this.paramsBean.getPluginConf(ext.getId());
 				JsonObject context = ext.authorize(
+						jsonConf,
 						new IScopeGranter() {
 							@Override
 							public void grant(String scope) {

@@ -319,12 +319,14 @@ public class TokenBean {
 				JsonObject context = (JsonObject) authCode.getContexts().get(ext.getId());
 				if( context == null )
 					continue;
+				JsonObject jsonConf = this.paramsBean.getPluginConf(ext.getId());
 				ext.token(
+						jsonConf,
 						context, 
 						new JsonObjectPropertyAdder(
 								resp, 
-								secretBean.getSignSecret(Utils.getSsoConfigFor(ext.getId())),
-								secretBean.getCryptSecret(Utils.getSsoConfigFor(ext.getId()))
+								secretBean.getSignSecret(jsonConf.get("sign_key").isJsonNull() ? null : jsonConf.get("sign_key").getAsString()),
+								secretBean.getCryptSecret(jsonConf.get("crypt_key").isJsonNull() ? null : jsonConf.get("crypt_key").getAsString())
 						)
 				);
 			}
@@ -349,19 +351,19 @@ public class TokenBean {
 			
 			return resp;
 		} catch (NotesException e) {
-			e.printStackTrace(System.err);				// FIXME: OÃ¹ envoyer Ã§a ?
+			e.printStackTrace(System.err);				// FIXME: Où envoyer ça ?
 			throw new ServerErrorException(e);
 		} catch (KeyLengthException e) {
-			e.printStackTrace(System.err);				// FIXME: OÃ¹ envoyer Ã§a ?
+			e.printStackTrace(System.err);				// FIXME: Où envoyer ça ?
 			throw new ServerErrorException(e);
 		} catch (JOSEException e) {
-			e.printStackTrace(System.err);				// FIXME: OÃ¹ envoyer Ã§a ?
+			e.printStackTrace(System.err);				// FIXME: Où envoyer ça ?
 			throw new ServerErrorException(e);
 		} catch (IOException e) {
-			e.printStackTrace(System.err);				// FIXME: OÃ¹ envoyer Ã§a ?
+			e.printStackTrace(System.err);				// FIXME: Où envoyer ça ?
 			throw new ServerErrorException(e);
 		} catch(Throwable e) {
-			e.printStackTrace(System.err);				// FIXME: OÃ¹ envoyer Ã§a ?
+			e.printStackTrace(System.err);				// FIXME: Où envoyer ça ?
 			throw new RuntimeException(e);
 		} finally {
 			DominoUtils.recycleQuietly(nn);
@@ -419,12 +421,14 @@ public class TokenBean {
 				JsonObject context = (JsonObject) refreshToken.getAuthCode().getContexts().get(ext.getId());
 				if( context == null )
 					continue;
+				JsonObject jsonConf = this.paramsBean.getPluginConf(ext.getId());
 				ext.refresh(
+						jsonConf,
 						context, 
 						new JsonObjectPropertyAdder(
 								resp,
-								secretBean.getSignSecret(Utils.getSsoConfigFor(ext.getId())),
-								secretBean.getCryptSecret(Utils.getSsoConfigFor(ext.getId()))
+								secretBean.getSignSecret(jsonConf.get("sign_key") == null ? null : jsonConf.get("sign_key").getAsString()),
+								secretBean.getCryptSecret(jsonConf.get("crypt_key") == null ? null : jsonConf.get("crypt_key").getAsString())
 						), 
 						new IScopeGranter() {
 							@Override

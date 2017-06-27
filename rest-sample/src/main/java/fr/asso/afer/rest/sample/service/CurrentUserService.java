@@ -6,9 +6,10 @@ import java.util.Base64;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
+import com.google.common.base.Objects;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSObject;
 import com.nimbusds.jose.JWSVerifier;
@@ -31,18 +32,10 @@ public class CurrentUserService {
 	private HttpServletRequest request;
 	
 	/**
-	 * Le secret pour décoder le JWT
+	 * L'environnement Spring
 	 */
-	@Value("${jwt.secret}")
-	private String secret;
-
-	/**
-	 * Retourne le secret pour vérifier le JWT
-	 * @return le secret
-	 */
-	private byte[] getSecret() {
-		return Base64.getDecoder().decode(this.secret);
-	}
+	@Autowired
+	private Environment env;
 	
 	/**
 	 * Retourne les infos sur l'utilisateur courant
@@ -61,9 +54,28 @@ public class CurrentUserService {
 			// Extrait le token
 			String accessToken = auth.substring("Bearer ".length());
 			
-			// Vérifie que le token est bon
+			// Extrait le nom de la clé du header
 			JWSObject jwsObj = JWSObject.parse(accessToken);
-			JWSVerifier verifier = new MACVerifier(this.getSecret());
+			String kid = jwsObj.getHeader().getKeyID();
+			String alg = jwsObj.getHeader().getAlgorithm().getName();
+			
+			// Récupère le secret
+			int i = 0;
+			byte[] secret = null;
+			while( this.env.containsProperty("jwt.keys." + i + ".kid") ) {
+				String currKid = this.env.getProperty("jwt.keys." + i + ".kid");
+				String currAlg = this.env.getProperty("jwt.keys." + i + ".alg");
+				if( Objects.equal(kid, currKid) && Objects.equal(alg, currAlg) ) {
+					String sSecret = this.env.getProperty("jwt.keys." + i + ".secret");
+					secret = Base64.getDecoder().decode(sSecret);
+					break;
+				}
+				i++;
+			}
+			if( secret == null )
+				return null;
+			 
+			JWSVerifier verifier = new MACVerifier(secret);
 			if( !jwsObj.verify(verifier) )
 				return null;
 			

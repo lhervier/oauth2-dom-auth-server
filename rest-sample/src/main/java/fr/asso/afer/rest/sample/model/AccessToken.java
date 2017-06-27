@@ -1,7 +1,5 @@
 package fr.asso.afer.rest.sample.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 /**
  * Un token tel que passé dans l'en tête authorization
  * @author Lionel HERVIER

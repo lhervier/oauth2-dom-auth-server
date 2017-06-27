@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Openid Plug-in
-Bundle-SymbolicName: com.github.lhervier.domino.oauth.openid;singleton:=true
+Bundle-SymbolicName: com.github.lhervier.domino.oauth.ext.openid;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: com.github.lhervier.domino.oauth.openid.Activator
 Bundle-Vendor: GITHUB

@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Core Plug-in
-Bundle-SymbolicName: com.github.lhervier.domino.oauth.core;singleton:=true
+Bundle-SymbolicName: com.github.lhervier.domino.oauth.ext.core;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: com.github.lhervier.domino.oauth.core.Activator
 Bundle-Vendor: GITHUB

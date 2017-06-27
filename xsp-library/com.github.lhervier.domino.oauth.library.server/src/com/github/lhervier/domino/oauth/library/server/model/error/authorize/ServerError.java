@@ -1,7 +1,6 @@
 package com.github.lhervier.domino.oauth.library.server.model.error.authorize;
 
 import com.github.lhervier.domino.oauth.common.model.error.AuthorizeError;
-import com.github.lhervier.domino.oauth.library.server.utils.Utils;
 
 public class ServerError extends AuthorizeError {
 
@@ -17,6 +16,6 @@ public class ServerError extends AuthorizeError {
 				"Error HTTP status code cannot be returned to the client " +
 				"via an HTTP redirect.)"
 		);
-		this.setErrorUri(Utils.getIssuer() + "/error/authorize/server_error");
+		this.setErrorUri("http://lhervier.github.com/dom-auth-server/error/authorize/server_error");
 	}
 }

@@ -101,10 +101,6 @@
     	<value>#{databaseAsSigner}</value>
     </managed-property>
     <managed-property>
-    	<property-name>session</property-name>
-    	<value>#{session}</value>
-    </managed-property>
-    <managed-property>
     	<property-name>requestScope</property-name>
     	<value>#{requestScope}</value>
     </managed-property>

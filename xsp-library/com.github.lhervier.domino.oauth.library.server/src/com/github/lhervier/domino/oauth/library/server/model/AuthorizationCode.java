@@ -11,19 +11,14 @@ import com.google.gson.JsonObject;
 public class AuthorizationCode extends AccessToken {
 
 	/**
-	 * Le champ lecteur qui contient le nom de l'application
-	 */
-	private String application;
-	
-	/**
 	 * L'identifiant
 	 */
 	private String id;
 	
 	/**
-	 * L'uri de redirection
+	 * Le champ lecteur qui contient le nom de l'application
 	 */
-	private String redirectUri;
+	private String application;
 	
 	/**
 	 * L'id client de l'application
@@ -31,14 +26,14 @@ public class AuthorizationCode extends AccessToken {
 	private String clientId;
 	
 	/**
+	 * L'uri de redirection
+	 */
+	private String redirectUri;
+	
+	/**
 	 * La date d'expiration
 	 */
 	private long expires;
-	
-	/**
-	 * L'utilisateur pour lequel a été généré le code autorisation
-	 */
-	private String user;
 	
 	/**
 	 * Le scopes demandé
@@ -137,20 +132,6 @@ public class AuthorizationCode extends AccessToken {
 	 */
 	public void setGrantedScopes(List<String> grantedScope) {
 		this.grantedScopes = grantedScope;
-	}
-
-	/**
-	 * @return the user
-	 */
-	public String getUser() {
-		return user;
-	}
-
-	/**
-	 * @param user the user to set
-	 */
-	public void setUser(String user) {
-		this.user = user;
 	}
 
 	/**

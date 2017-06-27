@@ -1,7 +1,6 @@
 package com.github.lhervier.domino.oauth.library.server.model.error.grant;
 
 import com.github.lhervier.domino.oauth.common.model.error.GrantError;
-import com.github.lhervier.domino.oauth.library.server.utils.Utils;
 
 public class InvalidGrantError extends GrantError {
 
@@ -17,6 +16,6 @@ public class InvalidGrantError extends GrantError {
 				"URI used in the authorization request, or was issued to " +
 				"another client."
 		);
-		this.setErrorUri(Utils.getIssuer() + "/error/grant/invalid_grant");
+		this.setErrorUri("http://lhervier.github.com/dom-auth-server/error/grant/invalid_grant");
 	}
 }

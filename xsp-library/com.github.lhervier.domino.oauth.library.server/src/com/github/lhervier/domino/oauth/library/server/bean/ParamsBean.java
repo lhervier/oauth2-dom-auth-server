@@ -47,11 +47,6 @@ public class ParamsBean extends BaseParamsBean {
 	// ======================================================================
 	
 	/**
-	 * L'issuer
-	 */
-	private String issuer;
-	
-	/**
 	 * Le carnet d'adresse où créer les applications
 	 */
 	private String nab;
@@ -62,29 +57,19 @@ public class ParamsBean extends BaseParamsBean {
 	private String applicationRoot;
 	
 	/**
-	 * La durée de vie de l'access token
-	 */
-	private long accessTokenLifetime;
-	
-	/**
 	 * La durée de vie du refresh token
 	 */
 	private long refreshTokenLifetime;
 	
 	/**
-	 * La durée de vie des codes autorisation
-	 */
-	private long authCodeLifetime;
-	
-	/**
-	 * Le nom de la config SSO qui contient la clé pour l'access token
-	 */
-	private String accessTokenConfig;
-	
-	/**
 	 * Le nom de la config SSO qui contient la clé pour le refresh token
 	 */
 	private String refreshTokenConfig;
+	
+	/**
+	 * La durée de vie des codes autorisation
+	 */
+	private long authCodeLifetime;
 	
 	/**
 	 * Les noms des clés à utiliser pour chaque plugin
@@ -108,20 +93,6 @@ public class ParamsBean extends BaseParamsBean {
 	}
 
 	/**
-	 * @return the accessTokenLifetime
-	 */
-	public long getAccessTokenLifetime() {
-		return accessTokenLifetime;
-	}
-
-	/**
-	 * @param accessTokenLifetime the accessTokenLifetime to set
-	 */
-	public void setAccessTokenLifetime(long accessTokenLifetime) {
-		this.accessTokenLifetime = accessTokenLifetime;
-	}
-
-	/**
 	 * @return the refreshTokenLifetime
 	 */
 	public long getRefreshTokenLifetime() {
@@ -133,20 +104,6 @@ public class ParamsBean extends BaseParamsBean {
 	 */
 	public void setRefreshTokenLifetime(long refreshTokenLifetime) {
 		this.refreshTokenLifetime = refreshTokenLifetime;
-	}
-
-	/**
-	 * @return the accessTokenConfig
-	 */
-	public String getAccessTokenConfig() {
-		return accessTokenConfig;
-	}
-
-	/**
-	 * @param accessTokenConfig the accessTokenConfig to set
-	 */
-	public void setAccessTokenConfig(String accessTokenConfig) {
-		this.accessTokenConfig = accessTokenConfig;
 	}
 
 	/**
@@ -189,20 +146,6 @@ public class ParamsBean extends BaseParamsBean {
 	 */
 	public void setApplicationRoot(String applicationRoot) {
 		this.applicationRoot = applicationRoot;
-	}
-
-	/**
-	 * @return the issuer
-	 */
-	public String getIssuer() {
-		return issuer;
-	}
-
-	/**
-	 * @param issuer the issuer to set
-	 */
-	public void setIssuer(String iss) {
-		this.issuer = iss;
 	}
 
 	/**

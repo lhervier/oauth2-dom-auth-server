@@ -16,7 +16,6 @@ import lotus.domino.Database;
 import lotus.domino.Document;
 import lotus.domino.Name;
 import lotus.domino.NotesException;
-import lotus.domino.Session;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -68,11 +67,6 @@ public class AuthorizeBean {
 	 * La databaseAsSigner courante
 	 */
 	private Database databaseAsSigner;
-	
-	/**
-	 * La session courante
-	 */
-	private Session session;
 	
 	/**
 	 * Le requestScope
@@ -207,12 +201,11 @@ public class AuthorizeBean {
 			
 			// Créé le code authorization
 			AuthorizationCode authCode = new AuthorizationCode();
-			authCode.setApplication(nn.toString());
 			authCode.setId(id);
+			authCode.setApplication(nn.toString());
+			authCode.setClientId(app.getClientId());
 			authCode.setRedirectUri(redirectUri);
 			authCode.setExpires(SystemUtils.currentTimeSeconds() + this.paramsBean.getAuthCodeLifetime());
-			authCode.setUser(this.session.getEffectiveUserName());
-			authCode.setClientId(app.getClientId());
 			
 			// Défini le scope. 
 			authCode.setScopes(scopes);
@@ -297,12 +290,4 @@ public class AuthorizeBean {
 	public void setRequestScope(Map<String, Object> requestScope) {
 		this.requestScope = requestScope;
 	}
-
-	/**
-	 * @param session the session to set
-	 */
-	public void setSession(Session session) {
-		this.session = session;
-	}
-	
 }

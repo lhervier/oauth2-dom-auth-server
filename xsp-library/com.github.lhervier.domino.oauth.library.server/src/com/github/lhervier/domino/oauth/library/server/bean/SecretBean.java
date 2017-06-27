@@ -104,26 +104,6 @@ public class SecretBean {
 	}
 	
 	/**
-	 * Retourne le secret utilisé pour signer l'access token
-	 * @throws IOException 
-	 */
-	public byte[] getAccessTokenSecret() throws NotesException, IOException {
-		return this.getSignSecret(this.paramsBean.getAccessTokenConfig());
-	}
-	
-	/**
-	 * Retourne le secret en base 64
-	 * @throws IOException 
-	 * @throws NotesException 
-	 */
-	public String getAccessTokenSecretBase64() throws NotesException, IOException {
-		byte[] secret = this.getAccessTokenSecret();
-		if( secret == null )
-			return null;
-		return Base64Utils.encode(secret);
-	}
-	
-	/**
 	 * Retourne le secret utilisé pour crypter le refresh token
 	 * @throws IOException 
 	 */

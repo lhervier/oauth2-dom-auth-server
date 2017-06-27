@@ -7,7 +7,6 @@ import java.util.List;
 import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
 import com.github.lhervier.domino.oauth.common.utils.OsgiUtils;
 import com.github.lhervier.domino.oauth.library.server.Activator;
-import com.github.lhervier.domino.oauth.library.server.bean.ParamsBean;
 import com.github.lhervier.domino.oauth.library.server.ext.IOAuthExtension;
 
 /**
@@ -25,18 +24,6 @@ public class Utils {
 	public static final void checkRole(String role) throws IOException {
 		if( !JSFUtils.getContext().getUser().getRoles().contains(role) )
 			JSFUtils.send404();
-	}
-	
-	/**
-	 * Retourne l'issuer en s'assurant qu'il n'y a pas de / à la fin
-	 * @l'issuer
-	 */
-	public static final String getIssuer() {
-		ParamsBean paramsBean = (ParamsBean) JSFUtils.getBean("paramsBean");
-		String iss = paramsBean.getIssuer();
-		if( iss.endsWith("/") )
-			return iss.substring(0, iss.length() - 1);
-		return iss;
 	}
 	
 	/**

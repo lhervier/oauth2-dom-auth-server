@@ -31,7 +31,6 @@ import com.github.lhervier.domino.oauth.library.server.ex.grant.InvalidScopeExce
 import com.github.lhervier.domino.oauth.library.server.ex.grant.UnsupportedGrantTypeException;
 import com.github.lhervier.domino.oauth.library.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.library.server.ext.IScopeGranter;
-import com.github.lhervier.domino.oauth.library.server.model.AccessToken;
 import com.github.lhervier.domino.oauth.library.server.model.Application;
 import com.github.lhervier.domino.oauth.library.server.model.AuthorizationCode;
 import com.github.lhervier.domino.oauth.library.server.model.RefreshToken;
@@ -44,14 +43,10 @@ import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWEAlgorithm;
 import com.nimbusds.jose.JWEHeader;
 import com.nimbusds.jose.JWEObject;
-import com.nimbusds.jose.JWSAlgorithm;
-import com.nimbusds.jose.JWSHeader;
-import com.nimbusds.jose.JWSObject;
 import com.nimbusds.jose.KeyLengthException;
 import com.nimbusds.jose.Payload;
 import com.nimbusds.jose.crypto.DirectDecrypter;
 import com.nimbusds.jose.crypto.DirectEncrypter;
-import com.nimbusds.jose.crypto.MACSigner;
 
 /**
  * Bean pour le endpoint "token"
@@ -239,31 +234,6 @@ public class TokenBean {
 	}
 	
 	/**
-	 * Créé un access token
-	 * @param authCode le code autorisation
-	 * @return un access token
-	 * @throws IOException 
-	 * @throws JOSEException 
-	 * @throws NotesException 
-	 * @throws KeyLengthException 
-	 */
-	private String createAccessToken(AuthorizationCode authCode) throws KeyLengthException, NotesException, JOSEException, IOException {
-		AccessToken accessToken = new AccessToken();
-		accessToken.setIss(this.paramsBean.getIssuer());
-		accessToken.setAud(authCode.getClientId());
-		accessToken.setSub(authCode.getUser());
-		accessToken.setExp(SystemUtils.currentTimeSeconds() + this.paramsBean.getAccessTokenLifetime());
-		JWSObject jwsObject = new JWSObject(
-				new JWSHeader(JWSAlgorithm.HS256),
-                new Payload(GsonUtils.toJson(accessToken))
-		);
-		jwsObject.sign(new MACSigner(
-				this.secretBean.getAccessTokenSecret()
-		));
-		return jwsObject.serialize();
-	}
-	
-	/**
 	 * Génération d'un token à partir d'un code autorisation
 	 * @param code le code autorisation
 	 * @param redirectUri l'uri de redirection
@@ -331,16 +301,12 @@ public class TokenBean {
 				);
 			}
 			
-			// Génère le access token. Il est signé avec la clé partagée avec les serveurs de ressources.
-			String accessToken = this.createAccessToken(authCode);
-			resp.addProperty("access_token", accessToken);
-			
 			// Génère le refresh token
 			String refreshToken = this.createRefreshToken(authCode);
 			resp.addProperty("refresh_token", refreshToken);
 			
-			// La durée d'expiration. On prend celle du accessToken
-			resp.addProperty("expires_in", this.paramsBean.getAccessTokenLifetime());
+			// La durée d'expiration.
+			resp.addProperty("expires_in", this.paramsBean.getRefreshTokenLifetime());
 			
 			// Le type de token
 			resp.addProperty("token_type", "Bearer");
@@ -448,16 +414,12 @@ public class TokenBean {
 				}
 			}
 			
-			// Génère l'access token
-			String newAccessToken = this.createAccessToken(refreshToken.getAuthCode());
-			resp.addProperty("access_token", newAccessToken);
-			
 			// Génère le refresh token
 			String newRefreshToken = this.createRefreshToken(refreshToken.getAuthCode());
 			resp.addProperty("refresh_token", newRefreshToken);
 			
 			// Les autres infos
-			resp.addProperty("expires_in", this.paramsBean.getAccessTokenLifetime());		// Expiration en même temps que le refresh token
+			resp.addProperty("expires_in", this.paramsBean.getRefreshTokenLifetime());
 			resp.addProperty("token_type", "Bearer");
 			
 			return resp;

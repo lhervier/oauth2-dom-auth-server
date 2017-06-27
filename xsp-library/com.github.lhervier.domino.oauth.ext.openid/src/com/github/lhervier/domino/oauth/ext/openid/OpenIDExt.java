@@ -1,4 +1,4 @@
-package com.github.lhervier.domino.oauth.openid;
+package com.github.lhervier.domino.oauth.ext.openid;
 
 import java.util.ArrayList;
 import java.util.List;

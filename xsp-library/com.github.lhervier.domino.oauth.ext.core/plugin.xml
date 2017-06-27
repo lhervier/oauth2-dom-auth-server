@@ -4,7 +4,7 @@
    <extension
          point="com.github.lhervier.domino.oauth.library.server.scope">
       <scope
-            class="com.github.lhervier.domino.oauth.core.CoreExt">
+            class="com.github.lhervier.domino.oauth.ext.core.CoreExt">
       </scope>
    </extension>
 

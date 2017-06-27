@@ -1,9 +1,10 @@
-package com.github.lhervier.domino.oauth.openid;
+package com.github.lhervier.domino.oauth.ext.core;
 
 import org.eclipse.core.runtime.Plugin;
 
 public class Activator extends Plugin {
-	public static final String PLUGIN_ID = Activator.class.getPackage().getName();
+
+public static final String PLUGIN_ID = Activator.class.getPackage().getName();
 	
 	private static Activator instance;
 
@@ -14,4 +15,5 @@ public class Activator extends Plugin {
 	public static Activator getDefault() {
 		return instance;
 	}
+
 }

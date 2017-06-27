@@ -1,4 +1,4 @@
-package com.github.lhervier.domino.oauth.core;
+package com.github.lhervier.domino.oauth.ext.core;
 
 import java.util.List;
 import java.util.Map.Entry;

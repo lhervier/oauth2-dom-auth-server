@@ -34,7 +34,6 @@ public abstract class DominoServlet extends HttpServlet {
 	 */
 	public DominoServlet(Class<?> configurationClass) {
 		super();
-		
 		// Spring se sert du classloader de la thread... qui n'est pas celui sert à charger la Servlet
 		// Le 1er n'a accès qu'aux classes du plugin parent (celui sur lequel notre extension est branchée)
 		// Alors que le second correspond à notre plugin.
@@ -60,12 +59,15 @@ public abstract class DominoServlet extends HttpServlet {
 	 * @see javax.servlet.http.HttpServlet#service(HttpServletRequest, HttpServletResponse)
 	 */
 	@Override
-	public void service(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+	public final void service(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
 		// On doit s'assurer que les sessions sont recyclées
 		try {
+			this.getSpringContext().getBean(HttpContext.class).init(req, res);
+			this.getSpringContext().getBean(NotesContext.class).init();
 			super.service(req, res);
 		} finally {
-			this.getSpringContext().getBean(NotesContext.class).threadShutdown();
+			this.getSpringContext().getBean(NotesContext.class).cleanUp();
+			this.getSpringContext().getBean(HttpContext.class).cleanUp();
 		}
 	}
 }

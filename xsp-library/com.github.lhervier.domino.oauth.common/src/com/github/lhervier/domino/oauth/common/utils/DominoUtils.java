@@ -107,7 +107,12 @@ public class DominoUtils {
 	 * @throws NotesException si on n'a pas les droits
 	 */
 	public static final Database openDatabase(Session session, String name) throws NotesException {
-		Database db = session.getDatabase(null, name, false);		// createOnFail = false
+		Database db;
+		try {
+			db = session.getDatabase(null, name, false);		// createOnFail = false
+		} catch(NotesException e) {
+			return null;
+		}
 		if( db == null )
 			return null;
 		if( !db.isOpen() )

@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class MessageService {
 
-	public void message(String msg) {
-		System.out.println("Message from the service : " + msg);
+	public String getMessage(String msg) {
+		return "Message from the service : " + msg;
 	}
 }

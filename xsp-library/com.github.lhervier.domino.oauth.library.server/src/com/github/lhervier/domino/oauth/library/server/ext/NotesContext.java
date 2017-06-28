@@ -7,6 +7,7 @@ import lotus.domino.Session;
 
 import org.springframework.stereotype.Component;
 
+import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
 import com.ibm.domino.napi.NException;
 import com.ibm.domino.napi.c.NotesUtil;
 import com.ibm.domino.napi.c.Os;
@@ -27,32 +28,26 @@ public class NotesContext {
 	private ThreadLocal<Long> userNameList = new ThreadLocal<Long>();
 	
 	/**
-	 * Return the user session
+	 * The server database
 	 */
-	public Session getUserSession() {
-		return ContextInfo.getUserSession();
-	}
+	private ThreadLocal<Database> serverDatabase = new ThreadLocal<Database>();
 	
 	/**
-	 * Return the current database
+	 * Initialisation
 	 */
-	public Database getDatabase() {
-		return ContextInfo.getUserDatabase();
-	}
-	
-	/**
-	 * Return the server session
-	 */
-	public Session getServerSession() {
+	public void init() {
 		try {
-			Session serverSession = this.serverSession.get();
-			if( serverSession == null ) {
-				String server = ContextInfo.getUserSession().getServerName();
-				this.userNameList.set(NotesUtil.createUserNameList(server));
-				serverSession = XSPNative.createXPageSession(server, this.userNameList.get(), false, false);
-				this.serverSession.set(serverSession);
-			}
-			return serverSession;
+			String server = ContextInfo.getUserSession().getServerName();
+			this.userNameList.set(NotesUtil.createUserNameList(server));
+			Session serverSession = XSPNative.createXPageSession(server, this.userNameList.get(), false, false);
+			this.serverSession.set(serverSession);
+			
+			Database db = ContextInfo.getUserDatabase();
+			if( db != null ) {
+				Database serverDatabase = DominoUtils.openDatabase(serverSession, db.getFilePath());
+				this.serverDatabase.set(serverDatabase);
+			} else 
+				this.serverDatabase.set(null);
 		} catch (NotesException e) {
 			throw new RuntimeException(e);
 		} catch (NException e) {
@@ -63,16 +58,17 @@ public class NotesContext {
 	/**
 	 * Shutdown the provider for the current thread
 	 */
-	public void threadShutdown() {
+	public void cleanUp() {
 		Session serverSession = this.serverSession.get();
 		if( serverSession != null ) {
-			try {
-				serverSession.recycle();
-			} catch (NotesException e) {
-				e.printStackTrace(System.err);
-				throw new RuntimeException(e);
-			}
+			DominoUtils.recycleQuietly(serverSession);
 			this.serverSession.set(null);
+		}
+		
+		Database serverDatabase = this.serverDatabase.get();
+		if( serverDatabase != null ) {
+			DominoUtils.recycleQuietly(serverDatabase);
+			this.serverDatabase.set(null);
 		}
 		
 		if( this.userNameList.get() != null ) {
@@ -86,5 +82,19 @@ public class NotesContext {
 		}
 		
 		NotesThread.stermThread();
+	}
+	
+	/**
+	 * Return the server session
+	 */
+	public Session getServerSession() {
+		return this.serverSession.get();
+	}
+	
+	/**
+	 * Return the current database opened with the server session
+	 */
+	public Database getServerDatabase() {
+		return this.serverDatabase.get();
 	}
 }

@@ -11,14 +11,22 @@
   	</managed-property>
   </managed-bean>
   
-  <!-- Bean to access the server context -->
+  <!-- Bean to access the nab -->
   <managed-bean>
-  	<managed-bean-name>serverContext</managed-bean-name>
-  	<managed-bean-class>com.github.lhervier.domino.oauth.library.server.ctx.JSFServerContext</managed-bean-class>
+  	<managed-bean-name>nabBean</managed-bean-name>
+  	<managed-bean-class>com.github.lhervier.domino.oauth.library.server.bean.NabBean</managed-bean-class>
   	<managed-bean-scope>session</managed-bean-scope>
   	<managed-property>
   		<property-name>paramsBean</property-name>
   		<value>#{paramsBean}</value>
+  	</managed-property>
+  	<managed-property>
+  		<property-name>notesContext</property-name>
+  		<value>#{notesContext}</value>
+  	</managed-property>
+  	<managed-property>
+  		<property-name>httpContext</property-name>
+  		<value>#{httpContext}</value>
   	</managed-property>
   </managed-bean>
   
@@ -32,8 +40,8 @@
     	<value>#{paramsBean}</value>
     </managed-property>
     <managed-property>
-    	<property-name>serverContext</property-name>
-    	<value>#{serverContext}</value>
+    	<property-name>nabBean</property-name>
+    	<value>#{nabBean}</value>
     </managed-property>
   </managed-bean>
   
@@ -47,8 +55,8 @@
     	<value>#{notesContext}</value>
     </managed-property>
     <managed-property>
-    	<property-name>serverContext</property-name>
-    	<value>#{serverContext}</value>
+    	<property-name>nabBean</property-name>
+    	<value>#{nabBean}</value>
     </managed-property>
     <managed-property>
     	<property-name>paramsBean</property-name>

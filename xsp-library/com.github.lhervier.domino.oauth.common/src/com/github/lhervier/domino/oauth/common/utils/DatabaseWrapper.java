@@ -1,8 +1,6 @@
-package com.github.lhervier.domino.oauth.common.ctx;
+package com.github.lhervier.domino.oauth.common.utils;
 
 import java.util.Vector;
-
-import javax.faces.context.FacesContext;
 
 import lotus.domino.ACL;
 import lotus.domino.Agent;
@@ -18,9 +16,9 @@ import lotus.domino.Replication;
 import lotus.domino.Session;
 import lotus.domino.View;
 
-import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
+import com.github.lhervier.domino.oauth.common.NotesContext;
 
-public class JSFDatabaseWrapper implements Database {
+public class DatabaseWrapper implements Database {
 
 	/**
 	 * L'objet délégué
@@ -38,9 +36,15 @@ public class JSFDatabaseWrapper implements Database {
 	private String filePath;
 	
 	/**
+	 * The notes context
+	 */
+	private NotesContext notesContext;
+	
+	/**
 	 * Constructor
 	 */
-	public JSFDatabaseWrapper(String filePath, boolean asSigner) {
+	public DatabaseWrapper(NotesContext notesContext, String filePath, boolean asSigner) {
+		this.notesContext = notesContext;
 		this.filePath = filePath;
 		this.asSigner = asSigner;
 	}
@@ -50,13 +54,10 @@ public class JSFDatabaseWrapper implements Database {
 	 * @return la session
 	 */
 	private Session getSession() {
-		FacesContext ctx = FacesContext.getCurrentInstance();
-		String beanName;
 		if( this.asSigner != null && this.asSigner.booleanValue() )
-			beanName = "sessionAsSigner";
+			return this.notesContext.getServerSession();
 		else
-			beanName = "session";
-		return (Session) ctx.getApplication().getVariableResolver().resolveVariable(ctx, beanName);
+			return this.notesContext.getUserSession();
 	}
 	
 	/**

@@ -18,7 +18,6 @@ import com.github.lhervier.domino.oauth.common.NotesContext;
 import com.github.lhervier.domino.oauth.common.utils.Base64Utils;
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
 import com.github.lhervier.domino.oauth.common.utils.ViewIterator;
-import com.github.lhervier.domino.oauth.library.server.ServerContext;
 import com.github.lhervier.domino.oauth.library.server.model.Application;
 
 /**
@@ -62,7 +61,7 @@ public class AppBean {
 	/**
 	 * The server context
 	 */
-	private ServerContext serverContext;
+	private NabBean nabBean;
 	
 	/**
 	 * La bean de paramétrage
@@ -80,7 +79,7 @@ public class AppBean {
 		View v = null;
 		try {
 			appNotesName = this.notesContext.getUserSession().createName(appName + this.paramsBean.getApplicationRoot());
-			v = DominoUtils.getView(this.serverContext.getNab(), VIEW_USERS);
+			v = DominoUtils.getView(this.nabBean.getNab(), VIEW_USERS);
 			return v.getDocumentByKey(appNotesName.getAbbreviated());
 		} finally {
 			DominoUtils.recycleQuietly(v);
@@ -231,7 +230,7 @@ public class AppBean {
 			String fullName = nn.toString();
 			
 			// Créé une nouvelle application dans le NAB (un nouvel utilisateur)
-			person = this.serverContext.getNab().createDocument();
+			person = this.nabBean.getNab().createDocument();
 			person.replaceItemValue("Form", "Person");
 			person.replaceItemValue("Type", "Person");
 			person.replaceItemValue("ShortName", app.getName());
@@ -254,7 +253,7 @@ public class AppBean {
 			DominoUtils.computeAndSave(appDoc);
 			
 			// Rafraîchit le NAB pour prise en compte immédiate
-			DominoUtils.refreshNab(this.serverContext.getNab());
+			DominoUtils.refreshNab(this.nabBean.getNab());
 			
 			// Génère le secret
 			return Base64Utils.encodeFromUTF8String(abbreviated + ":" + password);
@@ -327,7 +326,7 @@ public class AppBean {
 				throw new RuntimeException("L'application '" + name + "' n'existe pas. Impossible de la supprimer.");
 			appDoc.remove(true);
 			
-			DominoUtils.refreshNab(this.serverContext.getNab());
+			DominoUtils.refreshNab(this.nabBean.getNab());
 		} finally {
 			DominoUtils.recycleQuietly(appDoc);
 			DominoUtils.recycleQuietly(personDoc);
@@ -351,9 +350,9 @@ public class AppBean {
 	}
 
 	/**
-	 * @param serverContext the serverContext to set
+	 * @param nabBean the nabBean to set
 	 */
-	public void setServerContext(ServerContext serverContext) {
-		this.serverContext = serverContext;
+	public void setNabBean(NabBean nabBean) {
+		this.nabBean = nabBean;
 	}
 }

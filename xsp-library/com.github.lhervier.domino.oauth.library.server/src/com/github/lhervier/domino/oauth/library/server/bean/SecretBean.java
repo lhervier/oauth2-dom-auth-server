@@ -8,7 +8,6 @@ import lotus.domino.View;
 
 import com.github.lhervier.domino.oauth.common.utils.Base64Utils;
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
-import com.github.lhervier.domino.oauth.library.server.ServerContext;
 
 /**
  * Registre pour mémoriser les secrets
@@ -34,7 +33,7 @@ public class SecretBean {
 	/**
 	 * The server context
 	 */
-	private ServerContext serverContext;
+	private NabBean nabBean;
 	
 	/**
 	 * Retourne le document config SSO
@@ -43,7 +42,7 @@ public class SecretBean {
 	 * @throws NotesException en cas de pb
 	 */
 	private Document getSsoConfig(String config) throws NotesException {
-		View v = this.serverContext.getServerNab().getView(WEBSSOCONFIG_VIEW);
+		View v = this.nabBean.getServerNab().getView(WEBSSOCONFIG_VIEW);
 		if( v == null )
 			throw new RuntimeException("La vue " + WEBSSOCONFIG_VIEW + " n'existe pas dans le NAB. Impossible de continuer.");
 		Document ssoConfig = v.getDocumentByKey(config);
@@ -147,9 +146,9 @@ public class SecretBean {
 	}
 
 	/**
-	 * @param serverContext the serverContext to set
+	 * @param nabBean the nabBean to set
 	 */
-	public void setServerContext(ServerContext serverContext) {
-		this.serverContext = serverContext;
+	public void setNabBean(NabBean nabBean) {
+		this.nabBean = nabBean;
 	}
 }

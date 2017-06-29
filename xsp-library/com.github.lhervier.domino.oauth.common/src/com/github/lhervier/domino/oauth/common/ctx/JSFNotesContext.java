@@ -10,6 +10,7 @@ import lotus.domino.NotesException;
 import lotus.domino.Session;
 
 import com.github.lhervier.domino.oauth.common.NotesContext;
+import com.github.lhervier.domino.oauth.common.utils.DatabaseWrapper;
 import com.ibm.xsp.designer.context.XSPContext;
 
 public class JSFNotesContext implements NotesContext {
@@ -34,9 +35,9 @@ public class JSFNotesContext implements NotesContext {
 		if( request.getAttribute(key) != null )
 			return (Database) request.getAttribute(key);
 		
-		JSFDatabaseWrapper dbAsSigner;
+		DatabaseWrapper dbAsSigner;
 		try {
-			dbAsSigner = new JSFDatabaseWrapper(this.getUserDatabase().getFilePath(), true);
+			dbAsSigner = new DatabaseWrapper(this, this.getUserDatabase().getFilePath(), true);
 		} catch (NotesException e) {
 			throw new RuntimeException(e);
 		}

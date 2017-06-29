@@ -20,6 +20,10 @@
   		<property-name>notesContext</property-name>
   		<value>#{notesContext}</value>
   	</managed-property>
+  	<managed-property>
+  		<property-name>httpContext</property-name>
+  		<value>#{httpContext}</value>
+  	</managed-property>
   </managed-bean>
   
   <!-- La bean pour retourner le access_token -->
@@ -27,6 +31,10 @@
   	<managed-bean-name>accessTokenBean</managed-bean-name>
   	<managed-bean-class>com.github.lhervier.domino.oauth.library.client.bean.AccessTokenBean</managed-bean-class>
   	<managed-bean-scope>request</managed-bean-scope>
+  	<managed-property>
+  		<property-name>httpContext</property-name>
+  		<value>#{httpContext}</value>
+  	</managed-property>
   </managed-bean>
   
   <!-- La bean pour retourner les infos utilisateur -->
@@ -34,6 +42,10 @@
   	<managed-bean-name>userInfoBean</managed-bean-name>
   	<managed-bean-class>com.github.lhervier.domino.oauth.library.client.bean.UserInfoBean</managed-bean-class>
   	<managed-bean-scope>request</managed-bean-scope>
+  	<managed-property>
+  		<property-name>httpContext</property-name>
+  		<value>#{httpContext}</value>
+  	</managed-property>
   </managed-bean>
   
   <!-- La bean pour jouer la danse OAUTH -->
@@ -52,6 +64,10 @@
     <managed-property>
     	<property-name>notesContext</property-name>
     	<value>#{notesContext}</value>
+    </managed-property>
+    <managed-property>
+    	<property-name>httpContext</property-name>
+    	<value>#{httpContext}</value>
     </managed-property>
   </managed-bean>
   

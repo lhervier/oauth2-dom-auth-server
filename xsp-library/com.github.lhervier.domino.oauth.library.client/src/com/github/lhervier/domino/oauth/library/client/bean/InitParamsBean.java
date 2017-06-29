@@ -44,8 +44,7 @@ public class InitParamsBean extends BaseParamsBean {
 	 * Constructor 
 	 */
 	public InitParamsBean() {
-		this.setViewName("Params");
-		this.setPrefix("INIT_");
+		super("Params", "INIT_");
 	}
 	
 	// =========================================================================================

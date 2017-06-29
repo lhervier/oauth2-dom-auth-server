@@ -6,7 +6,6 @@ import java.io.OutputStreamWriter;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
@@ -55,30 +54,12 @@ public class JSFUtils {
 	}
 	
 	/**
-	 * Retourne la requête http
-	 * @return la requête http
-	 */
-	public static final HttpServletRequest getServletRequest() {
-		FacesContext ctx = FacesContext.getCurrentInstance();
-		return (HttpServletRequest) ctx.getExternalContext().getRequest();
-	}
-	
-	/**
-	 * Retourne la réponse http
-	 * @return la réponse http
-	 */
-	public static final HttpServletResponse getServletResponse() {
-		FacesContext ctx = FacesContext.getCurrentInstance();
-		return (HttpServletResponse) ctx.getExternalContext().getResponse();
-	}
-	
-	/**
 	 * Envoi du Json en réponse dans la stream HTTP
+	 * @param response the http response
 	 * @param obj l'objet à envoyer
 	 * @throws IOException 
 	 */
-	public static final void sendJson(Object o) throws IOException {
-		HttpServletResponse response = JSFUtils.getServletResponse();
+	public static final void sendJson(HttpServletResponse response, Object o) throws IOException {
 		OutputStream out = null;
 		OutputStreamWriter wrt = null;
 		try {
@@ -98,20 +79,11 @@ public class JSFUtils {
 	}
 	
 	/**
-	 * Envoi un 403
-	 */
-	public static final void send403() {
-		HttpServletResponse resp = JSFUtils.getServletResponse();
-		resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-		FacesContext.getCurrentInstance().responseComplete();
-	}
-	
-	/**
 	 * Redirige
+	 * @param response the http response
 	 * @param url l'url où rediriger
 	 */
-	public static final void sendRedirect(String location) {
-		HttpServletResponse response = JSFUtils.getServletResponse();
+	public static final void sendRedirect(HttpServletResponse response, String location) {
 		response.setStatus(302);
 		response.setHeader("Location", location);
 		FacesContext.getCurrentInstance().responseComplete();

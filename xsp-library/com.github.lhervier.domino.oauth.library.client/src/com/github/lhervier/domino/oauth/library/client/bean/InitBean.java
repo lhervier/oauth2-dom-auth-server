@@ -8,6 +8,7 @@ import java.util.Map;
 
 import javax.faces.context.FacesContext;
 
+import com.github.lhervier.domino.oauth.common.HttpContext;
 import com.github.lhervier.domino.oauth.common.NotesContext;
 import com.github.lhervier.domino.oauth.common.model.error.AuthorizeError;
 import com.github.lhervier.domino.oauth.common.model.error.GrantError;
@@ -36,6 +37,11 @@ public class InitBean {
 	 * The notes context
 	 */
 	private NotesContext notesContext;
+	
+	/**
+	 * The http context
+	 */
+	private HttpContext httpContext;
 	
 	/**
 	 * Initialisation
@@ -72,6 +78,7 @@ public class InitBean {
 	 */
 	private void login(String redirectUrl) throws UnsupportedEncodingException {
 		JSFUtils.sendRedirect(
+				this.httpContext.getResponse(),
 				this.initParamsBean.getAuthorizeEndPoint() + "?" +
 					"response_type=code&" +
 					"redirect_uri=" + Utils.getEncodedRedirectUri() + "&" +
@@ -117,7 +124,7 @@ public class InitBean {
 							String json = jwsObj.getPayload().toString();
 							JSFUtils.getSessionScope().put("id_token", GsonUtils.fromJson(json, IdToken.class));
 						// }
-						JSFUtils.sendRedirect(redirectUrl);
+						JSFUtils.sendRedirect(InitBean.this.httpContext.getResponse(), redirectUrl);
 					}
 				})
 				
@@ -153,5 +160,12 @@ public class InitBean {
 	 */
 	public void setNotesContext(NotesContext notesContext) {
 		this.notesContext = notesContext;
+	}
+
+	/**
+	 * @param httpContext the httpContext to set
+	 */
+	public void setHttpContext(HttpContext httpContext) {
+		this.httpContext = httpContext;
 	}
 }

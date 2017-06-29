@@ -97,6 +97,10 @@
     	<value>#{notesContext}</value>
     </managed-property>
     <managed-property>
+    	<property-name>httpContext</property-name>
+    	<value>#{httpContext}</value>
+    </managed-property>
+    <managed-property>
     	<property-name>requestScope</property-name>
     	<value>#{requestScope}</value>
     </managed-property>
@@ -124,20 +128,12 @@
     	<value>#{notesContext}</value>
     </managed-property>
     <managed-property>
+    	<property-name>httpContext</property-name>
+    	<value>#{httpContext}</value>
+    </managed-property>
+    <managed-property>
     	<property-name>param</property-name>
     	<value>#{param}</value>
-    </managed-property>
-    <managed-property>
-    	<property-name>context</property-name>
-    	<value>#{context}</value>
-    </managed-property>
-    <managed-property>
-    	<property-name>response</property-name>
-    	<value>#{facesContext.externalContext.response}</value>
-    </managed-property>
-    <managed-property>
-    	<property-name>request</property-name>
-    	<value>#{facesContext.externalContext.request}</value>
     </managed-property>
   </managed-bean>
   

@@ -10,7 +10,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 
-import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
 import com.ibm.xsp.component.UIViewRootEx;
 import com.ibm.xsp.designer.context.XSPContext;
 
@@ -37,7 +36,7 @@ public class XspUtils {
 		OutputStream out = null;
 		Writer writer = null;
 		try {
-			HttpServletResponse resp = JSFUtils.getServletResponse();
+			HttpServletResponse resp = (HttpServletResponse) ctx.getExternalContext().getResponse();
 			resp.setStatus(404);
 			out = resp.getOutputStream();
 			writer = new OutputStreamWriter(out, "UTF-8");

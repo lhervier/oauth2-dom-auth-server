@@ -37,6 +37,16 @@ public abstract class BaseParamsBean implements Serializable {
 	private NotesContext notesContext;
 	
 	/**
+	 * Constructor
+	 * @param viewName
+	 * @param prefix
+	 */
+	public BaseParamsBean(String viewName, String prefix) {
+		this.viewName = viewName;
+		this.prefix = prefix;
+	}
+	
+	/**
 	 * Recharge la configuration
 	 * @throws NotesException en cas de pb
 	 */
@@ -58,20 +68,6 @@ public abstract class BaseParamsBean implements Serializable {
 			DominoUtils.recycleQuietly(doc);
 			DominoUtils.recycleQuietly(v);
 		}
-	}
-
-	/**
-	 * @param viewName the viewName to set
-	 */
-	public void setViewName(String viewName) {
-		this.viewName = viewName;
-	}
-
-	/**
-	 * @param prefix the prefix to set
-	 */
-	public void setPrefix(String prefix) {
-		this.prefix = prefix;
 	}
 
 	/**

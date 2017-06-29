@@ -18,6 +18,7 @@ import lotus.domino.NotesException;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.github.lhervier.domino.oauth.common.HttpContext;
 import com.github.lhervier.domino.oauth.common.NotesContext;
 import com.github.lhervier.domino.oauth.common.model.StateResponse;
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
@@ -67,6 +68,11 @@ public class AuthorizeBean {
 	 * The notes context
 	 */
 	private NotesContext notesContext;
+	
+	/**
+	 * The http context
+	 */
+	private HttpContext httpContext;
 	
 	/**
 	 * Le requestScope
@@ -147,7 +153,7 @@ public class AuthorizeBean {
 		ret.setState(this.param.get("state"));		// Eventuellement null
 		
 		// Redirige
-		JSFUtils.sendRedirect(QueryStringUtils.addBeanToQueryString(redirectUri, ret));
+		JSFUtils.sendRedirect(this.httpContext.getResponse(), QueryStringUtils.addBeanToQueryString(redirectUri, ret));
 	}
 	
 	// ===========================================================================================================
@@ -290,5 +296,12 @@ public class AuthorizeBean {
 	 */
 	public void setRequestScope(Map<String, Object> requestScope) {
 		this.requestScope = requestScope;
+	}
+
+	/**
+	 * @param httpContext the httpContext to set
+	 */
+	public void setHttpContext(HttpContext httpContext) {
+		this.httpContext = httpContext;
 	}
 }

@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import lotus.domino.Document;
@@ -17,6 +16,7 @@ import lotus.domino.View;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.github.lhervier.domino.oauth.common.HttpContext;
 import com.github.lhervier.domino.oauth.common.NotesContext;
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
 import com.github.lhervier.domino.oauth.common.utils.GsonUtils;
@@ -37,7 +37,6 @@ import com.github.lhervier.domino.oauth.library.server.model.RefreshToken;
 import com.github.lhervier.domino.oauth.library.server.utils.JsonObjectPropertyAdder;
 import com.github.lhervier.domino.oauth.library.server.utils.Utils;
 import com.google.gson.JsonObject;
-import com.ibm.xsp.designer.context.XSPContext;
 import com.nimbusds.jose.EncryptionMethod;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWEAlgorithm;
@@ -80,24 +79,14 @@ public class TokenBean {
 	private NotesContext notesContext;
 	
 	/**
+	 * The http context
+	 */
+	private HttpContext httpContext;
+	
+	/**
 	 * Les paramètres du query string
 	 */
 	private Map<String, String> param;
-	
-	/**
-	 * Le contexte utilisateur
-	 */
-	private XSPContext context;
-	
-	/**
-	 * La requête http
-	 */
-	private HttpServletRequest request;
-	
-	/**
-	 * La réponse http
-	 */
-	private HttpServletResponse response;
 	
 	/**
 	 * Retourne la vue qui contient les codes autorisation
@@ -145,7 +134,7 @@ public class TokenBean {
 		Object resp;
 		try {
 			// On doit passer par un POST
-			if( !"POST".equals(this.request.getMethod()) )
+			if( !"POST".equals(this.httpContext.getRequest().getMethod()) )
 				throw new InvalidRequestException();
 			
 			// Récupère le client id à partir de l'authentification
@@ -194,15 +183,15 @@ public class TokenBean {
 			} else
 				throw new UnsupportedGrantTypeException();
 		} catch(GrantException e) {
-			this.response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+			this.httpContext.getResponse().setStatus(HttpServletResponse.SC_BAD_REQUEST);
 			resp = e.getError();
 		} catch (ServerErrorException e) {
-			this.response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			this.httpContext.getResponse().setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			resp = null;
 		}
 		
 		// Envoi dans la stream http
-		JSFUtils.sendJson(resp);
+		JSFUtils.sendJson(this.httpContext.getResponse(), resp);
 	}
 	
 	/**
@@ -349,6 +338,7 @@ public class TokenBean {
 		if( sRefreshToken == null )
 			throw new InvalidGrantException();
 		
+		Name nn = null;
 		try {
 			// Décrypte le refresh token
 			JWEObject jweObject = JWEObject.parse(sRefreshToken);
@@ -365,7 +355,8 @@ public class TokenBean {
 				throw new InvalidGrantException();
 			
 			// Vérifie qu'il existe bien une application pour ce login
-			String appName = this.context.getUser().getCommonName();
+			nn = this.notesContext.getUserSession().createName(this.notesContext.getUserSession().getEffectiveUserName());
+			String appName = nn.getCommon();
 			Application app = this.appBean.getApplicationFromName(appName);
 			if( app == null )
 				throw new InvalidGrantException();
@@ -432,6 +423,8 @@ public class TokenBean {
 			throw new ServerErrorException(e);
 		} catch (IOException e) {
 			throw new ServerErrorException(e);
+		} finally {
+			DominoUtils.recycleQuietly(nn);
 		}
 	}
 	
@@ -466,20 +459,6 @@ public class TokenBean {
 	}
 
 	/**
-	 * @param context the context to set
-	 */
-	public void setContext(XSPContext context) {
-		this.context = context;
-	}
-
-	/**
-	 * @param response the response to set
-	 */
-	public void setResponse(HttpServletResponse response) {
-		this.response = response;
-	}
-
-	/**
 	 * @param notesContext the notesContext to set
 	 */
 	public void setNotesContext(NotesContext notesContext) {
@@ -487,9 +466,9 @@ public class TokenBean {
 	}
 
 	/**
-	 * @param request the request to set
+	 * @param httpContext the httpContext to set
 	 */
-	public void setRequest(HttpServletRequest request) {
-		this.request = request;
+	public void setHttpContext(HttpContext httpContext) {
+		this.httpContext = httpContext;
 	}
 }

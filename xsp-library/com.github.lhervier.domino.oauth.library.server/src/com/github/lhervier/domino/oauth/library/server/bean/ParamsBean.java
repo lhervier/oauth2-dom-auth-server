@@ -32,8 +32,7 @@ public class ParamsBean extends BaseParamsBean {
 	 * Constructeur
 	 */
 	public ParamsBean() {
-		this.setViewName("Params");
-		this.setPrefix("");
+		super("Params", "");
 	}
 	
 	/**

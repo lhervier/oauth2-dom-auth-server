@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.github.lhervier.domino.oauth.common.HttpContext;
 import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
 
 /**
@@ -13,12 +14,24 @@ import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
 public class AccessTokenBean {
 
 	/**
+	 * The http context
+	 */
+	private HttpContext httpContext;
+	
+	/**
 	 * Envoi l'access token en Json dans la stream http
 	 * @throws IOException
 	 */
 	public void sendToken() throws IOException {
 		Map<String, Object> token = new HashMap<String, Object>();
 		token.put("access_token", JSFUtils.getSessionScope().get("access_token"));
-		JSFUtils.sendJson(token);
+		JSFUtils.sendJson(this.httpContext.getResponse(), token);
+	}
+
+	/**
+	 * @param httpContext the httpContext to set
+	 */
+	public void setHttpContext(HttpContext httpContext) {
+		this.httpContext = httpContext;
 	}
 }

@@ -1,4 +1,4 @@
-package com.github.lhervier.domino.oauth.library.server.ext;
+package com.github.lhervier.domino.oauth.library.server.ext.wrap;
 
 import java.util.Calendar;
 import java.util.Date;

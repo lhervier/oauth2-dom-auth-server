@@ -10,6 +10,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
+import com.github.lhervier.domino.oauth.library.server.ext.ctx.HttpContext;
+import com.github.lhervier.domino.oauth.library.server.ext.ctx.NotesContext;
+
 
 /**
  * Base class for a Spring Based Domino Servlet

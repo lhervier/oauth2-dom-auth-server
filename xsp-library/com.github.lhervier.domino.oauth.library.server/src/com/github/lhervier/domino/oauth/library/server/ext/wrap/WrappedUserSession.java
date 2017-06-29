@@ -1,4 +1,4 @@
-package com.github.lhervier.domino.oauth.library.server.ext;
+package com.github.lhervier.domino.oauth.library.server.ext.wrap;
 
 import lotus.domino.Session;
 

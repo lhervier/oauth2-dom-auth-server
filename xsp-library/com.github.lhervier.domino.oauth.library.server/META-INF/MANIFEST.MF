@@ -12,4 +12,6 @@ Require-Bundle: com.github.lhervier.domino.oauth.common;visibility:=reexport,
  org.eclipse.equinox.http.registry,
  com.ibm.domino.osgi.core,
  com.ibm.domino.napi
-Export-Package: com.github.lhervier.domino.oauth.library.server.ext
+Export-Package: com.github.lhervier.domino.oauth.library.server.ext,
+ com.github.lhervier.domino.oauth.library.server.ext.ctx,
+ com.github.lhervier.domino.oauth.library.server.ext.wrap

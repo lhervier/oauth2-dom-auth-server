@@ -1,4 +1,4 @@
-package com.github.lhervier.domino.oauth.library.server.ext;
+package com.github.lhervier.domino.oauth.library.server.ext.ctx;
 
 import lotus.domino.Database;
 import lotus.domino.NotesException;

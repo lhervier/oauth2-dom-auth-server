@@ -1,10 +1,12 @@
-package com.github.lhervier.domino.oauth.library.server.ext;
+package com.github.lhervier.domino.oauth.library.server.ext.wrap;
 
 import java.util.Enumeration;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionContext;
+
+import com.github.lhervier.domino.oauth.library.server.ext.ctx.HttpContext;
 
 @SuppressWarnings("deprecation")
 public class WrappedHttpSession implements HttpSession {

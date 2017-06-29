@@ -1,5 +1,7 @@
 package com.github.lhervier.domino.oauth.library.server.ext;
 
+import com.github.lhervier.domino.oauth.library.server.ext.wrap.BaseWrappedDatabase;
+
 import lotus.domino.Database;
 
 public class DatabaseHolder {

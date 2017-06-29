@@ -3,9 +3,6 @@ package com.github.lhervier.domino.oauth.ext.openid;
 import java.io.IOException;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import lotus.domino.Database;
 import lotus.domino.Document;
@@ -16,53 +13,24 @@ import lotus.domino.View;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.github.lhervier.domino.oauth.common.spring.DatabaseHolder;
+import com.github.lhervier.domino.oauth.common.spring.ctx.HttpContext;
+import com.github.lhervier.domino.oauth.common.spring.ctx.NotesContext;
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
 
 @Component
 public class UserInfoBean {
 
 	/**
-	 * The servlet request
+	 * The http context
 	 */
 	@Autowired
-	private HttpServletRequest request;
+	private HttpContext httpContext;
 	
 	/**
-	 * The servlet response
+	 * The NotesContext
 	 */
 	@Autowired
-	private HttpServletResponse response;
-	
-	/**
-	 * The httpSession
-	 */
-	@Autowired
-	private HttpSession httpSession;
-	
-	/**
-	 * The user httpSession
-	 */
-	@Autowired
-	private Session userSession;
-	
-	/**
-	 * The server httpSession
-	 */
-	@Autowired
-	private Session serverSession;
-	
-	/**
-	 * The user database
-	 */
-	@Autowired
-	private DatabaseHolder userDatabase;
-	
-	/**
-	 * The server database
-	 */
-	@Autowired
-	private DatabaseHolder serverDatabase;
+	private NotesContext notesContext;
 	
 	/**
 	 * The message service
@@ -102,29 +70,29 @@ public class UserInfoBean {
 	 */
 	public void goGet() throws ServletException, IOException {
 		try {
-			long curr = this.httpSession.getAttribute("test") == null ? 0L : (Long) this.httpSession.getAttribute("test");
-			this.httpSession.setAttribute("test", curr + 1);
-			this.response.getWriter().write("Incremental number from the httpSession : " + curr + "\n");
+			long curr = this.httpContext.getSession().getAttribute("test") == null ? 0L : (Long) this.httpContext.getSession().getAttribute("test");
+			this.httpContext.getSession().setAttribute("test", curr + 1);
+			this.httpContext.getResponse().getWriter().write("Incremental number from the httpSession : " + curr + "\n");
 			
 			// Annotated bean !
-			this.response.getWriter().write("Method from annotated bean : " + this.messageService.getMessage("Hello World !") + "\n");
+			this.httpContext.getResponse().getWriter().write("Method from annotated bean : " + this.messageService.getMessage("Hello World !") + "\n");
 			
 			// Standard servlet information: You can send a Authorization Bearer header here !
-			this.response.getWriter().write("Authorization Header : " + this.request.getHeader("Authorization") + "\n");
-			this.response.getWriter().write("URL : " + this.request.getPathInfo() + "\n");
+			this.httpContext.getResponse().getWriter().write("Authorization Header : " + this.httpContext.getRequest().getHeader("Authorization") + "\n");
+			this.httpContext.getResponse().getWriter().write("URL : " + this.httpContext.getRequest().getPathInfo() + "\n");
 			
 			// Information from Domino
-			this.response.getWriter().write("Current Username : " + this.userSession.getEffectiveUserName() + "\n");
-			this.response.getWriter().write("Server Username : " + this.serverSession.getEffectiveUserName() + "\n");
+			this.httpContext.getResponse().getWriter().write("Current Username : " + this.notesContext.getUserSession().getEffectiveUserName() + "\n");
+			this.httpContext.getResponse().getWriter().write("Server Username : " + this.notesContext.getServerSession().getEffectiveUserName() + "\n");
 			
-			if( this.userDatabase.get() != null )
-				this.response.getWriter().write("Current Database : " + this.userDatabase.get().getFilePath() + "\n");
-			if( this.serverDatabase.get() != null )
-				this.response.getWriter().write("Server Database : " + this.serverDatabase.get().getFilePath() + "\n");
+			if( this.notesContext.getUserDatabase() != null )
+				this.httpContext.getResponse().getWriter().write("Current Database : " + this.notesContext.getUserDatabase().getFilePath() + "\n");
+			if( this.notesContext.getServerDatabase() != null )
+				this.httpContext.getResponse().getWriter().write("Server Database : " + this.notesContext.getServerDatabase().getFilePath() + "\n");
 			
-			this.response.getWriter().write("New httpSession username : " + this.serverSession.getEffectiveUserName() + "\n");
-			this.response.getWriter().write("Field value in protected database (as user) : " + this.getProtectedField(userSession) + "\n");
-			this.response.getWriter().write("Field value in protected database (as server) : " + this.getProtectedField(serverSession) + "\n");
+			this.httpContext.getResponse().getWriter().write("New httpSession username : " + this.notesContext.getServerSession().getEffectiveUserName() + "\n");
+			this.httpContext.getResponse().getWriter().write("Field value in protected database (as user) : " + this.getProtectedField(this.notesContext.getUserSession()) + "\n");
+			this.httpContext.getResponse().getWriter().write("Field value in protected database (as server) : " + this.getProtectedField(this.notesContext.getServerSession()) + "\n");
 			
 		} catch(NotesException e) {
 			e.printStackTrace(System.err);

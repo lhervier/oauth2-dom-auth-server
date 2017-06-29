@@ -32,5 +32,4 @@ Export-Package: com.github.lhervier.domino.oauth.common,
  com.github.lhervier.domino.oauth.common.model.error,
  com.github.lhervier.domino.oauth.common.spring,
  com.github.lhervier.domino.oauth.common.spring.ctx,
- com.github.lhervier.domino.oauth.common.spring.wrap,
- com.github.lhervier.domino.oauth.common.utils
+  com.github.lhervier.domino.oauth.common.utils

@@ -28,8 +28,8 @@ Require-Bundle: com.ibm.xsp.core;visibility:=reexport,
 Export-Package: com.github.lhervier.domino.oauth.common,
  com.github.lhervier.domino.oauth.common.bean,
  com.github.lhervier.domino.oauth.common.config,
+ com.github.lhervier.domino.oauth.common.ctx,
  com.github.lhervier.domino.oauth.common.model,
  com.github.lhervier.domino.oauth.common.model.error,
  com.github.lhervier.domino.oauth.common.spring,
- com.github.lhervier.domino.oauth.common.spring.ctx,
-  com.github.lhervier.domino.oauth.common.utils
+ com.github.lhervier.domino.oauth.common.utils

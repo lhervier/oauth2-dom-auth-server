@@ -18,6 +18,7 @@ import lotus.domino.View;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.github.lhervier.domino.oauth.common.NotesContext;
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
 import com.github.lhervier.domino.oauth.common.utils.GsonUtils;
 import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
@@ -80,9 +81,9 @@ public class TokenBean {
 	private Database database;
 	
 	/**
-	 * La database courante (en tant que signer)
+	 * The notes context
 	 */
-	private Database databaseAsSigner;
+	private NotesContext notesContext;
 	
 	/**
 	 * Les paramètres du query string
@@ -124,7 +125,7 @@ public class TokenBean {
 		View v = null;
 		Document authDoc = null;
 		try {
-			v = DominoUtils.getView(this.databaseAsSigner, VIEW_AUTHCODES);
+			v = DominoUtils.getView(this.notesContext.getServerDatabase(), VIEW_AUTHCODES);
 			authDoc = v.getDocumentByKey(code, true);
 			if( authDoc == null )
 				return;
@@ -490,10 +491,10 @@ public class TokenBean {
 	}
 
 	/**
-	 * @param databaseAsSigner the databaseAsSigner to set
+	 * @param notesContext the notesContext to set
 	 */
-	public void setDatabaseAsSigner(Database databaseAsSigner) {
-		this.databaseAsSigner = databaseAsSigner;
+	public void setNotesContext(NotesContext notesContext) {
+		this.notesContext = notesContext;
 	}
 
 	/**

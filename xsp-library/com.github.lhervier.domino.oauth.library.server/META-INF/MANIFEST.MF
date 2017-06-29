@@ -13,4 +13,5 @@ Require-Bundle: com.github.lhervier.domino.oauth.common;visibility:=reexport,
  com.ibm.domino.osgi.core,
  com.ibm.domino.napi
 Export-Package: com.github.lhervier.domino.oauth.library.server,
+ com.github.lhervier.domino.oauth.library.server.bean,
  com.github.lhervier.domino.oauth.library.server.ext

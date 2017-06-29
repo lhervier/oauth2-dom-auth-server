@@ -12,13 +12,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import lotus.domino.Database;
 import lotus.domino.Document;
 import lotus.domino.Name;
 import lotus.domino.NotesException;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.github.lhervier.domino.oauth.common.NotesContext;
 import com.github.lhervier.domino.oauth.common.model.StateResponse;
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
 import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
@@ -64,9 +64,9 @@ public class AuthorizeBean {
 	private Map<String, String> param;
 	
 	/**
-	 * La databaseAsSigner courante
+	 * The notes context
 	 */
-	private Database databaseAsSigner;
+	private NotesContext notesContext;
 	
 	/**
 	 * Le requestScope
@@ -197,7 +197,7 @@ public class AuthorizeBean {
 		Document authDoc = null;
 		Name nn = null;
 		try {
-			nn = this.databaseAsSigner.getParent().createName(app.getName() + this.paramsBean.getApplicationRoot());
+			nn = this.notesContext.getServerDatabase().getParent().createName(app.getName() + this.paramsBean.getApplicationRoot());
 			
 			// Créé le code authorization
 			AuthorizationCode authCode = new AuthorizationCode();
@@ -236,7 +236,7 @@ public class AuthorizeBean {
 			authCode.setContexts(contexts);
 			
 			// On le persiste dans la base
-			authDoc = this.databaseAsSigner.createDocument();
+			authDoc = this.notesContext.getServerDatabase().createDocument();
 			authDoc.replaceItemValue("Form", "AuthorizationCode");
 			DominoUtils.fillDocument(authDoc, authCode);
 			
@@ -278,10 +278,10 @@ public class AuthorizeBean {
 	}
 
 	/**
-	 * @param databaseAsSigner the databaseAsSigner to set
+	 * @param notesContext the notesContext to set
 	 */
-	public void setDatabaseAsSigner(Database database) {
-		this.databaseAsSigner = database;
+	public void setNotesContext(NotesContext notesContext) {
+		this.notesContext = notesContext;
 	}
 
 	/**

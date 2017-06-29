@@ -1,4 +1,4 @@
-package com.github.lhervier.domino.oauth.common.spring.ctx;
+package com.github.lhervier.domino.oauth.common.ctx;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -6,8 +6,10 @@ import javax.servlet.http.HttpSession;
 
 import org.springframework.stereotype.Component;
 
+import com.github.lhervier.domino.oauth.common.HttpContext;
+
 @Component
-public class HttpContext {
+public class SpringHttpContext implements HttpContext {
 
 	/**
 	 * The http servlet request

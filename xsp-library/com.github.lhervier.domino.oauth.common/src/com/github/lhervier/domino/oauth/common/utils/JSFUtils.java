@@ -60,14 +60,6 @@ public class JSFUtils {
 	}
 	
 	/**
-	 * Retourne la database courante
-	 * @return la database courante
-	 */
-	public static final Database getDatabaseAsSigner() {
-		return (Database) getBean("databaseAsSigner");
-	}
-	
-	/**
 	 * Retourne le contexte utilisateur
 	 * @return le contexte utilisateur
 	 */

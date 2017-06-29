@@ -6,8 +6,8 @@ import lotus.domino.Document;
 import lotus.domino.NotesException;
 import lotus.domino.View;
 
+import com.github.lhervier.domino.oauth.common.NotesContext;
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
-import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
 
 /**
  * Classe de base pour les bean qui reprennent un document
@@ -32,6 +32,11 @@ public abstract class BaseParamsBean implements Serializable {
 	private String prefix;
 	
 	/**
+	 * The notes context
+	 */
+	private NotesContext notesContext;
+	
+	/**
 	 * Recharge la configuration
 	 * @throws NotesException en cas de pb
 	 */
@@ -44,7 +49,7 @@ public abstract class BaseParamsBean implements Serializable {
 		View v = null;
 		Document doc = null;
 		try {
-			v = JSFUtils.getDatabaseAsSigner().getView(this.viewName);
+			v = this.notesContext.getServerDatabase().getView(this.viewName);
 			if( v.getEntryCount() != 1 )
 				throw new RuntimeException("Il doit y avoir un seul document dans la vue '" + this.viewName + "'");
 			doc = v.getFirstDocument();
@@ -57,19 +62,24 @@ public abstract class BaseParamsBean implements Serializable {
 
 	/**
 	 * @param viewName the viewName to set
-	 * @throws NotesException 
 	 */
-	public void setViewName(String viewName) throws NotesException {
+	public void setViewName(String viewName) {
 		this.viewName = viewName;
-		this.reload();
 	}
 
 	/**
 	 * @param prefix the prefix to set
+	 */
+	public void setPrefix(String prefix) {
+		this.prefix = prefix;
+	}
+
+	/**
+	 * @param notesContext the notesContext to set
 	 * @throws NotesException 
 	 */
-	public void setPrefix(String prefix) throws NotesException {
-		this.prefix = prefix;
+	public void setNotesContext(NotesContext notesContext) throws NotesException {
+		this.notesContext = notesContext;
 		this.reload();
 	}
 }

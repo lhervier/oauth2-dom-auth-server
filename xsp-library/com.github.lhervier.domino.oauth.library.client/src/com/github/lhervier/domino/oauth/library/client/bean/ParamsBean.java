@@ -2,8 +2,6 @@ package com.github.lhervier.domino.oauth.library.client.bean;
 
 import java.io.IOException;
 
-import lotus.domino.NotesException;
-
 import com.github.lhervier.domino.oauth.common.bean.BaseParamsBean;
 import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
 
@@ -21,9 +19,8 @@ public class ParamsBean extends BaseParamsBean {
 
 	/**
 	 * Constructor
-	 * @throws NotesException 
 	 */
-	public ParamsBean() throws NotesException {
+	public ParamsBean() {
 		this.setViewName("Params");
 		this.setPrefix("PARAM_");
 	}

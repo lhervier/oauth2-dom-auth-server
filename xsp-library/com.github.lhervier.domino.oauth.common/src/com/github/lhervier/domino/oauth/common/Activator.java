@@ -1,7 +1,6 @@
 package com.github.lhervier.domino.oauth.common;
 
 import com.github.lhervier.domino.oauth.common.spring.SpringActivator;
-import com.github.lhervier.domino.oauth.common.spring.SpringServletConfig;
 
 public class Activator extends SpringActivator {
 
@@ -10,6 +9,6 @@ public class Activator extends SpringActivator {
 	 */
 	public Activator() {
 		super();
-		this.addConfig(SpringServletConfig.class);
+		this.addConfig(SpringConfig.class);
 	}
 }

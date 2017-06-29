@@ -29,9 +29,8 @@ public class ParamsBean extends BaseParamsBean {
 	
 	/**
 	 * Constructeur
-	 * @throws NotesException 
 	 */
-	public ParamsBean() throws NotesException {
+	public ParamsBean() {
 		this.setViewName("Params");
 		this.setPrefix("");
 	}

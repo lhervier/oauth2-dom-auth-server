@@ -1,4 +1,4 @@
-package com.github.lhervier.domino.oauth.common.bean;
+package com.github.lhervier.domino.oauth.common;
 
 import java.util.Vector;
 
@@ -19,7 +19,7 @@ import lotus.domino.View;
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
 import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
 
-public class DatabaseBean implements Database {
+public class DatabaseWrapper implements Database {
 
 	/**
 	 * L'objet délégué

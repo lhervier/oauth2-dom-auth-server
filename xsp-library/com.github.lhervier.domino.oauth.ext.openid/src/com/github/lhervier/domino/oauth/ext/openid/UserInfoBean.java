@@ -13,8 +13,8 @@ import lotus.domino.View;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.github.lhervier.domino.oauth.common.spring.ctx.HttpContext;
-import com.github.lhervier.domino.oauth.common.spring.ctx.NotesContext;
+import com.github.lhervier.domino.oauth.common.ctx.SpringHttpContext;
+import com.github.lhervier.domino.oauth.common.ctx.SpringNotesContext;
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
 
 @Component
@@ -24,13 +24,13 @@ public class UserInfoBean {
 	 * The http context
 	 */
 	@Autowired
-	private HttpContext httpContext;
+	private SpringHttpContext httpContext;
 	
 	/**
-	 * The NotesContext
+	 * The SpringNotesContext
 	 */
 	@Autowired
-	private NotesContext notesContext;
+	private SpringNotesContext notesContext;
 	
 	/**
 	 * The message service

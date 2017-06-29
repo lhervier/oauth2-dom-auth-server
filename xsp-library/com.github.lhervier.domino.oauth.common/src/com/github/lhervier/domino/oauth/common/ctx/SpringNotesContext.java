@@ -1,4 +1,4 @@
-package com.github.lhervier.domino.oauth.common.spring.ctx;
+package com.github.lhervier.domino.oauth.common.ctx;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -12,6 +12,7 @@ import lotus.domino.Session;
 
 import org.springframework.stereotype.Component;
 
+import com.github.lhervier.domino.oauth.common.NotesContext;
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
 import com.ibm.domino.napi.NException;
 import com.ibm.domino.napi.c.NotesUtil;
@@ -20,7 +21,7 @@ import com.ibm.domino.napi.c.xsp.XSPNative;
 import com.ibm.domino.osgi.core.context.ContextInfo;
 
 @Component
-public class NotesContext {
+public class SpringNotesContext implements NotesContext {
 
 	/**
 	 * The server session

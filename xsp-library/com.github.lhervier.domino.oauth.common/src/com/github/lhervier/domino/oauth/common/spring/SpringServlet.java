@@ -9,8 +9,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.context.ApplicationContext;
 
-import com.github.lhervier.domino.oauth.common.spring.ctx.HttpContext;
-import com.github.lhervier.domino.oauth.common.spring.ctx.NotesContext;
+import com.github.lhervier.domino.oauth.common.ctx.SpringHttpContext;
+import com.github.lhervier.domino.oauth.common.ctx.SpringNotesContext;
 
 /**
  * Base class for a Spring Based Domino Servlet
@@ -35,12 +35,12 @@ public abstract class SpringServlet extends HttpServlet {
 	public final void service(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
 		// Initialize and clean contexts before/after request processing
 		try {
-			this.getSpringContext().getBean(HttpContext.class).init(req, res);
-			this.getSpringContext().getBean(NotesContext.class).init();
+			this.getSpringContext().getBean(SpringHttpContext.class).init(req, res);
+			this.getSpringContext().getBean(SpringNotesContext.class).init();
 			super.service(req, res);
 		} finally {
-			this.getSpringContext().getBean(NotesContext.class).cleanUp();
-			this.getSpringContext().getBean(HttpContext.class).cleanUp();
+			this.getSpringContext().getBean(SpringNotesContext.class).cleanUp();
+			this.getSpringContext().getBean(SpringHttpContext.class).cleanUp();
 		}
 	}
 }

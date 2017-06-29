@@ -9,7 +9,6 @@ import lotus.domino.View;
 import com.github.lhervier.domino.oauth.common.utils.Base64Utils;
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
 import com.github.lhervier.domino.oauth.library.server.ServerContext;
-import com.sun.faces.util.Base64;
 
 /**
  * Registre pour mémoriser les secrets

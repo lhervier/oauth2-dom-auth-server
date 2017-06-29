@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import lotus.domino.NotesException;
+
 import com.github.lhervier.domino.oauth.common.bean.BaseParamsBean;
 import com.github.lhervier.domino.oauth.common.utils.GsonUtils;
 import com.google.gson.JsonElement;
@@ -24,6 +26,15 @@ public class ParamsBean extends BaseParamsBean {
 	 * La conf par plugin
 	 */
 	private Map<String, JsonObject> confByPlugin = null;
+	
+	/**
+	 * Constructeur
+	 * @throws NotesException 
+	 */
+	public ParamsBean() throws NotesException {
+		this.setViewName("Params");
+		this.setPrefix("");
+	}
 	
 	/**
 	 * Retourne la conf d'un plugin

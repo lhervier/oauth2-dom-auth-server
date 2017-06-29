@@ -5,14 +5,6 @@
   	<managed-bean-name>initParamsBean</managed-bean-name>
   	<managed-bean-class>com.github.lhervier.domino.oauth.library.client.bean.InitParamsBean</managed-bean-class>
   	<managed-bean-scope>session</managed-bean-scope>
-  	<managed-property>
-  		<property-name>viewName</property-name>
-  		<value>Params</value>
-  	</managed-property>
-  	<managed-property>
-  		<property-name>prefix</property-name>
-  		<value>INIT_</value>
-  	</managed-property>
   </managed-bean>
   
   <!-- La bean pour accéder au paramétrage applicatif -->
@@ -20,14 +12,6 @@
   	<managed-bean-name>paramsBean</managed-bean-name>
   	<managed-bean-class>com.github.lhervier.domino.oauth.library.client.bean.ParamsBean</managed-bean-class>
   	<managed-bean-scope>session</managed-bean-scope>
-  	<managed-property>
-  		<property-name>viewName</property-name>
-  		<value>Params</value>
-  	</managed-property>
-  	<managed-property>
-  		<property-name>prefix</property-name>
-  		<value>PARAM_</value>
-  	</managed-property>
   </managed-bean>
   
   <!-- La bean pour retourner le access_token -->

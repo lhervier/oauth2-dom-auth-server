@@ -1,5 +1,7 @@
 package com.github.lhervier.domino.oauth.library.client.bean;
 
+import lotus.domino.NotesException;
+
 import com.github.lhervier.domino.oauth.common.bean.BaseParamsBean;
 
 public class InitParamsBean extends BaseParamsBean {
@@ -39,6 +41,15 @@ public class InitParamsBean extends BaseParamsBean {
 	 * les certificats SSL lors de l'appel du endpoint token avec un code autorisation
 	 */
 	private boolean disableHostNameVerifier = false;
+	
+	/**
+	 * Constructor
+	 * @throws NotesException 
+	 */
+	public InitParamsBean() throws NotesException {
+		this.setViewName("Params");
+		this.setPrefix("INIT_");
+	}
 	
 	// =========================================================================================
 	

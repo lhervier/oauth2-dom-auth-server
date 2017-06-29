@@ -16,7 +16,7 @@ import javax.net.ssl.X509TrustManager;
 import com.github.lhervier.domino.oauth.common.NotesContext;
 import com.github.lhervier.domino.oauth.common.model.error.GrantError;
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
-import com.github.lhervier.domino.oauth.common.utils.HttpUtils;
+import com.github.lhervier.domino.oauth.common.utils.HttpConnection;
 import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
 import com.github.lhervier.domino.oauth.library.client.Constants;
 import com.github.lhervier.domino.oauth.library.client.bean.AccessTokenBean;
@@ -137,7 +137,7 @@ public class Utils {
 	 * @param url l'url
 	 * @return la connection
 	 */
-	public static final HttpUtils<GrantResponse, GrantError> createConnection(NotesContext ctx, String url) {
+	public static final HttpConnection<GrantResponse, GrantError> createConnection(NotesContext ctx, String url) {
 		InitParamsBean paramsBean = getInitParamsBean();
 		
 		HostnameVerifier verifier = null;
@@ -150,7 +150,7 @@ public class Utils {
 			};
 		}
 		
-		return HttpUtils.createConnection(url, GrantResponse.class, GrantError.class)
+		return HttpConnection.createConnection(url, GrantResponse.class, GrantError.class)
 				.addHeader("Authorization", "Basic " + paramsBean.getSecret())
 				.addHeader("Content-Type", "application/x-www-form-urlencoded")
 				.withVerifier(verifier)

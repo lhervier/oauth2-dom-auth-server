@@ -19,7 +19,7 @@ import javax.net.ssl.SSLSocketFactory;
 
 import org.apache.commons.io.IOUtils;
 
-public class HttpUtils<T, E> {
+public class HttpConnection<T, E> {
 
 	/**
 	 * L'URL à appeler
@@ -75,15 +75,15 @@ public class HttpUtils<T, E> {
 	 * @param errorType le type de retour si KO
 	 * @return 
 	 */
-	public static final <T, E> HttpUtils<T, E> createConnection(String url, Class<T> okType, Class<E> errorType) {
-		HttpUtils<T, E> ret = new HttpUtils<T, E>();
+	public static final <T, E> HttpConnection<T, E> createConnection(String url, Class<T> okType, Class<E> errorType) {
+		HttpConnection<T, E> ret = new HttpConnection<T, E>();
 		ret.url = url;
 		ret.okType = okType;
 		ret.errorType = errorType;
 		return ret;
 	}
-	public static final <T, E> HttpUtils<T, E> createConnection(String url) {
-		return HttpUtils.createConnection(url, null, null);
+	public static final <T, E> HttpConnection<T, E> createConnection(String url) {
+		return HttpConnection.createConnection(url, null, null);
 	}
 	
 	/**
@@ -91,7 +91,7 @@ public class HttpUtils<T, E> {
 	 * @param callback la callback
 	 * @return
 	 */
-	public HttpUtils<T, E> onOk(Callback<T> callback) {
+	public HttpConnection<T, E> onOk(Callback<T> callback) {
 		this.okCallback = callback;
 		return this;
 	}
@@ -101,7 +101,7 @@ public class HttpUtils<T, E> {
 	 * @param callback la callback
 	 * @return
 	 */
-	public HttpUtils<T, E> onError(Callback<E> callback) {
+	public HttpConnection<T, E> onError(Callback<E> callback) {
 		this.errorCallback = callback;
 		return this;
 	}
@@ -112,7 +112,7 @@ public class HttpUtils<T, E> {
 	 * @param value la valeur
 	 * @return
 	 */
-	public HttpUtils<T, E> addHeader(String name, String value) {
+	public HttpConnection<T, E> addHeader(String name, String value) {
 		this.headers.put(name, value);
 		return this;
 	}
@@ -121,7 +121,7 @@ public class HttpUtils<T, E> {
 	 * Pour ajouter un verifier
 	 * @param verifier le verifier
 	 */
-	public HttpUtils<T, E> withVerifier(HostnameVerifier verifier) {
+	public HttpConnection<T, E> withVerifier(HostnameVerifier verifier) {
 		this.verifier = verifier;
 		return this;
 	}
@@ -130,7 +130,7 @@ public class HttpUtils<T, E> {
 	 * Pour ajouter un SSLFactory
 	 * @param factory la factory
 	 */
-	public HttpUtils<T, E> withFactory(SSLSocketFactory factory) {
+	public HttpConnection<T, E> withFactory(SSLSocketFactory factory) {
 		this.factory = factory;
 		return this;
 	}
@@ -141,7 +141,7 @@ public class HttpUtils<T, E> {
 	 * @param encoding l'encodage à utiliser
 	 * @throws UnsupportedEncodingException 
 	 */
-	public HttpUtils<T, E> setTextContent(String content, String encoding) throws UnsupportedEncodingException {
+	public HttpConnection<T, E> setTextContent(String content, String encoding) throws UnsupportedEncodingException {
 		this.content = new ByteArrayInputStream(content.getBytes(encoding));
 		return this;
 	}
@@ -152,7 +152,7 @@ public class HttpUtils<T, E> {
 	 * @param encoding l'encodage
 	 * @throws UnsupportedEncodingException 
 	 */
-	public HttpUtils<T, E> setJsonContent(Object content, String encoding) throws UnsupportedEncodingException {
+	public HttpConnection<T, E> setJsonContent(Object content, String encoding) throws UnsupportedEncodingException {
 		this.content = new ByteArrayInputStream(GsonUtils.toJson(content).getBytes(encoding));
 		return this;
 	}
@@ -161,7 +161,7 @@ public class HttpUtils<T, E> {
 	 * Pour définir un contenu
 	 * @param content le contenu
 	 */
-	public HttpUtils<T, E> setContent(byte[] content) {
+	public HttpConnection<T, E> setContent(byte[] content) {
 		this.content = new ByteArrayInputStream(content);
 		return this;
 	}
@@ -170,7 +170,7 @@ public class HttpUtils<T, E> {
 	 * Pour définir un contenu
 	 * @param in stream vers le contenu
 	 */
-	public HttpUtils<T, E> setContent(InputStream in) {
+	public HttpConnection<T, E> setContent(InputStream in) {
 		this.content = in;
 		return this;
 	}

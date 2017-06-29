@@ -10,10 +10,19 @@ import lotus.domino.NotesException;
 import lotus.domino.Session;
 
 import com.github.lhervier.domino.oauth.common.NotesContext;
-import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
+import com.ibm.xsp.designer.context.XSPContext;
 
 public class JSFNotesContext implements NotesContext {
 
+	/**
+	 * @param name managed bean name
+	 * @return the managed bean
+	 */
+	private Object getBean(String name) {
+		FacesContext ctx = FacesContext.getCurrentInstance();
+		return ctx.getApplication().getVariableResolver().resolveVariable(ctx, name);
+	}
+	
 	/**
 	 * @see com.github.lhervier.domino.oauth.common.NotesContext#getServerDatabase()
 	 */
@@ -42,8 +51,7 @@ public class JSFNotesContext implements NotesContext {
 	 */
 	@Override
 	public Session getServerSession() {
-		FacesContext ctx = FacesContext.getCurrentInstance();
-		return (Session) ctx.getApplication().getVariableResolver().resolveVariable(ctx, "sessionAsSigner");
+		return (Session) this.getBean("sessionAsSigner");
 	}
 
 	/**
@@ -51,8 +59,7 @@ public class JSFNotesContext implements NotesContext {
 	 */
 	@Override
 	public Database getUserDatabase() {
-		FacesContext ctx = FacesContext.getCurrentInstance();
-		return (Database) ctx.getApplication().getVariableResolver().resolveVariable(ctx, "database");
+		return (Database) this.getBean("database");
 	}
 
 	/**
@@ -61,7 +68,7 @@ public class JSFNotesContext implements NotesContext {
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<String> getUserRoles() {
-		return JSFUtils.getContext().getUser().getRoles();
+		return ((XSPContext) this.getBean("context")).getUser().getRoles();
 	}
 
 	/**
@@ -69,7 +76,6 @@ public class JSFNotesContext implements NotesContext {
 	 */
 	@Override
 	public Session getUserSession() {
-		FacesContext ctx = FacesContext.getCurrentInstance();
-		return (Session) ctx.getApplication().getVariableResolver().resolveVariable(ctx, "session");
+		return (Session) this.getBean("session");
 	}
 }

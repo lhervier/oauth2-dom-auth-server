@@ -1,5 +1,7 @@
 package com.github.lhervier.domino.oauth.common.spring;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,16 +12,13 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 
 /**
  * Base Activator class for plugins that will
- * use SpringFramework
+ * use SpringFramework.
+ * You MUST implement a getDefault static method that returns the instance
+ * (you can get the instance in the constructor).
  * @author Lionel HERVIER
  */
 public abstract class SpringActivator extends Plugin {
 
-	/**
-	 * The instance
-	 */
-	private static SpringActivator instance;
-	
 	/**
 	 * The ApplicationContext
 	 */
@@ -31,11 +30,17 @@ public abstract class SpringActivator extends Plugin {
 	private List<Class<?>> configClasses = new ArrayList<Class<?>>();
 	
 	/**
-	 * Constructor
-	 * @param config the spring config classes
+	 * Parent activator class
 	 */
-	public SpringActivator() {
-		instance = this;
+	private Class<? extends SpringActivator> parentActivator;
+	
+	/**
+	 * Constructor
+	 * @param parentActivator the parent activator
+	 */
+	public SpringActivator(Class<? extends SpringActivator> parentActivator) {
+		System.out.println("Creating Spring Activator for : " + this.getClass().getName());
+		this.parentActivator = parentActivator;
 		this.configClasses = new ArrayList<Class<?>>();
 	}
 	
@@ -49,37 +54,57 @@ public abstract class SpringActivator extends Plugin {
 	}
 	
 	/**
-	 * @return the current instance
-	 */
-	public static SpringActivator getDefault() {
-		return instance;
-	}
-	
-	/**
-	 * @return the spring context
-	 */
-	public ApplicationContext getSpringContext() {
-		return this.springContext;
-	}
-	
-	/**
 	 * @see org.eclipse.core.runtime.Plugin#start(org.osgi.framework.BundleContext)
 	 */
 	@Override
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
+	}
+	
+	/**
+	 * @return the spring context
+	 */
+	public synchronized ApplicationContext getSpringContext() {
+		if( this.springContext != null )
+			return this.springContext;
+		
+		// Extract the parent context
+		ApplicationContext parentContext = null;
+		if( this.parentActivator != null ) {
+			try {
+				Method m = this.parentActivator.getMethod("getDefault", new Class<?>[] {});
+				SpringActivator parent = (SpringActivator) m.invoke(null, new Object[] {});
+				parentContext = parent.getSpringContext();
+			} catch (SecurityException e) {
+				throw new RuntimeException(e);
+			} catch (NoSuchMethodException e) {
+				throw new RuntimeException(e);
+			} catch (IllegalArgumentException e) {
+				throw new RuntimeException(e);
+			} catch (IllegalAccessException e) {
+				throw new RuntimeException(e);
+			} catch (InvocationTargetException e) {
+				throw new RuntimeException(e);
+			} finally {
+			}
+		}
 		
 		ClassLoader loader = Thread.currentThread().getContextClassLoader();
 		try {
 			Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
 			Class<?>[] configs = new Class<?>[this.configClasses.size()];
 			this.configClasses.toArray(configs);
-			this.springContext = new AnnotationConfigApplicationContext(configs);
+			this.springContext = new AnnotationConfigApplicationContext();
+			this.springContext.setParent(parentContext);
+			this.springContext.register(configs);
+			this.springContext.refresh();
+			System.out.println("Initialized Spring Context for " + this.getClass().getName());
+			return this.springContext;
 		} finally {
 			Thread.currentThread().setContextClassLoader(loader);
 		}
 	}
-
+	
 	/**
 	 * @see org.eclipse.core.runtime.Plugin#stop(org.osgi.framework.BundleContext)
 	 */

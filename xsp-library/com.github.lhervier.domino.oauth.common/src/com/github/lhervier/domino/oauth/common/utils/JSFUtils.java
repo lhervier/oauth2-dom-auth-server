@@ -27,15 +27,6 @@ public class JSFUtils {
 	}
 	
 	/**
-	 * Retourne le request scope
-	 * @return le request scope
-	 */
-	@SuppressWarnings("unchecked")
-	public static final Map<String, Object> getRequestScope() {
-		return (Map<String, Object>) getBean("requestScope");
-	}
-	
-	/**
 	 * Retourne le session scope
 	 * @return le session scope
 	 */

@@ -17,10 +17,7 @@ import com.github.lhervier.domino.oauth.common.NotesContext;
 import com.github.lhervier.domino.oauth.common.model.error.GrantError;
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
 import com.github.lhervier.domino.oauth.common.utils.HttpConnection;
-import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
 import com.github.lhervier.domino.oauth.library.client.Constants;
-import com.github.lhervier.domino.oauth.library.client.bean.AccessTokenBean;
-import com.github.lhervier.domino.oauth.library.client.bean.InitParamsBean;
 import com.github.lhervier.domino.oauth.library.client.model.GrantResponse;
 
 public class Utils {
@@ -36,30 +33,15 @@ public class Utils {
 	private static boolean disableCheckCertificate = false;
 	
 	/**
-	 * Retourne la bean de paramétrage
-	 * @return la bean de paramétrage
-	 */
-	public static final InitParamsBean getInitParamsBean() {
-		return (InitParamsBean) JSFUtils.getBean("initParamsBean");
-	}
-	
-	/**
-	 * Retourne la bean pour accéder au token
-	 */
-	public static final AccessTokenBean getAccessTokenBean() {
-		return (AccessTokenBean) JSFUtils.getBean("accessTokenBean");
-	}
-	
-	/**
 	 * Retourne l'URL de redirection
+	 * @param baseUri
 	 * @return l'url de redirection
 	 * @throws UnsupportedEncodingException 
 	 */
-	public static final String getEncodedRedirectUri() throws UnsupportedEncodingException {
-		InitParamsBean paramsBean = Utils.getInitParamsBean();
+	public static final String getEncodedRedirectUri(String baseUri) throws UnsupportedEncodingException {
 		StringBuffer redirectUri = new StringBuffer();
-		redirectUri.append(paramsBean.getBaseURI());
-		if( !paramsBean.getBaseURI().endsWith("/") )
+		redirectUri.append(baseUri);
+		if( !baseUri.endsWith("/") )
 			redirectUri.append('/');
 		redirectUri.append("init.xsp");
 		return URLEncoder.encode(redirectUri.toString(), "UTF-8");
@@ -134,14 +116,17 @@ public class Utils {
 	/**
 	 * Pour initialiser un GET
 	 * @param ctx the notes context
+	 * @param disableHostVerifier 
 	 * @param url l'url
 	 * @return la connection
 	 */
-	public static final HttpConnection<GrantResponse, GrantError> createConnection(NotesContext ctx, String url) {
-		InitParamsBean paramsBean = getInitParamsBean();
-		
+	public static final HttpConnection<GrantResponse, GrantError> createConnection(
+			NotesContext ctx, 
+			boolean disableHostVerifier, 
+			String secret,
+			String url) {
 		HostnameVerifier verifier = null;
-		if( paramsBean.isDisableHostNameVerifier() ) {
+		if( disableHostVerifier ) {
 			verifier = new HostnameVerifier() {
 				@Override
 				public boolean verify(String hostname, SSLSession session) {
@@ -151,7 +136,7 @@ public class Utils {
 		}
 		
 		return HttpConnection.createConnection(url, GrantResponse.class, GrantError.class)
-				.addHeader("Authorization", "Basic " + paramsBean.getSecret())
+				.addHeader("Authorization", "Basic " + secret)
 				.addHeader("Content-Type", "application/x-www-form-urlencoded")
 				.withVerifier(verifier)
 				.withFactory(getSSLSocketFactory(ctx));

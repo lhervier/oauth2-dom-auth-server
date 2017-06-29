@@ -2,5 +2,6 @@
 <xp:view xmlns:xp="http://www.ibm.com/xsp/core" rendered="false" viewState="nostate">
 	<xp:this.beforeRenderResponse><![CDATA[#{javascript:
 		tokenBean.token();
+		facesContext.responseComplete();
 	}]]></xp:this.beforeRenderResponse>
 </xp:view>

@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.github.lhervier.domino.oauth.common.HttpContext;
-import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
+import com.github.lhervier.domino.oauth.common.utils.HttpUtils;
 
 /**
  * Bean pour retourner l'access token
@@ -25,7 +25,7 @@ public class AccessTokenBean {
 	public void sendToken() throws IOException {
 		Map<String, Object> token = new HashMap<String, Object>();
 		token.put("access_token", this.httpContext.getSession().getAttribute("access_token"));
-		JSFUtils.sendJson(this.httpContext.getResponse(), token);
+		HttpUtils.sendJson(this.httpContext.getResponse(), token);
 	}
 
 	/**

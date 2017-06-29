@@ -20,7 +20,7 @@ import com.github.lhervier.domino.oauth.common.HttpContext;
 import com.github.lhervier.domino.oauth.common.NotesContext;
 import com.github.lhervier.domino.oauth.common.model.StateResponse;
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
-import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
+import com.github.lhervier.domino.oauth.common.utils.HttpUtils;
 import com.github.lhervier.domino.oauth.common.utils.QueryStringUtils;
 import com.github.lhervier.domino.oauth.common.utils.SystemUtils;
 import com.github.lhervier.domino.oauth.library.server.ex.AuthorizeException;
@@ -135,7 +135,7 @@ public class AuthorizeBean {
 		ret.setState(this.httpContext.getRequest().getParameter("state"));		// Eventuellement null
 		
 		// Redirige
-		JSFUtils.sendRedirect(this.httpContext.getResponse(), QueryStringUtils.addBeanToQueryString(redirectUri, ret));
+		HttpUtils.sendRedirect(this.httpContext.getResponse(), QueryStringUtils.addBeanToQueryString(redirectUri, ret));
 	}
 	
 	// ===========================================================================================================

@@ -3,6 +3,7 @@
 	<xp:this.beforeRenderResponse><![CDATA[#{javascript:
 		try {
 			authorizeBean.authorize();
+			facesContext.responseComplete();
 		} catch(e) {
 			requestScope.error = e;
 		}

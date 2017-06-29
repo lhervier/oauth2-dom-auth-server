@@ -48,7 +48,11 @@ public class RefreshBean {
 			return;
 		}
 		
-		Utils.createConnection(this.notesContext, this.initParamsBean.getTokenEndPoint())
+		Utils.createConnection(
+				this.notesContext, 
+				this.initParamsBean.isDisableHostNameVerifier(), 
+				this.initParamsBean.getSecret(),
+				this.initParamsBean.getTokenEndPoint())
 				.setTextContent(
 						new StringBuffer()
 								.append("grant_type=refresh_token&")

@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 
-import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
@@ -13,18 +12,8 @@ import org.apache.commons.io.IOUtils;
  * Méthodes pratiques pour JSF
  * @author Lionel HERVIER
  */
-public class JSFUtils {
+public class HttpUtils {
 
-	/**
-	 * Retourne une managed bean
-	 * @param name le nom de la bean
-	 * @return la bean
-	 */
-	public static final Object getBean(String name) {
-		FacesContext ctx = FacesContext.getCurrentInstance();
-		return ctx.getApplication().getVariableResolver().resolveVariable(ctx, name);
-	}
-	
 	/**
 	 * Envoi du Json en réponse dans la stream HTTP
 	 * @param response the http response
@@ -47,7 +36,6 @@ public class JSFUtils {
 			IOUtils.closeQuietly(wrt);
 			IOUtils.closeQuietly(out);
 		}
-		FacesContext.getCurrentInstance().responseComplete();
 	}
 	
 	/**
@@ -58,6 +46,5 @@ public class JSFUtils {
 	public static final void sendRedirect(HttpServletResponse response, String location) {
 		response.setStatus(302);
 		response.setHeader("Location", location);
-		FacesContext.getCurrentInstance().responseComplete();
 	}
 }

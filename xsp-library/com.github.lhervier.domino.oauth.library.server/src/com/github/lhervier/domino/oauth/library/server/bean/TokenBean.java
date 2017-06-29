@@ -19,7 +19,7 @@ import com.github.lhervier.domino.oauth.common.HttpContext;
 import com.github.lhervier.domino.oauth.common.NotesContext;
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
 import com.github.lhervier.domino.oauth.common.utils.GsonUtils;
-import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
+import com.github.lhervier.domino.oauth.common.utils.HttpUtils;
 import com.github.lhervier.domino.oauth.common.utils.SystemUtils;
 import com.github.lhervier.domino.oauth.library.server.ex.GrantException;
 import com.github.lhervier.domino.oauth.library.server.ex.ServerErrorException;
@@ -185,7 +185,7 @@ public class TokenBean {
 		}
 		
 		// Envoi dans la stream http
-		JSFUtils.sendJson(this.httpContext.getResponse(), resp);
+		HttpUtils.sendJson(this.httpContext.getResponse(), resp);
 	}
 	
 	/**

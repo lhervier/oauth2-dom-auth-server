@@ -3,7 +3,7 @@ package com.github.lhervier.domino.oauth.library.client.bean;
 import java.io.IOException;
 
 import com.github.lhervier.domino.oauth.common.HttpContext;
-import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
+import com.github.lhervier.domino.oauth.common.utils.HttpUtils;
 
 public class UserInfoBean {
 
@@ -17,7 +17,7 @@ public class UserInfoBean {
 	 * @throws IOException 
 	 */
 	public void userInfo() throws IOException {
-		JSFUtils.sendJson(this.httpContext.getResponse(), this.httpContext.getSession().getAttribute("id_token"));
+		HttpUtils.sendJson(this.httpContext.getResponse(), this.httpContext.getSession().getAttribute("id_token"));
 	}
 
 	/**

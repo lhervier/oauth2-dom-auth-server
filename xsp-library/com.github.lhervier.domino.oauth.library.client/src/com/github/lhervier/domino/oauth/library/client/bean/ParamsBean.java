@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import com.github.lhervier.domino.oauth.common.HttpContext;
 import com.github.lhervier.domino.oauth.common.bean.BaseParamsBean;
-import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
+import com.github.lhervier.domino.oauth.common.utils.HttpUtils;
 
 public class ParamsBean extends BaseParamsBean {
 
@@ -35,7 +35,7 @@ public class ParamsBean extends BaseParamsBean {
 	 * @throws IOException 
 	 */
 	public void param() throws IOException {
-		JSFUtils.sendJson(this.httpContext.getResponse(), this);
+		HttpUtils.sendJson(this.httpContext.getResponse(), this);
 	}
 	
 	/**

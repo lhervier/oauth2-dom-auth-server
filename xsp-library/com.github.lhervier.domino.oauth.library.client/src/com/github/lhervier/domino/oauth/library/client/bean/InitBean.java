@@ -12,7 +12,7 @@ import com.github.lhervier.domino.oauth.common.model.error.AuthorizeError;
 import com.github.lhervier.domino.oauth.common.model.error.GrantError;
 import com.github.lhervier.domino.oauth.common.utils.Callback;
 import com.github.lhervier.domino.oauth.common.utils.GsonUtils;
-import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
+import com.github.lhervier.domino.oauth.common.utils.HttpUtils;
 import com.github.lhervier.domino.oauth.common.utils.QueryStringUtils;
 import com.github.lhervier.domino.oauth.common.utils.ValueHolder;
 import com.github.lhervier.domino.oauth.library.client.ex.InitException;
@@ -60,11 +60,11 @@ public class InitBean {
 			
 			// Sinon, on traite le login
 			} else {
-				JSFUtils.sendRedirect(
+				HttpUtils.sendRedirect(
 						this.httpContext.getResponse(),
 						this.initParamsBean.getAuthorizeEndPoint() + "?" +
 							"response_type=code&" +
-							"redirect_uri=" + Utils.getEncodedRedirectUri() + "&" +
+							"redirect_uri=" + Utils.getEncodedRedirectUri(this.initParamsBean.getBaseURI()) + "&" +
 							"client_id=" + this.initParamsBean.getClientId() + "&" +
 							"scope=openid profile email address phone&" +
 							"state=" + URLEncoder.encode(this.httpContext.getRequest().getParameter("redirect_url"), "UTF-8")
@@ -85,13 +85,17 @@ public class InitBean {
 	 */
 	private void processAuthorizationCode(final String code, final String redirectUrl) throws IOException, InitException {
 		final ValueHolder<InitException> ex = new ValueHolder<InitException>();
-		Utils.createConnection(this.notesContext, this.initParamsBean.getTokenEndPoint())
+		Utils.createConnection(
+				this.notesContext, 
+				this.initParamsBean.isDisableHostNameVerifier(), 
+				this.initParamsBean.getSecret(),
+				this.initParamsBean.getTokenEndPoint())
 				.setTextContent(
 						new StringBuffer()
 								.append("grant_type=authorization_code&")
 								.append("code=").append(code).append('&')
 								// .append("client_id=").append(this.initParamsBean.getClientId()).append('&')		// Facultatif
-								.append("redirect_uri=").append(Utils.getEncodedRedirectUri())
+								.append("redirect_uri=").append(Utils.getEncodedRedirectUri(this.initParamsBean.getBaseURI()))
 								.toString(), 
 						"UTF-8"
 				)
@@ -111,7 +115,7 @@ public class InitBean {
 						
 						InitBean.this.httpContext.getSession().setAttribute("id_token", GsonUtils.fromJson(json, IdToken.class));
 						
-						JSFUtils.sendRedirect(InitBean.this.httpContext.getResponse(), redirectUrl);
+						HttpUtils.sendRedirect(InitBean.this.httpContext.getResponse(), redirectUrl);
 					}
 				})
 				

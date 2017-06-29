@@ -13,9 +13,9 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import lotus.domino.NotesException;
-
+import com.github.lhervier.domino.oauth.common.NotesContext;
 import com.github.lhervier.domino.oauth.common.model.error.GrantError;
+import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
 import com.github.lhervier.domino.oauth.common.utils.HttpUtils;
 import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
 import com.github.lhervier.domino.oauth.library.client.Constants;
@@ -69,9 +69,10 @@ public class Utils {
 	 * Pour initialiser le contexte SSL.
 	 * On ne l'initialise qu'une seule fois. Pour revenir en arrière, il
 	 * faut relancer la tâche http.
+	 * @param ctx the notes context
 	 * @return le contexte SSL
 	 */
-	private final static synchronized SSLSocketFactory getSSLSocketFactory() {
+	private final static synchronized SSLSocketFactory getSSLSocketFactory(NotesContext ctx) {
 		// On a déjà initialisé le contexte
 		if( sslInitialized ) {
 			if( !disableCheckCertificate )
@@ -88,7 +89,7 @@ public class Utils {
 		
 		// A partie de là, SSL sera initialisé
 		sslInitialized = true;
-		disableCheckCertificate = disableCheckCertificate();
+		disableCheckCertificate = disableCheckCertificate(ctx);
 		
 		// On ne doit pas désactiver la vérification
 		if( !disableCheckCertificate ) {
@@ -119,27 +120,24 @@ public class Utils {
 	
 	/**
 	 * Est ce qu'on doit désactiver les certificats SSL ?
+	 * @param ctx the notes context
 	 */
-	private static final boolean disableCheckCertificate() {
-		try {
-			String s = JSFUtils.getSessionAsSigner().getEnvironmentString(
-					Constants.NOTES_INI_DISABLE_CHECK_CERTIFICATE, 
-					true
-			);
-			if( s == null || s.length() == 0 )
-				return false;
-			return Boolean.parseBoolean(s);
-		} catch(NotesException e) {
-			throw new RuntimeException(e);
-		}
+	private static final boolean disableCheckCertificate(NotesContext ctx) {
+		return DominoUtils.getEnvironment(
+				ctx.getServerSession(), 
+				Constants.NOTES_INI_DISABLE_CHECK_CERTIFICATE, 
+				Boolean.class,
+				false
+		);
 	}
 	
 	/**
 	 * Pour initialiser un GET
+	 * @param ctx the notes context
 	 * @param url l'url
 	 * @return la connection
 	 */
-	public static final HttpUtils<GrantResponse, GrantError> createConnection(String url) {
+	public static final HttpUtils<GrantResponse, GrantError> createConnection(NotesContext ctx, String url) {
 		InitParamsBean paramsBean = getInitParamsBean();
 		
 		HostnameVerifier verifier = null;
@@ -156,6 +154,6 @@ public class Utils {
 				.addHeader("Authorization", "Basic " + paramsBean.getSecret())
 				.addHeader("Content-Type", "application/x-www-form-urlencoded")
 				.withVerifier(verifier)
-				.withFactory(getSSLSocketFactory());
+				.withFactory(getSSLSocketFactory(ctx));
 	}
 }

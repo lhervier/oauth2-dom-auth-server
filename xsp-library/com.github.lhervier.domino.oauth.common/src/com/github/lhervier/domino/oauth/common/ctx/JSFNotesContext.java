@@ -42,7 +42,8 @@ public class JSFNotesContext implements NotesContext {
 	 */
 	@Override
 	public Session getServerSession() {
-		return JSFUtils.getSessionAsSigner();
+		FacesContext ctx = FacesContext.getCurrentInstance();
+		return (Session) ctx.getApplication().getVariableResolver().resolveVariable(ctx, "sessionAsSigner");
 	}
 
 	/**
@@ -70,5 +71,4 @@ public class JSFNotesContext implements NotesContext {
 		FacesContext ctx = FacesContext.getCurrentInstance();
 		return (Session) ctx.getApplication().getVariableResolver().resolveVariable(ctx, "session");
 	}
-
 }

@@ -2,6 +2,7 @@ package com.github.lhervier.domino.oauth.library.client.bean;
 
 import java.io.IOException;
 
+import com.github.lhervier.domino.oauth.common.NotesContext;
 import com.github.lhervier.domino.oauth.common.model.error.GrantError;
 import com.github.lhervier.domino.oauth.common.utils.Callback;
 import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
@@ -21,6 +22,11 @@ public class RefreshBean {
 	private AccessTokenBean accessTokenBean;
 	
 	/**
+	 * The notes context
+	 */
+	private NotesContext notesContext;
+	
+	/**
 	 * Rafraîchit les tokens
 	 * @throws IOException 
 	 */
@@ -33,7 +39,7 @@ public class RefreshBean {
 			return;
 		}
 		
-		Utils.createConnection(this.initParamsBean.getTokenEndPoint())
+		Utils.createConnection(this.notesContext, this.initParamsBean.getTokenEndPoint())
 				.setTextContent(
 						new StringBuffer()
 								.append("grant_type=refresh_token&")
@@ -81,5 +87,12 @@ public class RefreshBean {
 	 */
 	public void setInitParamsBean(InitParamsBean initParamsBean) {
 		this.initParamsBean = initParamsBean;
+	}
+
+	/**
+	 * @param notesContext the notesContext to set
+	 */
+	public void setNotesContext(NotesContext notesContext) {
+		this.notesContext = notesContext;
 	}
 }

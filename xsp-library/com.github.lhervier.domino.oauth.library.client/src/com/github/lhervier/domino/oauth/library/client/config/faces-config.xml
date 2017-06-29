@@ -49,6 +49,10 @@
     	<property-name>param</property-name>
     	<value>#{param}</value>
     </managed-property>
+    <managed-property>
+    	<property-name>notesContext</property-name>
+    	<value>#{notesContext}</value>
+    </managed-property>
   </managed-bean>
   
   <!-- La bean pour rafraîchir les tokens en session -->
@@ -64,5 +68,9 @@
   		<property-name>accessTokenBean</property-name>
   		<value>#{accessTokenBean}</value>
   	</managed-property>
+  	<managed-property>
+    	<property-name>notesContext</property-name>
+    	<value>#{notesContext}</value>
+    </managed-property>
   </managed-bean>
 </faces-config>

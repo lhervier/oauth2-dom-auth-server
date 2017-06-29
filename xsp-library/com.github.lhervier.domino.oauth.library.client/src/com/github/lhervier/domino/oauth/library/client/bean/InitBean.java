@@ -8,6 +8,7 @@ import java.util.Map;
 
 import javax.faces.context.FacesContext;
 
+import com.github.lhervier.domino.oauth.common.NotesContext;
 import com.github.lhervier.domino.oauth.common.model.error.AuthorizeError;
 import com.github.lhervier.domino.oauth.common.model.error.GrantError;
 import com.github.lhervier.domino.oauth.common.utils.Callback;
@@ -30,6 +31,11 @@ public class InitBean {
 	 * Les paramétres de la requête
 	 */
 	private Map<String, String> param;
+	
+	/**
+	 * The notes context
+	 */
+	private NotesContext notesContext;
 	
 	/**
 	 * Initialisation
@@ -83,7 +89,7 @@ public class InitBean {
 	 * @throws IOException 
 	 */
 	private void processAuthorizationCode(final String code, final String redirectUrl) throws IOException {
-		Utils.createConnection(this.initParamsBean.getTokenEndPoint())
+		Utils.createConnection(this.notesContext, this.initParamsBean.getTokenEndPoint())
 				.setTextContent(
 						new StringBuffer()
 								.append("grant_type=authorization_code&")
@@ -140,5 +146,12 @@ public class InitBean {
 	 */
 	public void setParam(Map<String, String> param) {
 		this.param = param;
+	}
+
+	/**
+	 * @param notesContext the notesContext to set
+	 */
+	public void setNotesContext(NotesContext notesContext) {
+		this.notesContext = notesContext;
 	}
 }

@@ -218,6 +218,7 @@ public class AuthorizeBean {
 			for( IOAuthExtension ext : exts ) {
 				JsonObject jsonConf = this.paramsBean.getPluginConf(ext.getId());
 				JsonObject context = ext.authorize(
+						this.notesContext.getUserSession(),
 						jsonConf,
 						new IScopeGranter() {
 							@Override

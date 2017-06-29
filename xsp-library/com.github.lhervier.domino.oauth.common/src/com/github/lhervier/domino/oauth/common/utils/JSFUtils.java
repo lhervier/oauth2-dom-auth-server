@@ -35,14 +35,6 @@ public class JSFUtils {
 	}
 	
 	/**
-	 * Retourne la session courante
-	 * @return la session
-	 */
-	public static final Session getSession() {
-		return (Session) getBean("session");
-	}
-	
-	/**
 	 * Retourne la session ouverte avec les infos
 	 * du signataire de la XPages courante
 	 * @return la session

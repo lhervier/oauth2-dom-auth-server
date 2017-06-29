@@ -2,6 +2,8 @@ package com.github.lhervier.domino.oauth.common.ctx;
 
 import java.util.Vector;
 
+import javax.faces.context.FacesContext;
+
 import lotus.domino.ACL;
 import lotus.domino.Agent;
 import lotus.domino.Database;
@@ -17,7 +19,6 @@ import lotus.domino.Session;
 import lotus.domino.View;
 
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
-import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
 
 public class JSFDatabaseWrapper implements Database {
 
@@ -41,9 +42,13 @@ public class JSFDatabaseWrapper implements Database {
 	 * @return la session
 	 */
 	private Session getSession() {
+		FacesContext ctx = FacesContext.getCurrentInstance();
+		String beanName;
 		if( this.asSigner != null && this.asSigner.booleanValue() )
-			return JSFUtils.getSessionAsSigner();
-		return JSFUtils.getSession();
+			beanName = "sessionAsSigner";
+		else
+			beanName = "session";
+		return (Session) ctx.getApplication().getVariableResolver().resolveVariable(ctx, beanName);
 	}
 	
 	/**

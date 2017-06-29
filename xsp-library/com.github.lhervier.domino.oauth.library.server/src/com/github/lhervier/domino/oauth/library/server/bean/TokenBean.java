@@ -292,6 +292,7 @@ public class TokenBean {
 					continue;
 				JsonObject jsonConf = this.paramsBean.getPluginConf(ext.getId());
 				ext.token(
+						this.notesContext.getUserSession(),
 						jsonConf,
 						context, 
 						new JsonObjectPropertyAdder(
@@ -391,6 +392,7 @@ public class TokenBean {
 					continue;
 				JsonObject jsonConf = this.paramsBean.getPluginConf(ext.getId());
 				ext.refresh(
+						this.notesContext.getUserSession(),
 						jsonConf,
 						context, 
 						new JsonObjectPropertyAdder(

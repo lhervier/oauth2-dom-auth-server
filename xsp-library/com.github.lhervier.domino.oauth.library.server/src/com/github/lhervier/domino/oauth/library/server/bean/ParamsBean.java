@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import lotus.domino.NotesException;
+import org.springframework.stereotype.Component;
 
 import com.github.lhervier.domino.oauth.common.bean.BaseParamsBean;
 import com.github.lhervier.domino.oauth.common.utils.GsonUtils;
@@ -15,6 +15,7 @@ import com.google.gson.JsonObject;
  * Bean pour accéder aux paramètres de l'application
  * @author Lionel HERVIER
  */
+@Component
 public class ParamsBean extends BaseParamsBean {
 
 	/**

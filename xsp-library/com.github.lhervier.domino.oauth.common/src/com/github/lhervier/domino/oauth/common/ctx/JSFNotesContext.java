@@ -9,7 +9,6 @@ import lotus.domino.Database;
 import lotus.domino.NotesException;
 import lotus.domino.Session;
 
-import com.github.lhervier.domino.oauth.common.DatabaseWrapper;
 import com.github.lhervier.domino.oauth.common.NotesContext;
 import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
 
@@ -26,7 +25,7 @@ public class JSFNotesContext implements NotesContext {
 		if( request.getAttribute(key) != null )
 			return (Database) request.getAttribute(key);
 		
-		DatabaseWrapper dbAsSigner = new DatabaseWrapper();
+		JSFDatabaseWrapper dbAsSigner = new JSFDatabaseWrapper();
 		dbAsSigner.setAsSigner(true);
 		try {
 			dbAsSigner.setFilePath(JSFUtils.getDatabase().getFilePath());

@@ -14,7 +14,7 @@
   <!-- Bean pour accéder au NAB défini dans le paramétrage (via la session courante) -->
   <managed-bean>
   	<managed-bean-name>nab</managed-bean-name>
-  	<managed-bean-class>com.github.lhervier.domino.oauth.common.DatabaseWrapper</managed-bean-class>
+  	<managed-bean-class>com.github.lhervier.domino.oauth.common.ctx.JSFDatabaseWrapper</managed-bean-class>
   	<managed-bean-scope>request</managed-bean-scope>
   	<managed-property>
   		<property-name>asSigner</property-name>
@@ -29,7 +29,7 @@
   <!-- Bean pour accéder au NAB défini dans le paramétrage (via session "as signer") -->
   <managed-bean>
   	<managed-bean-name>nabAsSigner</managed-bean-name>
-  	<managed-bean-class>com.github.lhervier.domino.oauth.common.DatabaseWrapper</managed-bean-class>
+  	<managed-bean-class>com.github.lhervier.domino.oauth.common.ctx.JSFDatabaseWrapper</managed-bean-class>
   	<managed-bean-scope>request</managed-bean-scope>
   	<managed-property>
   		<property-name>asSigner</property-name>

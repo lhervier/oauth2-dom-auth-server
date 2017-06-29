@@ -23,7 +23,7 @@ import com.github.lhervier.domino.oauth.library.server.ext.wrap.WrappedUserSessi
 
 @Configuration
 @ComponentScan
-public class DominoServletConfig {
+public class SpringServletConfig {
 
 	/**
 	 * The notes context

@@ -6,13 +6,19 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.github.lhervier.domino.oauth.library.server.ext.DominoServlet;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+
+import com.github.lhervier.domino.oauth.library.server.ext.SpringServlet;
 
 /**
  * Servlet for the "userInfo" openid endpoint
  * @author Lionel HERVIER
  */
-public class UserInfoServlet extends DominoServlet {
+@Configuration
+@ComponentScan
+public class UserInfoServlet extends SpringServlet {
 
 	/**
 	 * Serial UID
@@ -20,10 +26,11 @@ public class UserInfoServlet extends DominoServlet {
 	private static final long serialVersionUID = -1167165578644747248L;
 	
 	/**
-	 * Constructeur
+	 * @see com.github.lhervier.domino.oauth.library.server.ext.SpringServlet#getSpringContext()
 	 */
-	public UserInfoServlet() {
-		super(UserInfoConfig.class);
+	@Override
+	public ApplicationContext getSpringContext() {
+		return Activator.getDefault().getSpringContext();
 	}
 
 	/**

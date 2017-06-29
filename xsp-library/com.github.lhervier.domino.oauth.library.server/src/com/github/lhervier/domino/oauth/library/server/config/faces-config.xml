@@ -11,33 +11,14 @@
   	</managed-property>
   </managed-bean>
   
-  <!-- Bean pour accéder au NAB défini dans le paramétrage (via la session courante) -->
+  <!-- Bean to access the server context -->
   <managed-bean>
-  	<managed-bean-name>nab</managed-bean-name>
-  	<managed-bean-class>com.github.lhervier.domino.oauth.common.ctx.JSFDatabaseWrapper</managed-bean-class>
-  	<managed-bean-scope>request</managed-bean-scope>
+  	<managed-bean-name>serverContext</managed-bean-name>
+  	<managed-bean-class>com.github.lhervier.domino.oauth.library.server.ctx.JSFServerContext</managed-bean-class>
+  	<managed-bean-scope>session</managed-bean-scope>
   	<managed-property>
-  		<property-name>asSigner</property-name>
-  		<value>false</value>
-  	</managed-property>
-  	<managed-property>
-  		<property-name>filePath</property-name>
-  		<value>#{paramsBean.nab}</value>
-  	</managed-property>
-  </managed-bean>
-  
-  <!-- Bean pour accéder au NAB défini dans le paramétrage (via session "as signer") -->
-  <managed-bean>
-  	<managed-bean-name>nabAsSigner</managed-bean-name>
-  	<managed-bean-class>com.github.lhervier.domino.oauth.common.ctx.JSFDatabaseWrapper</managed-bean-class>
-  	<managed-bean-scope>request</managed-bean-scope>
-  	<managed-property>
-  		<property-name>asSigner</property-name>
-  		<value>true</value>
-  	</managed-property>
-  	<managed-property>
-  		<property-name>filePath</property-name>
-  		<value>#{paramsBean.nab}</value>
+  		<property-name>paramsBean</property-name>
+  		<value>#{paramsBean}</value>
   	</managed-property>
   </managed-bean>
   
@@ -51,8 +32,8 @@
     	<value>#{paramsBean}</value>
     </managed-property>
     <managed-property>
-    	<property-name>nabAsSigner</property-name>
-    	<value>#{nabAsSigner}</value>
+    	<property-name>serverContext</property-name>
+    	<value>#{serverContext}</value>
     </managed-property>
   </managed-bean>
   
@@ -66,8 +47,8 @@
     	<value>#{notesContext}</value>
     </managed-property>
     <managed-property>
-    	<property-name>nab</property-name>
-    	<value>#{nab}</value>
+    	<property-name>serverContext</property-name>
+    	<value>#{serverContext}</value>
     </managed-property>
     <managed-property>
     	<property-name>paramsBean</property-name>

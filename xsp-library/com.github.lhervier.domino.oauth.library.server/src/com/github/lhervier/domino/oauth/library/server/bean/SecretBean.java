@@ -2,13 +2,14 @@ package com.github.lhervier.domino.oauth.library.server.bean;
 
 import java.io.IOException;
 
-import lotus.domino.Database;
 import lotus.domino.Document;
 import lotus.domino.NotesException;
 import lotus.domino.View;
 
 import com.github.lhervier.domino.oauth.common.utils.Base64Utils;
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
+import com.github.lhervier.domino.oauth.library.server.ServerContext;
+import com.sun.faces.util.Base64;
 
 /**
  * Registre pour mémoriser les secrets
@@ -32,9 +33,9 @@ public class SecretBean {
 	private ParamsBean paramsBean;
 	
 	/**
-	 * Le nabAsSigner
+	 * The server context
 	 */
-	private Database nabAsSigner;
+	private ServerContext serverContext;
 	
 	/**
 	 * Retourne le document config SSO
@@ -43,7 +44,7 @@ public class SecretBean {
 	 * @throws NotesException en cas de pb
 	 */
 	private Document getSsoConfig(String config) throws NotesException {
-		View v = this.nabAsSigner.getView(WEBSSOCONFIG_VIEW);
+		View v = this.serverContext.getServerNab().getView(WEBSSOCONFIG_VIEW);
 		if( v == null )
 			throw new RuntimeException("La vue " + WEBSSOCONFIG_VIEW + " n'existe pas dans le NAB. Impossible de continuer.");
 		Document ssoConfig = v.getDocumentByKey(config);
@@ -96,11 +97,25 @@ public class SecretBean {
 	}
 	
 	/**
+	 * @param ssoConfig
+	 */
+	public String getSignSecretBase64(String ssoConfig) throws NotesException, IOException {
+		return Base64Utils.encode(this.getSignSecret(ssoConfig));
+	}
+	
+	/**
 	 * Retourne un secret pour crypter
 	 * @param ssoConfig la config sso
 	 */
 	public byte[] getCryptSecret(String ssoConfig) throws NotesException, IOException {
 		return this.getSecret(ssoConfig, 16);
+	}
+	
+	/**
+	 * @param ssoConfig
+	 */
+	public String getCryptSecretBase64(String ssoConfig) throws NotesException, IOException {
+		return Base64Utils.encode(this.getCryptSecret(ssoConfig));
 	}
 	
 	/**
@@ -133,9 +148,9 @@ public class SecretBean {
 	}
 
 	/**
-	 * @param nabAsSigner the nabAsSigner to set
+	 * @param serverContext the serverContext to set
 	 */
-	public void setNabAsSigner(Database nab) {
-		this.nabAsSigner = nab;
+	public void setServerContext(ServerContext serverContext) {
+		this.serverContext = serverContext;
 	}
 }

@@ -34,10 +34,9 @@ public class JSFNotesContext implements NotesContext {
 		if( request.getAttribute(key) != null )
 			return (Database) request.getAttribute(key);
 		
-		JSFDatabaseWrapper dbAsSigner = new JSFDatabaseWrapper();
-		dbAsSigner.setAsSigner(true);
+		JSFDatabaseWrapper dbAsSigner;
 		try {
-			dbAsSigner.setFilePath(this.getUserDatabase().getFilePath());
+			dbAsSigner = new JSFDatabaseWrapper(this.getUserDatabase().getFilePath(), true);
 		} catch (NotesException e) {
 			throw new RuntimeException(e);
 		}

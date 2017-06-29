@@ -8,7 +8,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import lotus.domino.Database;
 import lotus.domino.Document;
 import lotus.domino.Name;
 import lotus.domino.NotesException;
@@ -19,6 +18,7 @@ import com.github.lhervier.domino.oauth.common.NotesContext;
 import com.github.lhervier.domino.oauth.common.utils.Base64Utils;
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
 import com.github.lhervier.domino.oauth.common.utils.ViewIterator;
+import com.github.lhervier.domino.oauth.library.server.ServerContext;
 import com.github.lhervier.domino.oauth.library.server.model.Application;
 
 /**
@@ -60,9 +60,9 @@ public class AppBean {
 	private NotesContext notesContext;
 	
 	/**
-	 * Le nab
+	 * The server context
 	 */
-	private Database nab;
+	private ServerContext serverContext;
 	
 	/**
 	 * La bean de paramétrage
@@ -80,7 +80,7 @@ public class AppBean {
 		View v = null;
 		try {
 			appNotesName = this.notesContext.getUserSession().createName(appName + this.paramsBean.getApplicationRoot());
-			v = DominoUtils.getView(this.nab, VIEW_USERS);
+			v = DominoUtils.getView(this.serverContext.getNab(), VIEW_USERS);
 			return v.getDocumentByKey(appNotesName.getAbbreviated());
 		} finally {
 			DominoUtils.recycleQuietly(v);
@@ -231,7 +231,7 @@ public class AppBean {
 			String fullName = nn.toString();
 			
 			// Créé une nouvelle application dans le NAB (un nouvel utilisateur)
-			person = this.nab.createDocument();
+			person = this.serverContext.getNab().createDocument();
 			person.replaceItemValue("Form", "Person");
 			person.replaceItemValue("Type", "Person");
 			person.replaceItemValue("ShortName", app.getName());
@@ -254,7 +254,7 @@ public class AppBean {
 			DominoUtils.computeAndSave(appDoc);
 			
 			// Rafraîchit le NAB pour prise en compte immédiate
-			DominoUtils.refreshNab(this.nab);
+			DominoUtils.refreshNab(this.serverContext.getNab());
 			
 			// Génère le secret
 			return Base64Utils.encodeFromUTF8String(abbreviated + ":" + password);
@@ -327,7 +327,7 @@ public class AppBean {
 				throw new RuntimeException("L'application '" + name + "' n'existe pas. Impossible de la supprimer.");
 			appDoc.remove(true);
 			
-			DominoUtils.refreshNab(this.nab);
+			DominoUtils.refreshNab(this.serverContext.getNab());
 		} finally {
 			DominoUtils.recycleQuietly(appDoc);
 			DominoUtils.recycleQuietly(personDoc);
@@ -335,13 +335,6 @@ public class AppBean {
 	}
 	
 	// ===================================================================================
-
-	/**
-	 * @param nab the nab to set
-	 */
-	public void setNab(Database nab) {
-		this.nab = nab;
-	}
 
 	/**
 	 * @param paramsBean the paramsBean to set
@@ -355,5 +348,12 @@ public class AppBean {
 	 */
 	public void setNotesContext(NotesContext notesContext) {
 		this.notesContext = notesContext;
+	}
+
+	/**
+	 * @param serverContext the serverContext to set
+	 */
+	public void setServerContext(ServerContext serverContext) {
+		this.serverContext = serverContext;
 	}
 }

@@ -38,6 +38,14 @@ public class JSFDatabaseWrapper implements Database {
 	private String filePath;
 	
 	/**
+	 * Constructor
+	 */
+	public JSFDatabaseWrapper(String filePath, boolean asSigner) {
+		this.filePath = filePath;
+		this.asSigner = asSigner;
+	}
+	
+	/**
 	 * Retourne la session
 	 * @return la session
 	 */
@@ -67,20 +75,6 @@ public class JSFDatabaseWrapper implements Database {
 		if( this.delegated == null )
 			throw new RuntimeException("Impossible d'ouvrir la base '" + this.filePath + "'");
 		return this.delegated;
-	}
-	
-	/**
-	 * @param asSigner est ce qu'on doit ouvrir la base en tant que le signataire ?
-	 */
-	public void setAsSigner(Boolean asSigner) {
-		this.asSigner = asSigner;
-	}
-
-	/**
-	 * @param filePath the filePath to set
-	 */
-	public void setFilePath(String filePath) {
-		this.filePath = filePath;
 	}
 	
 	// =======================================================================================

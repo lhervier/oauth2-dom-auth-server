@@ -62,8 +62,8 @@
     <managed-bean-class>com.github.lhervier.domino.oauth.library.server.bean.AppBean</managed-bean-class>
     <managed-bean-scope>request</managed-bean-scope>
     <managed-property>
-    	<property-name>database</property-name>
-    	<value>#{database}</value>
+    	<property-name>notesContext</property-name>
+    	<value>#{notesContext}</value>
     </managed-property>
     <managed-property>
     	<property-name>nab</property-name>
@@ -118,10 +118,6 @@
     <managed-property>
     	<property-name>paramsBean</property-name>
     	<value>#{paramsBean}</value>
-    </managed-property>
-    <managed-property>
-    	<property-name>database</property-name>
-    	<value>#{database}</value>
     </managed-property>
     <managed-property>
     	<property-name>notesContext</property-name>

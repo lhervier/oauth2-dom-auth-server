@@ -10,7 +10,6 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import lotus.domino.Database;
 import lotus.domino.Document;
 import lotus.domino.Name;
 import lotus.domino.NotesException;
@@ -76,11 +75,6 @@ public class TokenBean {
 	private ParamsBean paramsBean;
 	
 	/**
-	 * La base courante
-	 */
-	private Database database;
-	
-	/**
 	 * The notes context
 	 */
 	private NotesContext notesContext;
@@ -111,7 +105,7 @@ public class TokenBean {
 	 * @throws NotesException en cas de pb
 	 */
 	private View getAuthCodeView() throws NotesException {
-		return DominoUtils.getView(this.database, VIEW_AUTHCODES);
+		return DominoUtils.getView(this.notesContext.getUserDatabase(), VIEW_AUTHCODES);
 	}
 	
 	/**
@@ -158,8 +152,8 @@ public class TokenBean {
 			Name nn = null;
 			String clientId;
 			try {
-				String fullName = this.database.getParent().getEffectiveUserName();
-				nn = this.database.getParent().createName(fullName);
+				String fullName = this.notesContext.getUserDatabase().getParent().getEffectiveUserName();
+				nn = this.notesContext.getUserDatabase().getParent().createName(fullName);
 				String appName = nn.getCommon();
 				Application app = this.appBean.getApplicationFromName(appName);
 				if( app == null )
@@ -256,7 +250,7 @@ public class TokenBean {
 		Document authDoc = null;
 		View v = null;
 		try {
-			nn = this.database.getParent().createName(this.database.getParent().getEffectiveUserName());
+			nn = this.notesContext.getUserSession().createName(this.notesContext.getUserSession().getEffectiveUserName());
 			v = this.getAuthCodeView();
 			
 			// Récupère l'application
@@ -442,13 +436,6 @@ public class TokenBean {
 	}
 	
 	// =========================================================================================================
-
-	/**
-	 * @param database the database to set
-	 */
-	public void setDatabase(Database database) {
-		this.database = database;
-	}
 
 	/**
 	 * @param appBean the appBean to set

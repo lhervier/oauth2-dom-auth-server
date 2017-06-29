@@ -28,7 +28,7 @@ public class JSFNotesContext implements NotesContext {
 		JSFDatabaseWrapper dbAsSigner = new JSFDatabaseWrapper();
 		dbAsSigner.setAsSigner(true);
 		try {
-			dbAsSigner.setFilePath(JSFUtils.getDatabase().getFilePath());
+			dbAsSigner.setFilePath(this.getUserDatabase().getFilePath());
 		} catch (NotesException e) {
 			throw new RuntimeException(e);
 		}
@@ -51,7 +51,8 @@ public class JSFNotesContext implements NotesContext {
 	 */
 	@Override
 	public Database getUserDatabase() {
-		return JSFUtils.getDatabase();
+		FacesContext ctx = FacesContext.getCurrentInstance();
+		return (Database) ctx.getApplication().getVariableResolver().resolveVariable(ctx, "database");
 	}
 
 	/**

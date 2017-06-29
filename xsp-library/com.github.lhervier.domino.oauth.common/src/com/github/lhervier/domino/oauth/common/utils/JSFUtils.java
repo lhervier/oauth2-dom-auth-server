@@ -12,9 +12,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 
-import lotus.domino.Database;
-import lotus.domino.Session;
-
 import com.ibm.xsp.component.UIViewRootEx;
 import com.ibm.xsp.designer.context.XSPContext;
 
@@ -32,14 +29,6 @@ public class JSFUtils {
 	public static final Object getBean(String name) {
 		FacesContext ctx = FacesContext.getCurrentInstance();
 		return ctx.getApplication().getVariableResolver().resolveVariable(ctx, name);
-	}
-	
-	/**
-	 * Retourne la database courante
-	 * @return la database courante
-	 */
-	public static final Database getDatabase() {
-		return (Database) getBean("database");
 	}
 	
 	/**

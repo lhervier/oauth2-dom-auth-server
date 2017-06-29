@@ -15,6 +15,7 @@ import lotus.domino.NotesException;
 import lotus.domino.View;
 import lotus.domino.ViewEntry;
 
+import com.github.lhervier.domino.oauth.common.NotesContext;
 import com.github.lhervier.domino.oauth.common.utils.Base64Utils;
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
 import com.github.lhervier.domino.oauth.common.utils.ViewIterator;
@@ -54,9 +55,9 @@ public class AppBean {
 	private static final SecureRandom RANDOM = new SecureRandom();
 	
 	/**
-	 * La database courante
+	 * The notes context
 	 */
-	private Database database;
+	private NotesContext notesContext;
 	
 	/**
 	 * Le nab
@@ -78,7 +79,7 @@ public class AppBean {
 		Name appNotesName = null;
 		View v = null;
 		try {
-			appNotesName = this.database.getParent().createName(appName + this.paramsBean.getApplicationRoot());
+			appNotesName = this.notesContext.getUserSession().createName(appName + this.paramsBean.getApplicationRoot());
 			v = DominoUtils.getView(this.nab, VIEW_USERS);
 			return v.getDocumentByKey(appNotesName.getAbbreviated());
 		} finally {
@@ -96,7 +97,7 @@ public class AppBean {
 	private Document getAppDocFromName(String appName) throws NotesException {
 		View v = null;
 		try {
-			v = DominoUtils.getView(this.database, VIEW_APPLICATIONS);
+			v = DominoUtils.getView(this.notesContext.getUserDatabase(), VIEW_APPLICATIONS);
 			v.resortView(COLUMN_NAME);
 			return v.getDocumentByKey(appName, true);
 		} finally {
@@ -113,7 +114,7 @@ public class AppBean {
 	private Document getAppDocFromClientId(String clientId) throws NotesException {
 		View v = null;
 		try {
-			v = DominoUtils.getView(this.database, VIEW_APPLICATIONS);
+			v = DominoUtils.getView(this.notesContext.getUserDatabase(), VIEW_APPLICATIONS);
 			v.resortView(COLUMN_CLIENTID);
 			return v.getDocumentByKey(clientId, true);
 		} finally {
@@ -141,7 +142,7 @@ public class AppBean {
 		List<String> ret = new ArrayList<String>();
 		ViewIterator it = null;
 		try {
-			it = ViewIterator.create().onDatabase(this.database).onView(VIEW_APPLICATIONS).sortOnColumn(COLUMN_NAME);
+			it = ViewIterator.create().onDatabase(this.notesContext.getUserDatabase()).onView(VIEW_APPLICATIONS).sortOnColumn(COLUMN_NAME);
 			for( ViewEntry entry : it )
 				ret.add((String) entry.getColumnValues().get(0));
 			return ret;
@@ -226,7 +227,7 @@ public class AppBean {
 				throw new RuntimeException("Une application avec ce nom existe déjà.");
 			
 			String abbreviated = app.getName() + this.paramsBean.getApplicationRoot();
-			nn = this.database.getParent().createName(abbreviated);
+			nn = this.notesContext.getUserSession().createName(abbreviated);
 			String fullName = nn.toString();
 			
 			// Créé une nouvelle application dans le NAB (un nouvel utilisateur)
@@ -238,15 +239,15 @@ public class AppBean {
 			person.replaceItemValue("MailSystem", "100");		// None
 			person.replaceItemValue("FullName", fullName);
 			String password = this.generatePassword();
-			person.replaceItemValue("HTTPPassword", this.database.getParent().evaluate("@Password(\"" + password + "\")"));
-			person.replaceItemValue("HTTPPasswordChangeDate", this.database.getParent().createDateTime(new Date()));
+			person.replaceItemValue("HTTPPassword", this.notesContext.getUserSession().evaluate("@Password(\"" + password + "\")"));
+			person.replaceItemValue("HTTPPasswordChangeDate", this.notesContext.getUserSession().createDateTime(new Date()));
 			person.replaceItemValue("$SecurePassword", "1");
-			person.replaceItemValue("Owner", this.database.getParent().getEffectiveUserName());
-			person.replaceItemValue("LocalAdmin", this.database.getParent().getEffectiveUserName());
+			person.replaceItemValue("Owner", this.notesContext.getUserSession().getEffectiveUserName());
+			person.replaceItemValue("LocalAdmin", this.notesContext.getUserSession().getEffectiveUserName());
 			DominoUtils.computeAndSave(person);
 			
 			// Créé un nouveau document pour l'application dans la base
-			appDoc = this.database.createDocument();
+			appDoc = this.notesContext.getUserDatabase().createDocument();
 			appDoc.replaceItemValue("Form", "Application");
 			app.setAppReader(fullName);
 			DominoUtils.fillDocument(appDoc, app);
@@ -336,13 +337,6 @@ public class AppBean {
 	// ===================================================================================
 
 	/**
-	 * @param database the database to set
-	 */
-	public void setDatabase(Database database) {
-		this.database = database;
-	}
-
-	/**
 	 * @param nab the nab to set
 	 */
 	public void setNab(Database nab) {
@@ -354,5 +348,12 @@ public class AppBean {
 	 */
 	public void setParamsBean(ParamsBean paramsBean) {
 		this.paramsBean = paramsBean;
+	}
+
+	/**
+	 * @param notesContext the notesContext to set
+	 */
+	public void setNotesContext(NotesContext notesContext) {
+		this.notesContext = notesContext;
 	}
 }

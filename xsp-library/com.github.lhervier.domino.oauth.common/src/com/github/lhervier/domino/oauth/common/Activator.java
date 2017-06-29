@@ -1,22 +1,15 @@
 package com.github.lhervier.domino.oauth.common;
 
-import org.osgi.framework.BundleActivator;
-import org.osgi.framework.BundleContext;
+import com.github.lhervier.domino.oauth.common.spring.SpringActivator;
+import com.github.lhervier.domino.oauth.common.spring.SpringServletConfig;
 
-public class Activator implements BundleActivator {
+public class Activator extends SpringActivator {
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.osgi.framework.BundleActivator#start(org.osgi.framework.BundleContext)
+	/**
+	 * Constructor
 	 */
-	public void start(BundleContext context) throws Exception {
+	public Activator() {
+		super();
+		this.addConfig(SpringServletConfig.class);
 	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.osgi.framework.BundleActivator#stop(org.osgi.framework.BundleContext)
-	 */
-	public void stop(BundleContext context) throws Exception {
-	}
-
 }

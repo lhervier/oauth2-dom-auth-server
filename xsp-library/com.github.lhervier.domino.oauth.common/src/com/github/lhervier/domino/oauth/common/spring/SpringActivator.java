@@ -1,5 +1,8 @@
 package com.github.lhervier.domino.oauth.common.spring;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.core.runtime.Plugin;
 import org.osgi.framework.BundleContext;
 import org.springframework.context.ApplicationContext;
@@ -25,18 +28,24 @@ public abstract class SpringActivator extends Plugin {
 	/**
 	 * The config classes
 	 */
-	private Class<?>[] configClasses;
+	private List<Class<?>> configClasses = new ArrayList<Class<?>>();
 	
 	/**
 	 * Constructor
 	 * @param config the spring config classes
 	 */
-	public SpringActivator(Class<?>... configs) {
+	public SpringActivator() {
 		instance = this;
-		this.configClasses = new Class<?>[configs.length + 1];
-		this.configClasses[0] = SpringServletConfig.class;
-		for( int i=0; i<configs.length; i++ )
-			this.configClasses[i+1] = configs[i];
+		this.configClasses = new ArrayList<Class<?>>();
+	}
+	
+	/**
+	 * To declare a new config class
+	 * @param cls the classes
+	 */
+	protected final void addConfig(Class<?>... cls) {
+		for( Class<?> cl : cls )
+			this.configClasses.add(cl);
 	}
 	
 	/**
@@ -63,7 +72,9 @@ public abstract class SpringActivator extends Plugin {
 		ClassLoader loader = Thread.currentThread().getContextClassLoader();
 		try {
 			Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
-			this.springContext = new AnnotationConfigApplicationContext(this.configClasses);
+			Class<?>[] configs = new Class<?>[this.configClasses.size()];
+			this.configClasses.toArray(configs);
+			this.springContext = new AnnotationConfigApplicationContext(configs);
 		} finally {
 			Thread.currentThread().setContextClassLoader(loader);
 		}

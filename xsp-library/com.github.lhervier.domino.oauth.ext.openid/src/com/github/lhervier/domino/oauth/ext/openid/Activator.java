@@ -1,11 +1,10 @@
 package com.github.lhervier.domino.oauth.ext.openid;
 
-import com.github.lhervier.domino.oauth.common.spring.SpringActivator;
-
-public class Activator extends SpringActivator {
+public class Activator extends com.github.lhervier.domino.oauth.library.server.Activator {
 	public static final String PLUGIN_ID = Activator.class.getPackage().getName();
 	
 	public Activator() {
-		super(UserInfoServlet.class);
+		super();
+		this.addConfig(OpenIDConfig.class);
 	}
 }

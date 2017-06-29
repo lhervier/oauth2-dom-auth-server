@@ -7,8 +7,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 
 import com.github.lhervier.domino.oauth.common.spring.SpringServlet;
 
@@ -16,8 +14,6 @@ import com.github.lhervier.domino.oauth.common.spring.SpringServlet;
  * Servlet for the "userInfo" openid endpoint
  * @author Lionel HERVIER
  */
-@Configuration
-@ComponentScan
 public class UserInfoServlet extends SpringServlet {
 
 	/**

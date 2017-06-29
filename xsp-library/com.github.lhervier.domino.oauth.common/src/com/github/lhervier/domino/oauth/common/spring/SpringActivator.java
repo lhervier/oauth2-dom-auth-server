@@ -1,4 +1,4 @@
-package com.github.lhervier.domino.oauth.library.server.ext;
+package com.github.lhervier.domino.oauth.common.spring;
 
 import org.eclipse.core.runtime.Plugin;
 import org.osgi.framework.BundleContext;

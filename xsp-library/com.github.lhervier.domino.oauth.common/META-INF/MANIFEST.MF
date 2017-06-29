@@ -21,10 +21,16 @@ Require-Bundle: com.ibm.xsp.core;visibility:=reexport,
  com.github.lhervier.domino.oauth.external.nimbus_jose_jwt;visibility:=reexport,
  com.github.lhervier.domino.oauth.external.spring_framework;visibility:=reexport,
  org.apache.commons.codec;visibility:=reexport,
- org.apache.commons.lang;visibility:=reexport
+ org.apache.commons.lang;visibility:=reexport,
+ org.eclipse.equinox.http.registry;visibility:=reexport,
+ com.ibm.domino.napi,
+ com.ibm.domino.osgi.core
 Export-Package: com.github.lhervier.domino.oauth.common,
  com.github.lhervier.domino.oauth.common.bean,
  com.github.lhervier.domino.oauth.common.config,
  com.github.lhervier.domino.oauth.common.model,
  com.github.lhervier.domino.oauth.common.model.error,
+ com.github.lhervier.domino.oauth.common.spring,
+ com.github.lhervier.domino.oauth.common.spring.ctx,
+ com.github.lhervier.domino.oauth.common.spring.wrap,
  com.github.lhervier.domino.oauth.common.utils

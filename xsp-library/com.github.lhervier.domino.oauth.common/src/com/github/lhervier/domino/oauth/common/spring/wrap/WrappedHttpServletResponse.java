@@ -1,4 +1,4 @@
-package com.github.lhervier.domino.oauth.library.server.ext.wrap;
+package com.github.lhervier.domino.oauth.common.spring.wrap;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -8,7 +8,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
-import com.github.lhervier.domino.oauth.library.server.ext.ctx.HttpContext;
+import com.github.lhervier.domino.oauth.common.spring.ctx.HttpContext;
 
 public class WrappedHttpServletResponse implements HttpServletResponse {
 

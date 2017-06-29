@@ -1,4 +1,4 @@
-package com.github.lhervier.domino.oauth.library.server.ext.wrap;
+package com.github.lhervier.domino.oauth.common.spring.wrap;
 
 import lotus.domino.Database;
 

@@ -1,4 +1,4 @@
-package com.github.lhervier.domino.oauth.library.server.ext.wrap;
+package com.github.lhervier.domino.oauth.common.spring.wrap;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -14,7 +14,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import com.github.lhervier.domino.oauth.library.server.ext.ctx.HttpContext;
+import com.github.lhervier.domino.oauth.common.spring.ctx.HttpContext;
 
 public class WrappedHttpServletRequest implements HttpServletRequest {
 

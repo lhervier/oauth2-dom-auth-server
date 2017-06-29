@@ -1,4 +1,4 @@
-package com.github.lhervier.domino.oauth.library.server.ext;
+package com.github.lhervier.domino.oauth.common.spring;
 
 import java.io.IOException;
 
@@ -9,8 +9,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.context.ApplicationContext;
 
-import com.github.lhervier.domino.oauth.library.server.ext.ctx.HttpContext;
-import com.github.lhervier.domino.oauth.library.server.ext.ctx.NotesContext;
+import com.github.lhervier.domino.oauth.common.spring.ctx.HttpContext;
+import com.github.lhervier.domino.oauth.common.spring.ctx.NotesContext;
 
 /**
  * Base class for a Spring Based Domino Servlet

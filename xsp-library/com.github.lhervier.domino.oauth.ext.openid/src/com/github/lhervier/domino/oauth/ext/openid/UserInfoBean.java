@@ -16,8 +16,8 @@ import lotus.domino.View;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.github.lhervier.domino.oauth.common.spring.DatabaseHolder;
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
-import com.github.lhervier.domino.oauth.library.server.ext.DatabaseHolder;
 
 @Component
 public class UserInfoBean {

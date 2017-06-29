@@ -1,4 +1,4 @@
-package com.github.lhervier.domino.oauth.library.server.ext;
+package com.github.lhervier.domino.oauth.common.spring;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -11,15 +11,15 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
-import com.github.lhervier.domino.oauth.library.server.ext.ctx.HttpContext;
-import com.github.lhervier.domino.oauth.library.server.ext.ctx.NotesContext;
-import com.github.lhervier.domino.oauth.library.server.ext.wrap.WrappedHttpServletRequest;
-import com.github.lhervier.domino.oauth.library.server.ext.wrap.WrappedHttpServletResponse;
-import com.github.lhervier.domino.oauth.library.server.ext.wrap.WrappedHttpSession;
-import com.github.lhervier.domino.oauth.library.server.ext.wrap.WrappedServerDatabase;
-import com.github.lhervier.domino.oauth.library.server.ext.wrap.WrappedServerSession;
-import com.github.lhervier.domino.oauth.library.server.ext.wrap.WrappedUserDatabase;
-import com.github.lhervier.domino.oauth.library.server.ext.wrap.WrappedUserSession;
+import com.github.lhervier.domino.oauth.common.spring.ctx.HttpContext;
+import com.github.lhervier.domino.oauth.common.spring.ctx.NotesContext;
+import com.github.lhervier.domino.oauth.common.spring.wrap.WrappedHttpServletRequest;
+import com.github.lhervier.domino.oauth.common.spring.wrap.WrappedHttpServletResponse;
+import com.github.lhervier.domino.oauth.common.spring.wrap.WrappedHttpSession;
+import com.github.lhervier.domino.oauth.common.spring.wrap.WrappedServerDatabase;
+import com.github.lhervier.domino.oauth.common.spring.wrap.WrappedServerSession;
+import com.github.lhervier.domino.oauth.common.spring.wrap.WrappedUserDatabase;
+import com.github.lhervier.domino.oauth.common.spring.wrap.WrappedUserSession;
 
 @Configuration
 @ComponentScan

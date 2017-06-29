@@ -10,7 +10,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
-import com.github.lhervier.domino.oauth.library.server.ext.SpringServlet;
+import com.github.lhervier.domino.oauth.common.spring.SpringServlet;
 
 /**
  * Servlet for the "userInfo" openid endpoint
@@ -26,7 +26,7 @@ public class UserInfoServlet extends SpringServlet {
 	private static final long serialVersionUID = -1167165578644747248L;
 	
 	/**
-	 * @see com.github.lhervier.domino.oauth.library.server.ext.SpringServlet#getSpringContext()
+	 * @see com.github.lhervier.domino.oauth.common.spring.SpringServlet#getSpringContext()
 	 */
 	@Override
 	public ApplicationContext getSpringContext() {

@@ -1,4 +1,4 @@
-package com.github.lhervier.domino.oauth.library.server.ext.ctx;
+package com.github.lhervier.domino.oauth.common.spring.ctx;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

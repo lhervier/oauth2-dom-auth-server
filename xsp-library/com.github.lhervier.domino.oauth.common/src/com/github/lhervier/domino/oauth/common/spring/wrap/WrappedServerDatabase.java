@@ -1,8 +1,8 @@
-package com.github.lhervier.domino.oauth.library.server.ext.wrap;
-
-import com.github.lhervier.domino.oauth.library.server.ext.ctx.NotesContext;
+package com.github.lhervier.domino.oauth.common.spring.wrap;
 
 import lotus.domino.Database;
+
+import com.github.lhervier.domino.oauth.common.spring.ctx.NotesContext;
 
 public class WrappedServerDatabase extends BaseWrappedDatabase {
 

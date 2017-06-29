@@ -1,6 +1,6 @@
-package com.github.lhervier.domino.oauth.library.server.ext;
+package com.github.lhervier.domino.oauth.common.spring;
 
-import com.github.lhervier.domino.oauth.library.server.ext.wrap.BaseWrappedDatabase;
+import com.github.lhervier.domino.oauth.common.spring.wrap.BaseWrappedDatabase;
 
 import lotus.domino.Database;
 

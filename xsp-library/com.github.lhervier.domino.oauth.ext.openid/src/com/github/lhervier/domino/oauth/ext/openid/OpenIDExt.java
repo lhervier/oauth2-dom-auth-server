@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
+import lotus.domino.Name;
 import lotus.domino.NotesException;
 
 import com.github.lhervier.domino.oauth.common.HttpContext;
 import com.github.lhervier.domino.oauth.common.NotesContext;
+import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
 import com.github.lhervier.domino.oauth.common.utils.SystemUtils;
 import com.github.lhervier.domino.oauth.library.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.library.server.ext.IPropertyAdder;
@@ -65,7 +67,13 @@ public class OpenIDExt implements IOAuthExtension {
 		if( scopes.contains("profile") ) {
 			granter.grant("profile");
 			
-			attrs.addProperty("name", notesContext.getUserSession().getCommonUserName());
+			Name nn = null;
+			try {
+				nn = notesContext.getUserSession().createName(notesContext.getUserSession().getEffectiveUserName());
+				attrs.addProperty("name", nn.getCommon());
+			} finally {
+				DominoUtils.recycleQuietly(nn);
+			}
 			// TODO: Récupérer ces infos depuis la fiche du NAB !!
 			attrs.addProperty("family_name", "");
 			attrs.addProperty("given_name", "");

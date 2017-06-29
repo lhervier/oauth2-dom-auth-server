@@ -18,7 +18,6 @@ import com.github.lhervier.domino.oauth.common.utils.ValueHolder;
 import com.github.lhervier.domino.oauth.library.client.ex.InitException;
 import com.github.lhervier.domino.oauth.library.client.model.GrantResponse;
 import com.github.lhervier.domino.oauth.library.client.model.IdToken;
-import com.github.lhervier.domino.oauth.library.client.model.InitResponse;
 import com.github.lhervier.domino.oauth.library.client.utils.Utils;
 import com.nimbusds.jose.JWSObject;
 
@@ -41,17 +40,16 @@ public class InitBean {
 	
 	/**
 	 * Initialisation
-	 * @return the grant response
 	 * @throws InitException
 	 */
-	public InitResponse init() throws InitException {
+	public void init() throws InitException {
 		try {
 			// Pas de code autorisation => On renvoi vers la page de login
 			String code = this.httpContext.getRequest().getParameter("code");
 			
 			// Si on a un code autorisation, on le traite
 			if( !StringUtils.isEmpty(this.httpContext.getRequest().getParameter("code")) ) {
-				return this.processAuthorizationCode(code);		// dans state, on retrouve notre url de redirection initiale
+				this.processAuthorizationCode(code, this.httpContext.getRequest().getParameter("state"));		// dans state, on retrouve notre url de redirection initiale
 			
 			// Si on a une erreur, on l'affiche
 			} else if( !StringUtils.isEmpty(this.httpContext.getRequest().getParameter("error")) ) {
@@ -71,7 +69,6 @@ public class InitBean {
 							"scope=openid profile email address phone&" +
 							"state=" + URLEncoder.encode(this.httpContext.getRequest().getParameter("redirect_url"), "UTF-8")
 				);
-				return null;
 			}
 		} catch(IOException e) {
 			throw new InitException(e.getMessage(), e);
@@ -86,9 +83,8 @@ public class InitBean {
 	 * @throws IOException 
 	 * @throws InitException
 	 */
-	private InitResponse processAuthorizationCode(final String code) throws IOException, InitException {
+	private void processAuthorizationCode(final String code, final String redirectUrl) throws IOException, InitException {
 		final ValueHolder<InitException> ex = new ValueHolder<InitException>();
-		final ValueHolder<InitResponse> resp = new ValueHolder<InitResponse>();
 		Utils.createConnection(this.notesContext, this.initParamsBean.getTokenEndPoint())
 				.setTextContent(
 						new StringBuffer()
@@ -106,16 +102,16 @@ public class InitBean {
 					public void run(GrantResponse grant) throws IOException, ParseException {
 						if( !"Bearer".equalsIgnoreCase(grant.getTokenType()) )
 							throw new RuntimeException("Le seul type de token géré est Bearer... (et j'ai '"  + grant.getTokenType() + "')");
-						resp.set(new InitResponse());
-						
-						resp.get().setRefreshToken(grant.getRefreshToken());
-						resp.get().setAccessToken(grant.getAccessToken());
+						InitBean.this.httpContext.getSession().setAttribute("access_token", grant.getAccessToken());
+						InitBean.this.httpContext.getSession().setAttribute("refresh_token", grant.getRefreshToken());
 						
 						// Décode le id_token openid
 						JWSObject jwsObj = JWSObject.parse(grant.getIdToken());
 						String json = jwsObj.getPayload().toString();
 						
-						resp.get().setIdToken(GsonUtils.fromJson(json, IdToken.class));
+						InitBean.this.httpContext.getSession().setAttribute("id_token", GsonUtils.fromJson(json, IdToken.class));
+						
+						JSFUtils.sendRedirect(InitBean.this.httpContext.getResponse(), redirectUrl);
 					}
 				})
 				
@@ -130,7 +126,6 @@ public class InitBean {
 				.execute();
 		if( ex.get() != null )
 			throw ex.get();
-		return resp.get();
 	}
 	
 	// =================================================================================

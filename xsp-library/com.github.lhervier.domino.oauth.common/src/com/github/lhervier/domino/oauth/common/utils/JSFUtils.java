@@ -3,7 +3,6 @@ package com.github.lhervier.domino.oauth.common.utils;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.util.Map;
 
 import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletResponse;
@@ -24,15 +23,6 @@ public class JSFUtils {
 	public static final Object getBean(String name) {
 		FacesContext ctx = FacesContext.getCurrentInstance();
 		return ctx.getApplication().getVariableResolver().resolveVariable(ctx, name);
-	}
-	
-	/**
-	 * Retourne le session scope
-	 * @return le session scope
-	 */
-	@SuppressWarnings("unchecked")
-	public static final Map<String, Object> getSessionScope() {
-		return (Map<String, Object>) getBean("sessionScope");
 	}
 	
 	/**

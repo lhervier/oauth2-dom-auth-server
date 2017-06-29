@@ -1,6 +1,5 @@
 package com.github.lhervier.domino.oauth.library.server.bean;
 
-import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -9,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import lotus.domino.Document;
@@ -70,15 +68,10 @@ public class AuthorizeBean {
 	private HttpContext httpContext;
 	
 	/**
-	 * Le requestScope
-	 */
-	private Map<String, Object> requestScope;
-	
-	/**
 	 * Génère le code autorization
-	 * @throws IOException 
+	 * @throws InvalidUriException
 	 */
-	public void authorize() throws IOException {
+	public void authorize() throws InvalidUriException {
 		StateResponse ret;
 		String redirectUri = null;
 		try {
@@ -122,12 +115,6 @@ public class AuthorizeBean {
 				);
 			} else
 				throw new UnsupportedResponseTypeException();
-		
-		// Cas particulier (cf RFC) si l'uri de redirection est invalide
-		} catch(InvalidUriException e) {
-			e.printStackTrace(System.err);			// FIXME: Où envoyer ça ???
-			this.requestScope.put("error", e);
-			ret = null;
 		
 		// Erreur pendant l'autorisation
 		} catch(AuthorizeException e) {
@@ -278,13 +265,6 @@ public class AuthorizeBean {
 	 */
 	public void setNotesContext(NotesContext notesContext) {
 		this.notesContext = notesContext;
-	}
-
-	/**
-	 * @param requestScope the requestScope to set
-	 */
-	public void setRequestScope(Map<String, Object> requestScope) {
-		this.requestScope = requestScope;
 	}
 
 	/**

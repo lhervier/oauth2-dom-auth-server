@@ -17,7 +17,7 @@ public class UserInfoBean {
 	 * @throws IOException 
 	 */
 	public void userInfo() throws IOException {
-		JSFUtils.sendJson(this.httpContext.getResponse(), JSFUtils.getSessionScope().get("id_token"));
+		JSFUtils.sendJson(this.httpContext.getResponse(), this.httpContext.getSession().getAttribute("id_token"));
 	}
 
 	/**

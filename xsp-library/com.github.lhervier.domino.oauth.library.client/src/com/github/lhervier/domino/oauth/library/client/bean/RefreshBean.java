@@ -1,13 +1,17 @@
 package com.github.lhervier.domino.oauth.library.client.bean;
 
 import java.io.IOException;
+import java.text.ParseException;
 
+import com.github.lhervier.domino.oauth.common.HttpContext;
 import com.github.lhervier.domino.oauth.common.NotesContext;
 import com.github.lhervier.domino.oauth.common.model.error.GrantError;
 import com.github.lhervier.domino.oauth.common.utils.Callback;
-import com.github.lhervier.domino.oauth.common.utils.JSFUtils;
+import com.github.lhervier.domino.oauth.common.utils.GsonUtils;
 import com.github.lhervier.domino.oauth.library.client.model.GrantResponse;
+import com.github.lhervier.domino.oauth.library.client.model.IdToken;
 import com.github.lhervier.domino.oauth.library.client.utils.Utils;
+import com.nimbusds.jose.JWSObject;
 
 public class RefreshBean {
 
@@ -27,11 +31,16 @@ public class RefreshBean {
 	private NotesContext notesContext;
 	
 	/**
+	 * The http context
+	 */
+	private HttpContext httpContext;
+	
+	/**
 	 * Rafraîchit les tokens
 	 * @throws IOException 
 	 */
 	public void refresh() throws IOException {
-		String refreshToken = (String) JSFUtils.getSessionScope().get("refresh_token");
+		String refreshToken = (String) this.httpContext.getSession().getAttribute("refresh_token");
 		
 		// Refresh token pas présent (session non initialisée ou expirée)
 		if( refreshToken == null ) {
@@ -51,9 +60,13 @@ public class RefreshBean {
 				// OK => Met à jour la session et retourne le token
 				.onOk(new Callback<GrantResponse>() {
 					@Override
-					public void run(GrantResponse grant) throws IOException {
-						JSFUtils.getSessionScope().put("refresh_token", grant.getRefreshToken());
-						JSFUtils.getSessionScope().put("access_token", grant.getAccessToken());
+					public void run(GrantResponse grant) throws IOException, ParseException {
+						RefreshBean.this.httpContext.getSession().setAttribute("refresh_token", grant.getRefreshToken());
+						RefreshBean.this.httpContext.getSession().setAttribute("access_token", grant.getAccessToken());
+						
+						JWSObject jwsObj = JWSObject.parse(grant.getIdToken());
+						String json = jwsObj.getPayload().toString();
+						RefreshBean.this.httpContext.getSession().setAttribute("id_token", GsonUtils.fromJson(json, IdToken.class));
 						
 						RefreshBean.this.accessTokenBean.sendToken();
 					}
@@ -63,8 +76,8 @@ public class RefreshBean {
 				.onError(new Callback<GrantError>() {
 					@Override
 					public void run(GrantError error) throws IOException {
-						JSFUtils.getSessionScope().put("refresh_token", null);
-						JSFUtils.getSessionScope().put("access_token", null);
+						RefreshBean.this.httpContext.getSession().setAttribute("refresh_token", null);
+						RefreshBean.this.httpContext.getSession().setAttribute("access_token", null);
 						
 						RefreshBean.this.accessTokenBean.sendToken();
 					}
@@ -94,5 +107,9 @@ public class RefreshBean {
 	 */
 	public void setNotesContext(NotesContext notesContext) {
 		this.notesContext = notesContext;
+	}
+
+	public void setHttpContext(HttpContext httpContext) {
+		this.httpContext = httpContext;
 	}
 }

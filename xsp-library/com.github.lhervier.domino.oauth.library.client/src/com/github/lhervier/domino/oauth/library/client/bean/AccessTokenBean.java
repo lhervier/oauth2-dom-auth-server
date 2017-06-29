@@ -24,7 +24,7 @@ public class AccessTokenBean {
 	 */
 	public void sendToken() throws IOException {
 		Map<String, Object> token = new HashMap<String, Object>();
-		token.put("access_token", JSFUtils.getSessionScope().get("access_token"));
+		token.put("access_token", this.httpContext.getSession().getAttribute("access_token"));
 		JSFUtils.sendJson(this.httpContext.getResponse(), token);
 	}
 

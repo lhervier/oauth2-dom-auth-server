@@ -96,10 +96,6 @@
     	<property-name>httpContext</property-name>
     	<value>#{httpContext}</value>
     </managed-property>
-    <managed-property>
-    	<property-name>requestScope</property-name>
-    	<value>#{requestScope}</value>
-    </managed-property>
   </managed-bean>
   
   <!-- Bean pour gérer le endpoint Token -->

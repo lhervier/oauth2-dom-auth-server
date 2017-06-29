@@ -3,16 +3,7 @@
 	<xp:this.beforePageLoad><![CDATA[#{javascript:
 		var resp;
 		try {
-			resp = initBean.init();
-			if( resp != null ) {
-				sessionScope.access_token = resp.accessToken;
-				sessionScope.refresh_token = resp.refreshToken;
-				sessionScope.id_token = resp.idToken;
-				com.github.lhervier.domino.oauth.common.utils.JSFUtils.sendRedirect(
-						facesContext.externalContext.response,
-						param.state
-				);
-			}
+			initBean.init();
 			facesContext.responseComplete();
 		} catch(e) {
 			requestScope.error = e.error;

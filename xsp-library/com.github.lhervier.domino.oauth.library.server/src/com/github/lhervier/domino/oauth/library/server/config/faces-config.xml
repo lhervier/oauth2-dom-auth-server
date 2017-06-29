@@ -89,10 +89,6 @@
     	<value>#{paramsBean}</value>
     </managed-property>
     <managed-property>
-    	<property-name>param</property-name>
-    	<value>#{param}</value>
-    </managed-property>
-    <managed-property>
     	<property-name>notesContext</property-name>
     	<value>#{notesContext}</value>
     </managed-property>
@@ -130,10 +126,6 @@
     <managed-property>
     	<property-name>httpContext</property-name>
     	<value>#{httpContext}</value>
-    </managed-property>
-    <managed-property>
-    	<property-name>param</property-name>
-    	<value>#{param}</value>
     </managed-property>
   </managed-bean>
   

@@ -5,7 +5,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -84,11 +83,6 @@ public class TokenBean {
 	private HttpContext httpContext;
 	
 	/**
-	 * Les paramètres du query string
-	 */
-	private Map<String, String> param;
-	
-	/**
 	 * Retourne la vue qui contient les codes autorisation
 	 * @return la vue qui contient les codes autorisation
 	 * @throws NotesException en cas de pb
@@ -153,31 +147,31 @@ public class TokenBean {
 			}
 			
 			// Si on a un client_id en paramètre, ça doit être le client_id courant
-			if( this.param.containsKey("client_id") ) {
-				if( !clientId.equals(this.param.get("client_id")) )
+			if( !StringUtils.isEmpty(this.httpContext.getRequest().getParameter("client_id")) ) {
+				if( !clientId.equals(this.httpContext.getRequest().getParameter("client_id")) )
 					throw new InvalidClientException();
 			}
 			
 			// On doit avoir un grant_type
-			String grantType = this.param.get("grant_type");
-			if( grantType == null )
+			String grantType = this.httpContext.getRequest().getParameter("grant_type");
+			if( StringUtils.isEmpty(grantType) )
 				throw new InvalidRequestException();
 			
 			// L'objet pour la réponse
 			if( "authorization_code".equals(grantType) )
 				resp = this.authorizationCode(
-						this.param.get("code"),
-						this.param.get("redirect_uri"),
+						this.httpContext.getRequest().getParameter("code"),
+						this.httpContext.getRequest().getParameter("redirect_uri"),
 						clientId
 				);
 			else if( "refresh_token".equals(grantType) ) {
 				List<String> scopes;
-				if( this.param.get("scope") == null )
+				if( StringUtils.isEmpty(this.httpContext.getRequest().getParameter("scope")) )
 					scopes = new ArrayList<String>();
 				else
-					scopes = Arrays.asList(StringUtils.split(this.param.get("scope"), " "));
+					scopes = Arrays.asList(StringUtils.split(this.httpContext.getRequest().getParameter("scope"), " "));
 				resp = this.refreshToken(
-						this.param.get("refresh_token"),
+						this.httpContext.getRequest().getParameter("refresh_token"),
 						scopes
 				);
 			} else
@@ -275,7 +269,8 @@ public class TokenBean {
 					continue;
 				JsonObject jsonConf = this.paramsBean.getPluginConf(ext.getId());
 				ext.token(
-						this.notesContext.getUserSession(),
+						this.httpContext,
+						this.notesContext,
 						jsonConf,
 						context, 
 						new JsonObjectPropertyAdder(
@@ -377,7 +372,8 @@ public class TokenBean {
 					continue;
 				JsonObject jsonConf = this.paramsBean.getPluginConf(ext.getId());
 				ext.refresh(
-						this.notesContext.getUserSession(),
+						this.httpContext,
+						this.notesContext,
 						jsonConf,
 						context, 
 						new JsonObjectPropertyAdder(
@@ -449,13 +445,6 @@ public class TokenBean {
 	 */
 	public void setParamsBean(ParamsBean paramsBean) {
 		this.paramsBean = paramsBean;
-	}
-
-	/**
-	 * @param param the param to set
-	 */
-	public void setParam(Map<String, String> param) {
-		this.param = param;
 	}
 
 	/**

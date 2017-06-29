@@ -4,9 +4,10 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.ParseException;
-import java.util.Map;
 
 import javax.faces.context.FacesContext;
+
+import org.apache.commons.lang.StringUtils;
 
 import com.github.lhervier.domino.oauth.common.HttpContext;
 import com.github.lhervier.domino.oauth.common.NotesContext;
@@ -29,11 +30,6 @@ public class InitBean {
 	private InitParamsBean initParamsBean;
 	
 	/**
-	 * Les paramétres de la requête
-	 */
-	private Map<String, String> param;
-	
-	/**
 	 * The notes context
 	 */
 	private NotesContext notesContext;
@@ -50,23 +46,23 @@ public class InitBean {
 	 */
 	public void init() throws IOException {
 		// Pas de code autorisation => On renvoi vers la page de login
-		String code = this.param.get("code");
+		String code = this.httpContext.getRequest().getParameter("code");
 		
 		// Si on a un code autorisation, on le traite
-		if( this.param.containsKey("code") ) {
-			this.processAuthorizationCode(code, this.param.get("state"));		// dans state, on retrouve notre url de redirection initiale
+		if( !StringUtils.isEmpty(this.httpContext.getRequest().getParameter("code")) ) {
+			this.processAuthorizationCode(code, this.httpContext.getRequest().getParameter("state"));		// dans state, on retrouve notre url de redirection initiale
 			FacesContext.getCurrentInstance().responseComplete();
 		
 		// Si on a une erreur, on l'affiche
-		} else if( this.param.containsKey("error") ) {
+		} else if( !StringUtils.isEmpty(this.httpContext.getRequest().getParameter("error")) ) {
 			JSFUtils.getRequestScope().put(
 					"error", 
-					QueryStringUtils.createBean(JSFUtils.getParam(), AuthorizeError.class)
+					QueryStringUtils.createBean(this.httpContext.getRequest(), AuthorizeError.class)
 			);
 		
 		// Sinon, on traite le login
 		} else {
-			this.login(this.param.get("redirect_url"));
+			this.login(this.httpContext.getRequest().getParameter("redirect_url"));
 			FacesContext.getCurrentInstance().responseComplete();
 		}
 	}
@@ -146,13 +142,6 @@ public class InitBean {
 	 */
 	public void setInitParamsBean(InitParamsBean initParamsBean) {
 		this.initParamsBean = initParamsBean;
-	}
-
-	/**
-	 * @param param the param to set
-	 */
-	public void setParam(Map<String, String> param) {
-		this.param = param;
 	}
 
 	/**

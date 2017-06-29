@@ -3,8 +3,9 @@ package com.github.lhervier.domino.oauth.library.server.ext;
 import java.util.List;
 
 import lotus.domino.NotesException;
-import lotus.domino.Session;
 
+import com.github.lhervier.domino.oauth.common.HttpContext;
+import com.github.lhervier.domino.oauth.common.NotesContext;
 import com.google.gson.JsonObject;
 
 /**
@@ -22,7 +23,8 @@ public interface IOAuthExtension {
 	 * Appelé lors de l'utilisation du endpoint authorize.
 	 * Les informations retournées seront ajoutées au code autorisation.
 	 * Ce code est appelé alors que la session courante est ouverte en tant que l'utilisateur qui cherche à se connecter.
-	 * @param session notes session as the authenticating user
+	 * @param httpContext the http context
+	 * @param notesContext the notes context
 	 * @param conf la conf pour ce plugin
 	 * @param granter pour déclarer d'un scope a été autorisé.
 	 * @param clientId l'id client de l'application demandée.
@@ -31,7 +33,8 @@ public interface IOAuthExtension {
 	 * @throws NotesException en ca de pb
 	 */
 	public JsonObject authorize(
-			Session userSession,
+			HttpContext httpContext,
+			NotesContext notesContext,
 			JsonObject conf, 
 			IScopeGranter granter, 
 			String clientId, 
@@ -41,7 +44,8 @@ public interface IOAuthExtension {
 	 * Génère des attributs à ajouter à la réponse de grant.
 	 * Cette méthode est appelée lors de la génération du token.
 	 * Ce code est appelé alors que la session courante est ouverte en tant que l'application.
-	 * @param appSession notes session as the application
+	 * @param httpContext the http context
+	 * @param notesContext the notes context
 	 * @param conf la pour ce plugin
 	 * @param context le contexte généré lors de l'appel à authorize
 	 * @param adder pour ajouter des propriétés à la réponse au grant.
@@ -49,7 +53,8 @@ public interface IOAuthExtension {
 	 * @throws NotesException en ca de pb
 	 */
 	public void token(
-			Session appSession,
+			HttpContext httpContext,
+			NotesContext notesContext,
 			JsonObject conf, 
 			JsonObject context, 
 			IPropertyAdder adder) throws NotesException;
@@ -58,7 +63,8 @@ public interface IOAuthExtension {
 	 * Génère les attributs à ajouter à la réponse de grant.
 	 * Cette méthode est appelée lors du rafraîchissement d'un token.
 	 * Ce code est appelé alors que la session courante est ouverte en tant que l'application.
-	 * @param appSession notes session as the application
+	 * @param httpContext the http context
+	 * @param notesContext the notes context
 	 * @param conf la conf
 	 * @param context le contexte généré lors de l'appel à authorize.
 	 * @param adder pour ajouter des propriétés à la réponse au grant
@@ -67,7 +73,8 @@ public interface IOAuthExtension {
 	 * @throws NotesException en ca de pb
 	 */
 	public void refresh(
-			Session appSession,
+			HttpContext httpContext,
+			NotesContext notesContext,
 			JsonObject conf, 
 			JsonObject context, 
 			IPropertyAdder adder, 

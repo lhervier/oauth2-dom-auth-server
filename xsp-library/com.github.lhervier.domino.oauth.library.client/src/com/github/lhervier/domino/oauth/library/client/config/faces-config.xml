@@ -58,10 +58,6 @@
     	<value>#{initParamsBean}</value>
     </managed-property>
     <managed-property>
-    	<property-name>param</property-name>
-    	<value>#{param}</value>
-    </managed-property>
-    <managed-property>
     	<property-name>notesContext</property-name>
     	<value>#{notesContext}</value>
     </managed-property>

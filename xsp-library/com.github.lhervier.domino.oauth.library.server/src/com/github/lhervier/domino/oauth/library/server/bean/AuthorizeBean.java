@@ -60,11 +60,6 @@ public class AuthorizeBean {
 	private ParamsBean paramsBean;
 	
 	/**
-	 * Les paramètres dans la requête
-	 */
-	private Map<String, String> param;
-	
-	/**
 	 * The notes context
 	 */
 	private NotesContext notesContext;
@@ -88,23 +83,23 @@ public class AuthorizeBean {
 		String redirectUri = null;
 		try {
 			// Le responseType est obligatoire
-			String responseType = this.param.get("response_type");
-			if( responseType == null )
+			String responseType = this.httpContext.getRequest().getParameter("response_type");
+			if( StringUtils.isEmpty(responseType) )
 				throw new InvalidRequestException();
 			
 			// Authorization Code Grant
 			// ===========================
 			if( "code".equals(responseType) ) {
 				// Le clientId est obligatoire
-				String clientId = this.param.get("client_id");
-				if( clientId == null )
+				String clientId = this.httpContext.getRequest().getParameter("client_id");
+				if( StringUtils.isEmpty(clientId) )
 					throw new InvalidRequestException("No client_id in query string.");
 				
 				// Le redirectUri est obligatoire
 				// FIXME: En fonction du response_type, le redirectUri peut être facultatif
 				// Voir https://tools.ietf.org/html/rfc6749#section-4.1.1
-				redirectUri = this.param.get("redirect_uri");
-				if( redirectUri == null )
+				redirectUri = this.httpContext.getRequest().getParameter("redirect_uri");
+				if( StringUtils.isEmpty(redirectUri) )
 					throw new InvalidUriException("No redirect_uri in query string.");
 				try {
 					URI uri = new URI(redirectUri);
@@ -116,10 +111,10 @@ public class AuthorizeBean {
 				
 				// Exécution
 				List<String> scopes;
-				if( this.param.get("scope") == null )
+				if( StringUtils.isEmpty(this.httpContext.getRequest().getParameter("scope")) )
 					scopes = new ArrayList<String>();
 				else
-					scopes = Arrays.asList(StringUtils.split(this.param.get("scope"), " "));
+					scopes = Arrays.asList(StringUtils.split(this.httpContext.getRequest().getParameter("scope"), " "));
 				ret = this.authorizationCode(
 						clientId, 
 						redirectUri, 
@@ -150,7 +145,7 @@ public class AuthorizeBean {
 			return;
 		
 		// Ajoute le state
-		ret.setState(this.param.get("state"));		// Eventuellement null
+		ret.setState(this.httpContext.getRequest().getParameter("state"));		// Eventuellement null
 		
 		// Redirige
 		JSFUtils.sendRedirect(this.httpContext.getResponse(), QueryStringUtils.addBeanToQueryString(redirectUri, ret));
@@ -224,7 +219,8 @@ public class AuthorizeBean {
 			for( IOAuthExtension ext : exts ) {
 				JsonObject jsonConf = this.paramsBean.getPluginConf(ext.getId());
 				JsonObject context = ext.authorize(
-						this.notesContext.getUserSession(),
+						this.httpContext,
+						this.notesContext,
 						jsonConf,
 						new IScopeGranter() {
 							@Override
@@ -275,13 +271,6 @@ public class AuthorizeBean {
 	 */
 	public void setParamsBean(ParamsBean paramsBean) {
 		this.paramsBean = paramsBean;
-	}
-
-	/**
-	 * @param param the param to set
-	 */
-	public void setParam(Map<String, String> param) {
-		this.param = param;
 	}
 
 	/**

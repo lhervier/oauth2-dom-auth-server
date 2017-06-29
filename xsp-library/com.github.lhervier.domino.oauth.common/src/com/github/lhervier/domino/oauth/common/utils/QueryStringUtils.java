@@ -14,7 +14,10 @@ import java.lang.reflect.Method;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.util.StringUtils;
 
 /**
  * Méthode utiles pour gérer les utls
@@ -96,11 +99,11 @@ public class QueryStringUtils {
 	
 	/**
 	 * Créé une bean à partir du queryString
-	 * @param param les paramètres de l'url
+	 * @param request the http request
 	 * @param cl la classe de la bean à créer
 	 * @return la bean
 	 */
-	public static final <T> T createBean(Map<String, String> param, Class<T> cl) {
+	public static final <T> T createBean(HttpServletRequest request, Class<T> cl) {
 		try {
 			T ret = cl.newInstance();
 			
@@ -111,7 +114,7 @@ public class QueryStringUtils {
 				if( "class".equals(name) )
 					continue;
 				
-				if( !param.containsKey(name) )
+				if( StringUtils.isEmpty(request.getParameter(name)) )
 					continue;
 				
 				Class<?> t = desc.getWriteMethod().getParameterTypes()[0];
@@ -131,10 +134,10 @@ public class QueryStringUtils {
 				
 				Object value;
 				if( !t.isAssignableFrom(List.class) )
-					value = t.getConstructor(String.class).newInstance(param.get(prop));
+					value = t.getConstructor(String.class).newInstance(request.getParameter(prop));
 				else {
 					List<Object> lst = new ArrayList<Object>();
-					String[] values = param.get(prop).split(",");
+					String[] values = request.getParameter(prop).split(",");
 					for( String v : values )
 						lst.add(v);
 					value = lst;

@@ -27,15 +27,6 @@ public class JSFUtils {
 	}
 	
 	/**
-	 * Retourne les paramètres de la requête
-	 * @return les paramètres de la requête
-	 */
-	@SuppressWarnings("unchecked")
-	public static final Map<String, String> getParam() {
-		return (Map<String, String>) getBean("param");
-	}
-	
-	/**
 	 * Retourne le request scope
 	 * @return le request scope
 	 */

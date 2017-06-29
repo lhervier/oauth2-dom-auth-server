@@ -6,6 +6,8 @@ import java.util.Map.Entry;
 import lotus.domino.NotesException;
 import lotus.domino.Session;
 
+import com.github.lhervier.domino.oauth.common.HttpContext;
+import com.github.lhervier.domino.oauth.common.NotesContext;
 import com.github.lhervier.domino.oauth.common.utils.SystemUtils;
 import com.github.lhervier.domino.oauth.library.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.library.server.ext.IPropertyAdder;
@@ -28,23 +30,34 @@ public class CoreExt implements IOAuthExtension {
 	}
 
 	/**
-	 * @see com.github.lhervier.domino.oauth.library.server.ext.IOAuthExtension#authorize(Session, JsonObject, IScopeGranter, String, List)
+	 * @see com.github.lhervier.domino.oauth.library.server.ext.IOAuthExtension#authorize(HttpContext, NotesContext, JsonObject, IScopeGranter, String, List)
 	 */
 	@Override
-	public JsonObject authorize(Session userSession, JsonObject conf, IScopeGranter granter, String clientId, List<String> scopes) throws NotesException {
+	public JsonObject authorize(
+			HttpContext httpContext, 
+			NotesContext notesContext, 
+			JsonObject conf, 
+			IScopeGranter granter, 
+			String clientId, 
+			List<String> scopes) throws NotesException {
 		JsonObject attrs = new JsonObject();
 		attrs.addProperty("iss", conf.get("iss").getAsString());
 		attrs.addProperty("aud", clientId);
-		attrs.addProperty("sub", userSession.getEffectiveUserName());
+		attrs.addProperty("sub", notesContext.getUserSession().getEffectiveUserName());
 		attrs.addProperty("exp", SystemUtils.currentTimeSeconds() + conf.get("expires_in").getAsLong());
 		return attrs;
 	}
 
 	/**
-	 * @see com.github.lhervier.domino.oauth.library.server.ext.IOAuthExtension#token(Session, JsonObject, JsonObject, IPropertyAdder)
+	 * @see com.github.lhervier.domino.oauth.library.server.ext.IOAuthExtension#token(HttpContext, NotesContext, JsonObject, JsonObject, IPropertyAdder)
 	 */
 	@Override
-	public void token(Session appSession, JsonObject conf, JsonObject context, IPropertyAdder adder) throws NotesException {
+	public void token(
+			HttpContext httpContext, 
+			NotesContext notesContext, 
+			JsonObject conf, 
+			JsonObject context, 
+			IPropertyAdder adder) throws NotesException {
 		JsonObject accessToken = new JsonObject();
 		for( Entry<String, JsonElement> entry : context.entrySet() )
 			accessToken.add(entry.getKey(), entry.getValue());
@@ -55,7 +68,14 @@ public class CoreExt implements IOAuthExtension {
 	 * @see com.github.lhervier.domino.oauth.library.server.ext.IOAuthExtension#refresh(Session, JsonObject, JsonObject, IPropertyAdder, IScopeGranter, List)
 	 */
 	@Override
-	public void refresh(Session appSession, JsonObject conf, JsonObject context, IPropertyAdder adder, IScopeGranter granter, List<String> scopes) throws NotesException {
-		this.token(appSession, conf, context, adder);
+	public void refresh(
+			HttpContext httpContext, 
+			NotesContext notesContext, 
+			JsonObject conf, 
+			JsonObject context, 
+			IPropertyAdder adder, 
+			IScopeGranter granter, 
+			List<String> scopes) throws NotesException {
+		this.token(httpContext, notesContext, conf, context, adder);
 	}
 }

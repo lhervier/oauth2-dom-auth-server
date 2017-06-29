@@ -17,16 +17,16 @@
   	<managed-bean-class>com.github.lhervier.domino.oauth.library.server.bean.NabBean</managed-bean-class>
   	<managed-bean-scope>session</managed-bean-scope>
   	<managed-property>
-  		<property-name>paramsBean</property-name>
-  		<value>#{paramsBean}</value>
-  	</managed-property>
-  	<managed-property>
   		<property-name>notesContext</property-name>
   		<value>#{notesContext}</value>
   	</managed-property>
   	<managed-property>
   		<property-name>httpContext</property-name>
   		<value>#{httpContext}</value>
+  	</managed-property>
+  	<managed-property>
+  		<property-name>paramsBean</property-name>
+  		<value>#{paramsBean}</value>
   	</managed-property>
   </managed-bean>
   
@@ -70,20 +70,20 @@
     <managed-bean-class>com.github.lhervier.domino.oauth.library.server.bean.AuthorizeBean</managed-bean-class>
     <managed-bean-scope>request</managed-bean-scope>
     <managed-property>
-    	<property-name>appBean</property-name>
-    	<value>#{appBean}</value>
-    </managed-property>
-    <managed-property>
-    	<property-name>paramsBean</property-name>
-    	<value>#{paramsBean}</value>
-    </managed-property>
-    <managed-property>
     	<property-name>notesContext</property-name>
     	<value>#{notesContext}</value>
     </managed-property>
     <managed-property>
     	<property-name>httpContext</property-name>
     	<value>#{httpContext}</value>
+    </managed-property>
+    <managed-property>
+    	<property-name>appBean</property-name>
+    	<value>#{appBean}</value>
+    </managed-property>
+    <managed-property>
+    	<property-name>paramsBean</property-name>
+    	<value>#{paramsBean}</value>
     </managed-property>
   </managed-bean>
   
@@ -92,6 +92,14 @@
     <managed-bean-name>tokenBean</managed-bean-name>
     <managed-bean-class>com.github.lhervier.domino.oauth.library.server.bean.TokenBean</managed-bean-class>
     <managed-bean-scope>request</managed-bean-scope>
+    <managed-property>
+    	<property-name>notesContext</property-name>
+    	<value>#{notesContext}</value>
+    </managed-property>
+    <managed-property>
+    	<property-name>httpContext</property-name>
+    	<value>#{httpContext}</value>
+    </managed-property>
     <managed-property>
     	<property-name>appBean</property-name>
     	<value>#{appBean}</value>
@@ -103,14 +111,6 @@
     <managed-property>
     	<property-name>paramsBean</property-name>
     	<value>#{paramsBean}</value>
-    </managed-property>
-    <managed-property>
-    	<property-name>notesContext</property-name>
-    	<value>#{notesContext}</value>
-    </managed-property>
-    <managed-property>
-    	<property-name>httpContext</property-name>
-    	<value>#{httpContext}</value>
     </managed-property>
   </managed-bean>
   

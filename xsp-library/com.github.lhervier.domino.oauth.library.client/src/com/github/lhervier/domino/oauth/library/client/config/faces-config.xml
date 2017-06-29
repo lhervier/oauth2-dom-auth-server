@@ -54,16 +54,16 @@
     <managed-bean-class>com.github.lhervier.domino.oauth.library.client.bean.InitBean</managed-bean-class>
     <managed-bean-scope>request</managed-bean-scope>
     <managed-property>
-    	<property-name>initParamsBean</property-name>
-    	<value>#{initParamsBean}</value>
-    </managed-property>
-    <managed-property>
     	<property-name>notesContext</property-name>
     	<value>#{notesContext}</value>
     </managed-property>
     <managed-property>
     	<property-name>httpContext</property-name>
     	<value>#{httpContext}</value>
+    </managed-property>
+    <managed-property>
+    	<property-name>initParamsBean</property-name>
+    	<value>#{initParamsBean}</value>
     </managed-property>
   </managed-bean>
   
@@ -73,14 +73,6 @@
   	<managed-bean-class>com.github.lhervier.domino.oauth.library.client.bean.RefreshBean</managed-bean-class>
   	<managed-bean-scope>request</managed-bean-scope>
   	<managed-property>
-  		<property-name>initParamsBean</property-name>
-  		<value>#{initParamsBean}</value>
-  	</managed-property>
-  	<managed-property>
-  		<property-name>accessTokenBean</property-name>
-  		<value>#{accessTokenBean}</value>
-  	</managed-property>
-  	<managed-property>
     	<property-name>notesContext</property-name>
     	<value>#{notesContext}</value>
     </managed-property>
@@ -88,5 +80,13 @@
     	<property-name>httpContext</property-name>
     	<value>#{httpContext}</value>
     </managed-property>
+  	<managed-property>
+  		<property-name>initParamsBean</property-name>
+  		<value>#{initParamsBean}</value>
+  	</managed-property>
+  	<managed-property>
+  		<property-name>accessTokenBean</property-name>
+  		<value>#{accessTokenBean}</value>
+  	</managed-property>
   </managed-bean>
 </faces-config>

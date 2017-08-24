@@ -76,6 +76,10 @@ public class CoreExt implements IOAuthExtension {
 			IPropertyAdder adder, 
 			IScopeGranter granter, 
 			List<String> scopes) throws NotesException {
-		this.token(httpContext, notesContext, conf, context, adder);
+		JsonObject accessToken = new JsonObject();
+		for( Entry<String, JsonElement> entry : context.entrySet() )
+			accessToken.add(entry.getKey(), entry.getValue());
+		accessToken.addProperty("exp", SystemUtils.currentTimeSeconds() + conf.get("expires_in").getAsLong());
+		adder.addSignedProperty("access_token", accessToken);
 	}
 }

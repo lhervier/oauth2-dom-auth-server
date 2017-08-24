@@ -345,6 +345,10 @@ public class TokenBean {
 			if( !refreshToken.getAuthCode().getGrantedScopes().containsAll(scopes) )
 				throw new InvalidScopeException();
 			
+			// If no scope, use the scopes originally granted by the resource owner 
+			if( scopes.size() == 0 )
+				scopes = refreshToken.getAuthCode().getGrantedScopes();
+			
 			// Vérifie qu'il est valide
 			if( refreshToken.getExp() < SystemUtils.currentTimeSeconds() )
 				throw new InvalidGrantException();
@@ -379,8 +383,8 @@ public class TokenBean {
 						new JsonObjectPropertyAdder(
 								resp,
 								this.secretBean,
-								jsonConf.get("sign_key") == null ? null : jsonConf.get("sign_key").getAsString(),
-								jsonConf.get("crypt_key") == null ? null : jsonConf.get("crypt_key").getAsString()
+								jsonConf.get("sign_key") == null || jsonConf.get("sign_key").isJsonNull() ? null : jsonConf.get("sign_key").getAsString(),
+								jsonConf.get("crypt_key") == null || jsonConf.get("crypt_key").isJsonNull() ? null : jsonConf.get("crypt_key").getAsString()
 						), 
 						new IScopeGranter() {
 							@Override

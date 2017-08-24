@@ -1,8 +1,8 @@
 package com.github.lhervier.domino.oauth.common;
 
-import com.github.lhervier.domino.oauth.common.spring.SpringActivator;
+import org.eclipse.core.runtime.Plugin;
 
-public class Activator extends SpringActivator {
+public class Activator extends Plugin {
 
 	/**
 	 * The instance
@@ -16,10 +16,7 @@ public class Activator extends SpringActivator {
 	 * Constructor
 	 */
 	public Activator() {
-		super(null);
 		instance = this;
-		this.addConfig(SpringConfig.class);
 	}
-	
 	
 }

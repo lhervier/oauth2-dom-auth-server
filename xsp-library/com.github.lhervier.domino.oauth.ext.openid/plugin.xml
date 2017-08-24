@@ -7,13 +7,4 @@
             class="com.github.lhervier.domino.oauth.ext.openid.OpenIDExt">
       </scope>
    </extension>
-   <extension
-         point="org.eclipse.equinox.http.registry.servlets">
-      <servlet
-            alias="/userInfo"
-            class="com.github.lhervier.domino.oauth.ext.openid.UserInfoServlet"
-            load-on-startup="true">
-      </servlet>
-   </extension>
-
 </plugin>

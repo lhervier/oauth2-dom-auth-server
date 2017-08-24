@@ -217,15 +217,20 @@ public class HttpConnection<T, E> {
 			
 			// Charge la réponse (du JSON)
 			StringBuffer sb = new StringBuffer();
-			if( this.okCallback != null || this.errorCallback != null ) {
+			
+			// Stream pour accéder au contenu (en fonction d'une erreur)
+			if( conn.getResponseCode() == 200 )
 				in = conn.getInputStream();
-				reader = new InputStreamReader(in, "UTF-8");
-				char[] buff = new char[4 * 1024];
-				int read = reader.read(buff);
-				while( read != -1 ) {
-					sb.append(buff, 0, read);
-					read = reader.read(buff);
-				}
+			else
+				in = conn.getErrorStream();
+			
+			// Lit le contenu de la réponse
+			reader = new InputStreamReader(in, "UTF-8");
+			char[] buff = new char[4 * 1024];
+			int read = reader.read(buff);
+			while( read != -1 ) {
+				sb.append(buff, 0, read);
+				read = reader.read(buff);
 			}
 			
 			// Code 200 => OK

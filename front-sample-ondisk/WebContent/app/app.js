@@ -115,7 +115,7 @@ sampleApp.factory('tokenService', ['$q', '$resource', '$window', 'alerteService'
 			if( this.iss != null && new Date().getTime() - this.iss < 10000 ) {
 				var deferred = $q.defer();
 				deferred.reject();
-				return deffered;
+				return deferred.promise;
 			} else
 				return this._getToken(false, 'refresh.xsp');
 		}

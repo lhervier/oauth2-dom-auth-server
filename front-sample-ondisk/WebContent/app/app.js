@@ -1,6 +1,6 @@
 var sampleApp = angular.module('sampleApp', ['ngResource']);
 
-sampleApp.controller('SampleController', ['$rootScope', '$resource', '$window', 'tokenService', function($rootScope, $resource, $window, tokenService) {
+sampleApp.controller('SampleController', ['$rootScope', '$resource', '$window', 'oauth2Service', function($rootScope, $resource, $window, oauth2Service) {
 	
 	var ths = this;
 	this._reconnectUrl = "init.xsp?redirect_url=" + encodeURIComponent($window.location);
@@ -11,8 +11,10 @@ sampleApp.controller('SampleController', ['$rootScope', '$resource', '$window', 
 	this.accessToken = null;		// Juste pour info...
 	
 	this.loadUserInfo = function() {
-		ths.userInfo = $resource(ths.param.restServer + '/userInfo').get(
-				function() {},
+		$resource(ths.param.restServer + '/userInfo').get(
+				function(userInfo) {
+					ths.userInfo = userInfo;
+				},
 				function(reason) {
 					if( "oauth2.needs_reconnect" == reason )
 						ths.reconnectUrl = ths._reconnectUrl;
@@ -21,27 +23,15 @@ sampleApp.controller('SampleController', ['$rootScope', '$resource', '$window', 
 				});
 	};
 	
-	// Abonnement aux évenements
-	$rootScope.$on("alerte", function(event, level, message) {
-		ths.alerte = {
-				level: level,
-				message: message
-		}
-	});
-	
-	$rootScope.$on("oauth2.reconnect", function(event, url) {
-		ths.reconnectUrl = ths._reconnectUrl;
-	});
-	
 	// Charge le paramétrage
 	$resource('param.xsp').get(function(param) {
 		ths.param = param;;
 	});
 	
-	// Charge le token. On force la reconnexion s'il n'est pas en session.
-	tokenService.getToken().then(
+	// Initialise la danse oauth2. On force la reconnexion s'il n'est pas en session.
+	oauth2Service.init().then(
 			function(token) {
-				ths.accessToken = token.access_token;
+				ths.accessToken = token;
 			},
 			function() {
 				$window.location = "init.xsp?redirect_url=" + encodeURIComponent($window.location);
@@ -49,7 +39,7 @@ sampleApp.controller('SampleController', ['$rootScope', '$resource', '$window', 
 	);
 }]);
 
-sampleApp.factory('tokenService', ['$rootScope', '$q', '$resource', '$window', function($rootScope, $q, $resource, $window) {
+sampleApp.factory('oauth2Service', ['$rootScope', '$q', '$resource', '$window', function($rootScope, $q, $resource, $window) {
 	var svc = {
 		token: null,		// The token
 		iss: null,			// Token issued date
@@ -67,7 +57,7 @@ sampleApp.factory('tokenService', ['$rootScope', '$q', '$resource', '$window', f
 					} else {
 						svc.token = result.access_token;
 						svc.iss = new Date().getTime();
-						def.resolve(result);
+						def.resolve(result.access_token);
 					}
 					return def.promise;
 				},
@@ -78,11 +68,14 @@ sampleApp.factory('tokenService', ['$rootScope', '$q', '$resource', '$window', f
 				}
 			);
 		},
-		getToken: function() {
+		init: function() {
+			return this._getToken('accessToken.xsp');
+		},
+		getAccessToken: function() {
 			// On a le token => On le retourne
 			if( svc.token ) {
 				var defer = $q.defer();
-				defer.resolve({access_token: svc.token});
+				defer.resolve(svc.token);
 				return defer.promise;
 			}
 			
@@ -121,10 +114,10 @@ sampleApp.config(['$httpProvider', function($httpProvider) {
 				if( !shouldProcess(config.url) )
 					return config;
 				
-				var tokenService = $injector.get('tokenService');
-				return tokenService.getToken().then(
+				var oauth2Service = $injector.get('oauth2Service');
+				return oauth2Service.getAccessToken().then(
 						function(token) {
-							config.headers.authorization = "Bearer " + token.access_token;
+							config.headers.authorization = "Bearer " + token;
 							return config;
 						},
 						function() {
@@ -139,10 +132,10 @@ sampleApp.config(['$httpProvider', function($httpProvider) {
 			
 			responseError: function(response) {
 				if( response.status == 403 && shouldProcess(response.config.url) ) {
-					var tokenService = $injector.get('tokenService');
+					var oauth2Service = $injector.get('oauth2Service');
 					var $http = $injector.get('$http');
 					var deferred = $q.defer();
-					tokenService.refreshToken().then(deferred.resolve, deferred.reject);
+					oauth2Service.refreshToken().then(deferred.resolve, deferred.reject);
 					return deferred.promise.then(
 							function(token) {
 								return $http(response.config);

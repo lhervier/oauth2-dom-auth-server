@@ -31,8 +31,7 @@ ngOauth2.factory('oauth2Service', ['$rootScope', '$q', '$resource', '$window', f
 				function() {						// Le serveur a répondu autre chose que 200
 					var def = $q.defer();
 					def.reject({
-						code: "oauth2.needs_reconnect",
-						reconnectUrl: ths.initEndPoint + "?redirect_url=" + encodeURIComponent($window.location)
+						code: "oauth2.error_getting_token"
 					});
 					return def.promise;
 				}

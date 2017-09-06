@@ -8,11 +8,20 @@
 </head>
 <body ng-controller="SampleController as ctrl">
 	<div ng-show="ctrl.alerte != null">
-		{{ctrl.alerte.message}} ({{ctrl.alerte.level}})
+		{{ctrl.alerte}}
 	</div>
 	<div ng-show="ctrl.reconnectUrl != null">
 		Vous devez vous reconnecter : 
 		<a ng-href="{{ctrl.reconnectUrl}}">Cliquez ici</a>
+	</div>
+	
+	<hr/>
+	
+	<div>
+		URL de base pour les services rest : {{ctrl.param.restServer}}
+	</div>
+	<div>
+		AccessToken : {{ctrl.accessToken}}
 	</div>
 	
 	<hr/>

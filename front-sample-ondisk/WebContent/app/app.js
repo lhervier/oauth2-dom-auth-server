@@ -77,7 +77,8 @@ sampleApp.factory('alerteService', ['$rootScope', function($rootScope) {
 
 sampleApp.factory('tokenService', ['$q', '$resource', '$window', 'alerteService', 'reconnectService', function($q, $resource, $window, alerteService, reconnectService) {
 	var svc = {
-		token: null,
+		token: null,		// The token
+		iss: null,			// Token issued date
 		_getToken: function(force, url) {
 			var result = $resource(url).get();
 			return result.$promise.then(
@@ -88,6 +89,7 @@ sampleApp.factory('tokenService', ['$q', '$resource', '$window', 'alerteService'
 						deferred.reject();
 					} else {
 						svc.token = result.access_token;
+						svc.iss = new Date().getTime();
 						deferred.resolve(result);
 					}
 					return deferred.promise;
@@ -109,7 +111,13 @@ sampleApp.factory('tokenService', ['$q', '$resource', '$window', 'alerteService'
 			return this._getToken(force, 'accessToken.xsp');
 		},
 		refreshToken: function() {
-			return this._getToken(false, 'refresh.xsp');
+			// On ne rafraîchit que si le token n'a pas été mise à jour il y a peu de temps (10s)
+			if( this.iss != null && new Date().getTime() - this.iss < 10000 ) {
+				var deferred = $q.defer();
+				deferred.reject();
+				return deffered;
+			} else
+				return this._getToken(false, 'refresh.xsp');
 		}
 	};
 	return svc;

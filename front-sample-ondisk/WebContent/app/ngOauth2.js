@@ -68,15 +68,7 @@ ngOauth2.config(['$httpProvider', function($httpProvider) {
 	$httpProvider.interceptors.push(['$injector', '$location', '$q', function($injector, $location, $q) {
 		var external = RegExp('^((f|ht)tps?:)?//(?!' + $location.host() + ')');
 		var shouldProcess = function(url) {
-			if( external.test(url) )
-				return true;
-			if( url.endsWith('accessToken.xsp') )
-				return false;
-			if( url.endsWith('refresh.xsp') )
-				return false;
-			if( url.endsWith('param.xsp') )
-				return false;
-			return true;
+			return external.test(url);
 		}
 		return {
 			request: function(config) {

@@ -5,6 +5,8 @@ import java.util.Base64;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
@@ -26,6 +28,11 @@ import net.minidev.json.JSONObject;
 public class CurrentUserService {
 
 	/**
+	 * Logger
+	 */
+	private static final Log LOG = LogFactory.getLog(CurrentUserService.class);
+	
+	/**
 	 * La requête http
 	 */
 	@Autowired
@@ -44,12 +51,16 @@ public class CurrentUserService {
 		try {
 			// On doit avoir l'en tête http
 			String auth = this.request.getHeader("Authorization");
-			if( auth == null )
+			if( auth == null ) {
+				LOG.info("No Authorization header in request...");
 				return null;
+			}
 			
 			// Elle doit commencer par "Bearer "
-			if( !auth.startsWith("Bearer ") )
+			if( !auth.startsWith("Bearer ") ) {
+				LOG.info("Needs a Bearer Authorization header in request...");
 				return null;
+			}
 			
 			// Extrait le token
 			String accessToken = auth.substring("Bearer ".length());
@@ -72,12 +83,16 @@ public class CurrentUserService {
 				}
 				i++;
 			}
-			if( secret == null )
+			if( secret == null ) {
+				LOG.info("Unable to find key '" + kid + "'");
 				return null;
+			}
 			 
 			JWSVerifier verifier = new MACVerifier(secret);
-			if( !jwsObj.verify(verifier) )
+			if( !jwsObj.verify(verifier) ) {
+				LOG.info("Token verification failed...");
 				return null;
+			}
 			
 			// Extrait le contenu du token
 			JSONObject json = jwsObj.getPayload().toJSONObject();
@@ -88,8 +103,10 @@ public class CurrentUserService {
 			ret.setSub(json.getAsString("sub"));
 			
 			// Vérifie qu'il n'est pas périmé
-			if( ret.getExp() < (System.currentTimeMillis() / 1000L) )
+			if( ret.getExp() < (System.currentTimeMillis() / 1000L) ) {
+				LOG.debug("Expired token...");
 				return null;
+			}
 			
 			return ret;
 		} catch (ParseException | JOSEException e) {

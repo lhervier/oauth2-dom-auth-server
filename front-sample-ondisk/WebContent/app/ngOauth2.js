@@ -2,8 +2,11 @@ var ngOauth2 = angular.module('ngOauth2', ['ngResource']);
 
 ngOauth2.factory('oauth2Service', ['$rootScope', '$q', '$resource', '$window', function($rootScope, $q, $resource, $window) {
 	var svc = {
-		token: null,		// The token
-		iss: null,			// Token issued date
+		token: null,					// Cache for the token
+		iss: null,						// Token issued date
+		initEndPoint: null,				// Initialization end point
+		tokenEndPoint: null,			// Token end point
+		refreshEndPoint: null,			// Refresh end point
 		_getToken: function(url) {
 			var ths = this;
 			
@@ -16,7 +19,7 @@ ngOauth2.factory('oauth2Service', ['$rootScope', '$q', '$resource', '$window', f
 					if( !result.access_token ) {	// On n'a pas le token, même si le serveur a repondu avec un code 200
 						def.reject({
 							code: "oauth2.needs_reconnect",
-							reconnectUrl: "init.xsp?redirect_url=" + encodeURIComponent($window.location)
+							reconnectUrl: ths.initEndPoint + "?redirect_url=" + encodeURIComponent($window.location)
 						});
 					} else {
 						svc.token = result.access_token;
@@ -29,14 +32,17 @@ ngOauth2.factory('oauth2Service', ['$rootScope', '$q', '$resource', '$window', f
 					var def = $q.defer();
 					def.reject({
 						code: "oauth2.needs_reconnect",
-						reconnectUrl: "init.xsp?redirect_url=" + encodeURIComponent($window.location)
+						reconnectUrl: ths.initEndPoint + "?redirect_url=" + encodeURIComponent($window.location)
 					});
 					return def.promise;
 				}
 			);
 		},
-		init: function() {
-			return this._getToken('accessToken.xsp');
+		init: function(initEndPoint, tokenEndPoint, refreshEndPoint) {
+			this.initEndPoint = initEndPoint;
+			this.tokenEndPoint = tokenEndPoint;
+			this.refreshEndPoint = refreshEndPoint;
+			return this._getToken(this.tokenEndPoint);
 		},
 		getAccessToken: function() {
 			// On a le token => On le retourne
@@ -47,7 +53,7 @@ ngOauth2.factory('oauth2Service', ['$rootScope', '$q', '$resource', '$window', f
 			}
 			
 			// On ne l'a pas, on va le chercher
-			return this._getToken('accessToken.xsp');
+			return this._getToken(this.tokenEndPoint);
 		},
 		refreshToken: function() {
 			// On ne rafraîchit que si le token n'a pas été mise à jour il y a peu de temps (10s)
@@ -58,7 +64,7 @@ ngOauth2.factory('oauth2Service', ['$rootScope', '$q', '$resource', '$window', f
 				});
 				return deferred.promise;
 			} else
-				return this._getToken('refresh.xsp');
+				return this._getToken(this.refreshEndPoint);
 		}
 	};
 	return svc;
@@ -106,7 +112,7 @@ ngOauth2.config(['$httpProvider', function($httpProvider) {
 								var deferred = $q.defer();
 								deferred.reject({
 									code: "oauth2.needs_reconnect",
-									reconnectUrl: "init.xsp?redirect_url=" + encodeURIComponent($window.location)
+									reconnectUrl: oauth2Service.initEndPoint + "?redirect_url=" + encodeURIComponent($window.location)
 								});
 								return deferred.promise;
 							}

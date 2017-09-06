@@ -3,12 +3,8 @@
   <!-- La bean pour accéder au paramétrage OAUTH -->
   <managed-bean>
   	<managed-bean-name>initParamsBean</managed-bean-name>
-  	<managed-bean-class>com.github.lhervier.domino.oauth.library.client.bean.InitParamsBean</managed-bean-class>
+  	<managed-bean-class>com.github.lhervier.domino.oauth.library.client.bean.DelegatedInitParamsBean</managed-bean-class>
   	<managed-bean-scope>session</managed-bean-scope>
-  	<managed-property>
-  		<property-name>notesContext</property-name>
-  		<value>#{notesContext}</value>
-  	</managed-property>
   </managed-bean>
   
   <!-- La bean pour accéder au paramétrage applicatif -->

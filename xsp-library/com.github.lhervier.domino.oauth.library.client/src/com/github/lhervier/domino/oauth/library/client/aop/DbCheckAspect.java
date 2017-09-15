@@ -24,7 +24,7 @@ public class DbCheckAspect extends BaseClientComponent {
 	private NotesContext notesContext;
 	
 	/**
-	 * Pointcut to detect classes we will log access
+	 * Pointcut to detect controller methods
 	 */
 	@SuppressWarnings("unused")
 	@Pointcut("within(com.github.lhervier.domino.oauth.library.client.controller.*)")

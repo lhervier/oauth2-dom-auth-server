@@ -50,7 +50,7 @@ public class InitController extends BaseClientComponent {
 	
 	/**
 	 * Initialisation
-	 * @throws IOException
+	 * @throws OauthClientException
 	 */
 	@RequestMapping(value = "/init")
 	public ModelAndView init(
@@ -58,40 +58,37 @@ public class InitController extends BaseClientComponent {
 			@RequestParam(value = "error", required = false) String error,
 			@RequestParam(value = "state", required = false) String state,
 			@RequestParam(value = "redirect_url", required = false) String redirectUrl) throws OauthClientException {
-		// Si on a un code autorisation, on le traite
-		if( !StringUtils.isEmpty(code) ) {
+		// If we have a authorization code, we can process it
+		if( !StringUtils.isEmpty(code) )
 			return this.processAuthorizationCode(code, state);		// dans state, on retrouve notre url de redirection initiale
 		
-		// Si on a une erreur, on l'affiche
-		} else if( !StringUtils.isEmpty(error) ) {
+		// If we have an error, we display it
+		if( !StringUtils.isEmpty(error) ) {
 			AuthorizeError authError = QueryStringUtils.createBean(
 					this.request,
 					AuthorizeError.class
 			);
 			Map<String, Object> model = new HashMap<String, Object>();
 			model.put("error", authError);
-			return new ModelAndView("error", model);
-		
-		// Sinon, on redirige vers le endpoint authorize
-		} else {
-			// The authorize end point
-			String authorizeEndPoint = this.getProperty("endpoints.authorize");
-			String baseUri = Utils.getEncodedRedirectUri(this.getProperty("baseURI"));
-			String clientId = this.getProperty("clientId");
-			String encodedRedirectUrl = Utils.urlEncode(redirectUrl);
-			String redirectUri = authorizeEndPoint + "?" +
-						"response_type=code&" +
-						"redirect_uri=" + baseUri + "&" +
-						"client_id=" + clientId + "&" +
-						"scope=openid profile email address phone&" +
-						"state=" + encodedRedirectUrl;
-			return new ModelAndView("redirect:" + redirectUri);
+			return new ModelAndView("authorizeError", model);
 		}
+		
+		// Otherwise, we redirect to the authorize endpoint
+		String authorizeEndPoint = this.getProperty("endpoints.authorize");
+		String baseUri = Utils.getEncodedRedirectUri(this.getProperty("baseURI"));
+		String clientId = this.getProperty("clientId");
+		String encodedRedirectUrl = Utils.urlEncode(redirectUrl);
+		String redirectUri = authorizeEndPoint + "?" +
+					"response_type=code&" +
+					"redirect_uri=" + baseUri + "&" +
+					"client_id=" + clientId + "&" +
+					"scope=openid profile email address phone&" +
+					"state=" + encodedRedirectUrl;
+		return new ModelAndView("redirect:" + redirectUri);
 	}
 	
 	/**
-	 * Traite le code autorisation, et mémorise dans la session
-	 * les deux tokens
+	 * Process authorization code, and fill session with tokens.
 	 * @param code le code autorisation
 	 * @param redirectUrl l'url de redirection initiale
 	 * @throws IOException 
@@ -133,7 +130,7 @@ public class InitController extends BaseClientComponent {
 						@Override
 						public void run(GrantError error) throws IOException {
 							ret.addObject("error", error);
-							ret.setViewName("error");
+							ret.setViewName("grantError");
 						}
 					})
 					

@@ -18,7 +18,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 /**
- * OAUTH Core extension
+ * OAUTH2 Core extension
  * @author Lionel HERVIER
  */
 @Component

@@ -9,9 +9,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import javax.servlet.http.HttpServletRequest;
-
-import lotus.domino.Database;
 import lotus.domino.Document;
 import lotus.domino.Name;
 import lotus.domino.NotesException;
@@ -23,9 +20,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.github.lhervier.domino.oauth.common.utils.Base64Utils;
-import com.github.lhervier.domino.oauth.common.utils.DatabaseWrapper;
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
 import com.github.lhervier.domino.oauth.common.utils.ViewIterator;
+import com.github.lhervier.domino.oauth.library.server.BaseServerComponent;
 import com.github.lhervier.domino.oauth.library.server.model.Application;
 import com.github.lhervier.domino.spring.servlet.NotesContext;
 
@@ -36,7 +33,7 @@ import com.github.lhervier.domino.spring.servlet.NotesContext;
  * @author Lionel HERVIER
  */
 @Service
-public class AppService {
+public class AppService extends BaseServerComponent {
 	
 	/**
 	 * Le nom de la vue de laquelle récupérer les utilisateurs
@@ -76,37 +73,10 @@ public class AppService {
 	private NabService nabBean;
 	
 	/**
-	 * The http request
-	 */
-	@Autowired
-	private HttpServletRequest request;
-	
-	/**
-	 * The database where to store application information
-	 */
-	@Value("${oauth2.server.db}")
-	private String oauth2db;
-	
-	/**
 	 * The application root
 	 */
 	@Value("${oauth2.server.applicationRoot}")
 	private String applicationRoot;
-	
-	/**
-	 * Retourne la base oauth2
-	 * @return la base oauth2
-	 */
-	private Database getOauth2Database() {
-		String key = this.getClass().getName() + ".oauth2db";
-		if( this.request.getAttribute(key) != null )
-			return (Database) this.request.getAttribute(key);
-		
-		DatabaseWrapper nab = new DatabaseWrapper(this.notesContext, this.oauth2db, false);
-		this.request.setAttribute(key, nab);
-		
-		return nab;
-	}
 	
 	/**
 	 * Retourne le document Person associé à une app
@@ -136,7 +106,7 @@ public class AppService {
 	private Document getAppDocFromName(String appName) throws NotesException {
 		View v = null;
 		try {
-			v = DominoUtils.getView(this.getOauth2Database(), VIEW_APPLICATIONS);
+			v = DominoUtils.getView(this.getOauth2DatabaseAsUser(), VIEW_APPLICATIONS);
 			v.resortView(COLUMN_NAME);
 			return v.getDocumentByKey(appName, true);
 		} finally {
@@ -153,7 +123,7 @@ public class AppService {
 	private Document getAppDocFromClientId(String clientId) throws NotesException {
 		View v = null;
 		try {
-			v = DominoUtils.getView(this.getOauth2Database(), VIEW_APPLICATIONS);
+			v = DominoUtils.getView(this.getOauth2DatabaseAsUser(), VIEW_APPLICATIONS);
 			v.resortView(COLUMN_CLIENTID);
 			return v.getDocumentByKey(clientId, true);
 		} finally {
@@ -181,7 +151,7 @@ public class AppService {
 		List<String> ret = new ArrayList<String>();
 		ViewIterator it = null;
 		try {
-			it = ViewIterator.create().onDatabase(this.getOauth2Database()).onView(VIEW_APPLICATIONS).sortOnColumn(COLUMN_NAME);
+			it = ViewIterator.create().onDatabase(this.getOauth2DatabaseAsUser()).onView(VIEW_APPLICATIONS).sortOnColumn(COLUMN_NAME);
 			for( ViewEntry entry : it )
 				ret.add((String) entry.getColumnValues().get(0));
 			return ret;
@@ -304,7 +274,7 @@ public class AppService {
 			DominoUtils.computeAndSave(person);
 			
 			// Créé un nouveau document pour l'application dans la base
-			appDoc = this.getOauth2Database().createDocument();
+			appDoc = this.getOauth2DatabaseAsUser().createDocument();
 			appDoc.replaceItemValue("Form", "Application");
 			app.setAppReader(fullName);
 			DominoUtils.fillDocument(appDoc, app);

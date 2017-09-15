@@ -26,7 +26,6 @@ Require-Bundle: com.ibm.xsp.core;visibility:=reexport,
  com.ibm.domino.osgi.core,
  com.github.lhervier.domino.spring;visibility:=reexport
 Export-Package: com.github.lhervier.domino.oauth.common,
- com.github.lhervier.domino.oauth.common.bean,
  com.github.lhervier.domino.oauth.common.model,
  com.github.lhervier.domino.oauth.common.model.error,
  com.github.lhervier.domino.oauth.common.utils

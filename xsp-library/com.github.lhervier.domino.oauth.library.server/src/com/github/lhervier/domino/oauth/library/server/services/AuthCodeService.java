@@ -6,9 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-
-import lotus.domino.Database;
 import lotus.domino.Document;
 import lotus.domino.Name;
 import lotus.domino.NotesException;
@@ -21,12 +18,12 @@ import org.springframework.stereotype.Service;
 
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
 import com.github.lhervier.domino.oauth.common.utils.SystemUtils;
+import com.github.lhervier.domino.oauth.library.server.BaseServerComponent;
 import com.github.lhervier.domino.oauth.library.server.ex.grant.InvalidGrantException;
 import com.github.lhervier.domino.oauth.library.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.library.server.ext.IScopeGranter;
 import com.github.lhervier.domino.oauth.library.server.model.Application;
 import com.github.lhervier.domino.oauth.library.server.model.AuthorizationCode;
-import com.github.lhervier.domino.oauth.library.server.utils.Utils;
 import com.github.lhervier.domino.spring.servlet.NotesContext;
 import com.google.gson.JsonObject;
 
@@ -35,7 +32,7 @@ import com.google.gson.JsonObject;
  * @author Lionel HERVIER
  */
 @Service
-public class AuthCodeService {
+public class AuthCodeService extends BaseServerComponent {
 
 	/**
 	 * Securely generate random numbers
@@ -60,12 +57,6 @@ public class AuthCodeService {
 	private ApplicationContext springContext;
 	
 	/**
-	 * The http servlet request
-	 */
-	@Autowired
-	private HttpServletRequest request;
-	
-	/**
 	 * The application root
 	 */
 	@Value("${oauth2.server.applicationRoot}")
@@ -76,28 +67,6 @@ public class AuthCodeService {
 	 */
 	@Value("${oauth2.server.authCodeLifeTime}")
 	private long authCodeLifeTime;
-	
-	/**
-	 * The database where to store application information
-	 */
-	@Value("${oauth2.server.db}")
-	private String oauth2db;
-	
-	/**
-	 * Return the oauth2 database as the server
-	 * @throws NotesException 
-	 */
-	private Database getOauth2DatabaseAsServer() throws NotesException {
-		return DominoUtils.openDatabase(this.notesContext.getServerSession(), this.oauth2db);
-	}
-	
-	/**
-	 * Return the oauth2 database as the user (the application)
-	 * @throws NotesException 
-	 */
-	private Database getOauth2DatabaseAsUser() throws NotesException {
-		return DominoUtils.openDatabase(this.notesContext.getUserSession(), this.oauth2db);
-	}
 	
 	/**
 	 * Create an random id
@@ -159,7 +128,7 @@ public class AuthCodeService {
 			authCode.setContexts(contexts);
 			
 			// On le persiste dans la base
-			authDoc = Utils.getOauth2Database(this.request, this.notesContext, this.oauth2db).createDocument();
+			authDoc = this.getOauth2DatabaseAsServer().createDocument();
 			authDoc.replaceItemValue("Form", "AuthorizationCode");
 			DominoUtils.fillDocument(authDoc, authCode);
 			

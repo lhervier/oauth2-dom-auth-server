@@ -1,7 +1,5 @@
 package com.github.lhervier.domino.oauth.library.server.services;
 
-import javax.servlet.http.HttpServletRequest;
-
 import lotus.domino.Database;
 import lotus.domino.NotesException;
 
@@ -9,23 +7,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.github.lhervier.domino.oauth.common.utils.DatabaseWrapper;
+import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
+import com.github.lhervier.domino.oauth.library.server.BaseServerComponent;
 import com.github.lhervier.domino.spring.servlet.NotesContext;
 
 @Service
-public class NabService {
+public class NabService extends BaseServerComponent {
 
 	/**
 	 * The notes context
 	 */
 	@Autowired
 	private NotesContext notesContext;
-	
-	/**
-	 * The http request
-	 */
-	@Autowired
-	private HttpServletRequest request;
 	
 	/**
 	 * The nab
@@ -38,14 +31,7 @@ public class NabService {
 	 * @throws NotesException
 	 */
 	public Database getNab() throws NotesException {
-		String key = this.getClass().getName() + ".nab";
-		if( this.request.getAttribute(key) != null )
-			return (Database) this.request.getAttribute(key);
-		
-		DatabaseWrapper nab = new DatabaseWrapper(this.notesContext, this.nab, false);
-		this.request.setAttribute(key, nab);
-		
-		return nab;
+		return DominoUtils.openDatabase(this.notesContext.getUserSession(), this.nab);
 	}
 
 	/**
@@ -53,13 +39,6 @@ public class NabService {
 	 * @throws NotesException
 	 */
 	public synchronized Database getServerNab() throws NotesException {
-		String key = this.getClass().getName() + ".serverNab";
-		if( this.request.getAttribute(key) != null )
-			return (Database) this.request.getAttribute(key);
-		
-		DatabaseWrapper nabAsSigner = new DatabaseWrapper(this.notesContext, this.nab, true);
-		this.request.setAttribute(key, nabAsSigner);
-		
-		return nabAsSigner;
+		return DominoUtils.openDatabase(this.notesContext.getServerSession(), this.nab);
 	}
 }

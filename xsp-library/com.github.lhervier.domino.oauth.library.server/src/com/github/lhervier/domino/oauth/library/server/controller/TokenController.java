@@ -137,8 +137,11 @@ public class TokenController {
 			}
 			
 			// Validate client_id : Must be the same as the client_id associated with the current user (application)
-			if( !app.getClientId().equals(clientId) )
-				throw new InvalidClientException("client_id do not correspond to the currently logged in application");
+			// As the application is authenticated, the clientId is not mandatory.
+			if( !StringUtils.isEmpty(clientId) ) {
+				if( !app.getClientId().equals(clientId) )
+					throw new InvalidClientException("client_id do not correspond to the currently logged in application");
+			}
 			
 			// Validate the code
 			if( code == null )

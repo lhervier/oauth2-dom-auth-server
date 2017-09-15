@@ -1,32 +1,18 @@
-package com.github.lhervier.domino.oauth.library.server.controller;
+package com.github.lhervier.domino.oauth.library.server.utils;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.github.lhervier.domino.oauth.library.server.ex.InvalidUriException;
 
-/**
- * Base class for all controllers
- * @author Lionel HERVIER
- */
-public class BaseController {
-	
-	/**
-	 * The http servlet request
-	 */
-	@Autowired
-	private HttpServletRequest request;
-	
+public class Utils {
+
 	/**
 	 * Check the redirectUri
 	 */
-	protected String getRedirectUri() throws InvalidUriException {
-		String redirectUri = this.request.getParameter("redirect_uri");
+	public static final void checkRedirectUri(String redirectUri) throws InvalidUriException {
 		if( StringUtils.isEmpty(redirectUri) )
 			throw new InvalidUriException("No redirect_uri in query string.");
 		try {
@@ -36,7 +22,5 @@ public class BaseController {
 		} catch (URISyntaxException e) {
 			throw new InvalidUriException("Invalid redirect_uri. Syntax is invalid.");
 		}
-		return redirectUri;
 	}
-
 }

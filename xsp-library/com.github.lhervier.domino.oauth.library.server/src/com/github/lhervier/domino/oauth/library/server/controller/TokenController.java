@@ -42,6 +42,7 @@ import com.github.lhervier.domino.oauth.library.server.services.AppService;
 import com.github.lhervier.domino.oauth.library.server.services.AuthCodeService;
 import com.github.lhervier.domino.oauth.library.server.services.SecretService;
 import com.github.lhervier.domino.oauth.library.server.utils.PropertyAdderImpl;
+import com.github.lhervier.domino.oauth.library.server.utils.Utils;
 import com.google.gson.JsonObject;
 import com.nimbusds.jose.EncryptionMethod;
 import com.nimbusds.jose.JOSEException;
@@ -58,7 +59,7 @@ import com.nimbusds.jose.crypto.DirectEncrypter;
  * @author Lionel HERVIER
  */
 @Controller
-public class TokenController extends BaseController {
+public class TokenController {
 
 	/**
 	 * The refresh token life time
@@ -111,16 +112,9 @@ public class TokenController extends BaseController {
 			@RequestParam(value = "grant_type", required = false) String grantType,
 			@RequestParam(value = "code", required = false) String code,
 			@RequestParam(value = "scope", required = false) String scope,
-			@RequestParam(value = "refresh_token", required = false) String refreshToken) throws GrantException, ServerErrorException, NotesException {
-		// Extract redirect_uri by ourselves...
-		String redirectUri;
-		try {
-			redirectUri = this.getRedirectUri();
-		} catch (InvalidUriException e) {
-			throw new ServerErrorException(e.getMessage());
-		}
-		
-		// Calcul l'objet réponse
+			@RequestParam(value = "refresh_token", required = false) String refreshToken,
+			@RequestParam(value = "redirect_uri", required = false) String redirectUri) throws GrantException, ServerErrorException, NotesException {
+		// Prepare response object
 		Map<String, Object> resp;
 		
 		// Extract application from current user (the application)
@@ -128,19 +122,29 @@ public class TokenController extends BaseController {
 		if( app == null )
 			throw new InvalidClientException("current user do not correspond to a declared application");
 		
-		// client_id parameter must be the same as the client_id associated with the current user (application)
-		if( !StringUtils.isEmpty(clientId) ) {
-			if( !app.getClientId().equals(clientId) )
-				throw new InvalidClientException("client_id do not correspond to the currently logged in application");
-		}
-		
 		// grant_type is mandatory
 		if( StringUtils.isEmpty(grantType) )
 			throw new InvalidRequestException();
 		
 		// Authorization code grant flow :
 		// ================================
-		if( "authorization_code".equals(grantType) )
+		if( "authorization_code".equals(grantType) ) {
+			// Validate redirect_uri
+			try {
+				Utils.checkRedirectUri(redirectUri);
+			} catch (InvalidUriException e) {
+				throw new ServerErrorException(e.getMessage());
+			}
+			
+			// Validate client_id : Must be the same as the client_id associated with the current user (application)
+			if( !app.getClientId().equals(clientId) )
+				throw new InvalidClientException("client_id do not correspond to the currently logged in application");
+			
+			// Validate the code
+			if( code == null )
+				throw new InvalidRequestException("code is mandatory");
+			
+			// Process authorization code
 			resp = this.authorizationCode(
 					code,
 					redirectUri,
@@ -149,12 +153,16 @@ public class TokenController extends BaseController {
 		
 		// Refresh grant flow :
 		// =====================
-		else if( "refresh_token".equals(grantType) ) {
+		} else if( "refresh_token".equals(grantType) ) {
+			
+			// Extract scopes
 			List<String> scopes;
 			if( StringUtils.isEmpty(scope) )
 				scopes = new ArrayList<String>();
 			else
 				scopes = Arrays.asList(StringUtils.split(scope, " "));
+			
+			// Refresh the token
 			resp = this.refreshToken(
 					app,
 					refreshToken,
@@ -167,26 +175,58 @@ public class TokenController extends BaseController {
 	}
 	
 	/**
-	 * Créé un refresh token
-	 * @param authCode le code autorisation
-	 * @return le refresh token
+	 * Generate a new refresh token
+	 * @param authCode the authorization code
+	 * @return the refresh token
 	 * @throws IOException 
 	 * @throws JOSEException 
 	 * @throws NotesException 
 	 * @throws KeyLengthException 
 	 */
-	private String createRefreshToken(AuthorizationCode authCode) throws KeyLengthException, NotesException, JOSEException, IOException {
-		RefreshToken refreshToken = new RefreshToken();
-		refreshToken.setAuthCode(authCode);
-		refreshToken.setExp(SystemUtils.currentTimeSeconds() + this.refreshTokenLifetime);
-		JWEObject jweObject = new JWEObject(
-				new JWEHeader(JWEAlgorithm.DIR, EncryptionMethod.A128GCM), 
-				new Payload(GsonUtils.toJson(refreshToken))
-		);
-		jweObject.encrypt(new DirectEncrypter(
-				this.secretBean.getRefreshTokenSecret()
-		));
-		return jweObject.serialize();
+	private String createRefreshToken(AuthorizationCode authCode) throws ServerErrorException {
+		try {
+			RefreshToken refreshToken = new RefreshToken();
+			refreshToken.setAuthCode(authCode);
+			refreshToken.setExp(SystemUtils.currentTimeSeconds() + this.refreshTokenLifetime);
+			JWEObject jweObject = new JWEObject(
+					new JWEHeader(JWEAlgorithm.DIR, EncryptionMethod.A128GCM), 
+					new Payload(GsonUtils.toJson(refreshToken))
+			);
+			jweObject.encrypt(new DirectEncrypter(
+					this.secretBean.getRefreshTokenSecret()
+			));
+			return jweObject.serialize();
+		} catch (KeyLengthException e) {
+			throw new ServerErrorException(e);
+		} catch (NotesException e) {
+			throw new ServerErrorException(e);
+		} catch (JOSEException e) {
+			throw new ServerErrorException(e);
+		} catch (IOException e) {
+			throw new ServerErrorException(e);
+		}
+	}
+	
+	/**
+	 * Extract a refresh token
+	 */
+	private RefreshToken extractRefreshToken(String sRefreshToken) throws ServerErrorException {
+		try {
+			JWEObject jweObject = JWEObject.parse(sRefreshToken);
+			jweObject.decrypt(new DirectDecrypter(this.secretBean.getRefreshTokenSecret()));
+			String json = jweObject.getPayload().toString();
+			return GsonUtils.fromJson(json, RefreshToken.class);
+		} catch (KeyLengthException e) {
+			throw new ServerErrorException(e);
+		} catch (NotesException e) {
+			throw new ServerErrorException(e);
+		} catch (JOSEException e) {
+			throw new ServerErrorException(e);
+		} catch (IOException e) {
+			throw new ServerErrorException(e);
+		} catch (ParseException e) {
+			throw new ServerErrorException(e);
+		}
 	}
 	
 	/**
@@ -203,10 +243,6 @@ public class TokenController extends BaseController {
 			String redirectUri, 
 			Application app) throws GrantException, ServerErrorException, NotesException {
 		try {
-			// Sanity check
-			if( code == null )
-				throw new InvalidRequestException("code is mandatory");
-			
 			// Prepare the response
 			Map<String, Object> resp = new HashMap<String, Object>();
 		
@@ -227,7 +263,7 @@ public class TokenController extends BaseController {
 				throw new InvalidGrantException("redirect_uri is not the same as the one stored in the authorization code");
 			
 			// Make each implementation add its own properties
-			// Ils peuvent modifier leur contexte.
+			// They can change their context.
 			Map<String, IOAuthExtension> exts = this.springContext.getBeansOfType(IOAuthExtension.class);
 			for( IOAuthExtension ext : exts.values() ) {
 				JsonObject context = (JsonObject) authCode.getContexts().get(ext.getId());
@@ -259,12 +295,6 @@ public class TokenController extends BaseController {
 				resp.put("scope", StringUtils.join(authCode.getGrantedScopes().iterator(), " "));
 			
 			return resp;
-		} catch (KeyLengthException e) {
-			throw new ServerErrorException(e);
-		} catch (JOSEException e) {
-			throw new ServerErrorException(e);
-		} catch (IOException e) {
-			throw new ServerErrorException(e);
 		} finally {
 			// Remove auth code to prevend reuse
 			this.authCodeSvc.removeAuthorizationCode(code);
@@ -272,7 +302,7 @@ public class TokenController extends BaseController {
 	}
 	
 	/**
-	 * Génération d'un token à partir d'un refresh token
+	 * Refresh a token
 	 * @param app the currently logged in user (application)
 	 * @param sRefreshToken le refresh token
 	 * @param scopes d'éventuels nouveaux scopes.
@@ -284,86 +314,73 @@ public class TokenController extends BaseController {
 			Application app,
 			String sRefreshToken, 
 			List<String> scopes) throws GrantException, ServerErrorException, NotesException {
-		try {
-			// Sanity check
-			if( sRefreshToken == null )
-				throw new InvalidGrantException("refresh_token is mandatory");
+		// Sanity check
+		if( sRefreshToken == null )
+			throw new InvalidGrantException("refresh_token is mandatory");
 		
-			// Decrypt refresh token
-			JWEObject jweObject = JWEObject.parse(sRefreshToken);
-			jweObject.decrypt(new DirectDecrypter(this.secretBean.getRefreshTokenSecret()));
-			String json = jweObject.getPayload().toString();
-			RefreshToken refreshToken = GsonUtils.fromJson(json, RefreshToken.class);
-			
-			// Check that scopes are already in the initial scopes
-			if( !refreshToken.getAuthCode().getGrantedScopes().containsAll(scopes) )
-				throw new InvalidScopeException("scopes must be a subset of already accorded scopes");
-			
-			// If no scope, use the scopes originally granted by the resource owner 
-			if( scopes.size() == 0 )
-				scopes = refreshToken.getAuthCode().getGrantedScopes();
-			
-			// Check validity
-			if( refreshToken.getExp() < SystemUtils.currentTimeSeconds() )
-				throw new InvalidGrantException("refresh_token has expired");
-			
-			// Vérifie que le token a bien été généré pour cette application
-			if( !app.getClientId().equals(refreshToken.getAuthCode().getClientId()) )
-				throw new InvalidGrantException();
-			
-			// Prépare la réponse
-			Map<String, Object> resp = new HashMap<String, Object>();
-			
-			// Call for extensions
-			final List<String> grantedScopes = new ArrayList<String>();
-			Map<String, IOAuthExtension> exts = this.springContext.getBeansOfType(IOAuthExtension.class);
-			for( IOAuthExtension ext : exts.values() ) {
-				JsonObject context = (JsonObject) refreshToken.getAuthCode().getContexts().get(ext.getId());
-				if( context == null )
-					continue;
-				ext.refresh(
-						context, 
-						new PropertyAdderImpl(
-								resp,
-								this.secretBean,
-								this.env.getProperty("oauth2.server." + ext.getId() + ".signKey"),
-								this.env.getProperty("oauth2.server." + ext.getId() + ".cryptKey")
-						), 
-						new IScopeGranter() {
-							@Override
-							public void grant(String scope) {
-								grantedScopes.add(scope);
-							}
-						},
-						scopes
-				);
-			}
-			
-			// Update scopes
-			if( scopes.size() != 0 ) {
-				if( !grantedScopes.containsAll(refreshToken.getAuthCode().getGrantedScopes())) {
-					resp.put("scope", StringUtils.join(grantedScopes.iterator(), " "));
-					refreshToken.getAuthCode().setGrantedScopes(grantedScopes);
-				}
-			}
-			
-			// Regenerate the refresh token
-			String newRefreshToken = this.createRefreshToken(refreshToken.getAuthCode());
-			resp.put("refresh_token", newRefreshToken);
-			
-			// Other information
-			resp.put("expires_in", this.refreshTokenLifetime);
-			resp.put("token_type", "Bearer");
-			
-			return resp;
-		} catch (ParseException e) {
-			throw new ServerErrorException(e);
-		} catch (KeyLengthException e) {
-			throw new ServerErrorException(e);
-		} catch (JOSEException e) {
-			throw new ServerErrorException(e);
-		} catch (IOException e) {
-			throw new ServerErrorException(e);
+		// Decrypt refresh token
+		RefreshToken refreshToken = this.extractRefreshToken(sRefreshToken);
+		
+		// Check that scopes are already in the initial scopes
+		if( !refreshToken.getAuthCode().getGrantedScopes().containsAll(scopes) )
+			throw new InvalidScopeException("scopes must be a subset of already accorded scopes");
+		
+		// If no scope, use the scopes originally granted by the resource owner 
+		if( scopes.size() == 0 )
+			scopes = refreshToken.getAuthCode().getGrantedScopes();
+		
+		// Check validity
+		if( refreshToken.getExp() < SystemUtils.currentTimeSeconds() )
+			throw new InvalidGrantException("refresh_token has expired");
+		
+		// Check that the token has been generated for the current application
+		if( !app.getClientId().equals(refreshToken.getAuthCode().getClientId()) )
+			throw new InvalidGrantException();
+		
+		// Prepare the response
+		Map<String, Object> resp = new HashMap<String, Object>();
+		
+		// Call for extensions
+		final List<String> grantedScopes = new ArrayList<String>();
+		Map<String, IOAuthExtension> exts = this.springContext.getBeansOfType(IOAuthExtension.class);
+		for( IOAuthExtension ext : exts.values() ) {
+			JsonObject context = (JsonObject) refreshToken.getAuthCode().getContexts().get(ext.getId());
+			if( context == null )
+				continue;
+			ext.refresh(
+					context, 
+					new PropertyAdderImpl(
+							resp,
+							this.secretBean,
+							this.env.getProperty("oauth2.server." + ext.getId() + ".signKey"),
+							this.env.getProperty("oauth2.server." + ext.getId() + ".cryptKey")
+					), 
+					new IScopeGranter() {
+						@Override
+						public void grant(String scope) {
+							grantedScopes.add(scope);
+						}
+					},
+					scopes
+			);
 		}
+		
+		// Update scopes
+		if( scopes.size() != 0 ) {
+			if( !grantedScopes.containsAll(refreshToken.getAuthCode().getGrantedScopes())) {
+				resp.put("scope", StringUtils.join(grantedScopes.iterator(), " "));
+				refreshToken.getAuthCode().setGrantedScopes(grantedScopes);
+			}
+		}
+		
+		// Regenerate the refresh token
+		String newRefreshToken = this.createRefreshToken(refreshToken.getAuthCode());
+		resp.put("refresh_token", newRefreshToken);
+		
+		// Other information
+		resp.put("expires_in", this.refreshTokenLifetime);
+		resp.put("token_type", "Bearer");
+		
+		return resp;
 	}
 }

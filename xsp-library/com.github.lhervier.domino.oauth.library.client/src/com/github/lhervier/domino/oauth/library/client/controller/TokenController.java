@@ -17,9 +17,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.github.lhervier.domino.oauth.common.model.error.GrantError;
 import com.github.lhervier.domino.oauth.common.utils.Callback;
+import com.github.lhervier.domino.oauth.common.utils.ValueHolder;
 import com.github.lhervier.domino.oauth.library.client.BaseClientComponent;
 import com.github.lhervier.domino.oauth.library.client.Constants;
 import com.github.lhervier.domino.oauth.library.client.ex.OauthClientException;
+import com.github.lhervier.domino.oauth.library.client.ex.RefreshTokenException;
 import com.github.lhervier.domino.oauth.library.client.model.GrantResponse;
 import com.github.lhervier.domino.oauth.library.client.utils.Utils;
 import com.github.lhervier.domino.spring.servlet.NotesContext;
@@ -71,48 +73,54 @@ public class TokenController extends BaseClientComponent {
 	 * @throws UnsupportedEncodingException 
 	 */
 	@RequestMapping(value = "/refresh", method = RequestMethod.GET)
-	public @ResponseBody TokenResponse refreshToken() throws OauthClientException {
+	public @ResponseBody TokenResponse refreshToken() throws OauthClientException, RefreshTokenException {
 		try {
 			String refreshToken = (String) this.httpSession.getAttribute(Constants.SESSION_REFRESH_TOKEN);
 			
-			// Refresh token pas présent (session non initialisée ou expirée)
+			// No refresh token => Unable to ask for a new one
 			if( refreshToken == null )
 				return this.accessToken();
 			
+			final ValueHolder<RefreshTokenException> ex = new ValueHolder<RefreshTokenException>();
 			Utils.createConnection(
 					this.notesContext, 
 					Boolean.parseBoolean(this.getProperty("disableHostVerifier")), 
 					this.getProperty("secret"),
-					this.getProperty("endpoints.token"))
-					.setTextContent(
-							new StringBuffer()
-									.append("grant_type=refresh_token&")
-									.append("refresh_token=").append(refreshToken)
-									.toString(), 
-							"UTF-8"
-					)
-					
-					// OK => Met à jour la session et retourne le token
-					.onOk(new Callback<GrantResponse>() {
-						@Override
-						public void run(GrantResponse grant) throws IOException, ParseException {
-							TokenController.this.httpSession.setAttribute(Constants.SESSION_REFRESH_TOKEN, grant.getRefreshToken());
-							TokenController.this.httpSession.setAttribute(Constants.SESSION_ACCESS_TOKEN, grant.getAccessToken());
-							TokenController.this.httpSession.setAttribute(Constants.SESSION_ID_TOKEN, grant.getIdToken());
-						}
-					})
-					
-					// Erreur => Non autorisé
-					.onError(new Callback<GrantError>() {
-						@Override
-						public void run(GrantError error) throws IOException {
-							TokenController.this.httpSession.setAttribute(Constants.SESSION_REFRESH_TOKEN, null);
-							TokenController.this.httpSession.setAttribute(Constants.SESSION_ACCESS_TOKEN, null);
-							TokenController.this.httpSession.setAttribute(Constants.SESSION_ID_TOKEN, null);
-						}
-					})
-					
-					.execute();
+					this.getProperty("endpoints.token")
+			)
+			.setTextContent(
+					new StringBuffer()
+							.append("grant_type=refresh_token&")
+							.append("refresh_token=").append(refreshToken)
+							.toString(), 
+					"UTF-8"
+			)
+			
+			// OK => Met à jour la session et retourne le token
+			.onOk(new Callback<GrantResponse>() {
+				@Override
+				public void run(GrantResponse grant) throws IOException, ParseException {
+					TokenController.this.httpSession.setAttribute(Constants.SESSION_REFRESH_TOKEN, grant.getRefreshToken());
+					TokenController.this.httpSession.setAttribute(Constants.SESSION_ACCESS_TOKEN, grant.getAccessToken());
+					TokenController.this.httpSession.setAttribute(Constants.SESSION_ID_TOKEN, grant.getIdToken());
+				}
+			})
+			
+			// Erreur => Non autorisé
+			.onError(new Callback<GrantError>() {
+				@Override
+				public void run(GrantError error) throws IOException {
+					TokenController.this.httpSession.setAttribute(Constants.SESSION_REFRESH_TOKEN, null);
+					TokenController.this.httpSession.setAttribute(Constants.SESSION_ACCESS_TOKEN, null);
+					TokenController.this.httpSession.setAttribute(Constants.SESSION_ID_TOKEN, null);
+					ex.set(new RefreshTokenException(error));
+				}
+			})
+			.execute();
+			
+			if( ex.get() != null )
+				throw ex.get();
+			
 			return this.accessToken();
 		} catch(IOException e) {
 			throw new OauthClientException(e);

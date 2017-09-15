@@ -44,6 +44,8 @@ public class AppController {
 		return new ModelAndView("applications", model);
 	}
 	
+	// ====================================================================
+	
 	/**
 	 * The screen to display the creation of a new application
 	 */

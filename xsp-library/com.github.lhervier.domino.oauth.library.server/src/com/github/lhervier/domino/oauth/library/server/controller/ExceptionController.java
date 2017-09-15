@@ -43,7 +43,7 @@ public class ExceptionController {
 	 */
 	@ExceptionHandler(AuthorizeException.class)
 	public ModelAndView processAuthorizedException(AuthorizeException e) throws InvalidUriException {
-		// If need a redirect uri
+		// We need a redirect uri
 		String redirectUri = this.request.getParameter("redirect_rui");
 		if( StringUtils.isEmpty(redirectUri) )
 			throw new InvalidUriException("No redirect_uri in query string.");
@@ -100,5 +100,4 @@ public class ExceptionController {
 		model.put("error", e.getMessage());
 		return new ModelAndView("error", model);
 	}
-	
 }

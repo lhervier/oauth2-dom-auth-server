@@ -2,6 +2,8 @@ package com.github.lhervier.domino.oauth.common.utils;
 
 import java.util.Vector;
 
+import com.github.lhervier.domino.spring.servlet.NotesContext;
+
 import lotus.domino.ACL;
 import lotus.domino.Agent;
 import lotus.domino.Database;
@@ -15,8 +17,6 @@ import lotus.domino.Outline;
 import lotus.domino.Replication;
 import lotus.domino.Session;
 import lotus.domino.View;
-
-import com.github.lhervier.domino.oauth.common.NotesContext;
 
 public class DatabaseWrapper implements Database {
 

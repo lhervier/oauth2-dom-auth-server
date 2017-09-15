@@ -2,11 +2,19 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension
-         point="com.ibm.commons.Extension">
-      <service
-            class="com.github.lhervier.domino.oauth.library.client.OauthClientLibrary"
-            type="com.ibm.xsp.Library">
-      </service>
+         point="org.eclipse.equinox.http.registry.servlets">
+      <servlet
+            alias="/oauth2-client"
+            class="com.github.lhervier.domino.oauth.library.client.OauthClientServlet"
+            load-on-startup="true">
+         <init-param
+               name="contextConfigLocation"
+               value="com.github.lhervier.domino.oauth.library.client.OauthClientConfig">
+         </init-param>
+         <init-param
+               name="contextClass"
+               value="org.springframework.web.context.support.AnnotationConfigWebApplicationContext">
+         </init-param>
+      </servlet>
    </extension>
-
 </plugin>

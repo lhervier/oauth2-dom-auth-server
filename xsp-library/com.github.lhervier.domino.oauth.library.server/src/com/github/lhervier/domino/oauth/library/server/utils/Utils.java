@@ -1,11 +1,11 @@
 package com.github.lhervier.domino.oauth.library.server.utils;
 
-import java.security.PrivilegedActionException;
-import java.util.List;
+import javax.servlet.http.HttpServletRequest;
 
-import com.github.lhervier.domino.oauth.common.utils.OsgiUtils;
-import com.github.lhervier.domino.oauth.library.server.Activator;
-import com.github.lhervier.domino.oauth.library.server.ext.IOAuthExtension;
+import lotus.domino.Database;
+
+import com.github.lhervier.domino.oauth.common.utils.DatabaseWrapper;
+import com.github.lhervier.domino.spring.servlet.NotesContext;
 
 /**
  * Méthodes utiles à l'appli
@@ -14,17 +14,19 @@ import com.github.lhervier.domino.oauth.library.server.ext.IOAuthExtension;
 public class Utils {
 
 	/**
-	 * Retourne la liste des extensions
-	 * @return les extensions
+	 * Return the oauth2 database
 	 */
-	public static final List<IOAuthExtension> getExtensions() {
-		try {
-			return OsgiUtils.getExtensions(
-					Activator.SCOPE_EXT_ID, 
-					IOAuthExtension.class
-			);
-		} catch (PrivilegedActionException e) {
-			throw new RuntimeException(e);
-		}
+	public static final Database getOauth2Database(
+			HttpServletRequest request,
+			NotesContext notesContext,
+			String oauth2db) {
+		String key = Utils.class.getName() + ".oauth2db";
+		if( request.getAttribute(key) != null )
+			return (Database) request.getAttribute(key);
+		
+		DatabaseWrapper nab = new DatabaseWrapper(notesContext, oauth2db, true);
+		request.setAttribute(key, nab);
+		
+		return nab;
 	}
 }

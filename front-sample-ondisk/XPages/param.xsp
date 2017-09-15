@@ -1,7 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xp:view xmlns:xp="http://www.ibm.com/xsp/core">
-	<xp:this.beforePageLoad><![CDATA[#{javascript:
-		paramsBean.param();
-		facesContext.responseComplete();
-	}]]></xp:this.beforePageLoad>
+<xp:view xmlns:xp="http://www.ibm.com/xsp/core" rendered="false">
+	<xp:this.afterRenderResponse><![CDATA[#{javascript:
+		var externalContext = facesContext.getExternalContext();
+		var writer = facesContext.getResponseWriter();
+		var response = externalContext.getResponse();
+		  
+		// set content type, e.g. ...
+		response.setContentType("application/json");
+		
+		var o = {
+		}
+		
+		var v = database.getView("Params");
+		var doc = v.getFirstDocument();
+		if( doc != null ) {
+			o.rest_server = doc.getItemValueString("PARAM_RestServer");
+		}
+		writer.write(toJson(o));
+		 
+		writer.endDocument();
+	}]]></xp:this.afterRenderResponse>
 </xp:view>

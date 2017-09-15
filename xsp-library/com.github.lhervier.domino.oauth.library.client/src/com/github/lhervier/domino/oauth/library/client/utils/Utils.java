@@ -13,12 +13,12 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import com.github.lhervier.domino.oauth.common.NotesContext;
 import com.github.lhervier.domino.oauth.common.model.error.GrantError;
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
 import com.github.lhervier.domino.oauth.common.utils.HttpConnection;
 import com.github.lhervier.domino.oauth.library.client.Constants;
 import com.github.lhervier.domino.oauth.library.client.model.GrantResponse;
+import com.github.lhervier.domino.spring.servlet.NotesContext;
 
 public class Utils {
 
@@ -33,18 +33,31 @@ public class Utils {
 	private static boolean disableCheckCertificate = false;
 	
 	/**
+	 * URL encode a value
+	 * @param value 
+	 * @return the encoded value
+	 */
+	public static final String urlEncode(String value) {
+		try {
+			return URLEncoder.encode(value, "UTF-8");
+		} catch(UnsupportedEncodingException e) {
+			throw new RuntimeException(e);		// UTF-8 is supported !
+		}
+	}
+	
+	/**
 	 * Retourne l'URL de redirection
 	 * @param baseUri
 	 * @return l'url de redirection
 	 * @throws UnsupportedEncodingException 
 	 */
-	public static final String getEncodedRedirectUri(String baseUri) throws UnsupportedEncodingException {
+	public static final String getEncodedRedirectUri(String baseUri) {
 		StringBuffer redirectUri = new StringBuffer();
 		redirectUri.append(baseUri);
 		if( !baseUri.endsWith("/") )
 			redirectUri.append('/');
-		redirectUri.append("init.xsp");
-		return URLEncoder.encode(redirectUri.toString(), "UTF-8");
+		redirectUri.append("oauth2-client/init");
+		return urlEncode(redirectUri.toString());
 	}
 	
 	/**

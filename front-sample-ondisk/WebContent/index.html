@@ -1,180 +1,37 @@
-<HTML>
-<HEAD>
-<meta http-equiv="Content-Type" content="text/html charset=UTF-8" />
-<script type="text/javascript">
-	var accessToken = null;
-	var params = null;
+<!DOCTYPE html>
+<html ng-app="sampleApp">
+<head>
+	<meta charset="utf-8">
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular-resource.js"></script>
+	<script src="app/ngOauth2.js"></script>
+	<script src="app/app.js"></script>
+</head>
+<body ng-controller="SampleController as ctrl">
+	<div ng-show="ctrl.alerte != null">
+		{{ctrl.alerte}}
+	</div>
+	<div ng-show="ctrl.reconnectUrl != null">
+		Vous devez vous reconnecter : 
+		<a ng-href="{{ctrl.reconnectUrl}}">Cliquez ici</a>
+	</div>
 	
-	/**
-	 * Initialisation de la page. On charge le token
-	 * en forçant une éventuelle reconnexion.
-	 */
-	function init() {
-		runWithToken(function(){}, true);
-		loadParam();
-	}
-
-	/**
-	 * Charge le paramétrage local
-	 */
-	function loadParam() {
-		var xmlhttp = new XMLHttpRequest();
-		xmlhttp.onreadystatechange = function() {
-			if( this.readyState != 4 )
-				return;
-
-			// Essaye de récupérer le token
-			if( this.status == 200)
-				params = JSON.parse(this.responseText);
-			else 
-				console.log(this);
-		};
-		
-		xmlhttp.open("GET", "param.xsp", true);
-		xmlhttp.send();
-	}
-	
-	/**
-	 * Exécute une callback en lui passant le token.
-	 * @param callback le callback à exécuter. On lui passera le token en paramètre.
-	 * @param force force le redirect si le token est expiré ? Affiche un message pour se re-connecter sinon.
-	 */
-	function runWithToken(callback, force) {
-		if( accessToken != null ) {
-			callback(accessToken);
-			return;
-		}
-		
-		var xmlhttp = new XMLHttpRequest();
-		xmlhttp.onreadystatechange = function() {
-			if( this.readyState != 4 )
-				return;
-
-			// Essaye de récupérer le token
-			if( this.status == 200) {
-				var resp = JSON.parse(this.responseText);
-				if( resp.access_token ) {		// On l'a
-					accessToken = resp.access_token;
-					callback(accessToken);
-				} else {						// Il n'est pas en session. On demande une reconnexion.
-					reconnect(force);
-				}
-			
-			} else 
-				console.log(this);
-		};
-		
-		xmlhttp.open("GET", "accessToken.xsp", true);
-		xmlhttp.send();
-	}
-	function reconnect(force) {
-		if( force == true ) {
-			window.location = "init.xsp?redirect_url=" + encodeURIComponent(window.location);
-			document.getElementById("reconnect").style.display = "none";
-		} else {
-			document.getElementById("reconnect").style.display = "inherit";
-		}
-	}
-	
-	/**
-	 * Indique que l'utilisateur a fait une action
-	 * et qu'on doit donc prolonger sa session
-	 */
-	function action() {
-		var xmlhttp = new XMLHttpRequest();
-		xmlhttp.open("GET", "xsp/.ibmmodres/ping?dojo.preventCache=" + (new Date().getTime()), true);
-		xmlhttp.send();
-	}
-
-	/**
-	 * Appel un service rest
-	 */
-	function callRest(method, url, callback) {
-		runWithToken(function(token) {
-			var xmlhttp = new XMLHttpRequest();
-			xmlhttp.onreadystatechange = function() {
-				if( this.readyState != 4 )
-					return;
-
-				// On a le résultat => On l'affiche
-				if( this.status == 200) {
-					var resp = JSON.parse(this.responseText);
-					callback(resp);
-					
-				// Token expiré => On le rafraîchit
-				} else if( this.status == 403 ) {
-					var xmlhttp = new XMLHttpRequest();
-					xmlhttp.onreadystatechange = function() {
-						if( this.readyState != 4 )
-							return;
-
-						if( this.status == 200) {
-							var resp = JSON.parse(this.responseText);
-							// Le refresh a fonctionné => On a un nouveau access token => On continue
-							if( resp.access_token ) {
-								accessToken = resp.access_token;
-								callRest(method, url, callback);
-							// Le refresh token n'a pas fonctionné (session expirée, ou refresh token expiré même si c'est plus rare) => On a été déconnecté
-							} else
-								reconnect(false);
-
-						} else if( this.status == 403 ) {
-							reconnect(false);
-						} else
-							console.log(this);
-					}
-					xmlhttp.open("GET", "refresh.xsp", true);
-					xmlhttp.send();
-				} else
-					console.log(this);
-			};
-			xmlhttp.open("GET", url, true);
-			xmlhttp.setRequestHeader("Authorization", "Bearer " + token);
-			xmlhttp.send();
-		});
-	}
-
-	/**
-	 * Affiche les infos utilisateur
-	 */
-	function userInfo() {
-		callRest('GET', params.restServer + '/userInfo', function(res) {
-			alert(res.name);
-		});
-	}
-
-	/**
-	 * Simule une expiration de session
-	 */
-	function expireSession() {
-		var xmlhttp = new XMLHttpRequest();
-		xmlhttp.onreadystatechange = function() {
-			if( this.readyState != 4 )
-				return;
-
-			alert('La session a été nettoyée. Redemarrez la tâche http pour effacer les infos de login.');
-		}
-		xmlhttp.open("GET", "expire.xsp", true);
-		xmlhttp.send();
-	}
-</script>
-</HEAD>
-<BODY onload="init()">
-
-<div id="reconnect" style="display:none">
-	Vous devez vous reconnecter ! <button onclick="reconnect(true)">Cliquez ici</button>
 	<hr/>
-</div>
-
-<button onclick="action()">
-	Faire une action qui prolongera la session
-</button>
-
-<hr/>
-
-<button onclick="userInfo()">
-	Charge les infos sur l'utilisateur (via un appel Rest Cors)
-</button>
-
-</BODY>
-</HTML>
+	
+	<div>
+		URL de base pour les services rest : {{ctrl.param.restServer}}
+	</div>
+	<div>
+		AccessToken : {{ctrl.accessToken}}
+	</div>
+	
+	<hr/>
+	
+	<span>Utilisateur courant :</span>
+	<span ng-show="ctrl.userInfo == null">Non récupéré</span>
+	<span ng-show="ctrl.userInfo != null">{{ctrl.userInfo.name}}</span>
+	<button ng-click="ctrl.loadUserInfo()">
+		Récupérer l'utilisateur courant
+	</button>
+</body>
+</html>

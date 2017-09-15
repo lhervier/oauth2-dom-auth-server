@@ -32,7 +32,7 @@ sampleApp.controller('SampleController', ['$rootScope', '$resource', '$window', 
 	);
 	
 	// Initialise la danse oauth2. On force la reconnexion s'il n'est pas en session.
-	oauth2Service.init('init.xsp', 'accessToken.xsp', 'refreshToken.xsp').then(
+	oauth2Service.init('oauth2-client/init', 'oauth2-client/accesstoken', 'oauth2-client/refresh').then(
 			function(token) {
 				ths.accessToken = token;
 			},

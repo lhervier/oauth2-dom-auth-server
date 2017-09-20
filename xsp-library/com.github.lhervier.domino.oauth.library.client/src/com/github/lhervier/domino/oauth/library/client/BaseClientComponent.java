@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 
 import com.github.lhervier.domino.oauth.library.client.ex.OauthClientException;
-import com.github.lhervier.domino.spring.servlet.NotesContext;
+import com.github.lhervier.domino.spring.servlet.UserDatabase;
 
 public abstract class BaseClientComponent {
 
@@ -17,10 +17,10 @@ public abstract class BaseClientComponent {
 	private Environment env;
 	
 	/**
-	 * The NotesContext
+	 * The current database
 	 */
 	@Autowired
-	private NotesContext notesContext;
+	private UserDatabase userDatabase;
 	
 	/**
 	 * Return a property value
@@ -30,10 +30,10 @@ public abstract class BaseClientComponent {
 	protected String getProperty(String name) throws OauthClientException {
 		try {
 			// Normaly, alredy checked by the aspect...
-			if( this.notesContext.getUserDatabase() == null )
+			if( !this.userDatabase.isAvailable() )
 				throw new RuntimeException();
 			
-			String propRoot = this.notesContext.getUserDatabase().getFilePath();
+			String propRoot = this.userDatabase.getFilePath();
 			propRoot = propRoot.replace('\\', '.');
 			propRoot = propRoot.replace('/', '.');
 			if( propRoot.endsWith(".nsf") )

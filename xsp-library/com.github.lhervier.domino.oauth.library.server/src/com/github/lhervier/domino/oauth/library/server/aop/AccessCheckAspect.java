@@ -17,7 +17,8 @@ import com.github.lhervier.domino.oauth.library.server.aop.ann.Roles;
 import com.github.lhervier.domino.oauth.library.server.aop.ann.ServerRootContext;
 import com.github.lhervier.domino.oauth.library.server.ex.ServerErrorException;
 import com.github.lhervier.domino.oauth.library.server.ex.WrongPathException;
-import com.github.lhervier.domino.spring.servlet.NotesContext;
+import com.github.lhervier.domino.spring.servlet.UserDatabase;
+import com.github.lhervier.domino.spring.servlet.UserRoles;
 
 /**
  * Check that the controller's methods are called 
@@ -29,10 +30,16 @@ import com.github.lhervier.domino.spring.servlet.NotesContext;
 public class AccessCheckAspect {
 
 	/**
-	 * The notes context
+	 * The current database opened as the current user
 	 */
 	@Autowired
-	private NotesContext notesContext;
+	private UserDatabase userDatabase;
+	
+	/**
+	 * The current user roles
+	 */
+	@Autowired
+	private UserRoles userRoles;
 	
 	/**
 	 * The oauth2 db path
@@ -68,14 +75,14 @@ public class AccessCheckAspect {
 			
 			// Check that we are on the right database
 			String o2Db = this.o2Db.replace('\\', '/');
-			if( this.notesContext.getUserDatabase() == null )
+			if( this.userDatabase == null )
 				throw new WrongPathException();
-			if( !o2Db.equals(this.notesContext.getUserDatabase().getFilePath()) )
+			if( !o2Db.equals(this.userDatabase.getFilePath()) )
 				throw new WrongPathException();
 			
 		// Method to be called only on the server root (no database context) :
 		} else if( srCtx != null ) {
-			if( this.notesContext.getUserDatabase() != null )
+			if( this.userDatabase != null )
 				throw new WrongPathException();
 		
 		// Method with no annotation => Error !
@@ -87,7 +94,7 @@ public class AccessCheckAspect {
 			for( String role : roles.roles() ) {
 				if( role.length() == 0 )
 					continue;
-				if( !this.notesContext.getUserRoles().contains("[" + role + "]") )
+				if( !this.userRoles.contains("[" + role + "]") )
 					throw new ServerErrorException();
 			}
 		}

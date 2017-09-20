@@ -25,7 +25,7 @@ import com.github.lhervier.domino.oauth.library.client.BaseClientComponent;
 import com.github.lhervier.domino.oauth.library.client.ex.OauthClientException;
 import com.github.lhervier.domino.oauth.library.client.model.GrantResponse;
 import com.github.lhervier.domino.oauth.library.client.utils.Utils;
-import com.github.lhervier.domino.spring.servlet.NotesContext;
+import com.github.lhervier.domino.spring.servlet.ServerSession;
 
 @Controller
 public class InitController extends BaseClientComponent {
@@ -43,10 +43,10 @@ public class InitController extends BaseClientComponent {
 	private HttpSession session;
 	
 	/**
-	 * The NotesContext
+	 * The session opened as the server
 	 */
 	@Autowired
-	private NotesContext notesContext;
+	private ServerSession serverSession;
 	
 	/**
 	 * Initialisation
@@ -98,7 +98,7 @@ public class InitController extends BaseClientComponent {
 		try {
 			final ModelAndView ret = new ModelAndView();
 			Utils.createConnection(
-					this.notesContext, 
+					this.serverSession, 
 					Boolean.parseBoolean(this.getProperty("disableHostVerifier")), 
 					this.getProperty("secret"),
 					this.getProperty("endpoints.token"))

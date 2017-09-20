@@ -24,7 +24,7 @@ import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
 import com.github.lhervier.domino.oauth.common.utils.ViewIterator;
 import com.github.lhervier.domino.oauth.library.server.BaseServerComponent;
 import com.github.lhervier.domino.oauth.library.server.model.Application;
-import com.github.lhervier.domino.spring.servlet.NotesContext;
+import com.github.lhervier.domino.spring.servlet.UserSession;
 
 /**
  * Managed bean pour gérer les applications.
@@ -61,10 +61,10 @@ public class AppService extends BaseServerComponent {
 	private static final SecureRandom RANDOM = new SecureRandom();
 	
 	/**
-	 * The notes context
+	 * The session opened as the current user
 	 */
 	@Autowired
-	private NotesContext notesContext;
+	private UserSession userSession;
 	
 	/**
 	 * The server context
@@ -88,7 +88,7 @@ public class AppService extends BaseServerComponent {
 		Name appNotesName = null;
 		View v = null;
 		try {
-			appNotesName = this.notesContext.getUserSession().createName(appName + this.applicationRoot);
+			appNotesName = this.userSession.createName(appName + this.applicationRoot);
 			v = DominoUtils.getView(this.nabBean.getNab(), VIEW_USERS);
 			return v.getDocumentByKey(appNotesName.getAbbreviated());
 		} finally {
@@ -204,8 +204,8 @@ public class AppService extends BaseServerComponent {
 	public Application getCurrentApplication() throws NotesException {
 		Name nn = null;
 		try {
-			String fullName = this.notesContext.getUserSession().getEffectiveUserName();
-			nn = this.notesContext.getUserSession().createName(fullName);
+			String fullName = this.userSession.getEffectiveUserName();
+			nn = this.userSession.createName(fullName);
 			String appName = nn.getCommon();
 			return this.getApplicationFromName(appName);
 		} finally {
@@ -254,7 +254,7 @@ public class AppService extends BaseServerComponent {
 				throw new RuntimeException("Une application avec ce nom existe déjà.");
 			
 			String abbreviated = app.getName() + this.applicationRoot;
-			nn = this.notesContext.getUserSession().createName(abbreviated);
+			nn = this.userSession.createName(abbreviated);
 			String fullName = nn.toString();
 			
 			// Créé une nouvelle application dans le NAB (un nouvel utilisateur)
@@ -266,11 +266,11 @@ public class AppService extends BaseServerComponent {
 			person.replaceItemValue("MailSystem", "100");		// None
 			person.replaceItemValue("FullName", fullName);
 			String password = this.generatePassword();
-			person.replaceItemValue("HTTPPassword", this.notesContext.getUserSession().evaluate("@Password(\"" + password + "\")"));
-			person.replaceItemValue("HTTPPasswordChangeDate", this.notesContext.getUserSession().createDateTime(new Date()));
+			person.replaceItemValue("HTTPPassword", this.userSession.evaluate("@Password(\"" + password + "\")"));
+			person.replaceItemValue("HTTPPasswordChangeDate", this.userSession.createDateTime(new Date()));
 			person.replaceItemValue("$SecurePassword", "1");
-			person.replaceItemValue("Owner", this.notesContext.getUserSession().getEffectiveUserName());
-			person.replaceItemValue("LocalAdmin", this.notesContext.getUserSession().getEffectiveUserName());
+			person.replaceItemValue("Owner", this.userSession.getEffectiveUserName());
+			person.replaceItemValue("LocalAdmin", this.userSession.getEffectiveUserName());
 			DominoUtils.computeAndSave(person);
 			
 			// Créé un nouveau document pour l'application dans la base

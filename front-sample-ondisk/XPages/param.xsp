@@ -11,10 +11,14 @@
 		var o = {
 		}
 		
-		var v = database.getView("Params");
+		var db = sessionAsSigner.getDatabase(null, database.getFilePath());
+		if( !db.isOpen() )
+			if( !db.open() )
+				throw "Unable to open current database with signer id";
+		var v = db.getView("Params");
 		var doc = v.getFirstDocument();
 		if( doc != null ) {
-			o.rest_server = doc.getItemValueString("PARAM_RestServer");
+			o.restServer = doc.getItemValueString("PARAM_RestServer");
 		}
 		writer.write(toJson(o));
 		 

@@ -6,12 +6,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import lotus.domino.Database;
 import lotus.domino.Document;
 import lotus.domino.NotesException;
 import lotus.domino.View;
 
 import com.github.lhervier.domino.oauth.common.utils.Base64Utils;
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
+import com.github.lhervier.domino.spring.servlet.ServerSession;
 
 /**
  * Registre pour mémoriser les secrets
@@ -37,27 +39,10 @@ public class SecretService {
 	private String refreshTokenConfig;
 	
 	/**
-	 * The server context
+	 * The session opened as the server
 	 */
 	@Autowired
-	private NabService nabBean;
-	
-	/**
-	 * Retourne le document config SSO
-	 * @param config le nom de la config à extraire
-	 * @return la config SSO
-	 * @throws NotesException en cas de pb
-	 */
-	private Document getSsoConfig(String config) throws NotesException {
-		View v = this.nabBean.getServerNab().getView(WEBSSOCONFIG_VIEW);
-		if( v == null )
-			throw new RuntimeException("La vue " + WEBSSOCONFIG_VIEW + " n'existe pas dans le NAB. Impossible de continuer.");
-		Document ssoConfig = v.getDocumentByKey(config);
-		if( ssoConfig == null )
-			throw new RuntimeException("Je ne trouve pas la confg SSO '" + config + "'");
-		
-		return ssoConfig;
-	}
+	private ServerSession serverSession;
 	
 	/**
 	 * Retourne un secret
@@ -81,15 +66,23 @@ public class SecretService {
 	private byte[] getSecret(String ssoConfig, int size) throws NotesException, IOException {
 		if( ssoConfig == null )
 			return null;
+		Database nab = null;
+		View v = null;
 		Document docSsoConfig = null;
 		try {
-			docSsoConfig = this.getSsoConfig(ssoConfig);
+			nab = DominoUtils.openDatabase(this.serverSession, "names.nsf");
+			v = nab.getView(WEBSSOCONFIG_VIEW);
+			if( v == null )
+				throw new RuntimeException("La vue " + WEBSSOCONFIG_VIEW + " n'existe pas dans le NAB. Impossible de continuer.");
+			docSsoConfig = v.getDocumentByKey(ssoConfig);
 			if( docSsoConfig == null )
 				return null;
 			String secret = docSsoConfig.getItemValueString(SECRET_FIELD_NAME);
 			return this.genSecret(secret, size);
 		} finally {
 			DominoUtils.recycleQuietly(docSsoConfig);
+			DominoUtils.recycleQuietly(v);
+			DominoUtils.recycleQuietly(nab);
 		}
 	}
 	

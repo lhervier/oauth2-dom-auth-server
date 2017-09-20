@@ -9,16 +9,23 @@ import org.springframework.stereotype.Service;
 
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
 import com.github.lhervier.domino.oauth.library.server.BaseServerComponent;
-import com.github.lhervier.domino.spring.servlet.NotesContext;
+import com.github.lhervier.domino.spring.servlet.ServerSession;
+import com.github.lhervier.domino.spring.servlet.UserSession;
 
 @Service
 public class NabService extends BaseServerComponent {
 
 	/**
-	 * The notes context
+	 * The session opened as the user
 	 */
 	@Autowired
-	private NotesContext notesContext;
+	private UserSession userSession;
+	
+	/**
+	 * The session opened as the server
+	 */
+	@Autowired
+	private ServerSession serverSession;
 	
 	/**
 	 * The nab
@@ -31,7 +38,7 @@ public class NabService extends BaseServerComponent {
 	 * @throws NotesException
 	 */
 	public Database getNab() throws NotesException {
-		return DominoUtils.openDatabase(this.notesContext.getUserSession(), this.nab);
+		return DominoUtils.openDatabase(this.userSession, this.nab);
 	}
 
 	/**
@@ -39,6 +46,6 @@ public class NabService extends BaseServerComponent {
 	 * @throws NotesException
 	 */
 	public synchronized Database getServerNab() throws NotesException {
-		return DominoUtils.openDatabase(this.notesContext.getServerSession(), this.nab);
+		return DominoUtils.openDatabase(this.serverSession, this.nab);
 	}
 }

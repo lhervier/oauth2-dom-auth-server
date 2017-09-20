@@ -1,7 +1,5 @@
 package com.github.lhervier.domino.oauth.library.client.aop;
 
-import lotus.domino.Database;
-
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
@@ -11,17 +9,17 @@ import org.springframework.stereotype.Component;
 
 import com.github.lhervier.domino.oauth.library.client.BaseClientComponent;
 import com.github.lhervier.domino.oauth.library.client.ex.WrongPathException;
-import com.github.lhervier.domino.spring.servlet.NotesContext;
+import com.github.lhervier.domino.spring.servlet.UserDatabase;
 
 @Component
 @Aspect
 public class DbCheckAspect extends BaseClientComponent {
 
 	/**
-	 * The notes context
+	 * The current database
 	 */
 	@Autowired
-	private NotesContext notesContext;
+	private UserDatabase userDatabase;
 	
 	/**
 	 * Pointcut to detect controller methods
@@ -34,8 +32,7 @@ public class DbCheckAspect extends BaseClientComponent {
 	@Before("controller()")
 	public void checkDb(JoinPoint joinPoint) throws Throwable {
 		// Must be on a database context
-		Database db = this.notesContext.getUserDatabase();
-		if( db == null )
+		if( !this.userDatabase.isAvailable() )
 			throw new WrongPathException();
 		
 		// Must have a client id for the application

@@ -13,12 +13,13 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import lotus.domino.Session;
+
 import com.github.lhervier.domino.oauth.common.model.error.GrantError;
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
 import com.github.lhervier.domino.oauth.common.utils.HttpConnection;
 import com.github.lhervier.domino.oauth.library.client.Constants;
 import com.github.lhervier.domino.oauth.library.client.model.GrantResponse;
-import com.github.lhervier.domino.spring.servlet.NotesContext;
 
 public class Utils {
 
@@ -64,10 +65,10 @@ public class Utils {
 	 * Pour initialiser le contexte SSL.
 	 * On ne l'initialise qu'une seule fois. Pour revenir en arrière, il
 	 * faut relancer la tâche http.
-	 * @param ctx the notes context
+	 * @param session a session that allows us to access the notes.ini
 	 * @return le contexte SSL
 	 */
-	private final static synchronized SSLSocketFactory getSSLSocketFactory(NotesContext ctx) {
+	private final static synchronized SSLSocketFactory getSSLSocketFactory(Session session) {
 		// On a déjà initialisé le contexte
 		if( sslInitialized ) {
 			if( !disableCheckCertificate )
@@ -84,7 +85,7 @@ public class Utils {
 		
 		// A partie de là, SSL sera initialisé
 		sslInitialized = true;
-		disableCheckCertificate = disableCheckCertificate(ctx);
+		disableCheckCertificate = disableCheckCertificate(session);
 		
 		// On ne doit pas désactiver la vérification
 		if( !disableCheckCertificate ) {
@@ -115,11 +116,11 @@ public class Utils {
 	
 	/**
 	 * Est ce qu'on doit désactiver les certificats SSL ?
-	 * @param ctx the notes context
+	 * @param session a session that allows us to access the notes.ini
 	 */
-	private static final boolean disableCheckCertificate(NotesContext ctx) {
+	private static final boolean disableCheckCertificate(Session session) {
 		return DominoUtils.getEnvironment(
-				ctx.getServerSession(), 
+				session, 
 				Constants.NOTES_INI_DISABLE_CHECK_CERTIFICATE, 
 				Boolean.class,
 				false
@@ -128,13 +129,13 @@ public class Utils {
 	
 	/**
 	 * Pour initialiser un GET
-	 * @param ctx the notes context
+	 * @param session a session that allows us to access the notes.ini
 	 * @param disableHostVerifier 
 	 * @param url l'url
 	 * @return la connection
 	 */
 	public static final HttpConnection<GrantResponse, GrantError> createConnection(
-			NotesContext ctx, 
+			Session session, 
 			boolean disableHostVerifier, 
 			String secret,
 			String url) {
@@ -152,6 +153,6 @@ public class Utils {
 				.addHeader("Authorization", "Basic " + secret)
 				.addHeader("Content-Type", "application/x-www-form-urlencoded")
 				.withVerifier(verifier)
-				.withFactory(getSSLSocketFactory(ctx));
+				.withFactory(getSSLSocketFactory(session));
 	}
 }

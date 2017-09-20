@@ -24,7 +24,7 @@ import com.github.lhervier.domino.oauth.library.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.library.server.ext.IScopeGranter;
 import com.github.lhervier.domino.oauth.library.server.model.Application;
 import com.github.lhervier.domino.oauth.library.server.model.AuthorizationCode;
-import com.github.lhervier.domino.spring.servlet.NotesContext;
+import com.github.lhervier.domino.spring.servlet.UserSession;
 import com.google.gson.JsonObject;
 
 /**
@@ -45,10 +45,10 @@ public class AuthCodeService extends BaseServerComponent {
 	private static final String VIEW_AUTHCODES = "AuthorizationCodes";
 	
 	/**
-	 * The notes context
+	 * The session opened as the current user
 	 */
 	@Autowired
-	private NotesContext notesContext;
+	private UserSession userSession;
 	
 	/**
 	 * The application context
@@ -91,7 +91,7 @@ public class AuthCodeService extends BaseServerComponent {
 		Name nn = null;
 		Document authDoc = null;
 		try {
-			nn = this.notesContext.getUserSession().createName(app.getName() + this.applicationRoot);
+			nn = this.userSession.createName(app.getName() + this.applicationRoot);
 			String id = this.generateCode();
 			
 			AuthorizationCode authCode = new AuthorizationCode();

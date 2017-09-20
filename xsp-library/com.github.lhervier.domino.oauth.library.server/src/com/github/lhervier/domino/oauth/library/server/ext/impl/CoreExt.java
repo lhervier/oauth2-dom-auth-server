@@ -13,7 +13,7 @@ import com.github.lhervier.domino.oauth.common.utils.SystemUtils;
 import com.github.lhervier.domino.oauth.library.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.library.server.ext.IPropertyAdder;
 import com.github.lhervier.domino.oauth.library.server.ext.IScopeGranter;
-import com.github.lhervier.domino.spring.servlet.NotesContext;
+import com.github.lhervier.domino.spring.servlet.UserSession;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
@@ -37,10 +37,10 @@ public class CoreExt implements IOAuthExtension {
 	private long expiresIn;
 	
 	/**
-	 * The notes context
+	 * The session opened as the current user
 	 */
 	@Autowired
-	private NotesContext notesContext;
+	private UserSession userSession;
 	
 	/**
 	 * @see com.github.lhervier.domino.oauth.library.server.ext.IOAuthExtension#getId()
@@ -61,7 +61,7 @@ public class CoreExt implements IOAuthExtension {
 		JsonObject attrs = new JsonObject();
 		attrs.addProperty("iss", this.iss);
 		attrs.addProperty("aud", clientId);
-		attrs.addProperty("sub", this.notesContext.getUserSession().getEffectiveUserName());
+		attrs.addProperty("sub", this.userSession.getEffectiveUserName());
 		attrs.addProperty("exp", SystemUtils.currentTimeSeconds() + this.expiresIn);
 		return attrs;
 	}

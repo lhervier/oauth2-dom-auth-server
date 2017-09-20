@@ -1,21 +1,28 @@
 package com.github.lhervier.domino.oauth.library.server;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-
 import lotus.domino.Database;
 import lotus.domino.NotesException;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
-import com.github.lhervier.domino.spring.servlet.NotesContext;
+import com.github.lhervier.domino.spring.servlet.ServerSession;
+import com.github.lhervier.domino.spring.servlet.UserSession;
 
 public class BaseServerComponent {
 
 	/**
-	 * The notes context
+	 * The session as the server
 	 */
 	@Autowired
-	private NotesContext notesContext;
+	private ServerSession serverSession;
+	
+	/**
+	 * The session as the current user
+	 */
+	@Autowired
+	private UserSession userSession;
 	
 	/**
 	 * The database where to store application information
@@ -28,7 +35,7 @@ public class BaseServerComponent {
 	 * @throws NotesException 
 	 */
 	public Database getOauth2DatabaseAsServer() throws NotesException {
-		return DominoUtils.openDatabase(this.notesContext.getServerSession(), this.oauth2db);
+		return DominoUtils.openDatabase(this.serverSession, this.oauth2db);
 	}
 	
 	/**
@@ -36,7 +43,7 @@ public class BaseServerComponent {
 	 * @throws NotesException 
 	 */
 	public Database getOauth2DatabaseAsUser() throws NotesException {
-		return DominoUtils.openDatabase(this.notesContext.getUserSession(), this.oauth2db);
+		return DominoUtils.openDatabase(this.userSession, this.oauth2db);
 	}
 	
 	

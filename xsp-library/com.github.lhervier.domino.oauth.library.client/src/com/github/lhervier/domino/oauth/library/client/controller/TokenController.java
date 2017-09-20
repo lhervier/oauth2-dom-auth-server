@@ -24,7 +24,7 @@ import com.github.lhervier.domino.oauth.library.client.ex.OauthClientException;
 import com.github.lhervier.domino.oauth.library.client.ex.RefreshTokenException;
 import com.github.lhervier.domino.oauth.library.client.model.GrantResponse;
 import com.github.lhervier.domino.oauth.library.client.utils.Utils;
-import com.github.lhervier.domino.spring.servlet.NotesContext;
+import com.github.lhervier.domino.spring.servlet.ServerSession;
 
 @Controller
 public class TokenController extends BaseClientComponent {
@@ -36,10 +36,10 @@ public class TokenController extends BaseClientComponent {
 	private HttpSession httpSession;
 	
 	/**
-	 * The notes context
+	 * The session opened as the server
 	 */
 	@Autowired
-	private NotesContext notesContext;
+	private ServerSession serverSession;
 	
 	/**
 	 * The response class
@@ -83,7 +83,7 @@ public class TokenController extends BaseClientComponent {
 			
 			final ValueHolder<RefreshTokenException> ex = new ValueHolder<RefreshTokenException>();
 			Utils.createConnection(
-					this.notesContext, 
+					this.serverSession, 
 					Boolean.parseBoolean(this.getProperty("disableHostVerifier")), 
 					this.getProperty("secret"),
 					this.getProperty("endpoints.token")

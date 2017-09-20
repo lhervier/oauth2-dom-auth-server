@@ -6,19 +6,19 @@ import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
 
+import lotus.domino.Name;
+import lotus.domino.NotesException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
-import lotus.domino.Name;
-import lotus.domino.NotesException;
 
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
 import com.github.lhervier.domino.oauth.common.utils.SystemUtils;
 import com.github.lhervier.domino.oauth.library.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.library.server.ext.IPropertyAdder;
 import com.github.lhervier.domino.oauth.library.server.ext.IScopeGranter;
-import com.github.lhervier.domino.spring.servlet.NotesContext;
+import com.github.lhervier.domino.spring.servlet.UserSession;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
@@ -43,10 +43,10 @@ public class OpenIDExt implements IOAuthExtension {
 	private long expiresIn;
 	
 	/**
-	 * The notes context
+	 * The session opened as the current user
 	 */
 	@Autowired
-	private NotesContext notesContext;
+	private UserSession userSession;
 	
 	/**
 	 * The http servlet request
@@ -78,7 +78,7 @@ public class OpenIDExt implements IOAuthExtension {
 		// Les attributs par défaut
 		JsonObject attrs = new JsonObject();
 		attrs.addProperty("iss", this.iss);
-		attrs.addProperty("sub", this.notesContext.getUserSession().getEffectiveUserName());
+		attrs.addProperty("sub", this.userSession.getEffectiveUserName());
 		attrs.addProperty("aud", clientId);
 		attrs.addProperty("exp", SystemUtils.currentTimeSeconds() + this.expiresIn);
 		attrs.addProperty("auth_time", SystemUtils.currentTimeSeconds());
@@ -96,7 +96,7 @@ public class OpenIDExt implements IOAuthExtension {
 			
 			Name nn = null;
 			try {
-				nn = this.notesContext.getUserSession().createName(this.notesContext.getUserSession().getEffectiveUserName());
+				nn = this.userSession.createName(this.userSession.getEffectiveUserName());
 				attrs.addProperty("name", nn.getCommon());
 			} finally {
 				DominoUtils.recycleQuietly(nn);

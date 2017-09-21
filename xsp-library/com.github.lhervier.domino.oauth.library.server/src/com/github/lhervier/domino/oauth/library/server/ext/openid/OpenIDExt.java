@@ -1,4 +1,4 @@
-package com.github.lhervier.domino.oauth.library.server.ext.impl;
+package com.github.lhervier.domino.oauth.library.server.ext.openid;
 
 import java.util.List;
 
@@ -18,7 +18,6 @@ import com.github.lhervier.domino.oauth.common.utils.SystemUtils;
 import com.github.lhervier.domino.oauth.library.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.library.server.ext.IPropertyAdder;
 import com.github.lhervier.domino.oauth.library.server.ext.IScopeGranter;
-import com.github.lhervier.domino.oauth.library.server.ext.openid.OpenIdContext;
 
 /**
  * Implémentation de OpenID par dessus OAUth2

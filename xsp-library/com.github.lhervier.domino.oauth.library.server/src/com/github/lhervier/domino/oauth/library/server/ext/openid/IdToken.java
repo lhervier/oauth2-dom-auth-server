@@ -1,6 +1,5 @@
-package com.github.lhervier.domino.oauth.library.server.ext.impl;
+package com.github.lhervier.domino.oauth.library.server.ext.openid;
 
-import com.github.lhervier.domino.oauth.library.server.ext.openid.OpenIdContext;
 
 public class IdToken extends OpenIdContext {
 

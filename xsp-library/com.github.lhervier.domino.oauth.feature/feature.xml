@@ -31,12 +31,6 @@
          version="0.0.0"/>
 
    <plugin
-         id="com.github.lhervier.domino.oauth.external.gson"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"/>
-
-   <plugin
          id="com.github.lhervier.domino.oauth.external.nimbus_jose_jwt"
          download-size="0"
          install-size="0"
@@ -51,20 +45,6 @@
 
    <plugin
          id="com.github.lhervier.domino.oauth.library.client"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="com.github.lhervier.domino.oauth.ext.core"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="com.github.lhervier.domino.oauth.ext.openid"
          download-size="0"
          install-size="0"
          version="0.0.0"

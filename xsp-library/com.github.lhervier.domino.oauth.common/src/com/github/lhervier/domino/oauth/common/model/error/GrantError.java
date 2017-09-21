@@ -1,6 +1,6 @@
 package com.github.lhervier.domino.oauth.common.model.error;
 
-import com.google.gson.annotations.SerializedName;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 public class GrantError {
 
@@ -12,13 +12,13 @@ public class GrantError {
 	/**
 	 * La description de l'erreur
 	 */
-	@SerializedName("error_description")
+	@JsonProperty("error_description")
 	private String errorDescription;
 	
 	/**
 	 * L'uri de l'erreur
 	 */
-	@SerializedName("error_uri")
+	@JsonProperty("error_uri")
 	private String errorUri;
 
 	/**

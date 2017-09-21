@@ -5,10 +5,10 @@ import java.util.Map;
 
 import lotus.domino.NotesException;
 
-import com.github.lhervier.domino.oauth.common.utils.GsonUtils;
+import org.codehaus.jackson.map.ObjectMapper;
+
 import com.github.lhervier.domino.oauth.library.server.ext.IPropertyAdder;
 import com.github.lhervier.domino.oauth.library.server.services.SecretService;
-import com.google.gson.JsonObject;
 import com.nimbusds.jose.EncryptionMethod;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWEAlgorithm;
@@ -45,6 +45,11 @@ public class PropertyAdderImpl implements IPropertyAdder {
 	private SecretService secretBean;
 	
 	/**
+	 * The jackson mapper
+	 */
+	private ObjectMapper mapper = new ObjectMapper();
+	
+	/**
 	 * Constructeur
 	 */
 	public PropertyAdderImpl(
@@ -59,10 +64,10 @@ public class PropertyAdderImpl implements IPropertyAdder {
 	}
 	
 	/**
-	 * @see com.github.lhervier.domino.oauth.library.server.ext.IPropertyAdder#addCryptedProperty(java.lang.String, com.google.gson.JsonObject)
+	 * @see com.github.lhervier.domino.oauth.library.server.ext.IPropertyAdder#addCryptedProperty(String, Object)
 	 */
 	@Override
-	public void addCryptedProperty(String name, JsonObject obj) {
+	public void addCryptedProperty(String name, Object obj) {
 		if( dest.containsKey(name) )
 			throw new RuntimeException("La propriété '" + name + "' est déjà définie dans la réponse au grant.");
 		
@@ -71,7 +76,7 @@ public class PropertyAdderImpl implements IPropertyAdder {
 			JWEHeader header = new JWEHeader(JWEAlgorithm.DIR, EncryptionMethod.A128GCM, null, null, null, null, null, null, null, null, null, this.cryptKey, null, null, null, null, null, 0, null, null, null, null);
 			JWEObject jweObject = new JWEObject(
 					header, 
-					new Payload(GsonUtils.toJson(obj))
+					new Payload(this.mapper.writeValueAsString(obj))
 			);
 			jweObject.encrypt(new DirectEncrypter(secret));
 			String jwe = jweObject.serialize();
@@ -88,10 +93,10 @@ public class PropertyAdderImpl implements IPropertyAdder {
 	}
 
 	/**
-	 * @see com.github.lhervier.domino.oauth.library.server.ext.IPropertyAdder#addSignedProperty(java.lang.String, com.google.gson.JsonObject)
+	 * @see com.github.lhervier.domino.oauth.library.server.ext.IPropertyAdder#addSignedProperty(String, Object)
 	 */
 	@Override
-	public void addSignedProperty(String name, JsonObject obj) {
+	public void addSignedProperty(String name, Object obj) {
 		if( dest.containsKey(name) )
 			throw new RuntimeException("La propriété '" + name + "' est déjà définie dans la réponse au grant.");
 		
@@ -100,7 +105,7 @@ public class PropertyAdderImpl implements IPropertyAdder {
 			JWSHeader header = new JWSHeader(JWSAlgorithm.HS256, null, null, null, null, null, null, null, null, null, this.signKey, null, null);
 			JWSObject jwsObject = new JWSObject(
 					header,
-	                new Payload(GsonUtils.toJson(obj))
+	                new Payload(this.mapper.writeValueAsString(obj))
 			);
 			jwsObject.sign(new MACSigner(secret));
 			String jws = jwsObject.serialize();

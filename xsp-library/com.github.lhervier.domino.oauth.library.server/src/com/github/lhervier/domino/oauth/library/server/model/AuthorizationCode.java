@@ -1,14 +1,13 @@
 package com.github.lhervier.domino.oauth.library.server.model;
 
 import java.util.List;
-
-import com.google.gson.JsonObject;
+import java.util.Map;
 
 /**
  * Un code autorisation.
  * @author Lionel HERVIER
  */
-public class AuthorizationCode extends AccessToken {
+public class AuthorizationCode {
 
 	/**
 	 * L'identifiant
@@ -46,9 +45,15 @@ public class AuthorizationCode extends AccessToken {
 	private List<String> grantedScopes;
 	
 	/**
-	 * Le contexte
+	 * The context classes for each extension
 	 */
-	private JsonObject contexts;
+	private Map<String, String> contextClasses;
+	
+	/**
+	 * The context objets for each extension
+	 * (as a json String)
+	 */
+	private Map<String, String> contextObjects;
 	
 	/**
 	 * @return the application
@@ -149,16 +154,30 @@ public class AuthorizationCode extends AccessToken {
 	}
 
 	/**
-	 * @return the contexts
+	 * @return the contextClasses
 	 */
-	public JsonObject getContexts() {
-		return contexts;
+	public Map<String, String> getContextClasses() {
+		return contextClasses;
 	}
 
 	/**
-	 * @param contexts the contexts to set
+	 * @param contextClasses the contextClasses to set
 	 */
-	public void setContexts(JsonObject contexts) {
-		this.contexts = contexts;
+	public void setContextClasses(Map<String, String> contextClasses) {
+		this.contextClasses = contextClasses;
+	}
+
+	/**
+	 * @return the contextObjects
+	 */
+	public Map<String, String> getContextObjects() {
+		return contextObjects;
+	}
+
+	/**
+	 * @param contextObjects the contextObjects to set
+	 */
+	public void setContextObjects(Map<String, String> contextObjects) {
+		this.contextObjects = contextObjects;
 	}
 }

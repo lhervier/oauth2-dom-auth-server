@@ -18,6 +18,9 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
 
 import org.apache.commons.io.IOUtils;
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
 
 public class HttpConnection<T, E> {
 
@@ -65,6 +68,11 @@ public class HttpConnection<T, E> {
 	 * Le contenu à envoyer
 	 */
 	private InputStream content;
+	
+	/**
+	 * Jackson mapper
+	 */
+	private ObjectMapper mapper = new ObjectMapper();
 	
 	/**
 	 * Initialise une connection 
@@ -150,10 +158,12 @@ public class HttpConnection<T, E> {
 	 * Pour définir un contenu objet à serialiser en Json
 	 * @param content le contenu
 	 * @param encoding l'encodage
-	 * @throws UnsupportedEncodingException 
+	 * @throws IOException 
+	 * @throws JsonMappingException 
+	 * @throws JsonGenerationException 
 	 */
-	public HttpConnection<T, E> setJsonContent(Object content, String encoding) throws UnsupportedEncodingException {
-		this.content = new ByteArrayInputStream(GsonUtils.toJson(content).getBytes(encoding));
+	public HttpConnection<T, E> setJsonContent(Object content, String encoding) throws JsonGenerationException, JsonMappingException, IOException {
+		this.content = new ByteArrayInputStream(this.mapper.writeValueAsString(content).getBytes(encoding));
 		return this;
 	}
 	
@@ -235,12 +245,12 @@ public class HttpConnection<T, E> {
 			
 			// Code 200 => OK
 			if( conn.getResponseCode() == 200 && this.okCallback != null ) {
-				T resp = GsonUtils.fromJson(sb.toString(), this.okType);
+				T resp = this.mapper.readValue(sb.toString(), this.okType);
 				this.okCallback.run(resp);
 				
 			// Code autre => Erreur
 			} else if( conn.getResponseCode() != 200 && this.errorCallback != null ) {
-				E resp = GsonUtils.fromJson(sb.toString(), this.errorType);
+				E resp = this.mapper.readValue(sb.toString(), this.errorType);
 				this.errorCallback.run(resp);
 			}
 		} catch(IOException e) {

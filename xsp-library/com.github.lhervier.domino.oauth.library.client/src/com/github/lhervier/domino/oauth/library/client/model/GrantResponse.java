@@ -2,7 +2,7 @@ package com.github.lhervier.domino.oauth.library.client.model;
 
 import java.util.List;
 
-import com.google.gson.annotations.SerializedName;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
  * Réponse pour les types de grant "authorization code"
@@ -13,31 +13,31 @@ public class GrantResponse {
 	/**
 	 * Le token d'acces
 	 */
-	@SerializedName("access_token")
+	@JsonProperty("access_token")
 	private String accessToken;
 	
 	/**
 	 * La durée de validité
 	 */
-	@SerializedName("expires_in")
+	@JsonProperty("expires_in")
 	private long expiresIn;
 	
 	/**
 	 * Le refresh token
 	 */
-	@SerializedName("refresh_token")
+	@JsonProperty("refresh_token")
 	private String refreshToken;
 	
 	/**
 	 * Le id_token openid
 	 */
-	@SerializedName("id_token")
+	@JsonProperty("id_token")
 	private String idToken;
 	
 	/**
 	 * Le type de token
 	 */
-	@SerializedName("token_type")
+	@JsonProperty("token_type")
 	private String tokenType;
 
 	/**

@@ -30,6 +30,7 @@ import com.github.lhervier.domino.oauth.library.server.model.AuthorizationCodeRe
 import com.github.lhervier.domino.oauth.library.server.services.AppService;
 import com.github.lhervier.domino.oauth.library.server.services.AuthCodeService;
 import com.github.lhervier.domino.oauth.library.server.utils.Utils;
+import com.github.lhervier.domino.spring.servlet.UserSession;
 
 /**
  * Authorize endpoint
@@ -49,6 +50,12 @@ public class AuthorizeController {
 	 */
 	@Autowired
 	private AuthCodeService authCodeSvc;
+	
+	/**
+	 * The user session
+	 */
+	@Autowired
+	private UserSession userSession;
 	
 	/**
 	 * Authorize endpoint
@@ -135,6 +142,7 @@ public class AuthorizeController {
 		
 		// Create authorization code
 		AuthorizationCode authCode = this.authCodeSvc.createAuthorizationCode(
+				this.userSession,
 				app, 
 				redirectUri, 
 				scopes

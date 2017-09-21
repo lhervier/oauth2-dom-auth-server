@@ -22,5 +22,10 @@ Export-Package: com.nimbusds.jose,
  com.nimbusds.jose.util,
  com.nimbusds.jwt,
  com.nimbusds.jwt.proc,
- com.nimbusds.jwt.util
+ com.nimbusds.jwt.util,
+ net.minidev.json,
+ net.minidev.json.annotate,
+ net.minidev.json.parser,
+ net.minidev.json.reader,
+ net.minidev.json.writer
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6

@@ -82,7 +82,7 @@ public class AccessCheckAspect {
 			
 		// Method to be called only on the server root (no database context) :
 		} else if( srCtx != null ) {
-			if( this.userDatabase != null )
+			if( this.userDatabase.isAvailable() )
 				throw new WrongPathException();
 		
 		// Method with no annotation => Error !

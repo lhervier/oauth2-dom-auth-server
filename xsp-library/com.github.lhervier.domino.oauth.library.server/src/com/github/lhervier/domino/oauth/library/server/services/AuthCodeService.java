@@ -64,7 +64,7 @@ public class AuthCodeService extends BaseServerComponent {
 	/**
 	 * Authorization codes life time
 	 */
-	@Value("${oauth2.server.authCodeLifeTime}")
+	@Value("${oauth2.server.authCodeLifetime}")
 	private long authCodeLifeTime;
 	
 	/**

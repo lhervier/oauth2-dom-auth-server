@@ -20,11 +20,6 @@ public class OpenIdContext {
 	private String aud;
 	
 	/**
-	 * Expiration time
-	 */
-	private long exp;
-	
-	/**
 	 * Authorization time
 	 */
 	@JsonProperty("auth_time")
@@ -202,20 +197,6 @@ public class OpenIdContext {
 	 */
 	public void setAud(String aud) {
 		this.aud = aud;
-	}
-
-	/**
-	 * @return the exp
-	 */
-	public long getExp() {
-		return exp;
-	}
-
-	/**
-	 * @param exp the exp to set
-	 */
-	public void setExp(long exp) {
-		this.exp = exp;
 	}
 
 	/**

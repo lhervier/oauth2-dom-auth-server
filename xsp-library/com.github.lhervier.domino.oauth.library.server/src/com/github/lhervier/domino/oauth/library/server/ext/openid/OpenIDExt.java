@@ -33,12 +33,6 @@ public class OpenIDExt implements IOAuthExtension<OpenIdContext> {
 	private String iss;
 	
 	/**
-	 * Id token expiration
-	 */
-	@Value("${oauth2.server.openid.expiresIn}")
-	private long expiresIn;
-	
-	/**
 	 * The http servlet request
 	 */
 	@Autowired
@@ -79,7 +73,6 @@ public class OpenIDExt implements IOAuthExtension<OpenIdContext> {
 		ctx.setIss(this.iss);
 		ctx.setSub(session.getEffectiveUserName());
 		ctx.setAud(clientId);
-		ctx.setExp(SystemUtils.currentTimeSeconds() + this.expiresIn);
 		ctx.setAcr("");				// TODO: acr non généré
 		ctx.setAmr("");				// TODO: amr non généré
 		ctx.setAzp("");				// TODO: azp non généré

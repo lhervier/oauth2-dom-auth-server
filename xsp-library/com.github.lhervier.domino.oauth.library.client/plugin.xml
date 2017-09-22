@@ -17,4 +17,10 @@
          </init-param>
       </servlet>
    </extension>
+   <extension
+         point="com.github.lhervier.domino.spring.propertysources">
+      <property-source
+            class="com.github.lhervier.domino.oauth.library.client.Oauth2ClientDbPropertySource">
+      </property-source>
+   </extension>
 </plugin>

@@ -12,6 +12,7 @@ import lotus.domino.NotesException;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,14 +22,13 @@ import com.github.lhervier.domino.oauth.common.model.error.AuthorizeError;
 import com.github.lhervier.domino.oauth.common.model.error.GrantError;
 import com.github.lhervier.domino.oauth.common.utils.Callback;
 import com.github.lhervier.domino.oauth.common.utils.QueryStringUtils;
-import com.github.lhervier.domino.oauth.library.client.BaseClientComponent;
 import com.github.lhervier.domino.oauth.library.client.ex.OauthClientException;
 import com.github.lhervier.domino.oauth.library.client.model.GrantResponse;
 import com.github.lhervier.domino.oauth.library.client.utils.Utils;
 import com.github.lhervier.domino.spring.servlet.ServerSession;
 
 @Controller
-public class InitController extends BaseClientComponent {
+public class InitController {
 
 	/**
 	 * The http servlet request
@@ -47,6 +47,12 @@ public class InitController extends BaseClientComponent {
 	 */
 	@Autowired
 	private ServerSession serverSession;
+	
+	/**
+	 * Spring environment
+	 */
+	@Autowired
+	private Environment env;
 	
 	/**
 	 * Initialisation
@@ -74,9 +80,9 @@ public class InitController extends BaseClientComponent {
 		}
 		
 		// Otherwise, we redirect to the authorize endpoint
-		String authorizeEndPoint = this.getProperty("endpoints.authorize");
-		String baseUri = Utils.getEncodedRedirectUri(this.getProperty("baseURI"));
-		String clientId = this.getProperty("clientId");
+		String authorizeEndPoint = this.env.getProperty("oauth2.client.endpoints.authorize");
+		String baseUri = Utils.getEncodedRedirectUri(this.env.getProperty("oauth2.client.baseURI"));
+		String clientId = this.env.getProperty("oauth2.client.clientId");
 		String encodedRedirectUrl = Utils.urlEncode(redirectUrl);
 		String redirectUri = authorizeEndPoint + "?" +
 					"response_type=code&" +
@@ -99,15 +105,15 @@ public class InitController extends BaseClientComponent {
 			final ModelAndView ret = new ModelAndView();
 			Utils.createConnection(
 					this.serverSession, 
-					Boolean.parseBoolean(this.getProperty("disableHostVerifier")), 
-					this.getProperty("secret"),
-					this.getProperty("endpoints.token"))
+					Boolean.parseBoolean(this.env.getProperty("oauth2.client.disableHostVerifier")), 
+					this.env.getProperty("oauth2.client.secret"),
+					this.env.getProperty("oauth2.client.endpoints.token"))
 					.setTextContent(
 							new StringBuffer()
 									.append("grant_type=authorization_code&")
 									.append("code=").append(code).append('&')
 									// .append("client_id=").append(this.initParamsBean.getClientId()).append('&')		// Not mandatory
-									.append("redirect_uri=").append(Utils.getEncodedRedirectUri(this.getProperty("baseURI")))
+									.append("redirect_uri=").append(Utils.getEncodedRedirectUri(this.env.getProperty("oauth2.client.baseURI")))
 									.toString(), 
 							"UTF-8"
 					)

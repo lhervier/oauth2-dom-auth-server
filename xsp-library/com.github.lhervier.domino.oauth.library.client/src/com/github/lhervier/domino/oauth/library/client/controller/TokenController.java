@@ -10,6 +10,7 @@ import lotus.domino.NotesException;
 
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -18,7 +19,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.github.lhervier.domino.oauth.common.model.error.GrantError;
 import com.github.lhervier.domino.oauth.common.utils.Callback;
 import com.github.lhervier.domino.oauth.common.utils.ValueHolder;
-import com.github.lhervier.domino.oauth.library.client.BaseClientComponent;
 import com.github.lhervier.domino.oauth.library.client.Constants;
 import com.github.lhervier.domino.oauth.library.client.ex.OauthClientException;
 import com.github.lhervier.domino.oauth.library.client.ex.RefreshTokenException;
@@ -27,7 +27,7 @@ import com.github.lhervier.domino.oauth.library.client.utils.Utils;
 import com.github.lhervier.domino.spring.servlet.ServerSession;
 
 @Controller
-public class TokenController extends BaseClientComponent {
+public class TokenController {
 
 	/**
 	 * The http session
@@ -40,6 +40,12 @@ public class TokenController extends BaseClientComponent {
 	 */
 	@Autowired
 	private ServerSession serverSession;
+	
+	/**
+	 * The spring environment
+	 */
+	@Autowired
+	private Environment env;
 	
 	/**
 	 * The response class
@@ -84,9 +90,9 @@ public class TokenController extends BaseClientComponent {
 			final ValueHolder<RefreshTokenException> ex = new ValueHolder<RefreshTokenException>();
 			Utils.createConnection(
 					this.serverSession, 
-					Boolean.parseBoolean(this.getProperty("disableHostVerifier")), 
-					this.getProperty("secret"),
-					this.getProperty("endpoints.token")
+					Boolean.parseBoolean(this.env.getProperty("oauth2.client.disableHostVerifier")), 
+					this.env.getProperty("oauth2.client.secret"),
+					this.env.getProperty("oauth2.client.endpoints.token")
 			)
 			.setTextContent(
 					new StringBuffer()

@@ -13,7 +13,7 @@ import lotus.domino.View;
 import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
 import com.github.lhervier.domino.spring.servlet.BaseNotesPropertySource;
 
-public class OAuth2DbPropertySource extends BaseNotesPropertySource {
+public class OAuth2ServerDbPropertySource extends BaseNotesPropertySource {
 
 	/**
 	 * The properties
@@ -23,7 +23,7 @@ public class OAuth2DbPropertySource extends BaseNotesPropertySource {
 	/**
 	 * Constructor
 	 */
-	public OAuth2DbPropertySource() {
+	public OAuth2ServerDbPropertySource() {
 		super("oauth2-db-property-source");
 	}
 

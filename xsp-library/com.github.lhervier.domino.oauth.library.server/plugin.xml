@@ -20,7 +20,7 @@
    <extension
          point="com.github.lhervier.domino.spring.propertysources">
       <property-source
-            class="com.github.lhervier.domino.oauth.library.server.OAuth2DbPropertySource">
+            class="com.github.lhervier.domino.oauth.library.server.OAuth2ServerDbPropertySource">
       </property-source>
    </extension>
 

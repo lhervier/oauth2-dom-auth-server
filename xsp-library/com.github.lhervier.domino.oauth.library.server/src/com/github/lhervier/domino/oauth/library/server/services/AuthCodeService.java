@@ -89,6 +89,7 @@ public class AuthCodeService extends BaseServerComponent {
 	 * @param scopes the scopes
 	 * @throws NotesException 
 	 */
+	@SuppressWarnings("unchecked")
 	public AuthorizationCode createAuthorizationCode(
 			Session session,
 			Application app, 
@@ -188,6 +189,7 @@ public class AuthCodeService extends BaseServerComponent {
 	 * @param code the code
 	 * @return the authorization code (or null if it does not exists)
 	 */
+	@SuppressWarnings("unchecked")
 	public AuthorizationCode findAuthorizationCode(String code) throws InvalidGrantException, NotesException {
 		Document authDoc = null;
 		View v = null;

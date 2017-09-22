@@ -337,6 +337,7 @@ public class TokenController {
 	 * @throws ServerErrorException main error
 	 * @throws NotesException 
 	 */
+	@SuppressWarnings("unchecked")
 	private Map<String, Object> authorizationCode(
 			String code, 
 			String redirectUri, 
@@ -410,6 +411,7 @@ public class TokenController {
 	 * @throws AuthorizeServerErrorException
 	 * @throws NotesException
 	 */
+	@SuppressWarnings("unchecked")
 	public Map<String, Object> refreshToken(
 			Application app,
 			String sRefreshToken, 

@@ -133,9 +133,9 @@ public class CoreExt implements IOAuthExtension<CoreContext> {
 			IPropertyAdder adder,
 			List<String> scopes) throws NotesException {
 		AccessToken token = new AccessToken();
+		BeanUtils.copyProperties(context, token);
 		token.setExp(SystemUtils.currentTimeSeconds() + this.expiresIn);
 		token.setScopes(scopes);
-		BeanUtils.copyProperties(context, token);
 		adder.addSignedProperty("access_token", token, this.signKey);
 	}
 }

@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import lotus.domino.Document;
 import lotus.domino.Name;
 import lotus.domino.NotesException;
 import lotus.domino.Session;
@@ -19,6 +20,7 @@ import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.server.ext.IPropertyAdder;
 import com.github.lhervier.domino.oauth.server.ext.IScopeGranter;
 import com.github.lhervier.domino.oauth.server.model.AuthorizationCode;
+import com.github.lhervier.domino.oauth.server.services.NabService;
 
 /**
  * Implémentation de OpenID par dessus OAUth2
@@ -44,6 +46,12 @@ public class OpenIDExt implements IOAuthExtension<OpenIdContext> {
 	 */
 	@Autowired
 	private HttpServletRequest request;
+	
+	/**
+	 * The NAB service
+	 */
+	@Autowired
+	private NabService nabSvc;
 	
 	/**
 	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#getContextClass()
@@ -78,69 +86,78 @@ public class OpenIDExt implements IOAuthExtension<OpenIdContext> {
 			IScopeGranter granter, 
 			String clientId, 
 			List<String> scopes) throws NotesException {
-		// On ne réagit que si on nous demande le scope "openid"
-		if( !scopes.contains("openid") )
-			return null;
-		granter.grant("openid");
-		
-		// Les attributs par défaut
-		OpenIdContext ctx = new OpenIdContext();
-		ctx.setIss(this.iss);
-		ctx.setSub(session.getEffectiveUserName());
-		ctx.setAud(clientId);
-		ctx.setAcr("");				// TODO: acr non généré
-		ctx.setAmr("");				// TODO: amr non généré
-		ctx.setAzp("");				// TODO: azp non généré
-		ctx.setAuthTime(SystemUtils.currentTimeSeconds());
-		if( this.request.getParameter("nonce") != null )
-			ctx.setNonce(this.request.getParameter("nonce"));
-		else
-			ctx.setNonce(null);
-		
-		if( scopes.contains("profile") ) {
-			granter.grant("profile");
+		Document doc = null;
+		try {
+			// On ne réagit que si on nous demande le scope "openid"
+			if( !scopes.contains("openid") )
+				return null;
+			granter.grant("openid");
 			
-			Name nn = null;
-			try {
-				nn = session.createName(session.getEffectiveUserName());
-				ctx.setName(nn.getCommon());
-			} finally {
-				DominoUtils.recycleQuietly(nn);
+			// Les attributs par défaut
+			OpenIdContext ctx = new OpenIdContext();
+			ctx.setIss(this.iss);
+			ctx.setSub(session.getEffectiveUserName());
+			ctx.setAud(clientId);
+			ctx.setAcr(null);				// TODO: acr non généré
+			ctx.setAmr(null);				// TODO: amr non généré
+			ctx.setAzp(null);				// TODO: azp non généré
+			ctx.setAuthTime(SystemUtils.currentTimeSeconds());
+			if( this.request.getParameter("nonce") != null )
+				ctx.setNonce(this.request.getParameter("nonce"));
+			else
+				ctx.setNonce(null);
+			
+			doc = this.nabSvc.getPersonDoc(session.getEffectiveUserName());
+			
+			if( scopes.contains("profile") ) {
+				granter.grant("profile");
+				
+				Name nn = null;
+				try {
+					nn = session.createName(session.getEffectiveUserName());
+					ctx.setName(nn.getCommon());
+				} finally {
+					DominoUtils.recycleQuietly(nn);
+				}
+				ctx.setGivenName(doc.getItemValueString("FirstName"));
+				ctx.setFamilyName(doc.getItemValueString("LastName"));
+				ctx.setMiddleName(doc.getItemValueString("MiddleInitial"));
+				ctx.setGender(doc.getItemValueString("Title"));		// FIXME: OpenId says it should "male" or "female". We will send "Mr.", "Miss", "Dr.", etc... 
+				ctx.setPreferedUsername(doc.getItemValueString("ShortName"));
+				ctx.setWebsite(doc.getItemValueString("WebSite"));
+				ctx.setPicture(doc.getItemValueString("PhotoUrl"));
+				
+				ctx.setUpdatedAt(null);						// FIXME: Information is present in the "LastMod" field
+				ctx.setLocale(null);						// FIXME: Preferred language is in the "preferredLanguage" field. But it's not a locale.
+				
+				ctx.setZoneinfo(null);						// Time zone
+				ctx.setBirthdate(null);						// Date of birth
+				ctx.setProfile(null);						// Profile page URL
+				ctx.setNickname(null);						// "Mike" for someone called "Mickael"
 			}
-			// TODO: Récupérer ces infos depuis la fiche du NAB !!
-			ctx.setFamilyName("");
-			ctx.setGivenName("");
-			ctx.setMiddleName("");
-			ctx.setNickname("");
-			ctx.setPreferedUsername("");
-			ctx.setProfile("");
-			ctx.setPicture("");
-			ctx.setWebsite("");
-			ctx.setGender("");
-			ctx.setBirthdate("");
-			ctx.setZoneinfo("");
-			ctx.setLocale("");
-			ctx.setUpdatedAt("");
+			
+			if( scopes.contains("email") ) {
+				granter.grant("email");
+				ctx.setEmail(doc.getItemValueString("InternetAddress"));
+				ctx.setEmailVerified(null);
+			}
+			
+			if( scopes.contains("address") ) {
+				granter.grant("address");
+				// FIXME: Extract street address.
+				ctx.setAddress(null);
+			}
+			
+			if( scopes.contains("phone") ) {
+				granter.grant("phone");
+				ctx.setPhoneNumber(doc.getItemValueString("OfficePhoneNumber"));
+				ctx.setPhoneNumberVerified(null);
+			}
+			
+			return ctx;
+		} finally {
+			DominoUtils.recycleQuietly(doc);
 		}
-		
-		if( scopes.contains("email") ) {
-			granter.grant("email");
-			ctx.setEmail("");
-			ctx.setEmailVerified("");
-		}
-		
-		if( scopes.contains("address") ) {
-			granter.grant("address");
-			ctx.setAddress("");
-		}
-		
-		if( scopes.contains("phone") ) {
-			granter.grant("phone");
-			ctx.setPhoneNumber("");
-			ctx.setPhoneNumberVerified("");
-		}
-		
-		return ctx;
 	}
 
 	/**

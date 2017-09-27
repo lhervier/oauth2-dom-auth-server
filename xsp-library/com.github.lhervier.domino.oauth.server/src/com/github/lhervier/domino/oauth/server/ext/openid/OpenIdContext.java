@@ -1,7 +1,10 @@
 package com.github.lhervier.domino.oauth.server.ext.openid;
 
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
 
+@JsonSerialize(include=Inclusion.NON_NULL)
 public class OpenIdContext {
 
 	/**
@@ -121,7 +124,7 @@ public class OpenIdContext {
 	 * Updated at
 	 */
 	@JsonProperty("updated_at")
-	private String updatedAt;
+	private Long updatedAt;
 	
 	// ================ "email" scope ========================
 	
@@ -524,14 +527,14 @@ public class OpenIdContext {
 	/**
 	 * @return the updatedAt
 	 */
-	public String getUpdatedAt() {
+	public Long getUpdatedAt() {
 		return updatedAt;
 	}
 
 	/**
 	 * @param updatedAt the updatedAt to set
 	 */
-	public void setUpdatedAt(String updatedAt) {
+	public void setUpdatedAt(Long updatedAt) {
 		this.updatedAt = updatedAt;
 	}
 	

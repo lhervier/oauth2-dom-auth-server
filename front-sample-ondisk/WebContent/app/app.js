@@ -6,12 +6,26 @@ sampleApp.controller('SampleController', ['$rootScope', '$resource', '$window', 
 	this.alerte = null;
 	this.reconnectUrl = null;
 	this.userInfo = null;
-	this.accessToken = null;		// Juste pour info...
+	this.accessToken = null;
+	this.userInfoEndpoint = null;
 	
-	this.loadUserInfo = function() {
+	this.loadUserInfoFromResourceServer = function() {
 		$resource(ths.param.restServer + '/userInfo').get(
 				function(userInfo) {
 					ths.userInfo = userInfo;
+				},
+				function(reason) {
+					if( reason.code == "oauth2.needs_reconnect" )
+						ths.reconnectUrl = reason.reconnectUrl;
+					else
+						ths.alerte = "Erreur à la récupération des infos utilisateur : " + reason;
+				});
+	};
+	
+	this.loadUserInfoFromUserInfoEndpoint = function() {
+		$resource(ths.userInfoEndpoint).get(
+				function(result) {
+					ths.userInfo = result;
 				},
 				function(reason) {
 					if( reason.code == "oauth2.needs_reconnect" )
@@ -33,8 +47,9 @@ sampleApp.controller('SampleController', ['$rootScope', '$resource', '$window', 
 	
 	// Initialise la danse oauth2. On force la reconnexion s'il n'est pas en session.
 	oauth2Service.init('oauth2-client/init', 'oauth2-client/accesstoken', 'oauth2-client/refresh').then(
-			function(token) {
-				ths.accessToken = token;
+			function(result) {
+				ths.accessToken = result.access_token;
+				ths.userInfoEndpoint = result.user_info_endpoint;
 			},
 			function(reason) {
 				if( reason.code == "oauth2.needs_reconnect" )

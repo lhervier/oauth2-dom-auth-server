@@ -24,7 +24,7 @@ ngOauth2.factory('oauth2Service', ['$rootScope', '$q', '$resource', '$window', f
 					} else {
 						svc.token = result.access_token;
 						svc.iss = new Date().getTime();
-						def.resolve(result.access_token);
+						def.resolve(result);
 					}
 					return def.promise;
 				},

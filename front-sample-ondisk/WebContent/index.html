@@ -30,8 +30,11 @@
 	<span>Utilisateur courant :</span>
 	<span ng-show="ctrl.userInfo == null">Non récupéré</span>
 	<span ng-show="ctrl.userInfo != null">{{ctrl.userInfo.name}}</span>
-	<button ng-click="ctrl.loadUserInfo()">
-		Récupérer l'utilisateur courant
+	<button ng-click="ctrl.loadUserInfoFromResourceServer()">
+		Extract current user name from sample rest service
+	</button>
+	<button ng-click="ctrl.loadUserInfoFromUserInfoEndpoint()">
+		Extract current user name from openid userInfo enpoint
 	</button>
 </body>
 </html>

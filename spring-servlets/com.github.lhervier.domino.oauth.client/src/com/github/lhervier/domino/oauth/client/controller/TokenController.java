@@ -55,10 +55,14 @@ public class TokenController {
 		private String accessToken;
 		@JsonProperty("id_token")
 		private String idToken;
+		@JsonProperty("user_info_endpoint")
+		private String userInfoEndpoint;
 		public String getAccessToken() {return accessToken;}
 		public void setAccessToken(String accessToken) {this.accessToken = accessToken;}
 		public String getIdToken() {return idToken;}
 		public void setIdToken(String idToken) {this.idToken = idToken;}
+		public String getUserInfoEndpoint() { return userInfoEndpoint; }
+		public void setUserInfoEndpoint(String userInfoEndpoint) { this.userInfoEndpoint = userInfoEndpoint; }
 	}
 	
 	/**
@@ -69,6 +73,7 @@ public class TokenController {
 		TokenResponse resp = new TokenResponse();
 		resp.setAccessToken((String) this.httpSession.getAttribute(Constants.SESSION_ACCESS_TOKEN));
 		resp.setIdToken((String) this.httpSession.getAttribute(Constants.SESSION_ID_TOKEN));
+		resp.setUserInfoEndpoint(this.env.getProperty("oauth2.client.endpoints.userInfo"));
 		return resp;
 	}
 	

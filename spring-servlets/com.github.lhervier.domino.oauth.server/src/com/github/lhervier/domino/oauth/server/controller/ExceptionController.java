@@ -114,14 +114,20 @@ public class ExceptionController {
 		return new ModelAndView("error", model);
 	}
 	
+	public static class NotAuthorizedResponse {
+		private String error;
+		public String getError() {return this.error; }
+		public void setError(String error) { this.error = error; }
+	}
+	
 	/**
 	 * NotAuthorizedException
 	 */
 	@ExceptionHandler(NotAuthorizedException.class)
 	@ResponseStatus(value = HttpStatus.FORBIDDEN)
-	public ModelAndView processNotAuthorizedException(NotAuthorizedException e) {
-		Map<String, Object> model = new HashMap<String, Object>();
-		model.put("error", "not_authorized");
-		return new ModelAndView("error", model);
+	public @ResponseBody NotAuthorizedResponse processNotAuthorizedException(NotAuthorizedException e) {
+		NotAuthorizedResponse ret = new NotAuthorizedResponse();
+		ret.setError("not_authorized");
+		return ret;
 	}
 }

@@ -15,6 +15,10 @@
                name="contextClass"
                value="org.springframework.web.context.support.AnnotationConfigWebApplicationContext">
          </init-param>
+         <init-param
+         		name="dispatchOptionsRequest"
+         		value="true">
+         </init-param>
       </servlet>
    </extension>
    <extension

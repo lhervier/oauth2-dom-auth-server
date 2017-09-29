@@ -2,7 +2,7 @@ package com.github.lhervier.domino.oauth.client.model;
 
 import org.codehaus.jackson.annotate.JsonProperty;
 
-public class TokenResponse {
+public class TokensResponse {
 	@JsonProperty("access_token")
 	private String accessToken;
 	@JsonProperty("id_token")

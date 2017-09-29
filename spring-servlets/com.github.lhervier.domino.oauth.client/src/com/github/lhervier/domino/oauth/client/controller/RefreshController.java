@@ -19,7 +19,7 @@ import com.github.lhervier.domino.oauth.client.Constants;
 import com.github.lhervier.domino.oauth.client.ex.OauthClientException;
 import com.github.lhervier.domino.oauth.client.ex.RefreshTokenException;
 import com.github.lhervier.domino.oauth.client.model.GrantResponse;
-import com.github.lhervier.domino.oauth.client.model.TokenResponse;
+import com.github.lhervier.domino.oauth.client.model.TokensResponse;
 import com.github.lhervier.domino.oauth.client.utils.Utils;
 import com.github.lhervier.domino.oauth.common.model.error.GrantError;
 import com.github.lhervier.domino.oauth.common.utils.Callback;
@@ -60,13 +60,13 @@ public class RefreshController {
 	 * @throws UnsupportedEncodingException 
 	 */
 	@RequestMapping(value = "/refresh", method = RequestMethod.GET)
-	public @ResponseBody TokenResponse refreshToken() throws OauthClientException, RefreshTokenException {
+	public @ResponseBody TokensResponse refreshToken() throws OauthClientException, RefreshTokenException {
 		try {
 			String refreshToken = (String) this.httpSession.getAttribute(Constants.SESSION_REFRESH_TOKEN);
 			
 			// No refresh token => Unable to ask for a new one
 			if( refreshToken == null )
-				return this.tokenCtrl.accessToken();
+				return this.tokenCtrl.tokens();
 			
 			final ValueHolder<RefreshTokenException> ex = new ValueHolder<RefreshTokenException>();
 			Utils.createConnection(
@@ -108,7 +108,7 @@ public class RefreshController {
 			if( ex.get() != null )
 				throw ex.get();
 			
-			return this.tokenCtrl.accessToken();
+			return this.tokenCtrl.tokens();
 		} catch(IOException e) {
 			throw new OauthClientException(e);
 		}

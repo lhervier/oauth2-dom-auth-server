@@ -13,7 +13,6 @@ import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 
 import org.apache.commons.lang.StringUtils;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
@@ -88,11 +87,6 @@ public class TokenController {
 	 */
 	@Autowired
 	private ApplicationContext springContext;
-	
-	/**
-	 * Jackson mapper
-	 */
-	private ObjectMapper mapper = new ObjectMapper();
 	
 	// =============================================================================
 	
@@ -213,9 +207,7 @@ public class TokenController {
 				);
 				context.put(
 						"jsonValue", 
-						this.mapper.writeValueAsString(
-								authCode.getContextObjects().get(extId)
-						)
+						authCode.getContextObjects().get(extId)
 				);
 				contexts.put(extId, context);
 			}

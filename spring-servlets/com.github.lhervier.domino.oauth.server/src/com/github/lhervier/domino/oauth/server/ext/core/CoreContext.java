@@ -1,6 +1,5 @@
 package com.github.lhervier.domino.oauth.server.ext.core;
 
-
 /**
  * Context for core plugin
  * @author Lionel HERVIER

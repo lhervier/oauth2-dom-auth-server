@@ -197,7 +197,7 @@ public class TokenController {
 			JSONArray scopes = new JSONArray();
 			for( String scope : authCode.getScopes() )
 				scopes.add(scope);
-			payload.put("scope", scopes);
+			payload.put("scopes", scopes);
 			
 			JSONArray grantedScopes = new JSONArray();
 			for( String scope : authCode.getGrantedScopes() )

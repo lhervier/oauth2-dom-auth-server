@@ -42,6 +42,7 @@ public class ExceptionController {
 	 * Refresh token error. Send the error as json.
 	 */
 	@ExceptionHandler(RefreshTokenException.class)
+	@ResponseStatus(value = HttpStatus.BAD_REQUEST)
 	public @ResponseBody GrantError processRefreshTokenError(RefreshTokenException e) {
 		return e.getError();
 	}

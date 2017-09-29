@@ -46,7 +46,7 @@ sampleApp.controller('SampleController', ['$rootScope', '$resource', '$window', 
 	);
 	
 	// Initialise la danse oauth2. On force la reconnexion s'il n'est pas en session.
-	oauth2Service.init('oauth2-client/init', 'oauth2-client/accesstoken', 'oauth2-client/refresh').then(
+	oauth2Service.init('oauth2-client/init', 'oauth2-client/tokens', 'oauth2-client/refresh').then(
 			function(result) {
 				ths.accessToken = result.access_token;
 				ths.userInfoEndpoint = result.user_info_endpoint;

@@ -1,6 +1,6 @@
 package com.github.lhervier.domino.oauth.client.ex;
 
-import com.github.lhervier.domino.oauth.common.model.error.GrantError;
+import com.github.lhervier.domino.oauth.client.model.GrantError;
 
 /**
  * Error while trying to refresh the token

@@ -1,4 +1,4 @@
-package com.github.lhervier.domino.oauth.common.utils;
+package com.github.lhervier.domino.oauth.server.utils;
 
 import java.util.ArrayList;
 import java.util.Iterator;

@@ -1,6 +1,5 @@
 package com.github.lhervier.domino.oauth.server.model.error.authorize;
 
-import com.github.lhervier.domino.oauth.common.model.error.AuthorizeError;
 
 /**
  * Le client n'est pas autorisé à demander un code autorisation

@@ -10,8 +10,8 @@ import lotus.domino.View;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
 import com.github.lhervier.domino.oauth.server.BaseServerComponent;
+import com.github.lhervier.domino.oauth.server.utils.DominoUtils;
 
 @Service
 public class NabService extends BaseServerComponent {

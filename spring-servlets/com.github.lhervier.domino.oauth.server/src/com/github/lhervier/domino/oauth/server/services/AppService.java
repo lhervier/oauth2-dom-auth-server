@@ -19,11 +19,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.github.lhervier.domino.oauth.common.utils.Base64Utils;
-import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
-import com.github.lhervier.domino.oauth.common.utils.ViewIterator;
 import com.github.lhervier.domino.oauth.server.BaseServerComponent;
 import com.github.lhervier.domino.oauth.server.model.Application;
+import com.github.lhervier.domino.oauth.server.utils.Base64Utils;
+import com.github.lhervier.domino.oauth.server.utils.DominoUtils;
+import com.github.lhervier.domino.oauth.server.utils.ViewIterator;
 
 /**
  * Managed bean pour gérer les applications.

@@ -1,26 +1,33 @@
-package com.github.lhervier.domino.oauth.common.model.error;
+package com.github.lhervier.domino.oauth.client.model;
 
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.github.lhervier.domino.oauth.client.utils.QueryStringUtils.QueryStringName;
 
-public class GrantError {
+/**
+ * Bean pour décrire une erreur d'autorisation
+ * @author Lionel HERVIER
+ */
+public class AuthorizeError {
 
 	/**
-	 * L'erreur
+	 * L'erreur. Cf RFC OAUTH2 pour la liste possible des valeurs
 	 */
 	private String error;
 	
 	/**
 	 * La description de l'erreur
 	 */
-	@JsonProperty("error_description")
 	private String errorDescription;
 	
 	/**
-	 * L'uri de l'erreur
+	 * L'Uri de l'erreur
 	 */
-	@JsonProperty("error_uri")
 	private String errorUri;
-
+	
+	/**
+	 * The state
+	 */
+	private String state;
+	
 	/**
 	 * @return the error
 	 */
@@ -38,6 +45,7 @@ public class GrantError {
 	/**
 	 * @return the errorDescription
 	 */
+	@QueryStringName("error_description")
 	public String getErrorDescription() {
 		return errorDescription;
 	}
@@ -52,6 +60,7 @@ public class GrantError {
 	/**
 	 * @return the errorUri
 	 */
+	@QueryStringName("error_uri")
 	public String getErrorUri() {
 		return errorUri;
 	}
@@ -61,5 +70,19 @@ public class GrantError {
 	 */
 	public void setErrorUri(String errorUri) {
 		this.errorUri = errorUri;
+	}
+
+	/**
+	 * @return the state
+	 */
+	public String getState() {
+		return state;
+	}
+
+	/**
+	 * @param state the state to set
+	 */
+	public void setState(String state) {
+		this.state = state;
 	}
 }

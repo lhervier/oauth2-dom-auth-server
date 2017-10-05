@@ -1,4 +1,4 @@
-package com.github.lhervier.domino.oauth.common.utils;
+package com.github.lhervier.domino.oauth.client.utils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -17,7 +17,6 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
 
-import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;

@@ -1,6 +1,5 @@
 package com.github.lhervier.domino.oauth.server.model.error.grant;
 
-import com.github.lhervier.domino.oauth.common.model.error.GrantError;
 
 public class InvalidScopeError extends GrantError {
 

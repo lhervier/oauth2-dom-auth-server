@@ -13,14 +13,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
-import com.github.lhervier.domino.oauth.common.utils.ReflectionUtils;
-import com.github.lhervier.domino.oauth.common.utils.SystemUtils;
 import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.server.ext.IPropertyAdder;
 import com.github.lhervier.domino.oauth.server.ext.IScopeGranter;
 import com.github.lhervier.domino.oauth.server.model.AuthorizationCode;
 import com.github.lhervier.domino.oauth.server.services.NabService;
+import com.github.lhervier.domino.oauth.server.utils.DominoUtils;
+import com.github.lhervier.domino.oauth.server.utils.ReflectionUtils;
+import com.github.lhervier.domino.oauth.server.utils.SystemUtils;
 
 /**
  * Implémentation de OpenID par dessus OAUth2

@@ -24,8 +24,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
-import com.github.lhervier.domino.oauth.common.utils.SystemUtils;
 import com.github.lhervier.domino.oauth.server.aop.ann.Oauth2DbContext;
 import com.github.lhervier.domino.oauth.server.ex.AuthorizeException;
 import com.github.lhervier.domino.oauth.server.ex.InvalidUriException;
@@ -37,7 +35,9 @@ import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.model.AuthorizationCode;
 import com.github.lhervier.domino.oauth.server.services.AppService;
 import com.github.lhervier.domino.oauth.server.services.SecretService;
+import com.github.lhervier.domino.oauth.server.utils.DominoUtils;
 import com.github.lhervier.domino.oauth.server.utils.PropertyAdderImpl;
+import com.github.lhervier.domino.oauth.server.utils.SystemUtils;
 import com.github.lhervier.domino.oauth.server.utils.Utils;
 import com.github.lhervier.domino.spring.servlet.NotesContext;
 

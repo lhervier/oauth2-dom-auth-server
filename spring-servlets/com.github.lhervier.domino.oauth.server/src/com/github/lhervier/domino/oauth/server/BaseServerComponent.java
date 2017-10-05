@@ -6,7 +6,7 @@ import lotus.domino.NotesException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
-import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
+import com.github.lhervier.domino.oauth.server.utils.DominoUtils;
 import com.github.lhervier.domino.spring.servlet.NotesContext;
 
 public class BaseServerComponent {

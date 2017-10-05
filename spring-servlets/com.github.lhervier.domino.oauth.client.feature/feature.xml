@@ -25,13 +25,6 @@
          unpack="false"/>
 
    <plugin
-         id="com.github.lhervier.domino.oauth.common"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="com.github.lhervier.domino.oauth.external.commons_io"
          download-size="0"
          install-size="0"

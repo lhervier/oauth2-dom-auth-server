@@ -14,7 +14,7 @@ import org.springframework.web.servlet.ModelAndView;
 import com.github.lhervier.domino.oauth.client.ex.OauthClientException;
 import com.github.lhervier.domino.oauth.client.ex.RefreshTokenException;
 import com.github.lhervier.domino.oauth.client.ex.WrongPathException;
-import com.github.lhervier.domino.oauth.common.model.error.GrantError;
+import com.github.lhervier.domino.oauth.client.model.GrantError;
 
 @ControllerAdvice
 public class ExceptionController {

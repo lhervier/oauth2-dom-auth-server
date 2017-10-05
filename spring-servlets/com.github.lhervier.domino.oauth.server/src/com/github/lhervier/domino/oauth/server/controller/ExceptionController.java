@@ -18,14 +18,14 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.github.lhervier.domino.oauth.common.model.error.GrantError;
-import com.github.lhervier.domino.oauth.common.utils.QueryStringUtils;
 import com.github.lhervier.domino.oauth.server.ex.AuthorizeException;
 import com.github.lhervier.domino.oauth.server.ex.GrantException;
 import com.github.lhervier.domino.oauth.server.ex.InvalidUriException;
 import com.github.lhervier.domino.oauth.server.ex.NotAuthorizedException;
 import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
 import com.github.lhervier.domino.oauth.server.ex.WrongPathException;
+import com.github.lhervier.domino.oauth.server.model.error.grant.GrantError;
+import com.github.lhervier.domino.oauth.server.utils.QueryStringUtils;
 
 @ControllerAdvice
 public class ExceptionController {

@@ -23,9 +23,9 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 
-import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
-import com.github.lhervier.domino.oauth.common.utils.SystemUtils;
 import com.github.lhervier.domino.oauth.server.services.SecretService;
+import com.github.lhervier.domino.oauth.server.utils.DominoUtils;
+import com.github.lhervier.domino.oauth.server.utils.SystemUtils;
 import com.ibm.domino.napi.NException;
 import com.ibm.domino.napi.c.NotesUtil;
 import com.ibm.domino.napi.c.Os;

@@ -1,6 +1,5 @@
 package com.github.lhervier.domino.oauth.server.model;
 
-import com.github.lhervier.domino.oauth.common.model.StateResponse;
 
 /**
  * Response of the authorize endpoint when using the authorization code grant flow

@@ -10,7 +10,6 @@ import javax.servlet.http.HttpSession;
 
 import lotus.domino.NotesException;
 
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Controller;
@@ -19,12 +18,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.github.lhervier.domino.oauth.client.ex.OauthClientException;
+import com.github.lhervier.domino.oauth.client.model.AuthorizeError;
+import com.github.lhervier.domino.oauth.client.model.GrantError;
 import com.github.lhervier.domino.oauth.client.model.GrantResponse;
+import com.github.lhervier.domino.oauth.client.utils.Callback;
+import com.github.lhervier.domino.oauth.client.utils.QueryStringUtils;
+import com.github.lhervier.domino.oauth.client.utils.StringUtils;
 import com.github.lhervier.domino.oauth.client.utils.Utils;
-import com.github.lhervier.domino.oauth.common.model.error.AuthorizeError;
-import com.github.lhervier.domino.oauth.common.model.error.GrantError;
-import com.github.lhervier.domino.oauth.common.utils.Callback;
-import com.github.lhervier.domino.oauth.common.utils.QueryStringUtils;
 import com.github.lhervier.domino.spring.servlet.NotesContext;
 
 @Controller

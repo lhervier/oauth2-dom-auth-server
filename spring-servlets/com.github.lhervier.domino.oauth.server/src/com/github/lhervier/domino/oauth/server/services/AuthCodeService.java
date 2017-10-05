@@ -9,10 +9,10 @@ import lotus.domino.View;
 
 import org.springframework.stereotype.Service;
 
-import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
 import com.github.lhervier.domino.oauth.server.BaseServerComponent;
 import com.github.lhervier.domino.oauth.server.ex.grant.InvalidGrantException;
 import com.github.lhervier.domino.oauth.server.model.AuthorizationCode;
+import com.github.lhervier.domino.oauth.server.utils.DominoUtils;
 
 /**
  * Service to manage authorization codes

@@ -1,6 +1,6 @@
 package com.github.lhervier.domino.oauth.server.ex;
 
-import com.github.lhervier.domino.oauth.common.model.error.GrantError;
+import com.github.lhervier.domino.oauth.server.model.error.grant.GrantError;
 
 public class GrantException extends Exception {
 

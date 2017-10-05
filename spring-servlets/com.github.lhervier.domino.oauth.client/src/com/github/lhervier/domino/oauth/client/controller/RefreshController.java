@@ -18,12 +18,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.github.lhervier.domino.oauth.client.Constants;
 import com.github.lhervier.domino.oauth.client.ex.OauthClientException;
 import com.github.lhervier.domino.oauth.client.ex.RefreshTokenException;
+import com.github.lhervier.domino.oauth.client.model.GrantError;
 import com.github.lhervier.domino.oauth.client.model.GrantResponse;
 import com.github.lhervier.domino.oauth.client.model.TokensResponse;
+import com.github.lhervier.domino.oauth.client.utils.Callback;
 import com.github.lhervier.domino.oauth.client.utils.Utils;
-import com.github.lhervier.domino.oauth.common.model.error.GrantError;
-import com.github.lhervier.domino.oauth.common.utils.Callback;
-import com.github.lhervier.domino.oauth.common.utils.ValueHolder;
+import com.github.lhervier.domino.oauth.client.utils.ValueHolder;
 import com.github.lhervier.domino.spring.servlet.NotesContext;
 
 @Controller

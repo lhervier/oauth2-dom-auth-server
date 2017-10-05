@@ -16,10 +16,8 @@ import javax.net.ssl.X509TrustManager;
 import lotus.domino.Session;
 
 import com.github.lhervier.domino.oauth.client.Constants;
+import com.github.lhervier.domino.oauth.client.model.GrantError;
 import com.github.lhervier.domino.oauth.client.model.GrantResponse;
-import com.github.lhervier.domino.oauth.common.model.error.GrantError;
-import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
-import com.github.lhervier.domino.oauth.common.utils.HttpConnection;
 
 public class Utils {
 

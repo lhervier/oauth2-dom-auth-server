@@ -10,12 +10,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.github.lhervier.domino.oauth.common.utils.SystemUtils;
 import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.server.ext.IPropertyAdder;
 import com.github.lhervier.domino.oauth.server.ext.IScopeGranter;
 import com.github.lhervier.domino.oauth.server.model.AuthorizationCode;
 import com.github.lhervier.domino.oauth.server.services.AuthCodeService;
+import com.github.lhervier.domino.oauth.server.utils.SystemUtils;
 
 /**
  * OAUTH2 Core extension

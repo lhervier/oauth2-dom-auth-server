@@ -1,4 +1,4 @@
-package com.github.lhervier.domino.oauth.common.model;
+package com.github.lhervier.domino.oauth.server.model;
 
 public class StateResponse {
 

@@ -1,29 +1,26 @@
-package com.github.lhervier.domino.oauth.common.model.error;
+package com.github.lhervier.domino.oauth.client.model;
 
-import com.github.lhervier.domino.oauth.common.model.StateResponse;
-import com.github.lhervier.domino.oauth.common.utils.QueryStringUtils.QueryStringName;
+import org.codehaus.jackson.annotate.JsonProperty;
 
-/**
- * Bean pour décrire une erreur d'autorisation
- * @author Lionel HERVIER
- */
-public class AuthorizeError extends StateResponse {
+public class GrantError {
 
 	/**
-	 * L'erreur. Cf RFC OAUTH2 pour la liste possible des valeurs
+	 * L'erreur
 	 */
 	private String error;
 	
 	/**
 	 * La description de l'erreur
 	 */
+	@JsonProperty("error_description")
 	private String errorDescription;
 	
 	/**
-	 * L'Uri de l'erreur
+	 * L'uri de l'erreur
 	 */
+	@JsonProperty("error_uri")
 	private String errorUri;
-	
+
 	/**
 	 * @return the error
 	 */
@@ -41,7 +38,6 @@ public class AuthorizeError extends StateResponse {
 	/**
 	 * @return the errorDescription
 	 */
-	@QueryStringName("error_description")
 	public String getErrorDescription() {
 		return errorDescription;
 	}
@@ -56,7 +52,6 @@ public class AuthorizeError extends StateResponse {
 	/**
 	 * @return the errorUri
 	 */
-	@QueryStringName("error_uri")
 	public String getErrorUri() {
 		return errorUri;
 	}

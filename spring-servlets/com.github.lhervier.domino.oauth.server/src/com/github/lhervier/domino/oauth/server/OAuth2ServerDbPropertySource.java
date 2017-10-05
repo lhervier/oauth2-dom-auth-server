@@ -10,7 +10,7 @@ import lotus.domino.NotesException;
 import lotus.domino.Session;
 import lotus.domino.View;
 
-import com.github.lhervier.domino.oauth.common.utils.DominoUtils;
+import com.github.lhervier.domino.oauth.server.utils.DominoUtils;
 import com.github.lhervier.domino.spring.servlet.BaseNotesPropertySource;
 
 public class OAuth2ServerDbPropertySource extends BaseNotesPropertySource {

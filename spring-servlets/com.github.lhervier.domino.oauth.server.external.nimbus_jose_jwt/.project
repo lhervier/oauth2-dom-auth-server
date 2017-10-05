@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>com.github.lhervier.domino.oauth.external.nimbus_jose_jwt</name>
+	<name>com.github.lhervier.domino.oauth.server.external.nimbus_jose_jwt</name>
 	<comment></comment>
 	<projects>
 	</projects>

@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Nimbus_jose_jwt Plug-in
-Bundle-SymbolicName: com.github.lhervier.domino.oauth.external.nimbus_jose_jwt
+Bundle-SymbolicName: com.github.lhervier.domino.oauth.server.external.nimbus_jose_jwt
 Bundle-Version: 4.37.1
 Bundle-ClassPath: accessors-smart-1.2.jar,
  asm-5.0.4.jar,

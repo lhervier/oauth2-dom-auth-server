@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Commons_io Plug-in
-Bundle-SymbolicName: com.github.lhervier.domino.oauth.external.commons_io
+Bundle-SymbolicName: com.github.lhervier.domino.oauth.server.external.commons_io
 Bundle-Version: 2.5.0
 Bundle-ClassPath: commons-io-2.5.jar
 Export-Package: org.apache.commons.io,

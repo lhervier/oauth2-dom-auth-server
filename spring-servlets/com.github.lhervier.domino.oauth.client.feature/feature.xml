@@ -25,13 +25,13 @@
          unpack="false"/>
 
    <plugin
-         id="com.github.lhervier.domino.oauth.external.commons_io"
+         id="com.github.lhervier.domino.oauth.server.external.commons_io"
          download-size="0"
          install-size="0"
          version="0.0.0"/>
 
    <plugin
-         id="com.github.lhervier.domino.oauth.external.nimbus_jose_jwt"
+         id="com.github.lhervier.domino.oauth.server.external.nimbus_jose_jwt"
          download-size="0"
          install-size="0"
          version="0.0.0"/>

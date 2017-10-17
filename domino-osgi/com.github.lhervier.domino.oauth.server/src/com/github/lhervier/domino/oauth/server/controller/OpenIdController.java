@@ -66,7 +66,7 @@ public class OpenIdController {
 	public @ResponseBody IdToken userInfo(HttpServletResponse response) throws NotesException, NotAuthorizedException {
 		response.addHeader("Access-Control-Allow-Origin", "*");
 		if( this.bearerContext.getBearerSession() == null )
-		 throw new NotAuthorizedException();
+			throw new NotAuthorizedException();
 		
 		// Run through authorize to get the context
 		OpenIdContext ctx = this.openIdExt.initContext(

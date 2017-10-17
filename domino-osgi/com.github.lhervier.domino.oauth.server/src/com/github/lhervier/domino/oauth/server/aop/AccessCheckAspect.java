@@ -69,14 +69,14 @@ public class AccessCheckAspect {
 			// Check that we are on the right database
 			String o2Db = this.o2Db.replace('\\', '/');
 			if( this.notesContext.getUserDatabase() == null )
-				throw new WrongPathException();
+				throw new WrongPathException("Cannont oauth2 server endpoints on the server root. NSF context needed.");
 			if( !o2Db.equals(this.notesContext.getUserDatabase().getFilePath()) )
-				throw new WrongPathException();
+				throw new WrongPathException("oauth2 server endpoints must be called on the database declared in the oauth2.server.db variable (" + this.o2Db + ")");
 			
 		// Method to be called only on the server root (no database context) :
 		} else if( srCtx != null ) {
 			if( this.notesContext.getUserDatabase() != null )
-				throw new WrongPathException();
+				throw new WrongPathException("This method must be called on the server root, without NSF context.");
 		
 		// Method with no annotation => Error !
 		} else

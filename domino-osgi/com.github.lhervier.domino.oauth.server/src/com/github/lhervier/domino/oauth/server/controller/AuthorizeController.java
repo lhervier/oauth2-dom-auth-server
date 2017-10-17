@@ -186,6 +186,8 @@ public class AuthorizeController {
 			} else 
 				sep = '#';
 			for( Entry<String, Object> entry : params.entrySet() ) {
+				if( entry.getValue() == null )
+					continue;
 				String key = URLEncoder.encode(entry.getKey(), "UTF-8");
 				String value = URLEncoder.encode(entry.getValue().toString(), "UTF-8");
 				sbRedirect.append(sep).append(key).append('=').append(value);

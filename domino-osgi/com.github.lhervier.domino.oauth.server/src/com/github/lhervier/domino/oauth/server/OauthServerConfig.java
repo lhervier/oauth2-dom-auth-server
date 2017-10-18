@@ -34,4 +34,5 @@ public class OauthServerConfig extends WebMvcConfigurerAdapter {
 			}
 	    }).addPathPatterns("/html/*");
 	}
+
 }

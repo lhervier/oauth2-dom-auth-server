@@ -211,12 +211,12 @@ I will show you how to declare them with any of this methods. But first, let's d
 - oauth2.server.applicationRoot : When we will create a user for an application, we will name it using the application name and this prefix. Example value "/APPLICATION"
 - oauth2.server.refreshTokenConfig : Name of the SSO configuration that contains the secret we will use to encrypt the refresh tokens. Example value "ACME:RefreshToken"
 - oauth2.server.refreshTokenLifetime : Lifetime in seconds of the generated refresh tokens. Should be a long value (10h). Example value "36000"
-- oauth2.server.authCodeLifeTime : Lifetime in seconds of the generated authorization codes. This is maximum time that can pass between the user login, and the server getting the acces/refresh token. Example value "60"
+- oauth2.server.authCodeLifetime : Lifetime in seconds of the generated authorization codes. This is maximum time that can pass between the user login, and the server getting the acces/refresh token. Example value "60"
 - oauth2.server.core.signKey : Name of the SSO configuration that contains the secret we will use to sign the access tokens. Example value "ACME:AccessToken"
-- oauth2.server.core.iss : Issuer of the access token (iss property of the JWT). Example value "https://afer.asso.fr/domino/oauth2/"
-- oauth2.server.core.expiresIn : Lifetime in seconds of the generated access tokens. Example value "180"
+- oauth2.server.core.iss : Issuer of the access token (iss property of the JWT). Example value "https://acme.com/domino/oauth2/"
+- oauth2.server.core.expiresIn : Lifetime in seconds of the generated access tokens. Example value "1800"
 - oauth2.server.openid.signKey : Name of the SSO configuration that contains the secret we will use to sign the openid id tokens. Example value "ACME:IdToken"
-- oauth2.server.openid.iss : Issuer of the openid id token (iss property of the JWT). Example value "https://afer.asso.fr/domino/oauth2/openid/"
+- oauth2.server.openid.iss : Issuer of the openid id token (iss property of the JWT). Example value "https://acme.com/domino/oauth2/openid/"
 
 Whatever the method you use to define those properties, when done, restart the http task. 
 

@@ -1,105 +1,270 @@
-# Domino OAUTH2 Authorization Server #
+OAUTH2 allows you to write *client applications* that are able to access a protected set of *resources* hosted on a *resource server*.
+In real life, most of the *client applications* are web or mobile applications, and most *resources* are Rest APIs.
+Have a look at https://tools.ietf.org/html/rfc6749 for more details.
 
-Ce projet vous permet de transformer votre serveur Domino en un serveur d'autorisation OAUTH2.
-Seul le flux d'autorisation avec code autorisation est implémenté (pour l'instant !).
+The important thing is that, with OAUTH2, the *resource server* (the server that hosts the *resources*) will be able to CLEARLY identify the calling user. 
 
-Cela vous permettra de déployer des services Rest sur un serveur Tomcat (par exemple) tout en garantissant l'identité des appelants.
-En plus de l'infrastructure nécessaire à OAUTH2.0, vous trouverez deux exemples d'applications :
-- Une application Spring Boot pour tomcat qui publie un service Rest, et se sert de l'un des secrets Ltpa pour valider l'autentification.
-- Une application Notes qui montre comment appeler ce service Rest en Javascript pur, et via Angular.
+For this, the *client application* will get an *access token* from an *authorization server*, and will send this token 
+with every requests made to the *resource server*. A common way of sending the *access token* is to add it to the HTTP header named "Authorization", with the "Bearer" prefix.
 
-Les éléments fournis sont les suivants :
+To validate the *access token*, the resource server will have to send it to a endpoint provided by the *authorization server*. [RFC 7662](https://tools.ietf.org/html/rfc7662) define such
+an endpoint. [OpenId Connect](http://openid.net/specs/openid-connect-core-1_0.html#UserInfo) defines another one.
 
-- Une base oauth2.nsf qui vous permet de déclarer les applications (au sens OAUTH2), et qui définit les deux endpoints (authorize et token).
-- Une application SpringBoot exemple qui héberge un service Rest trivial.
-- Une application exemple front, sous la forme d'une base Notes. Cette base authentifie l'utilisateur via OAUTH2, et fait des appels authentifiés au service Rest.
+The goal of this project is to transform a standard IBM Domino v9.0.1 server into an OAUTH2 authorization server (also know as an OAUTH2 provider), with OpenID extensions. 
+Your server will generate access tokens that client applications will be able to use to access protected resources. 
+But note that nor the client applications, nor the protected resources have to be hosted on a Domino Server !
 
-## Note d'implémentation et limites connues ##
+In the last chapter of this README, I will explain how to test your server with a sample notes database that contains an angular application. 
+This application will get an access token from the authorization server, and use it to access the OpenId userInfo endpoint (hosted on the Domino authorization too).
 
-Les deux tokens (access et refresh) sont des JWT. Le token d'acces est SIGNE en utilisant un secret Ltpa, et le token de refresh est crypté en en utilisant un autre.
-Cela permet de ne pas avoit à stocker d'information trop sensible dans la base principale. En reposant sur les secrets Ltpa, on ré-utilise la sécurité mise en place par IBM.
+# Deploy all the needed plugins
 
-Mais Domino lui même ne sera pas capable d'interprêter ces tokens pour l'identification des utilisateurs. En conclusion, vous ne pourrez pas héberger de services Rest sur
-Domino et les protéger par cette technique ! Ce projet est fait pour vous permettre de protéger via Domino des services rest implémentés sur un serveur autre que Domino.
+## Deploy the "Domino Spring" plugins
 
-## Environnement attendu ##
+Download the latest release of the "Domino Spring" project from https://github.com/lhervier/dom-spring/releases. 
+It is a simple zip file that contains osgi plugins.
 
-Pour bien voir se dérouler la danse "OAUTH", associez un nom d'hôte différent à chaque serveur.
+### In your Domino Server
 
-- Serveur Tomcat : Par exemple apis.mon-domaine.com
-- Serveur Domino 9.0.1 : Accessible via deux noms d'hôtes pour ben montrer les deux rôles :
-	- 'login.mon-domaine.com' : Serveur pour l'identification.
-	- 'front.mon-domaine.com' : Serveur pour héberger les bases front.
+First, unzip the update site. Then, create an "update site" database :
 
-## Déclaration des configurations SSO ##
+- Name it the way you want. In this example, I will name it "SpringUpdateSite.nsf" and store it at the root of my Domino server.
+- Use the "Eclipse Update Site" template (you will have to select a server, and click "show advanced templates" in the new database dialog box)
+- Click on the "Import local update site" button
+- Go find the "site.xml" that is present into your unzipped update site.
+- It is recommended to disable the "Spring Sample Feature"
+- Declare the name of the new database in your notes.ini, using the variable "OSGI_HTTP_DYNAMIC_BUNDLES". If it already exist, separate multiple values with a "," character.
+- Restart the http task with a "restart task http" console command.
 
-Les tokens (access et refresh) sont des jetons JWT signés ou cryptés en utilisant des clés SSO standard. Ainsi, elles restent stockées à un endroit sécurisé.
-Vous devez commencer par déclarer deux configurations SSO. Notes bien qu'elles n'ont pas besoin d'être associées à un serveur car elles ne serviront pas à Ltpa.
+Once http has been restarted, you can check that the plugins have been loaded successfully by using the following console command :
 
-Dans la vue "Servers" du NAB, utilisez l'action "Web/Create Web SSO Configuration" pour créer deux configurations SSO.
+	tell http osgi ss spring
+	
+If it answers something, you're good to go.
 
-Dans chaque document, saisissez :
+### In your Domino Designer
 
-- Le nom de la configuration: Par exemple "AccessToken" pour la première, et "RefreshToken" pour la seconde.
-- Le nom de l'organisation: Le nom de votre société
-- DNS Domain: ".votre-domaine.com". Cette information ne sera pas utilisée
-- Domino Server Names: Noms des serveurs qui autoriserons les utilisateurs à se logger.
+Do this only if you plan to play with the Domino OAUTH2 Authorization Server code... Otherwise, skip this chapter.
 
-## La base oauth2.nsf ##
+- Check that your Designer allows you to add plugins :
+	- Go to File / Preferences
+	- Go to the "Domino Designer" section
+	- Check that "Enable Eclipse Plugin install" is checked.
+- Go to File / Application / Install
+- Choose "Search for new feature to install"
+- Add a "Zip/Jar Location", and go select the update site zip file
+- Click "Finish" and accept the next steps.
 
-### Installation ###
+Once Domino Designer has restarted, you can check that the plugins have been installed by going to Help / About Domino Designer. Click the "Plugin details" button, and
+check that you can see the "com.github.lhervier.domino.spring.*" plugins (sorting by plugin id make it easier to find).
 
-- Déployez la librarie XPage fournie sur votre serveur (même procédure que pour l'extlib)
-- Copiez le fichier oauth2.nsf sur votre serveur.
-- Vous devez associer le rôle [AppsManager] aux utilisateurs qui souhaiteront ajouter/modifier/supprimer des applications.
-- Vous devez associer le rôle [AuthCodeManager] aux administrateurs (ce rôle donne accès à des données très sensibles !)
-- Vous devez associer le rôle [SecretExtractor] aux administrateurs (ce rôle est encore plus sensible que le précédent !)
-- Notez que default est lecteur. Restreignez ces droits à l'ensemble des utilisateurs qui pourront se logger via OAUTH2.
-- Ces utilisateurs doivent aussi avoir le droit de créer des utilisateurs web dans le NAB.
-- Signez la base avec l'ID du serveur
-- Paramétrage : Ouvrez la base depuis un client Notes, et allez dans la vue "Params". Faites en sorte qu'il y ait un seul document dans cette vue. La valeur attendue pour chaque champ est décrite dans le masque.
+## Get this project's update site
 
-### Pour déclarer des applications ###
+### Download from github
 
-Connectez vous avec votre navigateur à la XPage "applications.xsp" avec un compte utilisateur ayant le rôle [AppsManager].
-L'interface parle d'elle même.
+This is the simplest solution. If you don't plan to play with the code, you can just download the update site from the github release page. 
 
-Quand vous déclarez une application, vous définissez :
+### Compile it yourself
 
-- La liste des utilisateurs ayant le droit de se connecter dessus. C'est un simple champ lecteur. Utilisez des "," pour plusieurs valeurs.
-- L'URL de redirection où le endpoint authorize envera le code autorisation. Si vous mettez en place l'application front Notes, pointez vers sa XPage "init.xsp".
+If you want to generate the update site yourself from the source code, follow the next steps.
 
-A la fin, l'application sera déclarée dans la base, et un utilisateur nommé <Nom application>/APPLICATION/WEB sera déclaré dans le NAB.
-Il aura un mot de passe http.
+First, import the code into Designer
 
-Notez bien le client-id et le secret qui est généré. Le secret ne pourra plus vous être fourni une fois la page fermée.
+- Clone or download the source code from github into a local folder.
+- Open the "package explorer" view.
+- Use the "File / Import" menu.
+- In the "General" section, select "Existing projets into workspace"
+- Click "Browse" and select the folder that contains this project's sources.
+- Select all projects and click "Import"
 
-### Pour extraire les secrets Ltpa ###
+Then, compile the code :
 
-Connectez vous avec votre navigateur à la XPage "secret.xsp" avec un compte utilisateur ayant le rôle [SecretExtractor].
-Le secret Ltpa qui servira à signer les token d'accès est affiché. Vous devrez le reporter dans la conf de votre serveur Tomcat.
+- Open the file "site.xml" in the "com.github.lhervier.domino.oauth.update" project.
+- Click the "Build All" button.
 
-## La webapp SpringBoot ##
+The result is in the "com.github.lhervier.domino.oauth.update" folder. This is a "standard" update site composed of :
 
-Cette webapp publie un service Rest qui retourne le nom de l'utilisateur courant. Elle doit être déployée sur un serveur Tomcat.
+- the "site.xml" file
+- the "plugins" folder
+- and the "features" folder
 
-Elle attend un ensemble de variables Spring en paramétrage. Vous pouvez (par exemple) les définir via des variables d'environnement :
+Then, package the update site
 
-- jwt.secret = Le secret JWT. Vous pouvez l'extraire via la XPage 'secret.xsp' de la base oauth2.nsf (utilisez la variable d'environnement JWT_SECRET).
-- cors.allowedOrigins = Les domaine qui seront autorisés à appeler vos services Rest via des requêtes CORS. "*" pour autoriser tous les domaines. (utilisez la variable d'environnement CORS_ALLOWEDORIGINS).
- 
-## L'application Notes front de démo ##
+Zip the site.xml, plugins and features folders, and you are ready !
 
-Attention : Si vous l'ouvrez dans Designer, vous devrez installer la library XPage pour pouvoir la compiler (comme l'extlib). Le simple fait de l'ouvrir avec un Designer ne contenant 
-pas cette library rend la base non fonctionnelle !
+## Deploy the "Domino OAUTH2 Authorization Server" plugins
 
-- Copiez le NSF sur votre serveur
-- Signez la base avec un utilisateur ayant le droit d'exécuter les agents non restreints (sans ça, les XPages ne s'executeront pas)
-- Remarquez que sa LCA laisse l'utilisateur Anonyme se connecter.
-- Avec un client Notes, allez dans la vue Params, et remplissez les champs. Les explications en face vous disent quoi mettre. C'est ici que vous devrez reporter le client-id et le secret de l'application déclarée précédemment.
+### On an production environment
 
-## Testez ##
+Get the update site (the zip file) from the github releases page, or generate it yourself by using the method described above, and unzip it somewhere.
 
-- Ouvrez la base de démo : http://serveur/sample.nsf/index.html
-- Vous allez être redirigé vers l'écran de login par défaut de votre serveur Domino
-- Cliquez sur le bouton qui emet une requête CORS vers le serveur Tomcat => Vous obtenez une alerte avec le nom de l'utilisateur courant.
+Then, create another update site database using the same technique that we used to install the "Domino Plugin" plugins. But we have the following changes :
+
+- Name the database "Oauth2UpdateSite.nsf"
+- Add the name of the database to your "OSGI_HTTP_DYNAMIC_BUNDLES" notes.ini variable. Use a simple "," character to seperate the values.
+- Restart the http task with a "restart task http" console command.
+
+Note that it is not recommanded to import multiple update sites into one same database, because we don't have an option to remove only a set of features. All we can do is remove all the database content.
+
+### On a development environment
+
+### Install the "IBM Domino Debug Plugin"
+
+- Download the zip file from https://www.openntf.org/main.nsf/project.xsp?r=project/IBM%20Lotus%20Domino%20Debug%20Plugin
+- In your IBM Domino Designer :
+	- Go to File/Application/Install menu.
+	- Select "Search for new features"
+	- Add a "Zip/jar location" and go find the zip you just downloaded.
+	- Click Finish, and accept licences.
+	- Designer will ask to restart.
+- Open the "package explorer" view
+- Click on the arrow next to the green bug icon bar, and select "Debug Configurations"
+- Right click on the "OSGI Framework section", and choose "New"
+- Name it the way you want
+- Select "Domino Osgi Framework" in the drop down list
+- Set "default auto start" to "false"
+- In the plugin list, UNCHECK the "target platform" plugins section.
+- And in the "Workspace" section, select all the imported plugins
+- Click "Debug"
+- You will have to enter the installation path of your local Domino Server
+- Once done, you will have to restart the http task (using "restart task http")
+
+## Check that the plugins have been deployed
+
+Whatever method you use to deploy the plugins on your server (update site database, or Domino Debug Plugin), you can check that they have been deployed correctly by sending the following console command :
+
+	tell http osgi ss oauth
+	
+If it answer somthing like this, you're good to go :
+
+	> tell http osgi ss oauth
+	[1C04:0002-1C08] 28/09/2017 14:27:39   Framework is launched.
+	[1C04:0002-1C08] 28/09/2017 14:27:39   id       State       Bundle
+	[1C04:0002-1C08] 28/09/2017 14:27:39   95       <<LAZY>>    com.github.lhervier.domino.oauth.server_1.0.0.qualifier
+	[1C04:0002-1C08] 28/09/2017 14:27:39   96       RESOLVED    com.github.lhervier.domino.oauth.external.commons_io_2.5.0
+	[1C04:0002-1C08] 28/09/2017 14:27:39   99       RESOLVED    com.github.lhervier.domino.oauth.external.nimbus_jose_jwt_4.37.1
+
+# Setup Domino Server as an OAUTH2 Authorization Server
+
+## Create the keys (SSO Configurations)
+
+I didn't want to take the risk of storing keys myself. Instead, I prefered using SSO Configurations which are natively stored by IBM in a secure manner.
+
+So, When Domino will generate OAUTH2 access tokens, it will use a secret stored in a SSO configuration document.
+
+You will have to generate three of them :
+
+- One key that will be used to sign the access token.
+- Another one to sign the OpenID token.
+- And a last one to encrypt the refresh token.
+
+To create the three needed SSO Configurations, open your names.nsf, go to the "Servers" view, and use the "Web/Create Web SSO Configuration" action :
+
+- Name your configuration: For example "AccessToken", "IdToken", and "RefreshToken"
+- Enter the name of your organisation: We will use "ACME" in this example.
+- DNS Domain: ".acme.com". This information is mandatory, but will not be used.
+- Domino Server Names: Enter the name of the servers that will act as OAUTH2 authorization servers.
+
+## Create the oauth2 database
+
+This database will store the definition of the authorized OAUTH2 client applications. It will also store the authorization codes. Because of this, it is a sensible database, and you will have to be strict with its ACL.
+
+### Download from github
+
+You can download the "oauth2.nsf" database from the release page of github. By default "LocalDomainAdmins" is set as manager in the ACL, which should be OK for most people.
+
+Once copied on your Domino Server, don't forget to sign it.
+
+### Generate from source
+
+You may have already imported the projets into your Domino Designer.
+
+From the "package explorer", right click on the "oauth2-ondisk" project, and choose "Team Development" / "Associate with new NSF". In the following dialog box, enter the name of your server, and "oauth2.nsf" as database name.
+
+### Check the ACL
+
+Users with the [AppManager] role will be allowed to register/edit/remove oauth2 client applications. Users with this role MUST also be able to add users in the Domino Directory. Yes, we will generate users on the fly !
+
+Users with the [AuthCodeManager] role will be able to access all the generated authorization code documents. They are sensible data, protected with a reader field. Nobody should have this role. 
+It is present for development puropose, and can be replaced by the "Full access Administrator" option of Domino Administrator.
+
+Every other users that should be able to log into one of the OAUTH2 client application should have reader access. So, by default, in the ACL :
+
+- Default is "reader"
+- Anonymous is "no access"
+
+## Configure the oauth2 server environment
+
+This project uses the Domino Spring project. As such, it is using properties that are readed by the Spring Framework. The code doesn't care about where they come from. 
+And Spring is able to access properties from about anywhere. 
+
+To make out database work, we will have to declare a set properties values. But we can declare them in a number of places :
+
+- From environment variables
+- From notes.ini variables
+- Or we can inject them ourself by writing a simple osgi plugin that extends the domino spring plugin (and store those properties in an external database for example).
+
+I will show you how to declare them with any of this methods. But first, let's describe the properties and their awaited values :
+
+- oauth2.server.db : Path to the oauth2 database. Needed to prevent the endpoint to be made available on ALL databases of the server.
+- oauth2.server.nab : Path to a standard Domino Directory database in which we will generate the users associated with the registered client applications. Example value "names.nsf"
+- oauth2.server.applicationRoot : When we will create a user for an application, we will name it using the application name and this prefix. Example value "/APPLICATION"
+- oauth2.server.refreshTokenConfig : Name of the SSO configuration that contains the secret we will use to encrypt the refresh tokens. Example value "ACME:RefreshToken"
+- oauth2.server.refreshTokenLifetime : Lifetime in seconds of the generated refresh tokens. Should be a long value (10h). Example value "36000"
+- oauth2.server.authCodeLifeTime : Lifetime in seconds of the generated authorization codes. This is maximum time that can pass between the user login, and the server getting the acces/refresh token. Example value "60"
+- oauth2.server.core.signKey : Name of the SSO configuration that contains the secret we will use to sign the access tokens. Example value "ACME:AccessToken"
+- oauth2.server.core.iss : Issuer of the access token (iss property of the JWT). Example value "https://afer.asso.fr/domino/oauth2/"
+- oauth2.server.core.expiresIn : Lifetime in seconds of the generated access tokens. Example value "180"
+- oauth2.server.openid.signKey : Name of the SSO configuration that contains the secret we will use to sign the openid id tokens. Example value "ACME:IdToken"
+- oauth2.server.openid.iss : Issuer of the openid id token (iss property of the JWT). Example value "https://afer.asso.fr/domino/oauth2/openid/"
+
+Whatever the method you use to define those properties, when done, restart the http task. 
+
+### Declare properties as notes.ini variables
+
+Eveything is in the title. Just edit your notes.ini file, and add variables named the same way as the properties.
+
+You can also declare the variables in a configuration document.
+
+### Inject properties from an osgi plugin
+
+Read the documentation of the Domino Spring project, or contact me (create an issue) if you want more details.
+
+This method allows you to inject values from the place you want. And of course, most of my clients wants to extract parameters from a common database.
+
+## Check that everything is working
+
+You can access the oauth applications end points to check if everything is working
+
+	http://<your server>/oauth2.nsf/oauth2-server/html/listApplications
+
+Check that the user that logs in has the [AppManager] role.
+
+# Registering OAuth2 client applications
+
+Use your browser to access the following url :
+
+	http://<your server>/oauth2.nsf/oauth2-server/html/listApplications
+	
+You will have to login with a user with the [AppManager] role.
+
+Registering an application will add a user in the nab. The application secret is its http password (in reality, it is 'username:http_password' base64 encoded). 
+Don't forget to save this value. We won't be able to extract it again.
+
+# The OAuth2 and OpenID endpoints 
+
+Authorize endpoint : http://server/oauth2.nsf/oauth2-server/authorize
+
+Token endpoint : http://server/oauth2.nsf/oauth2-server/token
+
+OpenID UserInfo end point : http://server/oauth2-server/userInfo (note that there is NO reference to oauth2.nsf !!!)
+
+# Supported OAuth2 flows
+
+Authorization Code, Implicit and OpenID Hybrid flows are supported.
+
+Client Credentials, and User credentials flows are NOT supported.
+
+# Supported scopes
+
+All OpenID scopes are supported : openid, profile, email, address, etc...

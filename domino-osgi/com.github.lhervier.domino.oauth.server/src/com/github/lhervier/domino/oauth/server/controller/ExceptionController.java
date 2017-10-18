@@ -124,7 +124,7 @@ public class ExceptionController {
 	 * NotAuthorizedException
 	 */
 	@ExceptionHandler(NotAuthorizedException.class)
-	@ResponseStatus(value = HttpStatus.FORBIDDEN)
+	@ResponseStatus(value = HttpStatus.UNAUTHORIZED)
 	public @ResponseBody NotAuthorizedResponse processNotAuthorizedException(NotAuthorizedException e) {
 		NotAuthorizedResponse ret = new NotAuthorizedResponse();
 		ret.setError("not_authorized");

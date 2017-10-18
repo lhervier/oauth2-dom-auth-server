@@ -195,7 +195,7 @@ public class AppController {
 	@Roles(roles = "AppsManager")
 	public ModelAndView removeApplication(@RequestParam(value = "name", required = true) String name) throws NotesException {
 		this.appSvc.removeApplication(name);
-		return new ModelAndView("redirect:applications");
+		return new ModelAndView("redirect:listApplications");
 	}
 	
 }

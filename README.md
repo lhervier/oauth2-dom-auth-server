@@ -257,6 +257,8 @@ Authorize endpoint : http://server/oauth2.nsf/oauth2-server/authorize
 
 Token endpoint : http://server/oauth2.nsf/oauth2-server/token
 
+RFC7662 Access Token Introspection End point : http://server/oauth2.nsf/oauth2-server/checkToken
+
 OpenID UserInfo end point : http://server/oauth2-server/userInfo (note that there is NO reference to oauth2.nsf !!!)
 
 # Supported OAuth2 flows

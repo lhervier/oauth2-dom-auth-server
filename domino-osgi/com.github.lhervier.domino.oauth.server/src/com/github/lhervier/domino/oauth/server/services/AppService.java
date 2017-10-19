@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.Vector;
 
 import lotus.domino.Document;
 import lotus.domino.Name;
@@ -21,7 +22,6 @@ import org.springframework.stereotype.Service;
 
 import com.github.lhervier.domino.oauth.server.BaseServerComponent;
 import com.github.lhervier.domino.oauth.server.model.Application;
-import com.github.lhervier.domino.oauth.server.utils.Base64Utils;
 import com.github.lhervier.domino.oauth.server.utils.DominoUtils;
 import com.github.lhervier.domino.oauth.server.utils.ViewIterator;
 
@@ -154,6 +154,24 @@ public class AppService extends BaseServerComponent {
 	}
 	
 	/**
+	 * Return an application from its Notes Full Name
+	 * @param appFullName the app full name
+	 * @return the application or null if it does not exists
+	 * @throws NotesException 
+	 */
+	public Application getApplicationFromFullName(String appFullName) throws NotesException {
+		Name n = null;
+		try {
+			n = this.notesContext.getServerSession().createName(appFullName);
+			if( !n.getAbbreviated().endsWith(this.applicationRoot) )
+				return null;
+			return this.getApplicationFromName(n.getCommon());
+		} finally {
+			DominoUtils.recycleQuietly(n);
+		}
+	}
+	
+	/**
 	 * Retourne une application depuis son nom
 	 * @param appName le nom de l'application
 	 * @return l'application
@@ -257,7 +275,10 @@ public class AppService extends BaseServerComponent {
 			person.replaceItemValue("ShortName", app.getName());
 			person.replaceItemValue("LastName", app.getName());
 			person.replaceItemValue("MailSystem", "100");		// None
-			person.replaceItemValue("FullName", fullName);
+			Vector<String> fullNames = new Vector<String>();
+			fullNames.add(fullName);
+			fullNames.add(app.getClientId());
+			person.replaceItemValue("FullName", fullNames);
 			String password = this.generatePassword();
 			person.replaceItemValue("HTTPPassword", this.notesContext.getUserSession().evaluate("@Password(\"" + password + "\")"));
 			person.replaceItemValue("HTTPPasswordChangeDate", this.notesContext.getUserSession().createDateTime(new Date()));
@@ -276,8 +297,8 @@ public class AppService extends BaseServerComponent {
 			// Rafraîchit le NAB pour prise en compte immédiate
 			DominoUtils.refreshNab(this.nabBean.getNab());
 			
-			// Génère le secret
-			return Base64Utils.encodeFromUTF8String(abbreviated + ":" + password);
+			// Return the secret
+			return password;
 		} finally {
 			DominoUtils.recycleQuietly(appDoc);
 			DominoUtils.recycleQuietly(nn);

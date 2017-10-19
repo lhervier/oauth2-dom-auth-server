@@ -2,8 +2,6 @@ package com.github.lhervier.domino.oauth.server;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -12,17 +10,17 @@ import javax.servlet.http.HttpServletRequest;
 
 import lotus.domino.NotesException;
 import lotus.domino.Session;
-import net.minidev.json.JSONArray;
-import net.minidev.json.JSONObject;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 
+import com.github.lhervier.domino.oauth.server.ext.core.AccessToken;
 import com.github.lhervier.domino.oauth.server.services.SecretService;
 import com.github.lhervier.domino.oauth.server.utils.DominoUtils;
 import com.github.lhervier.domino.oauth.server.utils.SystemUtils;
@@ -63,6 +61,11 @@ public class BearerContext {
 	private String signKey;
 	
 	/**
+	 * Object mapper
+	 */
+	private ObjectMapper mapper = new ObjectMapper();
+	
+	/**
 	 * Delegated
 	 */
 	private Session bearerSession;
@@ -95,10 +98,10 @@ public class BearerContext {
 				return;
 			if( !auth.startsWith("Bearer ") )
 				return;
-			String accessToken = auth.substring("Bearer ".length());
+			String sJws = auth.substring("Bearer ".length());
 			
 			// Parse the JWT
-			JWSObject jwsObj = JWSObject.parse(accessToken);
+			JWSObject jwsObj = JWSObject.parse(sJws);
 			
 			// Check sign key
 			String kid = jwsObj.getHeader().getKeyID();
@@ -122,29 +125,21 @@ public class BearerContext {
 				return;
 			}
 			
+			// Deserialize token
+			AccessToken accessToken = this.mapper.readValue(jwsObj.getPayload().toString(), AccessToken.class);
+			
 			// Check token is not expired
-			JSONObject json = jwsObj.getPayload().toJSONObject();
-			long expiration = json.getAsNumber("exp").longValue();
-			if( expiration < SystemUtils.currentTimeSeconds() ) {
+			if( accessToken.getExp() < SystemUtils.currentTimeSeconds() ) {
 				LOG.error("Bearer token expired");
 				return;
 			}
 			
-			// Get clientId
-			this.clientId = json.getAsString("aud");
-			
-			// Get the scopes
-			JSONArray scopesArr = (JSONArray) json.get("scopes");
-			this.scopes = new ArrayList<String>();
-			for( Iterator<Object> it = scopesArr.listIterator(); it.hasNext(); ) {
-				String scope = (String) it.next();
-				this.scopes.add(scope);
-			}
-			
-			// Get user name
-			String userName = json.getAsString("sub");
+			// Extract token information
+			this.clientId = accessToken.getAud();
+			this.scopes = accessToken.getScopes();
 			
 			// Create session
+			String userName = accessToken.getSub();
 			this.userNameList = NotesUtil.createUserNameList(userName);
 			this.bearerSession = XSPNative.createXPageSession(userName, this.userNameList, false, false);
 		} catch (NotesException e) {

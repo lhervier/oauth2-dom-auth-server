@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/com.github.lhervier.domino.oauth.client.feature_1.0.0.201709270931.jar" id="com.github.lhervier.domino.oauth.client.feature" version="1.0.0.201709270931"/>
-   <feature url="features/com.github.lhervier.domino.oauth.server.feature_1.0.0.201709270931.jar" id="com.github.lhervier.domino.oauth.server.feature" version="1.0.0.201709270931"/>
+   <feature url="features/com.github.lhervier.domino.oauth.server.feature_1.0.0.201710191047.jar" id="com.github.lhervier.domino.oauth.server.feature" version="1.0.0.201710191047"/>
 </site>

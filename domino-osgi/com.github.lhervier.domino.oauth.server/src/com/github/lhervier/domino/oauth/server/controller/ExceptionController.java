@@ -1,14 +1,13 @@
 package com.github.lhervier.domino.oauth.server.controller;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import lotus.domino.NotesException;
-
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +29,11 @@ import com.github.lhervier.domino.oauth.server.utils.QueryStringUtils;
 @ControllerAdvice
 public class ExceptionController {
 
+	/**
+	 * Logger
+	 */
+	private static final Log LOG = LogFactory.getLog(ExceptionController.class);
+	
 	/**
 	 * The http servlet request
 	 */
@@ -92,34 +96,11 @@ public class ExceptionController {
 		return new ModelAndView("error", model);
 	}
 	
-	/**
-	 * Notes exception. We cannot handle that...
-	 */
-	@ExceptionHandler(NotesException.class)
-	@ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
-	public ModelAndView processNotesException(NotesException e) {
-		Map<String, Object> model = new HashMap<String, Object>();
-		model.put("error", e.getMessage());
-		return new ModelAndView("error", model);
-	}
-	
-	/**
-	 * IOException. We cannot handle that...
-	 */
-	@ExceptionHandler(IOException.class)
-	@ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
-	public ModelAndView processIOException(IOException e) {
-		Map<String, Object> model = new HashMap<String, Object>();
-		model.put("error", e.getMessage());
-		return new ModelAndView("error", model);
-	}
-	
 	public static class NotAuthorizedResponse {
 		private String error;
 		public String getError() {return this.error; }
 		public void setError(String error) { this.error = error; }
 	}
-	
 	/**
 	 * NotAuthorizedException
 	 */
@@ -130,4 +111,16 @@ public class ExceptionController {
 		ret.setError("not_authorized");
 		return ret;
 	}
+	
+	/**
+	 * Other exception. We cannot handle that...
+	 */
+	@ExceptionHandler(Throwable.class)
+	@ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
+	public ModelAndView processThrowable(Throwable e) {
+		LOG.error(e);
+		Map<String, Object> model = new HashMap<String, Object>();
+		model.put("error", e.getMessage());
+		return new ModelAndView("error", model);
+	}	
 }

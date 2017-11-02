@@ -200,7 +200,7 @@ public class CheckTokenController {
 			resp.setScope(StringUtils.join(tk.getScopes().iterator(), ' '));
 			resp.setSub(tk.getSub());
 			resp.setIss(tk.getIss());
-			resp.setAud(tk.getAud());
+			// resp.setAud(tk.getAud());						// OPTIONAL. Will make Spring Security calls fail...
 		}
 		return resp;
 	}

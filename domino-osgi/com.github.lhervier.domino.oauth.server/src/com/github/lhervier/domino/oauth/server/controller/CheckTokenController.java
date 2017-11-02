@@ -7,8 +7,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import lotus.domino.NotesException;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.jackson.annotate.JsonProperty;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -93,10 +95,33 @@ public class CheckTokenController {
 	/**
 	 * Token introspection response
 	 */
-	public static class CheckTokenResponse extends AccessToken {
+	public static class CheckTokenResponse {
 		private boolean active;
+		private String scope;
+		@JsonProperty("client_id")
+		private String clientId;
+		private String username;
+		@JsonProperty("token_type")
+		private String tokenType;
+		private long exp;
+		private long iat;
+		private long nbf;
 		public boolean isActive() { return active; }
 		public void setActive(boolean active) { this.active = active; }
+		public String getScope() { return scope; }
+		public void setScope(String scope) { this.scope = scope; }
+		public String getClientId() { return clientId; }
+		public void setClientId(String clientId) { this.clientId = clientId; }
+		public String getUsername() { return username; }
+		public void setUsername(String username) { this.username = username; }
+		public String getTokenType() { return tokenType; }
+		public void setTokenType(String tokenType) { this.tokenType = tokenType; }
+		public long getExp() { return exp; }
+		public void setExp(long exp) { this.exp = exp; }
+		public long getIat() { return iat; }
+		public void setIat(long iat) { this.iat = iat; }
+		public long getNbf() { return nbf; }
+		public void setNbf(long nbf) { this.nbf = nbf; }
 	}
 	
 	@RequestMapping(value = "/checkToken", method = RequestMethod.POST)
@@ -146,21 +171,16 @@ public class CheckTokenController {
 		}
 		
 		// Deserialize the token
-		CheckTokenResponse resp = this.mapper.readValue(jwsObj.getPayload().toString(), CheckTokenResponse.class);
-		
-		// Check that it has been issued for the currently logged in application
-		Application tokenApp = this.appService.getApplicationFromClientId(resp.getAud());
-		if( tokenApp == null ) {
-			LOG.error("Unable to find the application the token was issued to");
-			throw new NotAuthorizedException();
-		}
-		if( !userApp.getClientId().equals(tokenApp.getClientId()) ) {
-			LOG.error("Not logged as the application the access token was issued to");
-			throw new NotAuthorizedException();
-		}
+		AccessToken tk = this.mapper.readValue(jwsObj.getPayload().toString(), AccessToken.class);
 		
 		// Mark active/inactive
-		resp.setActive(resp.getExp() < SystemUtils.currentTimeSeconds());
+		CheckTokenResponse resp = new CheckTokenResponse();
+		resp.setActive(tk.getExp() < SystemUtils.currentTimeSeconds());
+		resp.setClientId(tk.getAud());
+		resp.setExp(tk.getExp());
+		resp.setTokenType("Bearer");
+		resp.setUsername(tk.getSub());
+		resp.setScope(StringUtils.join(tk.getScopes().iterator(), ' '));
 		return resp;
 	}
 }

@@ -12,6 +12,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -95,6 +96,7 @@ public class CheckTokenController {
 	/**
 	 * Token introspection response
 	 */
+	@JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
 	public static class CheckTokenResponse {
 		private boolean active;
 		private String scope;
@@ -189,15 +191,17 @@ public class CheckTokenController {
 		// Mark active/inactive
 		CheckTokenResponse resp = new CheckTokenResponse();
 		resp.setActive(tk.getExp() < SystemUtils.currentTimeSeconds());
-		resp.setClientId(tk.getAud());
-		resp.setExp(tk.getExp());
-		resp.setTokenType("Bearer");
-		resp.setUsername(tk.getSub());
-		resp.setSpringUsername(resp.getUsername());			// Spring OAUTH2 Security will look at the "user_name" property insted of the "username" property (as defined in RFC7662)
-		resp.setScope(StringUtils.join(tk.getScopes().iterator(), ' '));
-		resp.setSub(tk.getSub());
-		resp.setIss(tk.getIss());
-		// resp.setAud(tk.getAud());
+		if( resp.isActive() ) {
+			resp.setClientId(tk.getAud());
+			resp.setExp(tk.getExp());
+			resp.setTokenType("Bearer");
+			resp.setUsername(tk.getSub());
+			resp.setSpringUsername(resp.getUsername());			// Spring OAUTH2 Security will look at the "user_name" property insted of the "username" property (as defined in RFC7662)
+			resp.setScope(StringUtils.join(tk.getScopes().iterator(), ' '));
+			resp.setSub(tk.getSub());
+			resp.setIss(tk.getIss());
+			resp.setAud(tk.getAud());
+		}
 		return resp;
 	}
 }

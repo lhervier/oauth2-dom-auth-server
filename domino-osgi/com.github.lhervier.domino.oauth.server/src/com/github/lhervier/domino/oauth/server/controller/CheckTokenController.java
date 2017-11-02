@@ -101,11 +101,14 @@ public class CheckTokenController {
 		@JsonProperty("client_id")
 		private String clientId;
 		private String username;
+		@JsonProperty("user_name")
+		private String springUsername;
 		@JsonProperty("token_type")
 		private String tokenType;
 		private long exp;
 		private long iat;
 		private long nbf;
+		
 		public boolean isActive() { return active; }
 		public void setActive(boolean active) { this.active = active; }
 		public String getScope() { return scope; }
@@ -122,6 +125,8 @@ public class CheckTokenController {
 		public void setIat(long iat) { this.iat = iat; }
 		public long getNbf() { return nbf; }
 		public void setNbf(long nbf) { this.nbf = nbf; }
+		public String getSpringUsername() { return springUsername; }
+		public void setSpringUsername(String springUsername) { this.springUsername = springUsername;}
 	}
 	
 	@RequestMapping(value = "/checkToken", method = RequestMethod.POST)
@@ -180,6 +185,7 @@ public class CheckTokenController {
 		resp.setExp(tk.getExp());
 		resp.setTokenType("Bearer");
 		resp.setUsername(tk.getSub());
+		resp.setSpringUsername(resp.getUsername());			// Spring OAUTH2 Security will look at the "user_name" property insted of the "username" property (as defined in RFC7662)
 		resp.setScope(StringUtils.join(tk.getScopes().iterator(), ' '));
 		return resp;
 	}

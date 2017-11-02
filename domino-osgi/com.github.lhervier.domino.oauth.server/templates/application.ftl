@@ -1,14 +1,6 @@
 <!doctype html>
 <html>
 <body>
-	<#if edit == true>
-		<#if newApp == true>
-			<form action="createApplication" method="POST">
-		<#else>
-			<form action="updateApplication" method="POST">
-		</#if>
-	</#if>
-	
 	<div>
 		<h1>
 			<#if edit == true>
@@ -23,9 +15,13 @@
 		</h1>
 	</div>
 	
+	<#if edit == true>
+		<form action="saveApplication" method="POST">
+	</#if>
+	
 	<div>
 		<#if edit == true>
-			<input type="submit" value="Save">
+			<button type="submit" name="action" value="saveApp">Save</button>
 		<#else>
 			<button type="button" onclick="self.location='editApplication?name=${app.name}'">Edit</button>
 		</#if>
@@ -93,6 +89,35 @@
 				</#if>
 			</td>
 		</tr>
+	</table>
+	
+	<table>
+		<tr>
+			<td>
+				Other redirect URIs
+			</td>
+		</tr>
+		<#if !app.redirectUris?has_content>
+			<tr>
+				<td>No other redirect Uris</td>
+			</tr>
+		</#if>
+		<#list app.redirectUris as redirectUri>
+			<tr>
+				<td>${redirectUri}</td>
+			</tr>
+		</#list>
+		<#if edit == true>
+			<tr>
+				<td>
+					<input type="text" name="newRedirectUri" value="${newRedirectUri!}">
+					<button type="submit" name="action" value="addRedirectUri">Add redirect URI</button>
+					<#if error??>
+						<span style="color:red">${error.newRedirectUri!}</span>
+					</#if>
+				</td>
+			</tr>
+		</#if>
 	</table>
 	
 	<#if edit == true>

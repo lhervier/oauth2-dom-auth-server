@@ -108,7 +108,9 @@ public class CheckTokenController {
 		private long exp;
 		private long iat;
 		private long nbf;
-		
+		private String sub;
+		private String aud;
+		private String iss;
 		public boolean isActive() { return active; }
 		public void setActive(boolean active) { this.active = active; }
 		public String getScope() { return scope; }
@@ -127,6 +129,12 @@ public class CheckTokenController {
 		public void setNbf(long nbf) { this.nbf = nbf; }
 		public String getSpringUsername() { return springUsername; }
 		public void setSpringUsername(String springUsername) { this.springUsername = springUsername;}
+		public String getSub() { return sub; }
+		public void setSub(String sub) { this.sub = sub; }
+		public String getAud() { return aud; }
+		public void setAud(String aud) { this.aud = aud; }
+		public String getIss() { return iss; }
+		public void setIss(String iss) { this.iss = iss; }
 	}
 	
 	@RequestMapping(value = "/checkToken", method = RequestMethod.POST)
@@ -187,6 +195,9 @@ public class CheckTokenController {
 		resp.setUsername(tk.getSub());
 		resp.setSpringUsername(resp.getUsername());			// Spring OAUTH2 Security will look at the "user_name" property insted of the "username" property (as defined in RFC7662)
 		resp.setScope(StringUtils.join(tk.getScopes().iterator(), ' '));
+		resp.setSub(tk.getSub());
+		resp.setIss(tk.getIss());
+		// resp.setAud(tk.getAud());
 		return resp;
 	}
 }

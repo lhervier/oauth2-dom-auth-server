@@ -3,8 +3,8 @@ package com.github.lhervier.domino.oauth.server.ext;
 import java.util.List;
 
 import lotus.domino.NotesException;
-import lotus.domino.Session;
 
+import com.github.lhervier.domino.oauth.server.NotesUserPrincipal;
 import com.github.lhervier.domino.oauth.server.model.AuthorizationCode;
 
 /**
@@ -39,7 +39,7 @@ public interface IOAuthExtension<T> {
 	 * @throws NotesException en ca de pb
 	 */
 	public T initContext(
-			Session session,
+			NotesUserPrincipal user,
 			IScopeGranter granter, 
 			String clientId, 
 			List<String> scopes) throws NotesException;

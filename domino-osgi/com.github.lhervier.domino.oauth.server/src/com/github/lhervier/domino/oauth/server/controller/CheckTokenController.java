@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import com.github.lhervier.domino.oauth.server.NotesUserPrincipal;
 import com.github.lhervier.domino.oauth.server.aop.ann.Oauth2DbContext;
 import com.github.lhervier.domino.oauth.server.ex.NotAuthorizedException;
 import com.github.lhervier.domino.oauth.server.ext.core.AccessToken;
@@ -30,7 +31,6 @@ import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.services.AppService;
 import com.github.lhervier.domino.oauth.server.services.SecretService;
 import com.github.lhervier.domino.oauth.server.utils.SystemUtils;
-import com.github.lhervier.domino.spring.servlet.NotesContext;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSObject;
 import com.nimbusds.jose.JWSVerifier;
@@ -62,12 +62,6 @@ public class CheckTokenController {
 	private AppService appService;
 	
 	/**
-	 * Notes context
-	 */
-	@Autowired
-	private NotesContext notesCtx;
-	
-	/**
 	 * SSO config used to sign access tokens
 	 */
 	@Value("${oauth2.server.core.signKey}")
@@ -92,6 +86,14 @@ public class CheckTokenController {
         response.addHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
         response.addHeader("Access-Control-Allow-Origin", "*");
     }
+	
+	// =======================================================================================
+	
+	/**
+	 * We are unable to inject this bean as a method parameter
+	 */
+	@Autowired
+	private NotesUserPrincipal checkTokenUser;
 	
 	/**
 	 * Token introspection response
@@ -143,8 +145,13 @@ public class CheckTokenController {
 	@Oauth2DbContext
 	public @ResponseBody CheckTokenResponse checkToken(
 			@RequestParam("token") String token) throws IOException, NotesException, NotAuthorizedException {
+		return this.checkToken(this.checkTokenUser, token);
+	}
+	public @ResponseBody CheckTokenResponse checkToken(
+			NotesUserPrincipal user,
+			@RequestParam("token") String token) throws IOException, NotesException, NotAuthorizedException {
 		// User must be logged in as an application
-		Application userApp = this.appService.getApplicationFromFullName(this.notesCtx.getUserSession().getEffectiveUserName());
+		Application userApp = this.appService.getApplicationFromFullName(user.getName());
 		if( userApp == null ) {
 			LOG.error("Not logged in as an application");
 			throw new NotAuthorizedException();
@@ -190,7 +197,7 @@ public class CheckTokenController {
 		
 		// Mark active/inactive
 		CheckTokenResponse resp = new CheckTokenResponse();
-		resp.setActive(tk.getExp() < SystemUtils.currentTimeSeconds());
+		resp.setActive(tk.getExp() > SystemUtils.currentTimeSeconds());
 		if( resp.isActive() ) {
 			resp.setClientId(tk.getAud());
 			resp.setExp(tk.getExp());

@@ -208,7 +208,7 @@ I will show you how to declare them with any of this methods. But first, let's d
 
 - oauth2.server.db : Path to the oauth2 database. Needed to prevent the endpoint to be made available on ALL databases of the server.
 - oauth2.server.nab : Path to a standard Domino Directory database in which we will generate the users associated with the registered client applications. Example value "names.nsf"
-- oauth2.server.applicationRoot : When we will create a user for an application, we will name it using the application name and this prefix. Example value "/APPLICATION"
+- oauth2.server.applicationRoot : When we will create a user for an application, we will name it using the application name and this prefix. Example value "/O=APPLICATION"
 - oauth2.server.refreshTokenConfig : Name of the SSO configuration that contains the secret we will use to encrypt the refresh tokens. Example value "ACME:RefreshToken"
 - oauth2.server.refreshTokenLifetime : Lifetime in seconds of the generated refresh tokens. Should be a long value (10h). Example value "36000"
 - oauth2.server.authCodeLifetime : Lifetime in seconds of the generated authorization codes. This is maximum time that can pass between the user login, and the server getting the acces/refresh token. Example value "60"

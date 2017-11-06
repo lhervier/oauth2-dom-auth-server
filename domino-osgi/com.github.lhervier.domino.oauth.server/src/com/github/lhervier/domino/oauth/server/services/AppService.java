@@ -163,7 +163,7 @@ public class AppService extends BaseServerComponent {
 		Name n = null;
 		try {
 			n = this.notesContext.getServerSession().createName(appFullName);
-			if( !n.getAbbreviated().endsWith(this.applicationRoot) )
+			if( !n.toString().endsWith(this.applicationRoot) )
 				return null;
 			return this.getApplicationFromName(n.getCommon());
 		} finally {

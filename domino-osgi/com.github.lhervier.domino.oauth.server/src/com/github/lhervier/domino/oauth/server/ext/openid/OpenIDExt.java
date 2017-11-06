@@ -5,14 +5,13 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 import lotus.domino.Document;
-import lotus.domino.Name;
 import lotus.domino.NotesException;
-import lotus.domino.Session;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.github.lhervier.domino.oauth.server.NotesUserPrincipal;
 import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.server.ext.IPropertyAdder;
 import com.github.lhervier.domino.oauth.server.ext.IScopeGranter;
@@ -78,11 +77,11 @@ public class OpenIDExt implements IOAuthExtension<OpenIdContext> {
 	}
 
 	/**
-	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#initContext(Session, IScopeGranter, String, List)
+	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#initContext(NotesUserPrincipal, IScopeGranter, String, List)
 	 */
 	@Override
 	public OpenIdContext initContext(
-			Session session,
+			NotesUserPrincipal user,
 			IScopeGranter granter, 
 			String clientId, 
 			List<String> scopes) throws NotesException {
@@ -96,7 +95,7 @@ public class OpenIDExt implements IOAuthExtension<OpenIdContext> {
 			// Les attributs par défaut
 			OpenIdContext ctx = new OpenIdContext();
 			ctx.setIss(this.iss);
-			ctx.setSub(session.getEffectiveUserName());
+			ctx.setSub(user.getName());
 			ctx.setAud(clientId);
 			ctx.setAcr(null);				// TODO: acr non généré
 			ctx.setAmr(null);				// TODO: amr non généré
@@ -107,18 +106,12 @@ public class OpenIDExt implements IOAuthExtension<OpenIdContext> {
 			else
 				ctx.setNonce(null);
 			
-			doc = this.nabSvc.getPersonDoc(session.getEffectiveUserName());
+			doc = this.nabSvc.getPersonDoc(user.getName());
 			
 			if( scopes.contains("profile") ) {
 				granter.grant("profile");
 				
-				Name nn = null;
-				try {
-					nn = session.createName(session.getEffectiveUserName());
-					ctx.setName(nn.getCommon());
-				} finally {
-					DominoUtils.recycleQuietly(nn);
-				}
+				ctx.setName(user.getCommon());
 				ctx.setGivenName(doc.getItemValueString("FirstName"));
 				ctx.setFamilyName(doc.getItemValueString("LastName"));
 				ctx.setMiddleName(doc.getItemValueString("MiddleInitial"));

@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import lotus.domino.Name;
 import lotus.domino.NotesException;
 
 import org.apache.commons.lang.StringUtils;
@@ -24,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.github.lhervier.domino.oauth.server.NotesUserPrincipal;
 import com.github.lhervier.domino.oauth.server.aop.ann.Oauth2DbContext;
 import com.github.lhervier.domino.oauth.server.ex.AuthorizeException;
 import com.github.lhervier.domino.oauth.server.ex.InvalidUriException;
@@ -35,11 +35,9 @@ import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.model.AuthorizationCode;
 import com.github.lhervier.domino.oauth.server.services.AppService;
 import com.github.lhervier.domino.oauth.server.services.SecretService;
-import com.github.lhervier.domino.oauth.server.utils.DominoUtils;
 import com.github.lhervier.domino.oauth.server.utils.PropertyAdderImpl;
 import com.github.lhervier.domino.oauth.server.utils.SystemUtils;
 import com.github.lhervier.domino.oauth.server.utils.Utils;
-import com.github.lhervier.domino.spring.servlet.NotesContext;
 
 /**
  * Authorize endpoint
@@ -59,12 +57,6 @@ public class AuthorizeController {
 	 */
 	@Autowired
 	private SecretService secretSvc;
-	
-	/**
-	 * The notes context
-	 */
-	@Autowired
-	private NotesContext notesContext;
 	
 	/**
 	 * The application context
@@ -89,8 +81,19 @@ public class AuthorizeController {
 	 */
 	private ObjectMapper mapper = new ObjectMapper();
 	
+	// ========================================================================================================
+	
 	/**
-	 * Authorize endpoint
+	 * The current user.
+	 * We are unable to inject this into a method argument...
+	 * (@Autowired properties are not instanciated)
+	 */
+	@Autowired
+	private NotesUserPrincipal authorizeUser;
+	
+	/**
+	 * Authorize endpoint.
+	 * Unable to inject user bean as a method argument...
 	 * @throws AuthorizeException If an error occur
 	 * @throws InvalidUriException if the uri is invalid
 	 * @throws NotesException may happend...
@@ -103,6 +106,15 @@ public class AuthorizeController {
     		@RequestParam(value = "scope", required = false) String scope,
     		@RequestParam(value = "state", required = false) String state,
     		@RequestParam(value = "redirect_uri", required = false) String redirectUri) throws AuthorizeException, InvalidUriException, NotesException, IOException {
+		return this.authorize(this.authorizeUser, responseType, clientId, scope, state, redirectUri);
+	}
+	public ModelAndView authorize(
+			NotesUserPrincipal user,
+    		String responseType,
+    		String clientId,
+    		String scope,
+    		String state,
+    		String redirectUri) throws AuthorizeException, InvalidUriException, NotesException, IOException {
 		// response_type is mandatory
 		if( StringUtils.isEmpty(responseType) )
 			throw new InvalidRequestException("response_type mandatory in query string");
@@ -135,14 +147,7 @@ public class AuthorizeController {
 			throw new AuthorizeServerErrorException("unable to find app with client_id '" + clientId + "'");
 		
 		// Get the app name
-		Name nn = null;
-		String appName;
-		try {
-			nn = this.notesContext.getUserSession().createName(app.getName() + this.applicationRoot);
-			appName = nn.toString();
-		} finally {
-			DominoUtils.recycleQuietly(nn);
-		}
+		String appName = "CN=" + app.getName() + this.applicationRoot;
 		
 		// validate the redirect_uri
 		Utils.checkRedirectUri(redirectUri, app);
@@ -165,7 +170,7 @@ public class AuthorizeController {
 			authCode.setScopes(scopes);
 			
 			// Update authorized scopes and initialize contexts
-			this.initializeContexts(authCode, app, scopes);
+			this.initializeContexts(user, authCode, app, scopes);
 			
 			// Run the grants
 			Map<String, Object> params = new HashMap<String, Object>();
@@ -226,12 +231,16 @@ public class AuthorizeController {
 	 * @throws JsonGenerationException 
 	 */
 	@SuppressWarnings("unchecked")
-	private void initializeContexts(AuthorizationCode authCode, Application app, List<String> scopes) throws NotesException, JsonGenerationException, JsonMappingException, IOException {
+	private void initializeContexts(
+			NotesUserPrincipal user,
+			AuthorizationCode authCode, 
+			Application app, 
+			List<String> scopes) throws NotesException, JsonGenerationException, JsonMappingException, IOException {
 		final List<String> grantedScopes = new ArrayList<String>();
 		Map<String, IOAuthExtension> exts = this.springContext.getBeansOfType(IOAuthExtension.class);
 		for( IOAuthExtension ext : exts.values() ) {
 			Object context = ext.initContext(
-					this.notesContext.getUserSession(),
+					user,
 					new IScopeGranter() {
 						@Override
 						public void grant(String scope) {

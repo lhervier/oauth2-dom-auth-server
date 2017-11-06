@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import com.github.lhervier.domino.oauth.server.BearerContext;
+import com.github.lhervier.domino.oauth.server.NotesUserPrincipal;
 import com.github.lhervier.domino.oauth.server.aop.ann.ServerRootContext;
 import com.github.lhervier.domino.oauth.server.ex.NotAuthorizedException;
 import com.github.lhervier.domino.oauth.server.ext.IScopeGranter;
@@ -29,12 +29,6 @@ import com.github.lhervier.domino.oauth.server.ext.openid.OpenIdContext;
 @Controller
 public class OpenIdController {
 
-	/**
-	 * The context sent from the Authorization Bearer http header
-	 */
-	@Autowired
-	private BearerContext bearerContext;
-	
 	/**
 	 * The OpenId extension
 	 */
@@ -56,6 +50,14 @@ public class OpenIdController {
         response.addHeader("Access-Control-Allow-Origin", "*");
     }
 	
+	// ======================================================================
+	
+	/**
+	 * We are unable to inject this bean as a method parameter
+	 */
+	@Autowired
+	private NotesUserPrincipal userInfoUser;
+	
 	/**
 	 * The userInfo end point
 	 * @return
@@ -64,24 +66,27 @@ public class OpenIdController {
 	@RequestMapping(value = "/userInfo", method = RequestMethod.GET)
 	@ServerRootContext
 	public @ResponseBody IdToken userInfo(HttpServletResponse response) throws NotesException, NotAuthorizedException {
+		return this.userInfo(this.userInfoUser, response);
+	}
+	public IdToken userInfo(NotesUserPrincipal user, HttpServletResponse response) throws NotesException, NotAuthorizedException {
 		response.addHeader("Access-Control-Allow-Origin", "*");
-		if( this.bearerContext.getBearerSession() == null )
+		if( !user.isBearerAuth() )
 			throw new NotAuthorizedException();
 		
 		// Run through authorize to get the context
 		OpenIdContext ctx = this.openIdExt.initContext(
-				this.bearerContext.getBearerSession(), 
+				user, 
 				new IScopeGranter() {
 					@Override
 					public void grant(String scope) {
 					}
 				}, 
-				this.bearerContext.getBearerClientId(), 
-				this.bearerContext.getBearerScopes()
+				user.getClientId(),
+				user.getScopes()
 		);
 		
 		// Now, generate the token
-		IdToken idToken = this.openIdExt.createIdToken(ctx, this.bearerContext.getBearerScopes());
+		IdToken idToken = this.openIdExt.createIdToken(ctx, user.getScopes());
 		
 		// Return the token
 		return idToken;

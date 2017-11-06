@@ -3,13 +3,13 @@ package com.github.lhervier.domino.oauth.server.ext.core;
 import java.util.List;
 
 import lotus.domino.NotesException;
-import lotus.domino.Session;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.github.lhervier.domino.oauth.server.NotesUserPrincipal;
 import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.server.ext.IPropertyAdder;
 import com.github.lhervier.domino.oauth.server.ext.IScopeGranter;
@@ -80,18 +80,18 @@ public class CoreExt implements IOAuthExtension<CoreContext> {
 	}
 
 	/**
-	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#initContext(Session, IScopeGranter, String, List)
+	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#initContext(NotesUserPrincipal, IScopeGranter, String, List)
 	 */
 	@Override
 	public CoreContext initContext(
-			Session session,
+			NotesUserPrincipal user,
 			IScopeGranter granter, 
 			String clientId, 
 			List<String> scopes) throws NotesException {
 		CoreContext ctx = new CoreContext();
 		ctx.setIss(this.iss);
 		ctx.setAud(clientId);
-		ctx.setSub(session.getEffectiveUserName());
+		ctx.setSub(user.getName());
 		return ctx;
 	}
 

@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.github.lhervier.domino.oauth.server.NotesUserPrincipal;
 import com.github.lhervier.domino.oauth.server.aop.ann.Oauth2DbContext;
 import com.github.lhervier.domino.oauth.server.ex.GrantException;
 import com.github.lhervier.domino.oauth.server.ex.InvalidUriException;
@@ -91,6 +92,12 @@ public class TokenController {
 	// =============================================================================
 	
 	/**
+	 * We are note able to inject this bean as a method argument
+	 */
+	@Autowired
+	private NotesUserPrincipal tokenUser;
+	
+	/**
 	 * Generate a token
 	 * @throws GrantException error that must be serialized to the user
 	 * @throws ServerErrorException main error
@@ -105,11 +112,21 @@ public class TokenController {
 			@RequestParam(value = "scope", required = false) String scope,
 			@RequestParam(value = "refresh_token", required = false) String refreshToken,
 			@RequestParam(value = "redirect_uri", required = false) String redirectUri) throws GrantException, ServerErrorException, NotesException {
+		return this.token(this.tokenUser, clientId, grantType, code, scope, refreshToken, redirectUri);
+	}
+	public Map<String, Object> token(
+			NotesUserPrincipal user,
+			String clientId,
+			String grantType,
+			String code,
+			String scope,
+			String refreshToken,
+			String redirectUri) throws GrantException, ServerErrorException, NotesException {
 		// Prepare response object
 		Map<String, Object> resp;
 		
 		// Extract application from current user (the application)
-		Application app = this.appSvc.getCurrentApplication();
+		Application app = this.appSvc.getApplicationFromFullName(user.getName());
 		if( app == null )
 			throw new InvalidClientException("current user do not correspond to a declared application");
 		

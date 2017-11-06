@@ -15,6 +15,11 @@ public class Application implements Serializable {
 	private static final long serialVersionUID = 1213696763673347194L;
 
 	/**
+	 * Application full name
+	 */
+	private String fullName;
+	
+	/**
 	 * Son nom
 	 */
 	private String name;
@@ -126,5 +131,19 @@ public class Application implements Serializable {
 	 */
 	public void setAppReader(String appReader) {
 		this.appReader = appReader;
+	}
+
+	/**
+	 * @return the fullName
+	 */
+	public String getFullName() {
+		return fullName;
+	}
+
+	/**
+	 * @param fullName the fullName to set
+	 */
+	public void setFullName(String fullName) {
+		this.fullName = fullName;
 	}
 }

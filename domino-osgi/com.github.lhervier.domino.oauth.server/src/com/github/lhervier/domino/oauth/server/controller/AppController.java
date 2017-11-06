@@ -223,7 +223,7 @@ public class AppController {
 		
 		// Update an existing application
 		this.appSvc.updateApplication(app);
-		return new ModelAndView("redirect:applications");
+		return new ModelAndView("redirect:listApplications");
 	}
 	
 	/**

@@ -22,10 +22,11 @@
 	<div>
 		<#if edit == true>
 			<button type="submit" name="action" value="saveApp">Save</button>
+			<button type="button" onclick="self.location='listApplications'">Cancel</button>
 		<#else>
 			<button type="button" onclick="self.location='editApplication?name=${app.name}'">Edit</button>
+			<button type="button" onclick="self.location='listApplications'">Close</button>
 		</#if>
-		<button type="button" onclick="self.location='listApplications'">Cancel</button>
 	</div>
 	
 	<#if secret??>
@@ -60,6 +61,9 @@
 					</#if>
 				<#else>
 					${app.name}
+					<#if edit == true>
+						<input type="hidden" name="name" value="${app.name?xhtml}">
+					</#if>
 				</#if>
 			</td>
 		</tr>

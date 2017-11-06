@@ -65,12 +65,6 @@ public class AuthorizeController {
 	private ApplicationContext springContext;
 	
 	/**
-	 * The application root
-	 */
-	@Value("${oauth2.server.applicationRoot}")
-	private String applicationRoot;
-	
-	/**
 	 * Authorization codes life time
 	 */
 	@Value("${oauth2.server.authCodeLifetime}")
@@ -146,9 +140,6 @@ public class AuthorizeController {
 		if( app == null )
 			throw new AuthorizeServerErrorException("unable to find app with client_id '" + clientId + "'");
 		
-		// Get the app name
-		String appName = "CN=" + app.getName() + this.applicationRoot;
-		
 		// validate the redirect_uri
 		Utils.checkRedirectUri(redirectUri, app);
 		
@@ -159,7 +150,7 @@ public class AuthorizeController {
 			
 			authCode = new AuthorizationCode();
 			authCode.setId(id);
-			authCode.setApplication(appName);
+			authCode.setApplication(app.getFullName());
 			authCode.setClientId(app.getClientId());
 			authCode.setRedirectUri(redirectUri);
 			authCode.setExpires(SystemUtils.currentTimeSeconds() + this.authCodeLifeTime);

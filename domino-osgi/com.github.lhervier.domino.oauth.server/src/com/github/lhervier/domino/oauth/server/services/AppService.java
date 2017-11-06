@@ -1,14 +1,10 @@
 package com.github.lhervier.domino.oauth.server.services;
 
-import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import java.util.Vector;
 
 import lotus.domino.Document;
 import lotus.domino.Name;
@@ -22,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import com.github.lhervier.domino.oauth.server.BaseServerComponent;
 import com.github.lhervier.domino.oauth.server.model.Application;
+import com.github.lhervier.domino.oauth.server.model.Person;
 import com.github.lhervier.domino.oauth.server.utils.DominoUtils;
 import com.github.lhervier.domino.oauth.server.utils.ViewIterator;
 
@@ -33,11 +30,6 @@ import com.github.lhervier.domino.oauth.server.utils.ViewIterator;
  */
 @Service
 public class AppService extends BaseServerComponent {
-	
-	/**
-	 * Le nom de la vue de laquelle récupérer les utilisateurs
-	 */
-	private static final String VIEW_USERS = "($VIMPeople)";
 	
 	/**
 	 * Le nom de la vue qui contient toutes les applications
@@ -55,40 +47,16 @@ public class AppService extends BaseServerComponent {
 	private static final String COLUMN_CLIENTID = "ClientId";
 	
 	/**
-	 * Notre générateur de nombres aléatoires
-	 */
-	private static final SecureRandom RANDOM = new SecureRandom();
-	
-	/**
-	 * The server context
+	 * The nab service
 	 */
 	@Autowired
-	private NabService nabBean;
+	private NabService nabSvc;
 	
 	/**
 	 * The application root
 	 */
 	@Value("${oauth2.server.applicationRoot}")
 	private String applicationRoot;
-	
-	/**
-	 * Retourne le document Person associé à une app
-	 * @param appName le nom de l'app
-	 * @return le document
-	 * @throws NotesException en cas de pb
-	 */
-	private Document getPersonDoc(String appName) throws NotesException {
-		Name appNotesName = null;
-		View v = null;
-		try {
-			appNotesName = this.notesContext.getUserSession().createName(appName + this.applicationRoot);
-			v = DominoUtils.getView(this.nabBean.getNab(), VIEW_USERS);
-			return v.getDocumentByKey(appNotesName.getAbbreviated());
-		} finally {
-			DominoUtils.recycleQuietly(v);
-			DominoUtils.recycleQuietly(appNotesName);
-		}
-	}
 	
 	/**
 	 * Retourne le document associé à une app
@@ -122,15 +90,6 @@ public class AppService extends BaseServerComponent {
 		} finally {
 			DominoUtils.recycleQuietly(v);
 		}
-	}
-	
-	/**
-	 * Génère un secret
-	 * @return un mot de passe aléatoire
-	 */
-	private String generatePassword() {
-		// see https://stackoverflow.com/questions/41107/how-to-generate-a-random-alpha-numeric-string
-		return new BigInteger(130, RANDOM).toString(32);
 	}
 	
 	// ====================================================================================================
@@ -208,23 +167,6 @@ public class AppService extends BaseServerComponent {
 	}
 	
 	/**
-	 * Return the application that correspond to the currently
-	 * logged in user
-	 * @return the application
-	 */
-	public Application getCurrentApplication() throws NotesException {
-		Name nn = null;
-		try {
-			String fullName = this.notesContext.getUserSession().getEffectiveUserName();
-			nn = this.notesContext.getUserSession().createName(fullName);
-			String appName = nn.getCommon();
-			return this.getApplicationFromName(appName);
-		} finally {
-			DominoUtils.recycleQuietly(nn);
-		}
-	}
-	
-	/**
 	 * Prépare une future nouvelle app
 	 * @return une nouvelle app (avec un client_id seulement)
 	 */
@@ -245,6 +187,9 @@ public class AppService extends BaseServerComponent {
 	 * @throws NotesException en cas de pb
 	 */
 	public String addApplication(Application app) throws NotesException {
+		// Compute full name
+		app.setFullName("CN=" + app.getName() + this.applicationRoot);
+		
 		// Vérifie qu'il n'existe pas déjà une app avec ce nom
 		Application existing = this.getApplicationFromName(app.getName());
 		if( existing != null )
@@ -255,54 +200,28 @@ public class AppService extends BaseServerComponent {
 		if( existing != null )
 			throw new RuntimeException("Une application avec ce client_id existe déjà.");
 		
-		Document person = null;
 		Document appDoc = null;
 		Name nn = null;
 		try {
 			// Vérifie qu'elle ne soit pas déjà déclarée dans le carnet d'adresse
-			person = this.getPersonDoc(app.getName());
+			Person person = this.nabSvc.getPerson(app.getFullName());
 			if( person != null )
 				throw new RuntimeException("Une application avec ce nom existe déjà.");
 			
-			String abbreviated = app.getName() + this.applicationRoot;
-			nn = this.notesContext.getUserSession().createName(abbreviated);
-			String fullName = nn.toString();
-			
 			// Créé une nouvelle application dans le NAB (un nouvel utilisateur)
-			person = this.nabBean.getNab().createDocument();
-			person.replaceItemValue("Form", "Person");
-			person.replaceItemValue("Type", "Person");
-			person.replaceItemValue("ShortName", app.getName());
-			person.replaceItemValue("LastName", app.getName());
-			person.replaceItemValue("MailSystem", "100");		// None
-			Vector<String> fullNames = new Vector<String>();
-			fullNames.add(fullName);
-			fullNames.add(app.getClientId());
-			person.replaceItemValue("FullName", fullNames);
-			String password = this.generatePassword();
-			person.replaceItemValue("HTTPPassword", this.notesContext.getUserSession().evaluate("@Password(\"" + password + "\")"));
-			person.replaceItemValue("HTTPPasswordChangeDate", this.notesContext.getUserSession().createDateTime(new Date()));
-			person.replaceItemValue("$SecurePassword", "1");
-			person.replaceItemValue("Owner", this.notesContext.getUserSession().getEffectiveUserName());
-			person.replaceItemValue("LocalAdmin", this.notesContext.getUserSession().getEffectiveUserName());
-			DominoUtils.computeAndSave(person);
+			String pwd = this.nabSvc.createPersonForApp(app);
 			
 			// Créé un nouveau document pour l'application dans la base
 			appDoc = this.getOauth2DatabaseAsUser().createDocument();
 			appDoc.replaceItemValue("Form", "Application");
-			app.setAppReader(fullName);
+			app.setAppReader(app.getFullName());
 			DominoUtils.fillDocument(appDoc, app);
 			DominoUtils.computeAndSave(appDoc);
 			
-			// Rafraîchit le NAB pour prise en compte immédiate
-			DominoUtils.refreshNab(this.nabBean.getNab());
-			
-			// Return the secret
-			return password;
+			return pwd;
 		} finally {
 			DominoUtils.recycleQuietly(appDoc);
 			DominoUtils.recycleQuietly(nn);
-			DominoUtils.recycleQuietly(person);
 		}
 	}
 	
@@ -342,6 +261,10 @@ public class AppService extends BaseServerComponent {
 				throw new RuntimeException("L'uri '" + uri.toString() + "' ne doit pas contenir de fragment (#)");
 		}
 		
+		// Extract full name from existing
+		app.setFullName(existing.getFullName());
+		
+		// Update document
 		Document appDoc = null;
 		try {
 			appDoc = this.getAppDocFromName(app.getName());
@@ -361,23 +284,21 @@ public class AppService extends BaseServerComponent {
 	 * @throws NotesException en cas de pb
 	 */
 	public void removeApplication(String name) throws NotesException {
-		Document personDoc = null;
+		Application app = this.getApplicationFromName(name);
+		if( app == null )
+			return;
+		
 		Document appDoc = null;
 		try {
-			personDoc = this.getPersonDoc(name);
-			if( personDoc == null )
-				throw new RuntimeException("L'application '" + name + "' n'existe pas dans le carnet d'adresse. Impossible de la supprimer.");
-			personDoc.remove(true);
+			// Remove person in nab
+			this.nabSvc.removePerson(app.getFullName());
 			
+			// Remove document in oauth2 database
 			appDoc = this.getAppDocFromName(name);
-			if( appDoc == null )
-				throw new RuntimeException("L'application '" + name + "' n'existe pas. Impossible de la supprimer.");
-			appDoc.remove(true);
-			
-			DominoUtils.refreshNab(this.nabBean.getNab());
+			if( appDoc != null )
+				appDoc.remove(true);
 		} finally {
 			DominoUtils.recycleQuietly(appDoc);
-			DominoUtils.recycleQuietly(personDoc);
 		}
 	}
 }

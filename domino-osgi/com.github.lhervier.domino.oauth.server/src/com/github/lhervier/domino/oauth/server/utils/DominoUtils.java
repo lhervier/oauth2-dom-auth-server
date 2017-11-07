@@ -169,7 +169,7 @@ public class DominoUtils {
 	 */
 	public static final void computeAndSave(Document doc) throws NotesException {
 		if( !doc.computeWithForm(true, true) )
-			throw new RuntimeException("Erreur pendant le computeWithForm");
+			throw new NotesException(-1, "Error while executing computeWithForm on person document");
 		doc.save(true, false);
 	}
 	

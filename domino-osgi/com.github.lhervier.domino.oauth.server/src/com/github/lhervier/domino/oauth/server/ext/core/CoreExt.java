@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.github.lhervier.domino.oauth.server.NotesUserPrincipal;
+import com.github.lhervier.domino.oauth.server.NotesPrincipal;
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
 import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.server.ext.IPropertyAdder;
@@ -80,11 +80,11 @@ public class CoreExt implements IOAuthExtension<CoreContext> {
 	}
 
 	/**
-	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#initContext(NotesUserPrincipal, IScopeGranter, String, List)
+	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#initContext(NotesPrincipal, IScopeGranter, String, List)
 	 */
 	@Override
 	public CoreContext initContext(
-			NotesUserPrincipal user,
+			NotesPrincipal user,
 			IScopeGranter granter, 
 			String clientId, 
 			List<String> scopes) throws NotesException {

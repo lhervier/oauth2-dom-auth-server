@@ -18,7 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.github.lhervier.domino.oauth.server.NotesUserPrincipal;
+import com.github.lhervier.domino.oauth.server.NotesPrincipal;
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
 import com.github.lhervier.domino.oauth.server.ex.AuthorizeException;
 import com.github.lhervier.domino.oauth.server.ex.InvalidUriException;
@@ -79,7 +79,7 @@ public class AuthorizeService {
 	 * @throws NotesException may happend...
 	 */
 	public String authorize(
-			NotesUserPrincipal user,
+			NotesPrincipal user,
     		String responseType,
     		String clientId,
     		String scope,
@@ -198,7 +198,7 @@ public class AuthorizeService {
 	 */
 	@SuppressWarnings("unchecked")
 	private void initializeContexts(
-			NotesUserPrincipal user,
+			NotesPrincipal user,
 			AuthCodeEntity authCode, 
 			Application app, 
 			List<String> scopes) throws NotesException, JsonGenerationException, JsonMappingException, IOException {

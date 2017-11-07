@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.github.lhervier.domino.oauth.server.NotesUserPrincipal;
+import com.github.lhervier.domino.oauth.server.NotesPrincipal;
 import com.github.lhervier.domino.oauth.server.ex.NotAuthorizedException;
 import com.github.lhervier.domino.oauth.server.ext.core.AccessToken;
 import com.github.lhervier.domino.oauth.server.model.Application;
@@ -70,7 +70,7 @@ public class CheckTokenService {
 	 * @throws NotAuthorizedException
 	 */
 	public TokenContent checkToken(
-			NotesUserPrincipal user, 
+			NotesPrincipal user, 
 			String token) throws IOException, NotesException, NotAuthorizedException {
 		// User must be logged in as an application
 		Application userApp = this.appService.getApplicationFromName(user.getCommon());

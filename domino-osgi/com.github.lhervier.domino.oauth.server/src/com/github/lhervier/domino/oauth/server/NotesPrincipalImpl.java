@@ -1,6 +1,5 @@
 package com.github.lhervier.domino.oauth.server;
 
-import java.security.Principal;
 import java.util.List;
 
 import lotus.domino.Name;
@@ -17,7 +16,7 @@ import com.github.lhervier.domino.spring.servlet.NotesContext;
  * @author Lionel HERVIER
  */
 @Component
-public class NotesUserPrincipal implements Principal {
+public class NotesPrincipalImpl implements NotesPrincipal {
 
 	/**
 	 * The notes context

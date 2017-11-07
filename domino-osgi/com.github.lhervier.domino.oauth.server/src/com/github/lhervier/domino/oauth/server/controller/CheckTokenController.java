@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import com.github.lhervier.domino.oauth.server.NotesUserPrincipal;
+import com.github.lhervier.domino.oauth.server.NotesPrincipal;
 import com.github.lhervier.domino.oauth.server.aop.ann.Oauth2DbContext;
 import com.github.lhervier.domino.oauth.server.ex.NotAuthorizedException;
 import com.github.lhervier.domino.oauth.server.model.TokenContent;
@@ -56,7 +56,7 @@ public class CheckTokenController {
 	 * We are unable to inject this bean as a method parameter
 	 */
 	@Autowired
-	private NotesUserPrincipal checkTokenUser;
+	private NotesPrincipal checkTokenUser;
 	
 	/**
 	 * Check a given token

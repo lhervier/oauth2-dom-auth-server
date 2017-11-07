@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import com.github.lhervier.domino.oauth.server.NotesUserPrincipal;
+import com.github.lhervier.domino.oauth.server.NotesPrincipal;
 import com.github.lhervier.domino.oauth.server.aop.ann.ServerRootContext;
 import com.github.lhervier.domino.oauth.server.ex.NotAuthorizedException;
 import com.github.lhervier.domino.oauth.server.ext.openid.IdToken;
@@ -54,7 +54,7 @@ public class OpenIdController {
 	 * We are unable to inject this bean as a method parameter
 	 */
 	@Autowired
-	private NotesUserPrincipal userInfoUser;
+	private NotesPrincipal userInfoUser;
 	
 	/**
 	 * The userInfo end point

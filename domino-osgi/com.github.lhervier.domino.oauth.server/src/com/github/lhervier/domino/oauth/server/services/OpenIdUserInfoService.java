@@ -5,7 +5,7 @@ import lotus.domino.NotesException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.github.lhervier.domino.oauth.server.NotesUserPrincipal;
+import com.github.lhervier.domino.oauth.server.NotesPrincipal;
 import com.github.lhervier.domino.oauth.server.ex.NotAuthorizedException;
 import com.github.lhervier.domino.oauth.server.ext.IScopeGranter;
 import com.github.lhervier.domino.oauth.server.ext.openid.IdToken;
@@ -32,7 +32,7 @@ public class OpenIdUserInfoService {
 	 * @throws NotesException
 	 * @throws NotAuthorizedException
 	 */
-	public IdToken userInfo(NotesUserPrincipal user) throws NotesException, NotAuthorizedException {
+	public IdToken userInfo(NotesPrincipal user) throws NotesException, NotAuthorizedException {
 		// Only allow bearer authentication
 		if( !user.isBearerAuth() )
 			throw new NotAuthorizedException();

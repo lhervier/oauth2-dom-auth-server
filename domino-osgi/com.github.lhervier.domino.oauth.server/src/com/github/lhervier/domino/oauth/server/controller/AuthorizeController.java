@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.github.lhervier.domino.oauth.server.NotesUserPrincipal;
+import com.github.lhervier.domino.oauth.server.NotesPrincipal;
 import com.github.lhervier.domino.oauth.server.aop.ann.Oauth2DbContext;
 import com.github.lhervier.domino.oauth.server.ex.AuthorizeException;
 import com.github.lhervier.domino.oauth.server.ex.InvalidUriException;
@@ -36,7 +36,7 @@ public class AuthorizeController {
 	 * (@Autowired properties are not instanciated)
 	 */
 	@Autowired
-	private NotesUserPrincipal authorizeUser;
+	private NotesPrincipal authorizeUser;
 	
 	/**
 	 * Authorize endpoint.

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.github.lhervier.domino.oauth.server.NotesUserPrincipal;
+import com.github.lhervier.domino.oauth.server.NotesPrincipal;
 import com.github.lhervier.domino.oauth.server.aop.ann.Oauth2DbContext;
 import com.github.lhervier.domino.oauth.server.ex.GrantException;
 import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
@@ -46,7 +46,7 @@ public class TokenController {
 	 * We are note able to inject this bean as a method argument
 	 */
 	@Autowired
-	private NotesUserPrincipal tokenUser;
+	private NotesPrincipal tokenUser;
 	
 	/**
 	 * Generate a token
@@ -66,7 +66,7 @@ public class TokenController {
 		return this.token(this.tokenUser, clientId, grantType, code, scope, refreshToken, redirectUri);
 	}
 	public Map<String, Object> token(
-			NotesUserPrincipal user,
+			NotesPrincipal user,
 			String clientId,
 			String grantType,
 			String code,

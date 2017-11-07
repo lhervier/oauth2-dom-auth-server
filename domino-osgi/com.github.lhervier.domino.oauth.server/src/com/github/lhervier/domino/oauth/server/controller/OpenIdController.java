@@ -15,7 +15,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.github.lhervier.domino.oauth.server.NotesPrincipal;
-import com.github.lhervier.domino.oauth.server.aop.ann.ServerRootContext;
+import com.github.lhervier.domino.oauth.server.aop.ann.ctx.ServerRootContext;
+import com.github.lhervier.domino.oauth.server.aop.ann.security.Bearer;
 import com.github.lhervier.domino.oauth.server.ex.NotAuthorizedException;
 import com.github.lhervier.domino.oauth.server.ext.openid.IdToken;
 import com.github.lhervier.domino.oauth.server.services.OpenIdUserInfoService;
@@ -63,6 +64,7 @@ public class OpenIdController {
 	 */
 	@RequestMapping(value = "/userInfo", method = RequestMethod.GET)
 	@ServerRootContext
+	@Bearer
 	public @ResponseBody IdToken userInfo(HttpServletResponse response) throws NotesException, NotAuthorizedException {
 		response.addHeader("Access-Control-Allow-Origin", "*");
 		return this.userInfoSvc.userInfo(this.userInfoUser);

@@ -1,4 +1,4 @@
-package com.github.lhervier.domino.oauth.server.aop.ann;
+package com.github.lhervier.domino.oauth.server.aop.ann.security;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -6,11 +6,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Indicates the roles needed to access a rest method
+ * Indicates that the user must be authenticated using a bearer token
  * @author Lionel HERVIER
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface Roles {
-	public String[] roles() default "";
+public @interface Bearer {
 }

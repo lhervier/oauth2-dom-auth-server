@@ -1,4 +1,4 @@
-package com.github.lhervier.domino.oauth.server.aop.ann;
+package com.github.lhervier.domino.oauth.server.aop.ann.security;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -6,13 +6,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Set on controllers methods to say that this method
- * can only be called when the notes context points to
- * the oauth2 database
+ * Indicates the roles needed to access a rest method
  * @author Lionel HERVIER
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface Oauth2DbContext {
-	
+public @interface Roles {
+	public String[] roles() default "";
 }

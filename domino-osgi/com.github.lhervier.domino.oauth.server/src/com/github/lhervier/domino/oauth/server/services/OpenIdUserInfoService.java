@@ -33,10 +33,6 @@ public class OpenIdUserInfoService {
 	 * @throws NotAuthorizedException
 	 */
 	public IdToken userInfo(NotesPrincipal user) throws NotesException, NotAuthorizedException {
-		// Only allow bearer authentication
-		if( !user.isBearerAuth() )
-			throw new NotAuthorizedException();
-		
 		// Run through authorize to get the context
 		OpenIdContext ctx = this.openIdExt.initContext(
 				user, 

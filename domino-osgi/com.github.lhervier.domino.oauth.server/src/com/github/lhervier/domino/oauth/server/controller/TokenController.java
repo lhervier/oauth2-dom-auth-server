@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.github.lhervier.domino.oauth.server.NotesPrincipal;
-import com.github.lhervier.domino.oauth.server.aop.ann.Oauth2DbContext;
+import com.github.lhervier.domino.oauth.server.aop.ann.ctx.Oauth2DbContext;
 import com.github.lhervier.domino.oauth.server.ex.GrantException;
 import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
 import com.github.lhervier.domino.oauth.server.ex.grant.InvalidClientException;

@@ -12,9 +12,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import com.github.lhervier.domino.oauth.server.aop.ann.Oauth2DbContext;
-import com.github.lhervier.domino.oauth.server.aop.ann.Roles;
-import com.github.lhervier.domino.oauth.server.aop.ann.ServerRootContext;
+import com.github.lhervier.domino.oauth.server.BearerContext;
+import com.github.lhervier.domino.oauth.server.aop.ann.ctx.Oauth2DbContext;
+import com.github.lhervier.domino.oauth.server.aop.ann.ctx.ServerRootContext;
+import com.github.lhervier.domino.oauth.server.aop.ann.security.Bearer;
+import com.github.lhervier.domino.oauth.server.aop.ann.security.Roles;
+import com.github.lhervier.domino.oauth.server.ex.NotAuthorizedException;
 import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
 import com.github.lhervier.domino.oauth.server.ex.WrongPathException;
 import com.github.lhervier.domino.spring.servlet.NotesContext;
@@ -33,6 +36,12 @@ public class AccessCheckAspect {
 	 */
 	@Autowired
 	private NotesContext notesContext;
+	
+	/**
+	 * The bearer context
+	 */
+	@Autowired
+	private BearerContext bearerContext;
 	
 	/**
 	 * The oauth2 db path
@@ -62,6 +71,7 @@ public class AccessCheckAspect {
 		Oauth2DbContext o2Ctx = method.getAnnotation(Oauth2DbContext.class);
 		ServerRootContext srCtx = method.getAnnotation(ServerRootContext.class);
 		Roles roles = method.getAnnotation(Roles.class);
+		Bearer bearer = method.getAnnotation(Bearer.class);
 		
 		// Method to be called only on the oauth2 database :
 		if( o2Ctx != null ) {
@@ -90,6 +100,12 @@ public class AccessCheckAspect {
 				if( !this.notesContext.getUserRoles().contains("[" + role + "]") )
 					throw new ServerErrorException();
 			}
+		}
+		
+		// Check if we are using bearer context
+		if( bearer != null ) {
+			if( this.bearerContext.getBearerSession() == null )
+				throw new NotAuthorizedException();
 		}
 	}
 }

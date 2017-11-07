@@ -19,8 +19,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.github.lhervier.domino.oauth.server.aop.ann.Oauth2DbContext;
-import com.github.lhervier.domino.oauth.server.aop.ann.Roles;
+import com.github.lhervier.domino.oauth.server.aop.ann.ctx.Oauth2DbContext;
+import com.github.lhervier.domino.oauth.server.aop.ann.security.Roles;
 import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.services.AppService;
 

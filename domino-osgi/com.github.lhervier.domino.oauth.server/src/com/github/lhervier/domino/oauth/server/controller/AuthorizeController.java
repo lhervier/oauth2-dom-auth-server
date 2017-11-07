@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.github.lhervier.domino.oauth.server.NotesPrincipal;
-import com.github.lhervier.domino.oauth.server.aop.ann.Oauth2DbContext;
+import com.github.lhervier.domino.oauth.server.aop.ann.ctx.Oauth2DbContext;
 import com.github.lhervier.domino.oauth.server.ex.AuthorizeException;
 import com.github.lhervier.domino.oauth.server.ex.InvalidUriException;
 import com.github.lhervier.domino.oauth.server.services.AuthorizeService;

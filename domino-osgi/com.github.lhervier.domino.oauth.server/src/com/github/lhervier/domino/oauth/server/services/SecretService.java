@@ -95,13 +95,6 @@ public class SecretService {
 	}
 	
 	/**
-	 * @param ssoConfig
-	 */
-	public String getSignSecretBase64(String ssoConfig) throws NotesException, IOException {
-		return Base64Utils.encode(this.getSignSecret(ssoConfig));
-	}
-	
-	/**
 	 * Retourne un secret pour crypter
 	 * @param ssoConfig la config sso
 	 */
@@ -110,29 +103,10 @@ public class SecretService {
 	}
 	
 	/**
-	 * @param ssoConfig
-	 */
-	public String getCryptSecretBase64(String ssoConfig) throws NotesException, IOException {
-		return Base64Utils.encode(this.getCryptSecret(ssoConfig));
-	}
-	
-	/**
 	 * Retourne le secret utilisé pour crypter le refresh token
 	 * @throws IOException 
 	 */
 	public byte[] getRefreshTokenSecret() throws NotesException, IOException {
 		return this.getCryptSecret(this.refreshTokenConfig);
-	}
-	
-	/**
-	 * Retourne le secret en base 64
-	 * @throws IOException 
-	 * @throws NotesException 
-	 */
-	public String getRefreshTokenSecretBase64() throws NotesException, IOException {
-		byte[] secret = this.getRefreshTokenSecret();
-		if( secret == null )
-			return null;
-		return Base64Utils.encode(secret);
 	}
 }

@@ -37,8 +37,8 @@ import com.github.lhervier.domino.oauth.server.ex.grant.UnsupportedGrantTypeExce
 import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
+import com.github.lhervier.domino.oauth.server.repo.SecretRepository;
 import com.github.lhervier.domino.oauth.server.services.AppService;
-import com.github.lhervier.domino.oauth.server.services.SecretService;
 import com.github.lhervier.domino.oauth.server.utils.PropertyAdderImpl;
 import com.github.lhervier.domino.oauth.server.utils.SystemUtils;
 import com.github.lhervier.domino.oauth.server.utils.Utils;
@@ -78,10 +78,10 @@ public class TokenController {
 	private AuthCodeRepository authCodeRepo;
 	
 	/**
-	 * La bean pour accéder aux secrets
+	 * Secret repository
 	 */
 	@Autowired
-	private SecretService secretBean;
+	private SecretRepository secretRespo;
 	
 	/**
 	 * The application context
@@ -235,7 +235,7 @@ public class TokenController {
 					new Payload(payload)
 			);
 			jweObject.encrypt(new DirectEncrypter(
-					this.secretBean.getRefreshTokenSecret()
+					this.secretRespo.findRefreshTokenSecret()
 			));
 			return jweObject.serialize();
 		} catch (KeyLengthException e) {
@@ -255,7 +255,7 @@ public class TokenController {
 	private AuthCodeEntity authCodeFromRefreshToken(String sRefreshToken) throws ServerErrorException {
 		try {
 			JWEObject jweObject = JWEObject.parse(sRefreshToken);
-			jweObject.decrypt(new DirectDecrypter(this.secretBean.getRefreshTokenSecret()));
+			jweObject.decrypt(new DirectDecrypter(this.secretRespo.findRefreshTokenSecret()));
 			JSONObject payload = jweObject.getPayload().toJSONObject();
 			
 			// Check it is not expired
@@ -349,7 +349,7 @@ public class TokenController {
 						context, 
 						new PropertyAdderImpl(
 								resp, 
-								this.secretBean
+								this.secretRespo
 						),
 						authCode.getGrantedScopes()
 				);
@@ -424,7 +424,7 @@ public class TokenController {
 					context, 
 					new PropertyAdderImpl(
 							resp,
-							this.secretBean
+							this.secretRespo
 					), 
 					scopes
 			);

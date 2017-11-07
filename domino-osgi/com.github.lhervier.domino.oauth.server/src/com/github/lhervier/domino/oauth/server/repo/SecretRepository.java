@@ -1,4 +1,4 @@
-package com.github.lhervier.domino.oauth.server.services;
+package com.github.lhervier.domino.oauth.server.repo;
 
 import java.io.IOException;
 
@@ -9,7 +9,7 @@ import lotus.domino.View;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Repository;
 
 import com.github.lhervier.domino.oauth.server.utils.Base64Utils;
 import com.github.lhervier.domino.oauth.server.utils.DominoUtils;
@@ -19,8 +19,8 @@ import com.github.lhervier.domino.spring.servlet.NotesContext;
  * Registre pour mémoriser les secrets
  * @author Lionel HERVIER
  */
-@Service
-public class SecretService {
+@Repository
+public class SecretRepository {
 
 	/**
 	 * Le nom de la vue qui contient les configs SSO
@@ -86,11 +86,13 @@ public class SecretService {
 		}
 	}
 	
+	// ==================================================================================
+	
 	/**
 	 * Retourne un secret pour signer
 	 * @param ssoConfig la config sso
 	 */
-	public byte[] getSignSecret(String ssoConfig) throws NotesException, IOException {
+	public byte[] findSignSecret(String ssoConfig) throws NotesException, IOException {
 		return this.getSecret(ssoConfig, 32);
 	}
 	
@@ -98,7 +100,7 @@ public class SecretService {
 	 * Retourne un secret pour crypter
 	 * @param ssoConfig la config sso
 	 */
-	public byte[] getCryptSecret(String ssoConfig) throws NotesException, IOException {
+	public byte[] findCryptSecret(String ssoConfig) throws NotesException, IOException {
 		return this.getSecret(ssoConfig, 16);
 	}
 	
@@ -106,7 +108,7 @@ public class SecretService {
 	 * Retourne le secret utilisé pour crypter le refresh token
 	 * @throws IOException 
 	 */
-	public byte[] getRefreshTokenSecret() throws NotesException, IOException {
-		return this.getCryptSecret(this.refreshTokenConfig);
+	public byte[] findRefreshTokenSecret() throws NotesException, IOException {
+		return this.findCryptSecret(this.refreshTokenConfig);
 	}
 }

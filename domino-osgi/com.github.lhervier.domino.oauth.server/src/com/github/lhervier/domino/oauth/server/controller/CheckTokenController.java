@@ -28,8 +28,8 @@ import com.github.lhervier.domino.oauth.server.aop.ann.Oauth2DbContext;
 import com.github.lhervier.domino.oauth.server.ex.NotAuthorizedException;
 import com.github.lhervier.domino.oauth.server.ext.core.AccessToken;
 import com.github.lhervier.domino.oauth.server.model.Application;
+import com.github.lhervier.domino.oauth.server.repo.SecretRepository;
 import com.github.lhervier.domino.oauth.server.services.AppService;
-import com.github.lhervier.domino.oauth.server.services.SecretService;
 import com.github.lhervier.domino.oauth.server.utils.SystemUtils;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSObject;
@@ -50,10 +50,10 @@ public class CheckTokenController {
 	private static final Log LOG = LogFactory.getLog(CheckTokenController.class);
 	
 	/**
-	 * Secret service
+	 * Secret repository
 	 */
 	@Autowired
-	private SecretService secretSvc;
+	private SecretRepository secretRepo;
 	
 	/**
 	 * App service
@@ -180,7 +180,7 @@ public class CheckTokenController {
 		}
 		
 		// Check signature
-		byte[] secret = this.secretSvc.getSignSecret(kid);
+		byte[] secret = this.secretRepo.findSignSecret(kid);
 		try {
 			JWSVerifier verifier = new MACVerifier(secret);
 			if( !jwsObj.verify(verifier) ) {

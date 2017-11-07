@@ -33,8 +33,8 @@ import com.github.lhervier.domino.oauth.server.ex.authorize.InvalidRequestExcept
 import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.server.ext.IScopeGranter;
 import com.github.lhervier.domino.oauth.server.model.Application;
+import com.github.lhervier.domino.oauth.server.repo.SecretRepository;
 import com.github.lhervier.domino.oauth.server.services.AppService;
-import com.github.lhervier.domino.oauth.server.services.SecretService;
 import com.github.lhervier.domino.oauth.server.utils.PropertyAdderImpl;
 import com.github.lhervier.domino.oauth.server.utils.SystemUtils;
 import com.github.lhervier.domino.oauth.server.utils.Utils;
@@ -53,10 +53,10 @@ public class AuthorizeController {
 	private AppService appSvc;
 	
 	/**
-	 * The secret service
+	 * The secret repository
 	 */
 	@Autowired
-	private SecretService secretSvc;
+	private SecretRepository secretRepo;
 	
 	/**
 	 * The application context
@@ -263,7 +263,7 @@ public class AuthorizeController {
 					authCode,
 					new PropertyAdderImpl(
 							params,
-							this.secretSvc
+							this.secretRepo
 					)
 			);
 		}

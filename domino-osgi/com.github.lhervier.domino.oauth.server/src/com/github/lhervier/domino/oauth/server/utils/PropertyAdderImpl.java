@@ -8,7 +8,7 @@ import lotus.domino.NotesException;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import com.github.lhervier.domino.oauth.server.ext.IPropertyAdder;
-import com.github.lhervier.domino.oauth.server.services.SecretService;
+import com.github.lhervier.domino.oauth.server.repo.SecretRepository;
 import com.nimbusds.jose.EncryptionMethod;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWEAlgorithm;
@@ -30,9 +30,9 @@ public class PropertyAdderImpl implements IPropertyAdder {
 	private Map<String, Object> dest;
 	
 	/**
-	 * La bean pour accéder aux secrets
+	 * Secret repository
 	 */
-	private SecretService secretBean;
+	private SecretRepository secretRepo;
 	
 	/**
 	 * The jackson mapper
@@ -44,9 +44,9 @@ public class PropertyAdderImpl implements IPropertyAdder {
 	 */
 	public PropertyAdderImpl(
 			Map<String, Object> dest, 
-			SecretService secretSvc) {
+			SecretRepository secretRepo) {
 		this.dest = dest;
-		this.secretBean = secretSvc;
+		this.secretRepo = secretRepo;
 	}
 	
 	/**
@@ -58,7 +58,7 @@ public class PropertyAdderImpl implements IPropertyAdder {
 			throw new RuntimeException("La propriété '" + name + "' est déjà définie dans la réponse au grant.");
 		
 		try {
-			byte[] secret = this.secretBean.getCryptSecret(kid);
+			byte[] secret = this.secretRepo.findCryptSecret(kid);
 			JWEHeader header = new JWEHeader(JWEAlgorithm.DIR, EncryptionMethod.A128GCM, null, null, null, null, null, null, null, null, null, kid, null, null, null, null, null, 0, null, null, null, null);
 			JWEObject jweObject = new JWEObject(
 					header, 
@@ -87,7 +87,7 @@ public class PropertyAdderImpl implements IPropertyAdder {
 			throw new RuntimeException("La propriété '" + name + "' est déjà définie dans la réponse au grant.");
 		
 		try {
-			byte[] secret = this.secretBean.getSignSecret(kid);
+			byte[] secret = this.secretRepo.findSignSecret(kid);
 			JWSHeader header = new JWSHeader(JWSAlgorithm.HS256, null, null, null, null, null, null, null, null, null, kid, null, null);
 			JWSObject jwsObject = new JWSObject(
 					header,

@@ -21,7 +21,7 @@ import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 
 import com.github.lhervier.domino.oauth.server.ext.core.AccessToken;
-import com.github.lhervier.domino.oauth.server.services.SecretService;
+import com.github.lhervier.domino.oauth.server.repo.SecretRepository;
 import com.github.lhervier.domino.oauth.server.utils.DominoUtils;
 import com.github.lhervier.domino.oauth.server.utils.SystemUtils;
 import com.ibm.domino.napi.NException;
@@ -49,10 +49,10 @@ public class BearerContext {
 	private HttpServletRequest request;
 	
 	/**
-	 * Service to get the secrets
+	 * Repo to get the secrets
 	 */
 	@Autowired
-	private SecretService secretSvc;
+	private SecretRepository secretRepo;
 	
 	/**
 	 * The sign key
@@ -118,7 +118,7 @@ public class BearerContext {
 			}
 			
 			// Check signature
-			byte[] secret = this.secretSvc.getSignSecret(kid);
+			byte[] secret = this.secretRepo.findSignSecret(kid);
 			JWSVerifier verifier = new MACVerifier(secret);
 			if( !jwsObj.verify(verifier) ) {
 				LOG.error("Bearer token verification failed");

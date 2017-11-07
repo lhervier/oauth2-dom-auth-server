@@ -151,7 +151,7 @@ public class CheckTokenController {
 			NotesUserPrincipal user,
 			@RequestParam("token") String token) throws IOException, NotesException, NotAuthorizedException {
 		// User must be logged in as an application
-		Application userApp = this.appService.getApplicationFromFullName(user.getName());
+		Application userApp = this.appService.getApplicationFromName(user.getCommon());
 		if( userApp == null ) {
 			LOG.error("Not logged in as an application");
 			throw new NotAuthorizedException();

@@ -126,7 +126,7 @@ public class TokenController {
 		Map<String, Object> resp;
 		
 		// Extract application from current user (the application)
-		Application app = this.appSvc.getApplicationFromFullName(user.getName());
+		Application app = this.appSvc.getApplicationFromName(user.getCommon());
 		if( app == null )
 			throw new InvalidClientException("current user do not correspond to a declared application");
 		

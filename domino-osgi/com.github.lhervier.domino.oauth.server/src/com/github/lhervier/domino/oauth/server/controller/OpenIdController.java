@@ -17,10 +17,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import com.github.lhervier.domino.oauth.server.NotesUserPrincipal;
 import com.github.lhervier.domino.oauth.server.aop.ann.ServerRootContext;
 import com.github.lhervier.domino.oauth.server.ex.NotAuthorizedException;
-import com.github.lhervier.domino.oauth.server.ext.IScopeGranter;
 import com.github.lhervier.domino.oauth.server.ext.openid.IdToken;
-import com.github.lhervier.domino.oauth.server.ext.openid.OpenIDExt;
-import com.github.lhervier.domino.oauth.server.ext.openid.OpenIdContext;
+import com.github.lhervier.domino.oauth.server.services.OpenIdUserInfoService;
 
 /**
  * Controller to manage userInfo openId end point
@@ -30,10 +28,10 @@ import com.github.lhervier.domino.oauth.server.ext.openid.OpenIdContext;
 public class OpenIdController {
 
 	/**
-	 * The OpenId extension
+	 * The opend id service
 	 */
 	@Autowired
-	private OpenIDExt openIdExt;
+	private OpenIdUserInfoService userInfoSvc;
 	
 	/**
 	 * For CORS requests
@@ -66,29 +64,7 @@ public class OpenIdController {
 	@RequestMapping(value = "/userInfo", method = RequestMethod.GET)
 	@ServerRootContext
 	public @ResponseBody IdToken userInfo(HttpServletResponse response) throws NotesException, NotAuthorizedException {
-		return this.userInfo(this.userInfoUser, response);
-	}
-	public IdToken userInfo(NotesUserPrincipal user, HttpServletResponse response) throws NotesException, NotAuthorizedException {
 		response.addHeader("Access-Control-Allow-Origin", "*");
-		if( !user.isBearerAuth() )
-			throw new NotAuthorizedException();
-		
-		// Run through authorize to get the context
-		OpenIdContext ctx = this.openIdExt.initContext(
-				user, 
-				new IScopeGranter() {
-					@Override
-					public void grant(String scope) {
-					}
-				}, 
-				user.getClientId(),
-				user.getScopes()
-		);
-		
-		// Now, generate the token
-		IdToken idToken = this.openIdExt.createIdToken(ctx, user.getScopes());
-		
-		// Return the token
-		return idToken;
+		return this.userInfoSvc.userInfo(this.userInfoUser);
 	}
 }

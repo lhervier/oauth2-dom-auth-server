@@ -69,7 +69,9 @@ public class CheckTokenController {
 	@RequestMapping(value = "/checkToken", method = RequestMethod.POST)
 	@Oauth2DbContext
 	public @ResponseBody TokenContent checkToken(
-			@RequestParam("token") String token) throws IOException, NotesException, NotAuthorizedException {
+			@RequestParam("token") String token,
+			HttpServletResponse response) throws IOException, NotesException, NotAuthorizedException {
+		response.addHeader("Access-Control-Allow-Origin", "*");
 		return this.checkTokenSvc.checkToken(this.checkTokenUser, token);
 	}
 }

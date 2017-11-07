@@ -28,6 +28,7 @@ import com.github.lhervier.domino.oauth.server.services.BaseGrantService;
  * @author Lionel HERVIER
  */
 @Controller
+@Oauth2DbContext
 public class TokenController {
 
 	/**
@@ -55,7 +56,6 @@ public class TokenController {
 	 * @throws NotesException 
 	 */
 	@RequestMapping(value = "/token", method = RequestMethod.POST)
-	@Oauth2DbContext
 	public @ResponseBody Map<String, Object> token(
 			@RequestParam(value = "client_id", required = false) String clientId,
 			@RequestParam(value = "grant_type", required = false) String grantType,

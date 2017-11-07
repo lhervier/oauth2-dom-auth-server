@@ -10,6 +10,6 @@ import java.lang.annotation.Target;
  * @author Lionel HERVIER
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
+@Target({ElementType.METHOD, ElementType.TYPE})
 public @interface Bearer {
 }

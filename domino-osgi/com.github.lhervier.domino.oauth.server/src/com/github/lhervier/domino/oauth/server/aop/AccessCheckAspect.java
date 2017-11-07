@@ -1,5 +1,6 @@
 package com.github.lhervier.domino.oauth.server.aop;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
 import org.aspectj.lang.JoinPoint;
@@ -57,6 +58,29 @@ public class AccessCheckAspect {
 	private void controller() {
 	}
 	
+	/**
+	 * Find an annotation on a method or on the parent class
+	 * @param <T> the annotation type
+	 * @param m the method
+	 * @param clAnn the annotation class
+	 * @return the annotation or null if it does not exist
+	 */
+	private <T extends Annotation> T findAnnotation(Method m, Class<T> clAnn) {
+		T ann = m.getAnnotation(clAnn);
+		if( ann != null )
+			return ann;
+		Class<?> cl = m.getDeclaringClass();
+		ann = cl.getAnnotation(clAnn);
+		if( ann != null )
+			return ann;
+		return null;
+	}
+	
+	/**
+	 * Before controller calls
+	 * @param joinPoint
+	 * @throws Throwable
+	 */
 	@Before("controller()")
 	public void checkEcriturenBefore(JoinPoint joinPoint) throws Throwable {
 		MethodSignature signature = (MethodSignature) joinPoint.getSignature();
@@ -68,10 +92,10 @@ public class AccessCheckAspect {
 			return;
 		
 		// Extract custom annotations
-		Oauth2DbContext o2Ctx = method.getAnnotation(Oauth2DbContext.class);
-		ServerRootContext srCtx = method.getAnnotation(ServerRootContext.class);
-		Roles roles = method.getAnnotation(Roles.class);
-		Bearer bearer = method.getAnnotation(Bearer.class);
+		Oauth2DbContext o2Ctx = this.findAnnotation(method, Oauth2DbContext.class);
+		ServerRootContext srCtx = this.findAnnotation(method, ServerRootContext.class);
+		Roles roles = this.findAnnotation(method, Roles.class);
+		Bearer bearer = this.findAnnotation(method, Bearer.class);
 		
 		// Method to be called only on the oauth2 database :
 		if( o2Ctx != null ) {

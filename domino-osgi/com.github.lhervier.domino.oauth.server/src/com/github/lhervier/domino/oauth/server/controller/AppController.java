@@ -26,6 +26,8 @@ import com.github.lhervier.domino.oauth.server.services.AppService;
 
 @Controller
 @RequestMapping(value = "/html")
+@Roles(roles = {"AppsManager"})
+@Oauth2DbContext()
 public class AppController {
 
 	/**
@@ -50,8 +52,6 @@ public class AppController {
 	 * @throws NotesException 
 	 */
 	@RequestMapping(value = "/listApplications")
-	@Oauth2DbContext()
-	@Roles(roles = {"AppsManager"})
 	public ModelAndView listApplications() throws NotesException {
 		Map<String, Object> model = new HashMap<String, Object>();
 		model.put("apps", this.appSvc.getApplicationsNames());
@@ -62,8 +62,6 @@ public class AppController {
 	 * The screen to display the creation of a new application
 	 */
 	@RequestMapping(value = "/newApplication", method = RequestMethod.GET)
-	@Oauth2DbContext
-	@Roles(roles = "AppsManager")
 	public ModelAndView createApplication() {
 		Map<String, Object> model = new HashMap<String, Object>();
 		Application app = this.appSvc.prepareApplication();
@@ -79,8 +77,6 @@ public class AppController {
 	 * @throws NotesException 
 	 */
 	@RequestMapping(value = "/editApplication", method = RequestMethod.GET)
-	@Oauth2DbContext
-	@Roles(roles = {"AppsManager"})
 	public ModelAndView editApplication(@RequestParam(value = "name", required = true) String appName) throws NotesException {
 		Map<String, Object> model = new HashMap<String, Object>();
 		Application app = this.appSvc.getApplicationFromName(appName);
@@ -96,8 +92,6 @@ public class AppController {
 	 * @throws NotesException 
 	 */
 	@RequestMapping(value = "/viewApplication", method = RequestMethod.GET)
-	@Oauth2DbContext
-	@Roles(roles = {"AppsManager"})
 	public ModelAndView viewApplication(@RequestParam(value = "name", required = true) String appName) throws NotesException {
 		Map<String, Object> model = new HashMap<String, Object>();
 		model.put("app", this.appSvc.getApplicationFromName(appName));
@@ -172,8 +166,6 @@ public class AppController {
 	 */
 	@SuppressWarnings("unchecked")
 	@RequestMapping(value = "/saveApplication", method = RequestMethod.POST)
-	@Oauth2DbContext
-	@Roles(roles = "AppsManager")
 	public ModelAndView saveApplication(
 			@ModelAttribute Application app,
 			@RequestParam String newRedirectUri,
@@ -231,8 +223,6 @@ public class AppController {
 	 * @throws NotesException 
 	 */
 	@RequestMapping(value = "/deleteApplication", method = RequestMethod.GET)
-	@Oauth2DbContext
-	@Roles(roles = "AppsManager")
 	public ModelAndView removeApplication(@RequestParam(value = "name", required = true) String name) throws NotesException {
 		this.appSvc.removeApplication(name);
 		return new ModelAndView("redirect:listApplications");

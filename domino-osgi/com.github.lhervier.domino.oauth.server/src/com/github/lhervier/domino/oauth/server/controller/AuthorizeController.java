@@ -22,6 +22,7 @@ import com.github.lhervier.domino.oauth.server.services.AuthorizeService;
  * @author Lionel HERVIER
  */
 @Controller
+@Oauth2DbContext
 public class AuthorizeController {
 
 	/**
@@ -46,8 +47,7 @@ public class AuthorizeController {
 	 * @throws NotesException may happend...
 	 */
 	@RequestMapping(value = "/authorize", method = RequestMethod.GET)
-	@Oauth2DbContext
-    public ModelAndView authorize(
+	public ModelAndView authorize(
     		@RequestParam(value = "response_type", required = false) String responseType,
     		@RequestParam(value = "client_id", required = false) String clientId,
     		@RequestParam(value = "scope", required = false) String scope,

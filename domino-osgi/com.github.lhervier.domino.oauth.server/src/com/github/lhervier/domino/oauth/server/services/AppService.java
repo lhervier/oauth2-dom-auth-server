@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.github.lhervier.domino.oauth.server.BaseServerComponent;
 import com.github.lhervier.domino.oauth.server.entity.ApplicationEntity;
 import com.github.lhervier.domino.oauth.server.entity.PersonEntity;
 import com.github.lhervier.domino.oauth.server.model.Application;
@@ -23,7 +22,7 @@ import com.github.lhervier.domino.oauth.server.repo.PersonRepository;
  * @author Lionel HERVIER
  */
 @Service
-public class AppService extends BaseServerComponent {
+public class AppService {
 	
 	/**
 	 * The application root

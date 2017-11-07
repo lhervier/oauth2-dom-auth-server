@@ -1,12 +1,14 @@
-package com.github.lhervier.domino.oauth.server.model;
+package com.github.lhervier.domino.oauth.server.entity;
+
+import java.util.List;
 
 
-public class Person {
+public class PersonEntity {
 
 	/**
-	 * Name
+	 * Full name
 	 */
-	private String name;
+	private List<String> fullNames;
 	
 	/**
 	 * Family name
@@ -54,19 +56,10 @@ public class Person {
 	private String officePhoneNumber;
 
 	/**
-	 * @return the name
+	 * Http Password
 	 */
-	public String getName() {
-		return name;
-	}
-
-	/**
-	 * @param name the name to set
-	 */
-	public void setName(String name) {
-		this.name = name;
-	}
-
+	private String httpPassword;
+	
 	/**
 	 * @return the lastName
 	 */
@@ -192,5 +185,34 @@ public class Person {
 	public void setOfficePhoneNumber(String phoneNumber) {
 		this.officePhoneNumber = phoneNumber;
 	}
+
+	/**
+	 * @return the httpPassword
+	 */
+	public String getHttpPassword() {
+		return httpPassword;
+	}
+
+	/**
+	 * @param httpPassword the httpPassword to set
+	 */
+	public void setHttpPassword(String httpPassword) {
+		this.httpPassword = httpPassword;
+	}
+
+	/**
+	 * @return the fullNames
+	 */
+	public List<String> getFullNames() {
+		return fullNames;
+	}
+
+	/**
+	 * @param fullNames the fullNames to set
+	 */
+	public void setFullNames(List<String> fullNames) {
+		this.fullNames = fullNames;
+	}
+
 	
 }

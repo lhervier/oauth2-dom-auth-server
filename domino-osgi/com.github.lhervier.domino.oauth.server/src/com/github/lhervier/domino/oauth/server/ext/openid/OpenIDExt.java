@@ -11,12 +11,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.github.lhervier.domino.oauth.server.NotesUserPrincipal;
+import com.github.lhervier.domino.oauth.server.entity.PersonEntity;
 import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.server.ext.IPropertyAdder;
 import com.github.lhervier.domino.oauth.server.ext.IScopeGranter;
 import com.github.lhervier.domino.oauth.server.model.AuthorizationCode;
-import com.github.lhervier.domino.oauth.server.model.Person;
-import com.github.lhervier.domino.oauth.server.services.NabService;
+import com.github.lhervier.domino.oauth.server.repo.PersonRepository;
 import com.github.lhervier.domino.oauth.server.utils.ReflectionUtils;
 import com.github.lhervier.domino.oauth.server.utils.SystemUtils;
 
@@ -46,10 +46,10 @@ public class OpenIDExt implements IOAuthExtension<OpenIdContext> {
 	private HttpServletRequest request;
 	
 	/**
-	 * The NAB service
+	 * The Person repository
 	 */
 	@Autowired
-	private NabService nabSvc;
+	private PersonRepository personRepo;
 	
 	/**
 	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#getContextClass()
@@ -103,12 +103,12 @@ public class OpenIDExt implements IOAuthExtension<OpenIdContext> {
 		else
 			ctx.setNonce(null);
 		
-		Person person = this.nabSvc.getPerson(user.getName());
+		PersonEntity person = this.personRepo.findOne(user.getName());
 		
 		if( scopes.contains("profile") ) {
 			granter.grant("profile");
 			
-			ctx.setName(person.getName());
+			ctx.setName(person.getFullNames().get(0));
 			ctx.setGivenName(person.getFirstName());
 			ctx.setFamilyName(person.getLastName());
 			ctx.setMiddleName(person.getMiddleInitial());

@@ -3,6 +3,7 @@ package com.github.lhervier.domino.oauth.server.services;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -17,8 +18,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.github.lhervier.domino.oauth.server.BaseServerComponent;
+import com.github.lhervier.domino.oauth.server.entity.PersonEntity;
 import com.github.lhervier.domino.oauth.server.model.Application;
-import com.github.lhervier.domino.oauth.server.model.Person;
+import com.github.lhervier.domino.oauth.server.repo.PersonRepository;
 import com.github.lhervier.domino.oauth.server.utils.DominoUtils;
 import com.github.lhervier.domino.oauth.server.utils.ViewIterator;
 
@@ -47,10 +49,10 @@ public class AppService extends BaseServerComponent {
 	private static final String COLUMN_CLIENTID = "ClientId";
 	
 	/**
-	 * The nab service
+	 * The Person repository
 	 */
 	@Autowired
-	private NabService nabSvc;
+	private PersonRepository personRepo;
 	
 	/**
 	 * The application root
@@ -204,12 +206,17 @@ public class AppService extends BaseServerComponent {
 		Name nn = null;
 		try {
 			// Vérifie qu'elle ne soit pas déjà déclarée dans le carnet d'adresse
-			Person person = this.nabSvc.getPerson(app.getFullName());
+			PersonEntity person = this.personRepo.findOne(app.getFullName());
 			if( person != null )
 				throw new RuntimeException("Une application avec ce nom existe déjà.");
 			
 			// Créé une nouvelle application dans le NAB (un nouvel utilisateur)
-			String pwd = this.nabSvc.createPersonForApp(app);
+			person = new PersonEntity();
+			person.setFullNames(Arrays.asList(app.getFullName(), app.getClientId()));
+			person.setLastName(app.getName());
+			person.setShortName(app.getName());
+			person = this.personRepo.save(person);
+			String pwd = person.getHttpPassword();
 			
 			// Créé un nouveau document pour l'application dans la base
 			appDoc = this.getOauth2DatabaseAsUser().createDocument();
@@ -291,7 +298,7 @@ public class AppService extends BaseServerComponent {
 		Document appDoc = null;
 		try {
 			// Remove person in nab
-			this.nabSvc.removePerson(app.getFullName());
+			this.personRepo.delete(app.getFullName());
 			
 			// Remove document in oauth2 database
 			appDoc = this.getAppDocFromName(name);

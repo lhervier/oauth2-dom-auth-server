@@ -13,9 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.github.lhervier.domino.oauth.server.AuthContext;
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
 import com.github.lhervier.domino.oauth.server.utils.DominoUtils;
-import com.github.lhervier.domino.spring.servlet.NotesContext;
 
 /**
  * Service to manage authorization codes
@@ -30,10 +30,10 @@ public class AuthCodeRepository {
 	private static final String VIEW_AUTHCODES = "AuthorizationCodes";
 	
 	/**
-	 * The notes context
+	 * The auth context
 	 */
 	@Autowired
-	protected NotesContext notesContext;
+	protected AuthContext authContext;
 	
 	/**
 	 * The database where to store application information
@@ -55,7 +55,7 @@ public class AuthCodeRepository {
 	 * @param authCode the authorization code to save
 	 */
 	public AuthCodeEntity save(AuthCodeEntity authCode) throws NotesException {
-		Session session = this.notesContext.getServerSession();
+		Session session = this.authContext.getServerSession();
 		
 		Document authDoc = null;
 		try {
@@ -89,7 +89,7 @@ public class AuthCodeRepository {
 	 */
 	@SuppressWarnings("unchecked")
 	public AuthCodeEntity findOne(String code) throws NotesException {
-		Session session = this.notesContext.getUserSession();
+		Session session = this.authContext.getUserSession();
 		
 		Document authDoc = null;
 		View v = null;
@@ -125,7 +125,7 @@ public class AuthCodeRepository {
 	 * @param code the auth code
 	 */
 	public void delete(String code) throws NotesException {
-		Session session = this.notesContext.getServerSession();
+		Session session = this.authContext.getServerSession();
 		
 		View v = null;
 		Document authDoc = null;

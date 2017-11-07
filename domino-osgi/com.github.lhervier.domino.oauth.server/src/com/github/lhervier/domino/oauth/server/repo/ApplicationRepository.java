@@ -16,10 +16,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
+import com.github.lhervier.domino.oauth.server.AuthContext;
 import com.github.lhervier.domino.oauth.server.entity.ApplicationEntity;
 import com.github.lhervier.domino.oauth.server.utils.DominoUtils;
 import com.github.lhervier.domino.oauth.server.utils.ViewIterator;
-import com.github.lhervier.domino.spring.servlet.NotesContext;
 
 /**
  * Repository to access applications
@@ -50,10 +50,10 @@ public class ApplicationRepository {
 	private String oauth2db;
 	
 	/**
-	 * The notes context
+	 * The authentication context
 	 */
 	@Autowired
-	protected NotesContext notesContext;
+	protected AuthContext authCtx;
 	
 	/**
 	 * Return the oauth2 database as the user (the application)
@@ -106,7 +106,7 @@ public class ApplicationRepository {
 	 * @throws NotesException en cas de pb
 	 */
 	public List<String> listNames() throws NotesException {
-		Session session = this.notesContext.getUserSession();
+		Session session = this.authCtx.getUserSession();
 		
 		List<String> ret = new ArrayList<String>();
 		ViewIterator it = null;
@@ -131,7 +131,7 @@ public class ApplicationRepository {
 	 * @throws NotesException en cas de pb
 	 */
 	public ApplicationEntity findOneByName(String appName) throws NotesException {
-		Session session = this.notesContext.getUserSession();
+		Session session = this.authCtx.getUserSession();
 		Document doc = null;
 		try {
 			doc = this.findOneDocByName(session, appName);
@@ -150,7 +150,7 @@ public class ApplicationRepository {
 	 * @throws NotesException en cas de pb
 	 */
 	public ApplicationEntity findOne(String clientId) throws NotesException {
-		Session session = this.notesContext.getUserSession();
+		Session session = this.authCtx.getUserSession();
 		
 		Document doc = null;
 		try {
@@ -169,7 +169,7 @@ public class ApplicationRepository {
 	 * @throws NotesException en cas de pb
 	 */
 	public ApplicationEntity save(ApplicationEntity app) throws NotesException {
-		Session session = this.notesContext.getUserSession();
+		Session session = this.authCtx.getUserSession();
 		
 		// Check that URIs are absolute and does not contain fragments
 		List<URI> uris = new ArrayList<URI>();
@@ -231,7 +231,7 @@ public class ApplicationRepository {
 	 * @throws NotesException en cas de pb
 	 */
 	public void deleteByName(String name) throws NotesException {
-		Session session = this.notesContext.getUserSession();
+		Session session = this.authCtx.getUserSession();
 		
 		Document appDoc = null;
 		try {

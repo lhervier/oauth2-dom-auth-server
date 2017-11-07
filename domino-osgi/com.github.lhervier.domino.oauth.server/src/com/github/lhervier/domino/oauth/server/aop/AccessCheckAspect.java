@@ -3,25 +3,28 @@ package com.github.lhervier.domino.oauth.server.aop;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import com.github.lhervier.domino.oauth.server.BearerContext;
+import com.github.lhervier.domino.oauth.server.NotesPrincipal;
 import com.github.lhervier.domino.oauth.server.aop.ann.ctx.Oauth2DbContext;
 import com.github.lhervier.domino.oauth.server.aop.ann.ctx.ServerRootContext;
+import com.github.lhervier.domino.oauth.server.aop.ann.security.AppAuth;
 import com.github.lhervier.domino.oauth.server.aop.ann.security.Bearer;
 import com.github.lhervier.domino.oauth.server.aop.ann.security.Roles;
+import com.github.lhervier.domino.oauth.server.aop.ann.security.UserAuth;
 import com.github.lhervier.domino.oauth.server.ex.NotAuthorizedException;
-import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
 import com.github.lhervier.domino.oauth.server.ex.WrongPathException;
-import com.github.lhervier.domino.spring.servlet.NotesContext;
+import com.github.lhervier.domino.oauth.server.model.Application;
+import com.github.lhervier.domino.oauth.server.services.AppService;
 
 /**
  * Check that the controller's methods are called 
@@ -33,22 +36,21 @@ import com.github.lhervier.domino.spring.servlet.NotesContext;
 public class AccessCheckAspect {
 
 	/**
-	 * The notes context
+	 * Logger
 	 */
-	@Autowired
-	private NotesContext notesContext;
+	private static final Log LOG = LogFactory.getLog(AccessCheckAspect.class);
 	
 	/**
-	 * The bearer context
+	 * The application service
 	 */
 	@Autowired
-	private BearerContext bearerContext;
+	private AppService appService;
 	
 	/**
-	 * The oauth2 db path
+	 * The user principal
 	 */
-	@Value("${oauth2.server.db}")
-	private String o2Db;
+	@Autowired
+	private NotesPrincipal user;
 	
 	/**
 	 * Pointcut to detect classes we will log access
@@ -77,7 +79,11 @@ public class AccessCheckAspect {
 	}
 	
 	/**
-	 * Before controller calls
+	 * Before controller calls.
+	 * FIXME: Modularize this aspect. I haven't found how to select :
+	 * - methods that have a given annotation
+	 * - or methods whose class have the same given annotation
+	 * So, I'm extracting annotations myself...
 	 * @param joinPoint
 	 * @throws Throwable
 	 */
@@ -91,45 +97,63 @@ public class AccessCheckAspect {
 		if( rm == null )
 			return;
 		
-		// Extract custom annotations
+		// If using bearer authentication, check that user is logged in
+		if( this.user.isBearerAuth() ) {
+			if( this.user.getName() == null ) {
+				LOG.info("Accessing method '" + method.getName() + "' with an incorrect bearer token");
+				throw new NotAuthorizedException();
+			}
+		}
+		
+		// Check method is executed in the context of the oauth2 database
 		Oauth2DbContext o2Ctx = this.findAnnotation(method, Oauth2DbContext.class);
-		ServerRootContext srCtx = this.findAnnotation(method, ServerRootContext.class);
-		Roles roles = this.findAnnotation(method, Roles.class);
-		Bearer bearer = this.findAnnotation(method, Bearer.class);
-		
-		// Method to be called only on the oauth2 database :
 		if( o2Ctx != null ) {
-			
-			// Check that we are on the right database
-			String o2Db = this.o2Db.replace('\\', '/');
-			if( this.notesContext.getUserDatabase() == null )
-				throw new WrongPathException("Cannont oauth2 server endpoints on the server root. NSF context needed.");
-			if( !o2Db.equals(this.notesContext.getUserDatabase().getFilePath()) )
-				throw new WrongPathException("oauth2 server endpoints must be called on the database declared in the oauth2.server.db variable (" + this.o2Db + ")");
-			
-		// Method to be called only on the server root (no database context) :
-		} else if( srCtx != null ) {
-			if( this.notesContext.getUserDatabase() != null )
-				throw new WrongPathException("This method must be called on the server root, without NSF context.");
+			if( !this.user.isOnOauth2Db() )
+				throw new WrongPathException("oauth2 server endpoints must be called on the database declared in the oauth2.server.db property.");
+		}
 		
-		// Method with no annotation => Error !
-		} else
-			throw new RuntimeException();
+		// Check if method is called at the server root
+		ServerRootContext srCtx = this.findAnnotation(method, ServerRootContext.class);
+		if( srCtx != null ) {
+			if( !this.user.isOnServerRoot() )
+				throw new WrongPathException("This method must be called on the server root, without NSF context.");
+		}
 		
 		// Check that we have the right roles
+		Roles roles = this.findAnnotation(method, Roles.class);
 		if( roles != null ) {
 			for( String role : roles.roles() ) {
 				if( role.length() == 0 )
 					continue;
-				if( !this.notesContext.getUserRoles().contains("[" + role + "]") )
-					throw new ServerErrorException();
+				if( !this.user.getRoles().contains("[" + role + "]") ) {
+					LOG.info("User '" + this.user.getName() + "' tries to access method '" + method.getName() + "' but it does not have the required roles");
+					throw new NotAuthorizedException();
+				}
 			}
 		}
 		
 		// Check if we are using bearer context
+		Bearer bearer = this.findAnnotation(method, Bearer.class);
 		if( bearer != null ) {
-			if( this.bearerContext.getBearerSession() == null )
+			if( !this.user.isBearerAuth() ) {
+				LOG.info("User '" + this.user.getName() + "' tries to access method '" + method.getName() + "' but it is not authenticated with a bearer token");
 				throw new NotAuthorizedException();
+			}
+		}
+		
+		// Check if method is for a user or an application
+		UserAuth userAuth = this.findAnnotation(method, UserAuth.class);
+		AppAuth appAuth = this.findAnnotation(method, AppAuth.class);
+		if( userAuth != null || appAuth != null ) {
+			Application app = this.appService.getApplicationFromName(user.getCommon());
+			if( userAuth != null && app != null ) {
+				LOG.info("Application '" + this.user.getName() + "' tries to access method '" + method.getName() + "', but only regular users can access it!");
+				throw new NotAuthorizedException();
+			}
+			if( appAuth != null && app == null ) {
+				LOG.info("Regular user '" + this.user.getName() + "' tries to access method '" + method.getName() + "', but only applications can access it!");
+				throw new NotAuthorizedException();
+			}
 		}
 	}
 }

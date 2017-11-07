@@ -16,9 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
+import com.github.lhervier.domino.oauth.server.AuthContext;
 import com.github.lhervier.domino.oauth.server.entity.PersonEntity;
 import com.github.lhervier.domino.oauth.server.utils.DominoUtils;
-import com.github.lhervier.domino.spring.servlet.NotesContext;
 
 @Repository
 public class PersonRepository {
@@ -49,10 +49,10 @@ public class PersonRepository {
 	private String nabPath;
 	
 	/**
-	 * The Notes Context
+	 * The Auth Context
 	 */
 	@Autowired
-	private NotesContext notesContext;
+	private AuthContext authContext;
 	
 	/**
 	 * Return the nab database where new person will be registered.
@@ -103,7 +103,7 @@ public class PersonRepository {
 	 * Save a person (user the current user rights)
 	 */
 	public PersonEntity save(PersonEntity entity) {
-		Session userSession = this.notesContext.getUserSession();
+		Session userSession = this.authContext.getUserSession();
 		
 		Document person = null;
 		try {
@@ -170,7 +170,7 @@ public class PersonRepository {
 	 */
 	@SuppressWarnings("unchecked")
 	public PersonEntity findOne(String fullName) throws NotesException {
-		Session serverSession = this.notesContext.getServerSession();
+		Session serverSession = this.authContext.getServerSession();
 		
 		Document doc = this.findPersonDoc(serverSession, fullName);
 		if( doc == null )
@@ -195,7 +195,7 @@ public class PersonRepository {
 	 * Remove a person
 	 */
 	public void delete(String fullName) throws NotesException {
-		Session userSession = this.notesContext.getUserSession();
+		Session userSession = this.authContext.getUserSession();
 		
 		Document doc = null;
 		try {

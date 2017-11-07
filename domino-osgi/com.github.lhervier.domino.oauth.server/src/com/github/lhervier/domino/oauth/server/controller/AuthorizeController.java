@@ -13,6 +13,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.github.lhervier.domino.oauth.server.NotesPrincipal;
 import com.github.lhervier.domino.oauth.server.aop.ann.ctx.Oauth2DbContext;
+import com.github.lhervier.domino.oauth.server.aop.ann.security.UserAuth;
 import com.github.lhervier.domino.oauth.server.ex.AuthorizeException;
 import com.github.lhervier.domino.oauth.server.ex.InvalidUriException;
 import com.github.lhervier.domino.oauth.server.services.AuthorizeService;
@@ -22,7 +23,9 @@ import com.github.lhervier.domino.oauth.server.services.AuthorizeService;
  * @author Lionel HERVIER
  */
 @Controller
-@Oauth2DbContext
+
+@Oauth2DbContext			// Authorize endpoint is only accessible on the oauth2.nsf context
+@UserAuth					// Authorize only possible if logged in a regular user
 public class AuthorizeController {
 
 	/**

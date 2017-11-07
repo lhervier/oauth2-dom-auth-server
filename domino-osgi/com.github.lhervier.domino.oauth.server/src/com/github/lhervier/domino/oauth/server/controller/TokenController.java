@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.github.lhervier.domino.oauth.server.NotesPrincipal;
 import com.github.lhervier.domino.oauth.server.aop.ann.ctx.Oauth2DbContext;
+import com.github.lhervier.domino.oauth.server.aop.ann.security.AppAuth;
 import com.github.lhervier.domino.oauth.server.ex.GrantException;
 import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
 import com.github.lhervier.domino.oauth.server.ex.grant.InvalidClientException;
@@ -28,7 +29,9 @@ import com.github.lhervier.domino.oauth.server.services.BaseGrantService;
  * @author Lionel HERVIER
  */
 @Controller
-@Oauth2DbContext
+
+@Oauth2DbContext				// Available at the oauth2.nsf db context only
+@AppAuth						// Must be logged in as an application
 public class TokenController {
 
 	/**

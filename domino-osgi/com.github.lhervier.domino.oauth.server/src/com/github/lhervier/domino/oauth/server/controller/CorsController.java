@@ -38,7 +38,7 @@ public class CorsController {
 	 */
 	@RequestMapping(value = "/userInfo")
     @ResponseStatus(HttpStatus.OK)
-    @ServerRootContext
+    @ServerRootContext					// userInfo endpoint is available at the server root context only
 	public void handleUserInfoCors(HttpServletResponse response) {
        this.addCrosHeaders(response);
     }
@@ -50,7 +50,7 @@ public class CorsController {
 	 */
 	@RequestMapping(value = "/checkToken")
     @ResponseStatus(HttpStatus.OK)
-    @Oauth2DbContext
+    @Oauth2DbContext					// checkToken is available at the oauth2.nsf db context only
 	public void handleCheckTokenCors(HttpServletResponse response) throws IOException {
         this.addCrosHeaders(response);
     }

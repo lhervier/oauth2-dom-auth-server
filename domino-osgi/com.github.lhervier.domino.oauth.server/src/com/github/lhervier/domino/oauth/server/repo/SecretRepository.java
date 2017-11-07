@@ -11,9 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
+import com.github.lhervier.domino.oauth.server.AuthContext;
 import com.github.lhervier.domino.oauth.server.utils.Base64Utils;
 import com.github.lhervier.domino.oauth.server.utils.DominoUtils;
-import com.github.lhervier.domino.spring.servlet.NotesContext;
 
 /**
  * Registre pour mémoriser les secrets
@@ -42,7 +42,7 @@ public class SecretRepository {
 	 * The notes context
 	 */
 	@Autowired
-	private NotesContext notesContext;
+	private AuthContext authContext;
 	
 	/**
 	 * Retourne un secret
@@ -70,7 +70,7 @@ public class SecretRepository {
 		View v = null;
 		Document docSsoConfig = null;
 		try {
-			nab = DominoUtils.openDatabase(this.notesContext.getServerSession(), "names.nsf");
+			nab = DominoUtils.openDatabase(this.authContext.getServerSession(), "names.nsf");
 			v = nab.getView(WEBSSOCONFIG_VIEW);
 			if( v == null )
 				throw new RuntimeException("La vue " + WEBSSOCONFIG_VIEW + " n'existe pas dans le NAB. Impossible de continuer.");

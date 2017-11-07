@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -102,11 +103,14 @@ public class ExceptionController {
 		public void setError(String error) { this.error = error; }
 	}
 	/**
-	 * NotAuthorizedException
+	 * NotAuthorizedException. 
+	 * FIXME: Sending cors headers here, event when it is not a Cors request...
+	 * This is needed to make the browser get the http status...
 	 */
 	@ExceptionHandler(NotAuthorizedException.class)
 	@ResponseStatus(value = HttpStatus.UNAUTHORIZED)
-	public @ResponseBody NotAuthorizedResponse processNotAuthorizedException(NotAuthorizedException e) {
+	public @ResponseBody NotAuthorizedResponse processNotAuthorizedException(NotAuthorizedException e, HttpServletResponse response) {
+		response.addHeader("Access-Control-Allow-Origin", "*");
 		NotAuthorizedResponse ret = new NotAuthorizedResponse();
 		ret.setError("not_authorized");
 		return ret;

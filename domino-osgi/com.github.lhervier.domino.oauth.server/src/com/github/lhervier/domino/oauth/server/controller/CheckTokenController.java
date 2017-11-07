@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.github.lhervier.domino.oauth.server.NotesPrincipal;
 import com.github.lhervier.domino.oauth.server.aop.ann.ctx.Oauth2DbContext;
+import com.github.lhervier.domino.oauth.server.aop.ann.security.AppAuth;
 import com.github.lhervier.domino.oauth.server.ex.NotAuthorizedException;
 import com.github.lhervier.domino.oauth.server.model.TokenContent;
 import com.github.lhervier.domino.oauth.server.services.CheckTokenService;
@@ -25,7 +26,9 @@ import com.github.lhervier.domino.oauth.server.services.CheckTokenService;
  * @author Lionel HERVIER
  */
 @Controller
-@Oauth2DbContext
+
+@Oauth2DbContext			// Endpoint only available when accessing the oauth2.nsf database
+@AppAuth					// Must be logged in as an application
 public class CheckTokenController {
 
 	/**

@@ -30,4 +30,24 @@ public interface NotesPrincipal extends Principal {
 	 * Return the client Id
 	 */
 	public String getClientId();
+	
+	/**
+	 * Return the roles
+	 */
+	public List<String> getRoles();
+	
+	/**
+	 * Return the path to the current database
+	 */
+	public String getCurrentDatabasePath();
+	
+	/**
+	 * Is the user authenticated at the oauth2 db level ?
+	 */
+	public boolean isOnOauth2Db();
+	
+	/**
+	 * Is the user authenticated at the server root ?
+	 */
+	public boolean isOnServerRoot();
 }

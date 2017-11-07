@@ -21,13 +21,16 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.github.lhervier.domino.oauth.server.aop.ann.ctx.Oauth2DbContext;
 import com.github.lhervier.domino.oauth.server.aop.ann.security.Roles;
+import com.github.lhervier.domino.oauth.server.aop.ann.security.UserAuth;
 import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.services.AppService;
 
 @Controller
 @RequestMapping(value = "/html")
-@Roles(roles = {"AppsManager"})
-@Oauth2DbContext()
+
+@UserAuth							// Only regular users can access those methods
+@Roles(roles = {"AppsManager"})		// Users must have the AppsManager role
+@Oauth2DbContext					// Controller accessible only on the oauth2.nsf context
 public class AppController {
 
 	/**

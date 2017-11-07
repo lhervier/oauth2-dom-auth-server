@@ -28,6 +28,7 @@ import com.ibm.domino.napi.NException;
 import com.ibm.domino.napi.c.NotesUtil;
 import com.ibm.domino.napi.c.Os;
 import com.ibm.domino.napi.c.xsp.XSPNative;
+import com.ibm.domino.osgi.core.context.ContextInfo;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSObject;
 import com.nimbusds.jose.JWSVerifier;
@@ -86,12 +87,21 @@ public class BearerContext {
 	private List<String> scopes;
 	
 	/**
+	 * Bearer header sent
+	 */
+	private boolean headerSent = false;
+	
+	/**
 	 * Bean initialization
 	 */
 	@PostConstruct
 	public void init() {
 		this.bearerSession = null;
 		try {
+			// Only work when at server root
+			if( ContextInfo.getUserDatabase() != null )
+				return;
+			
 			// Extract bearer token
 			String auth = this.request.getHeader("Authorization");
 			if( auth == null )
@@ -99,6 +109,7 @@ public class BearerContext {
 			if( !auth.startsWith("Bearer ") )
 				return;
 			String sJws = auth.substring("Bearer ".length());
+			this.headerSent = true;
 			
 			// Parse the JWT
 			JWSObject jwsObj = JWSObject.parse(sJws);
@@ -194,5 +205,12 @@ public class BearerContext {
 	 */
 	public Session getBearerSession() {
 		return this.bearerSession;
+	}
+	
+	/**
+	 * Return true if bearer authentication is used
+	 */
+	public boolean isBearerAuth() {
+		return this.headerSent;
 	}
 }

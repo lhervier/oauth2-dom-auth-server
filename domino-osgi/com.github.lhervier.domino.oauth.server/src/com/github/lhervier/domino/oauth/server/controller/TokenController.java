@@ -15,7 +15,6 @@ import net.minidev.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -84,10 +83,11 @@ public class TokenController {
 	private SecretRepository secretRespo;
 	
 	/**
-	 * The application context
+	 * The extensions
 	 */
+	@SuppressWarnings("unchecked")
 	@Autowired
-	private ApplicationContext springContext;
+	private List<IOAuthExtension> exts;
 	
 	// =============================================================================
 	
@@ -340,8 +340,7 @@ public class TokenController {
 			
 			// Make each implementation add its own properties
 			// They can change their context.
-			Map<String, IOAuthExtension> exts = this.springContext.getBeansOfType(IOAuthExtension.class);
-			for( IOAuthExtension ext : exts.values() ) {
+			for( IOAuthExtension ext : this.exts ) {
 				Object context = Utils.getContext(authCode, ext.getId());
 				if( context == null )
 					continue;
@@ -415,8 +414,7 @@ public class TokenController {
 		Map<String, Object> resp = new HashMap<String, Object>();
 		
 		// Call for extensions
-		Map<String, IOAuthExtension> exts = this.springContext.getBeansOfType(IOAuthExtension.class);
-		for( IOAuthExtension ext : exts.values() ) {
+		for( IOAuthExtension ext : this.exts ) {
 			Object context = Utils.getContext(authCode, ext.getId());
 			if( context == null )
 				continue;

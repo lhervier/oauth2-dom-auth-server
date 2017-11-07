@@ -16,7 +16,6 @@ import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -59,10 +58,11 @@ public class AuthorizeController {
 	private SecretRepository secretRepo;
 	
 	/**
-	 * The application context
+	 * The extensions
 	 */
+	@SuppressWarnings("unchecked")
 	@Autowired
-	private ApplicationContext springContext;
+	private List<IOAuthExtension> exts;
 	
 	/**
 	 * Authorization codes life time
@@ -206,8 +206,7 @@ public class AuthorizeController {
 	 */
 	@SuppressWarnings("unchecked")
 	private boolean checkResponseTypes(List<String> responseTypes) {
-		Map<String, IOAuthExtension> exts = this.springContext.getBeansOfType(IOAuthExtension.class);
-		for( IOAuthExtension ext : exts.values() ) {
+		for( IOAuthExtension ext : this.exts ) {
 			if( ext.validateResponseTypes(responseTypes) )
 				return true;
 		}
@@ -228,8 +227,7 @@ public class AuthorizeController {
 			Application app, 
 			List<String> scopes) throws NotesException, JsonGenerationException, JsonMappingException, IOException {
 		final List<String> grantedScopes = new ArrayList<String>();
-		Map<String, IOAuthExtension> exts = this.springContext.getBeansOfType(IOAuthExtension.class);
-		for( IOAuthExtension ext : exts.values() ) {
+		for( IOAuthExtension ext : this.exts ) {
 			Object context = ext.initContext(
 					user,
 					new IScopeGranter() {
@@ -255,8 +253,7 @@ public class AuthorizeController {
 	 */
 	@SuppressWarnings("unchecked")
 	private void runGrants(AuthCodeEntity authCode, List<String> responseType, Map<String, Object> params) throws NotesException {
-		Map<String, IOAuthExtension> exts = this.springContext.getBeansOfType(IOAuthExtension.class);
-		for( IOAuthExtension ext : exts.values() ) {
+		for( IOAuthExtension ext : this.exts ) {
 			ext.authorize(
 					Utils.getContext(authCode, ext.getId()),
 					responseType, 

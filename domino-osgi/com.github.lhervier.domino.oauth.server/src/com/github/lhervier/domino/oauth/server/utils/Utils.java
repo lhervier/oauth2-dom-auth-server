@@ -13,9 +13,9 @@ import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
+import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
 import com.github.lhervier.domino.oauth.server.ex.InvalidUriException;
 import com.github.lhervier.domino.oauth.server.model.Application;
-import com.github.lhervier.domino.oauth.server.model.AuthorizationCode;
 
 public class Utils {
 
@@ -66,7 +66,7 @@ public class Utils {
 	 * @param code the authorization code
 	 * @param IOAuthExtension the extension to extract context for
 	 */
-	public static final Object getContext(AuthorizationCode authCode, String extId) {
+	public static final Object getContext(AuthCodeEntity authCode, String extId) {
 		try {
 			String className = authCode.getContextClasses().get(extId);
 			if( className == null )

@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.github.lhervier.domino.oauth.server.NotesUserPrincipal;
 import com.github.lhervier.domino.oauth.server.aop.ann.Oauth2DbContext;
+import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
 import com.github.lhervier.domino.oauth.server.ex.GrantException;
 import com.github.lhervier.domino.oauth.server.ex.InvalidUriException;
 import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
@@ -35,9 +36,8 @@ import com.github.lhervier.domino.oauth.server.ex.grant.InvalidScopeException;
 import com.github.lhervier.domino.oauth.server.ex.grant.UnsupportedGrantTypeException;
 import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.server.model.Application;
-import com.github.lhervier.domino.oauth.server.model.AuthorizationCode;
+import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
 import com.github.lhervier.domino.oauth.server.services.AppService;
-import com.github.lhervier.domino.oauth.server.services.AuthCodeService;
 import com.github.lhervier.domino.oauth.server.services.SecretService;
 import com.github.lhervier.domino.oauth.server.utils.PropertyAdderImpl;
 import com.github.lhervier.domino.oauth.server.utils.SystemUtils;
@@ -72,10 +72,10 @@ public class TokenController {
 	private AppService appSvc;
 	
 	/**
-	 * Authorization code service
+	 * Authorization code repository
 	 */
 	@Autowired
-	private AuthCodeService authCodeSvc;
+	private AuthCodeRepository authCodeRepo;
 	
 	/**
 	 * La bean pour accéder aux secrets
@@ -194,7 +194,7 @@ public class TokenController {
 	 * @throws NotesException 
 	 * @throws KeyLengthException 
 	 */
-	private String refreshTokenFromAuthCode(AuthorizationCode authCode) throws ServerErrorException {
+	private String refreshTokenFromAuthCode(AuthCodeEntity authCode) throws ServerErrorException {
 		try {
 			JWEHeader header = new JWEHeader(JWEAlgorithm.DIR, EncryptionMethod.A128GCM);
 			
@@ -252,7 +252,7 @@ public class TokenController {
 	/**
 	 * Extract a refresh token
 	 */
-	private AuthorizationCode authCodeFromRefreshToken(String sRefreshToken) throws ServerErrorException {
+	private AuthCodeEntity authCodeFromRefreshToken(String sRefreshToken) throws ServerErrorException {
 		try {
 			JWEObject jweObject = JWEObject.parse(sRefreshToken);
 			jweObject.decrypt(new DirectDecrypter(this.secretBean.getRefreshTokenSecret()));
@@ -262,7 +262,7 @@ public class TokenController {
 			if( payload.getAsNumber("exp").longValue() < SystemUtils.currentTimeSeconds() )
 				return null;
 			
-			AuthorizationCode ret = new AuthorizationCode();
+			AuthCodeEntity ret = new AuthCodeEntity();
 			ret.setId(payload.getAsString("id"));
 			ret.setApplication(payload.getAsString("application"));
 			ret.setClientId(payload.getAsString("clientId"));
@@ -321,7 +321,9 @@ public class TokenController {
 			Map<String, Object> resp = new HashMap<String, Object>();
 		
 			// Get the authorization code
-			AuthorizationCode authCode = this.authCodeSvc.findAuthorizationCode(code);
+			AuthCodeEntity authCode = this.authCodeRepo.findOne(code);
+			if( authCode == null )
+				throw new InvalidGrantException();
 			
 			// Check it did not expire
 			long expired = (long) authCode.getExpires();
@@ -370,7 +372,7 @@ public class TokenController {
 			return resp;
 		} finally {
 			// Remove auth code to prevend reuse
-			this.authCodeSvc.removeAuthorizationCode(code);
+			this.authCodeRepo.delete(code);
 		}
 	}
 	
@@ -393,7 +395,7 @@ public class TokenController {
 			throw new InvalidGrantException("refresh_token is mandatory");
 		
 		// Decrypt refresh token
-		AuthorizationCode authCode = this.authCodeFromRefreshToken(sRefreshToken);
+		AuthCodeEntity authCode = this.authCodeFromRefreshToken(sRefreshToken);
 		if( authCode == null )
 			throw new InvalidGrantException("refresh_token is invalid");
 			

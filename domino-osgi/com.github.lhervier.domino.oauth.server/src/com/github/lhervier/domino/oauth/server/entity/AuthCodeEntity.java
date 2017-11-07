@@ -1,4 +1,4 @@
-package com.github.lhervier.domino.oauth.server.model;
+package com.github.lhervier.domino.oauth.server.entity;
 
 import java.util.List;
 import java.util.Map;
@@ -7,7 +7,7 @@ import java.util.Map;
  * Un code autorisation.
  * @author Lionel HERVIER
  */
-public class AuthorizationCode {
+public class AuthCodeEntity {
 
 	/**
 	 * L'identifiant

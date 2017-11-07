@@ -25,6 +25,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.github.lhervier.domino.oauth.server.NotesUserPrincipal;
 import com.github.lhervier.domino.oauth.server.aop.ann.Oauth2DbContext;
+import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
 import com.github.lhervier.domino.oauth.server.ex.AuthorizeException;
 import com.github.lhervier.domino.oauth.server.ex.InvalidUriException;
 import com.github.lhervier.domino.oauth.server.ex.authorize.AuthorizeServerErrorException;
@@ -32,7 +33,6 @@ import com.github.lhervier.domino.oauth.server.ex.authorize.InvalidRequestExcept
 import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.server.ext.IScopeGranter;
 import com.github.lhervier.domino.oauth.server.model.Application;
-import com.github.lhervier.domino.oauth.server.model.AuthorizationCode;
 import com.github.lhervier.domino.oauth.server.services.AppService;
 import com.github.lhervier.domino.oauth.server.services.SecretService;
 import com.github.lhervier.domino.oauth.server.utils.PropertyAdderImpl;
@@ -144,11 +144,11 @@ public class AuthorizeController {
 		Utils.checkRedirectUri(redirectUri, app);
 		
 		// Create an authorization code
-		AuthorizationCode authCode;
+		AuthCodeEntity authCode;
 		try {
 			String id = Utils.generateCode();
 			
-			authCode = new AuthorizationCode();
+			authCode = new AuthCodeEntity();
 			authCode.setId(id);
 			authCode.setApplication(app.getFullName());
 			authCode.setClientId(app.getClientId());
@@ -224,7 +224,7 @@ public class AuthorizeController {
 	@SuppressWarnings("unchecked")
 	private void initializeContexts(
 			NotesUserPrincipal user,
-			AuthorizationCode authCode, 
+			AuthCodeEntity authCode, 
 			Application app, 
 			List<String> scopes) throws NotesException, JsonGenerationException, JsonMappingException, IOException {
 		final List<String> grantedScopes = new ArrayList<String>();
@@ -254,7 +254,7 @@ public class AuthorizeController {
 	 * @throws NotesException 
 	 */
 	@SuppressWarnings("unchecked")
-	private void runGrants(AuthorizationCode authCode, List<String> responseType, Map<String, Object> params) throws NotesException {
+	private void runGrants(AuthCodeEntity authCode, List<String> responseType, Map<String, Object> params) throws NotesException {
 		Map<String, IOAuthExtension> exts = this.springContext.getBeansOfType(IOAuthExtension.class);
 		for( IOAuthExtension ext : exts.values() ) {
 			ext.authorize(

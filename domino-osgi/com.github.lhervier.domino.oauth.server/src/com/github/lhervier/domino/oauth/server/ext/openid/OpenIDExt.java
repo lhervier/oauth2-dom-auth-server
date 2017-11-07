@@ -11,11 +11,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.github.lhervier.domino.oauth.server.NotesUserPrincipal;
+import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
 import com.github.lhervier.domino.oauth.server.entity.PersonEntity;
 import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.server.ext.IPropertyAdder;
 import com.github.lhervier.domino.oauth.server.ext.IScopeGranter;
-import com.github.lhervier.domino.oauth.server.model.AuthorizationCode;
 import com.github.lhervier.domino.oauth.server.repo.PersonRepository;
 import com.github.lhervier.domino.oauth.server.utils.ReflectionUtils;
 import com.github.lhervier.domino.oauth.server.utils.SystemUtils;
@@ -148,10 +148,10 @@ public class OpenIDExt implements IOAuthExtension<OpenIdContext> {
 	}
 
 	/**
-	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#authorize(Object, List, AuthorizationCode, IPropertyAdder)
+	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#authorize(Object, List, AuthCodeEntity, IPropertyAdder)
 	 */
 	@Override
-	public void authorize(OpenIdContext ctx, List<String> responseTypes, AuthorizationCode authCode, IPropertyAdder adder) throws NotesException {
+	public void authorize(OpenIdContext ctx, List<String> responseTypes, AuthCodeEntity authCode, IPropertyAdder adder) throws NotesException {
 		// Hybrid flow
 		if( responseTypes.contains("id_token") ) {
 			this.token(

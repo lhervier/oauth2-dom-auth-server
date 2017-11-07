@@ -10,11 +10,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.github.lhervier.domino.oauth.server.NotesUserPrincipal;
+import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
 import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.server.ext.IPropertyAdder;
 import com.github.lhervier.domino.oauth.server.ext.IScopeGranter;
-import com.github.lhervier.domino.oauth.server.model.AuthorizationCode;
-import com.github.lhervier.domino.oauth.server.services.AuthCodeService;
+import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
 import com.github.lhervier.domino.oauth.server.utils.SystemUtils;
 
 /**
@@ -43,10 +43,10 @@ public class CoreExt implements IOAuthExtension<CoreContext> {
 	private String signKey;
 	
 	/**
-	 * The authorization code service
+	 * The authorization code repository
 	 */
 	@Autowired
-	private AuthCodeService authCodeSvc;
+	private AuthCodeRepository authCodeRepo;
 	
 	/**
 	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#getId()
@@ -96,22 +96,22 @@ public class CoreExt implements IOAuthExtension<CoreContext> {
 	}
 
 	/**
-	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#authorize(Object, List, AuthorizationCode, IPropertyAdder)
+	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#authorize(Object, List, AuthCodeEntity, IPropertyAdder)
 	 */
 	@Override
 	public void authorize(
 			CoreContext ctx,
 			List<String> responseTypes, 
-			AuthorizationCode authCode,
+			AuthCodeEntity authCode,
 			IPropertyAdder adder) throws NotesException {
 		// Authorization code grant
 		if( responseTypes.contains("code") ) {
 			
 			// Save the authorization code
-			this.authCodeSvc.saveAuthCode(authCode);
+			AuthCodeEntity saved = this.authCodeRepo.save(authCode);
 			
 			// Add the code to the query string
-			adder.addProperty("code", authCode.getId());
+			adder.addProperty("code", saved.getId());
 		}
 		
 		// Implicit grant

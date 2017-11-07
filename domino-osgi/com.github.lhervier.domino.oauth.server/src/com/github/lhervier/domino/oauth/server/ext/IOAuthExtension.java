@@ -5,7 +5,7 @@ import java.util.List;
 import lotus.domino.NotesException;
 
 import com.github.lhervier.domino.oauth.server.NotesUserPrincipal;
-import com.github.lhervier.domino.oauth.server.model.AuthorizationCode;
+import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
 
 /**
  * Interface à implémenter quand on ajoute un scope
@@ -53,7 +53,7 @@ public interface IOAuthExtension<T> {
 	public void authorize(
 			T context,
 			List<String> responseTypes, 
-			AuthorizationCode authCode,
+			AuthCodeEntity authCode,
 			IPropertyAdder adder) throws NotesException;
 	
 	/**

@@ -1,18 +1,12 @@
 package com.github.lhervier.domino.oauth.server.entity;
 
-import java.io.Serializable;
 import java.util.List;
 
 /**
  * Une application OAUTH2
  * @author Lionel HERVIER
  */
-public class ApplicationEntity implements Serializable {
-
-	/**
-	 * Serial UID
-	 */
-	private static final long serialVersionUID = 1213696763673347194L;
+public class ApplicationEntity {
 
 	/**
 	 * Application full name

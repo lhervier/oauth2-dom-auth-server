@@ -113,7 +113,9 @@ public class AuthorizeService {
 			throw new AuthServerErrorException("unable to find app with client_id '" + clientId + "'");
 		
 		// validate the redirect_uri
-		Utils.checkRedirectUri(redirectUri, app);
+		String redirectError = Utils.checkRedirectUri(redirectUri, app);
+		if( redirectError != null )
+			throw new InvalidUriException(redirectError);
 		
 		// Create an authorization code
 		AuthCodeEntity authCode;

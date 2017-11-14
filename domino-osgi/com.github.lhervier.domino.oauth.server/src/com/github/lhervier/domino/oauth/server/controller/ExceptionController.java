@@ -30,6 +30,7 @@ import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
 import com.github.lhervier.domino.oauth.server.ex.WrongPathException;
 import com.github.lhervier.domino.oauth.server.model.error.grant.GrantError;
 import com.github.lhervier.domino.oauth.server.utils.QueryStringUtils;
+import com.github.lhervier.domino.oauth.server.utils.Utils;
 
 @ControllerAdvice
 public class ExceptionController {
@@ -56,8 +57,14 @@ public class ExceptionController {
 	public ResponseEntity<?> processAuthorizedException(BaseAuthException e) throws InvalidUriException {
 		// We need a redirect uri
 		String redirectUri = this.request.getParameter("redirect_uri");
+		
+		String redirectError;
 		if( StringUtils.isEmpty(redirectUri) )
-			return this.processInvalidUriException(new InvalidUriException("No redirect_uri in query string."));
+			redirectError = "No redirect_uri in query string.";
+		else
+			redirectError = Utils.checkRedirectUri(redirectUri);
+		if( redirectError != null )
+			return this.processInvalidUriException(new InvalidUriException(redirectError));
 		
 		MultiValueMap<String, String> headers = new LinkedMultiValueMap<String, String>();
 		headers.add("Location", QueryStringUtils.addBeanToQueryString(redirectUri, e.getError()));

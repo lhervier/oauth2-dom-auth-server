@@ -16,7 +16,6 @@ import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
-import com.github.lhervier.domino.oauth.server.ex.InvalidUriException;
 import com.github.lhervier.domino.oauth.server.model.Application;
 
 public class Utils {
@@ -34,24 +33,34 @@ public class Utils {
 	/**
 	 * Check the redirectUri
 	 */
-	public static final void checkRedirectUri(String redirectUri, Application app) throws InvalidUriException {
+	public static final String checkRedirectUri(String redirectUri) {
+		return checkRedirectUri(redirectUri, null);
+	}
+	
+	/**
+	 * Check the redirectUri
+	 */
+	public static final String checkRedirectUri(String redirectUri, Application app) {
 		if( StringUtils.isEmpty(redirectUri) )
-			throw new InvalidUriException("No redirect_uri in query string.");
+			return "No redirect_uri in query string.";
 		try {
 			URI uri = new URI(redirectUri);
 			if( !uri.isAbsolute() )
-				throw new InvalidUriException("Invalid redirect_uri. Must be absolute.");
+				return "Invalid redirect_uri. Must be absolute.";
 			
 			// Check uri is declared in the application
-			Set<String> redirectUris = new HashSet<String>();
-			redirectUris.add(app.getRedirectUri().toString());
-			for( String u : app.getRedirectUris() )
-				redirectUris.add(u);
-			if( !redirectUris.contains(redirectUri) )
-				throw new InvalidUriException("redirect_uri '" + redirectUri + "' is not declared in the uris of application '" + app.getClientId() + "'");
+			if( app != null ) {
+				Set<String> redirectUris = new HashSet<String>();
+				redirectUris.add(app.getRedirectUri().toString());
+				for( String u : app.getRedirectUris() )
+					redirectUris.add(u);
+				if( !redirectUris.contains(redirectUri) )
+					return "redirect_uri '" + redirectUri + "' is not declared in the uris of application '" + app.getClientId() + "'";
+			}
 		} catch (URISyntaxException e) {
-			throw new InvalidUriException("Invalid redirect_uri. Syntax is invalid.");
+			return "Invalid redirect_uri. Syntax is invalid.";
 		}
+		return null;
 	}
 	
 	/**

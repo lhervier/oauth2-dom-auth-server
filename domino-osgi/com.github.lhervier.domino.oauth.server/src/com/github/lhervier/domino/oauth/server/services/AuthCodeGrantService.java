@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
 import com.github.lhervier.domino.oauth.server.ex.BaseGrantException;
-import com.github.lhervier.domino.oauth.server.ex.InvalidUriException;
 import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
 import com.github.lhervier.domino.oauth.server.ex.grant.GrantInvalidClientException;
 import com.github.lhervier.domino.oauth.server.ex.grant.GrantInvalidGrantException;
@@ -65,11 +64,9 @@ public class AuthCodeGrantService extends BaseGrantService {
 			String refreshToken, 
 			String redirectUri) throws BaseGrantException, ServerErrorException {
 		// Validate redirect_uri
-		try {
-			Utils.checkRedirectUri(redirectUri, app);
-		} catch (InvalidUriException e) {
-			throw new ServerErrorException(e.getMessage());
-		}
+		String redirectError = Utils.checkRedirectUri(redirectUri, app);
+		if( redirectError != null )
+			throw new ServerErrorException(redirectError);
 		
 		// Validate the code
 		if( code == null )

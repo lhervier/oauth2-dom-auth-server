@@ -5,6 +5,10 @@ import java.util.List;
 
 public interface NotesPrincipal extends Principal {
 
+	public static enum AuthType {
+		NOTES, BEARER
+	}
+	
 	/**
 	 * Return the user common name
 	 * @return the user common name
@@ -12,14 +16,9 @@ public interface NotesPrincipal extends Principal {
 	public String getCommon();
 	
 	/**
-	 * Is the current user authenticated by notes ?
+	 * Current authentication method
 	 */
-	public boolean isNotesAuth();
-	
-	/**
-	 * Is the current user authenticated using a bearer token
-	 */
-	public boolean isBearerAuth();
+	public AuthType getAuthType();
 	
 	/**
 	 * Return the bearer scopes
@@ -40,14 +39,5 @@ public interface NotesPrincipal extends Principal {
 	 * Return the path to the current database
 	 */
 	public String getCurrentDatabasePath();
-	
-	/**
-	 * Is the user authenticated at the oauth2 db level ?
-	 */
-	public boolean isOnOauth2Db();
-	
-	/**
-	 * Is the user authenticated at the server root ?
-	 */
-	public boolean isOnServerRoot();
+
 }

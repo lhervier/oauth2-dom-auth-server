@@ -9,7 +9,6 @@ import lotus.domino.Session;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.github.lhervier.domino.oauth.server.utils.DominoUtils;
@@ -26,12 +25,6 @@ public class NotesPrincipalImpl implements NotesPrincipal {
 	private static final Log LOG = LogFactory.getLog(NotesPrincipalImpl.class);
 	
 	/**
-	 * The oauth2 db path
-	 */
-	@Value("${oauth2.server.db}")
-	private String o2Db;
-	
-	/**
 	 * The notes context
 	 */
 	@Autowired
@@ -40,6 +33,7 @@ public class NotesPrincipalImpl implements NotesPrincipal {
 	/**
 	 * Return the name of the principal
 	 */
+	@Override
 	public String getName() {
 		Session session = this.authCtx.getUserSession();
 		if( session == null )
@@ -56,6 +50,7 @@ public class NotesPrincipalImpl implements NotesPrincipal {
 	 * Return the common name of the user
 	 * @return
 	 */
+	@Override
 	public String getCommon() {
 		if( this.getName() == null )
 			return null;
@@ -73,22 +68,19 @@ public class NotesPrincipalImpl implements NotesPrincipal {
 	}
 	
 	/**
-	 * Is the current user authenticated by notes ?
+	 * @see com.github.lhervier.domino.oauth.server.NotesPrincipal#getAuthType()
 	 */
-	public boolean isNotesAuth() {
-		return !this.authCtx.isBearerAuth();
+	@Override
+	public AuthType getAuthType() {
+		if( this.authCtx.isBearerAuth() )
+			return AuthType.BEARER;
+		return AuthType.NOTES;
 	}
-	
-	/**
-	 * Is the current user authenticated using a bearer token
-	 */
-	public boolean isBearerAuth() {
-		return this.authCtx.isBearerAuth();
-	}
-	
+
 	/**
 	 * Return the bearer scopes
 	 */
+	@Override
 	public List<String> getScopes() {
 		return this.authCtx.getScopes();
 	}
@@ -96,6 +88,7 @@ public class NotesPrincipalImpl implements NotesPrincipal {
 	/**
 	 * Return the client Id
 	 */
+	@Override
 	public String getClientId() {
 		return this.authCtx.getClientId();
 	}
@@ -123,20 +116,4 @@ public class NotesPrincipalImpl implements NotesPrincipal {
 		return this.authCtx.getRoles();
 	}
 
-	/**
-	 * @see com.github.lhervier.domino.oauth.server.NotesPrincipal#isOnOauth2Db()
-	 */
-	@Override
-	public boolean isOnOauth2Db() {
-		String o2Db = this.o2Db.replace('\\', '/');
-		return o2Db.equals(this.getCurrentDatabasePath());
-	}
-
-	/**
-	 * @see com.github.lhervier.domino.oauth.server.NotesPrincipal#isOnServerRoot()
-	 */
-	@Override
-	public boolean isOnServerRoot() {
-		return this.getCurrentDatabasePath() == null;
-	}
 }

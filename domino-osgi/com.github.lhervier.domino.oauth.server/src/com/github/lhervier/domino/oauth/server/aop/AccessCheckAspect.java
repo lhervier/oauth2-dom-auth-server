@@ -3,6 +3,8 @@ package com.github.lhervier.domino.oauth.server.aop;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.aspectj.lang.JoinPoint;
@@ -11,10 +13,12 @@ import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.github.lhervier.domino.oauth.server.NotesPrincipal;
+import com.github.lhervier.domino.oauth.server.NotesPrincipal.AuthType;
 import com.github.lhervier.domino.oauth.server.aop.ann.ctx.Oauth2DbContext;
 import com.github.lhervier.domino.oauth.server.aop.ann.ctx.ServerRootContext;
 import com.github.lhervier.domino.oauth.server.aop.ann.security.AppAuth;
@@ -41,6 +45,12 @@ public class AccessCheckAspect {
 	private static final Log LOG = LogFactory.getLog(AccessCheckAspect.class);
 	
 	/**
+	 * Path to the oauth!2.nsf db
+	 */
+	@Value("${oauth2.server.db}")
+	private String oauth2Db;
+	
+	/**
 	 * The application service
 	 */
 	@Autowired
@@ -51,6 +61,14 @@ public class AccessCheckAspect {
 	 */
 	@Autowired
 	private NotesPrincipal user;
+	
+	/**
+	 * Init
+	 */
+	@PostConstruct
+	public void init() {
+		this.oauth2Db = oauth2Db.replace('\\', '/');
+	}
 	
 	/**
 	 * Pointcut to detect classes we will log access
@@ -98,7 +116,7 @@ public class AccessCheckAspect {
 			return;
 		
 		// If using bearer authentication, check that user is logged in
-		if( this.user.isBearerAuth() ) {
+		if( this.user.getAuthType() == AuthType.BEARER ) {
 			if( this.user.getName() == null ) {
 				LOG.info("Accessing method '" + method.getName() + "' with an incorrect bearer token");
 				throw new NotAuthorizedException();
@@ -108,14 +126,14 @@ public class AccessCheckAspect {
 		// Check method is executed in the context of the oauth2 database
 		Oauth2DbContext o2Ctx = this.findAnnotation(method, Oauth2DbContext.class);
 		if( o2Ctx != null ) {
-			if( !this.user.isOnOauth2Db() )
+			if( !this.oauth2Db.equals(this.user.getCurrentDatabasePath()) )
 				throw new WrongPathException("oauth2 server endpoints must be called on the database declared in the oauth2.server.db property.");
 		}
 		
 		// Check if method is called at the server root
 		ServerRootContext srCtx = this.findAnnotation(method, ServerRootContext.class);
 		if( srCtx != null ) {
-			if( !this.user.isOnServerRoot() )
+			if( this.user.getCurrentDatabasePath() != null )
 				throw new WrongPathException("This method must be called on the server root, without NSF context.");
 		}
 		
@@ -135,7 +153,7 @@ public class AccessCheckAspect {
 		// Check if we are using bearer context
 		Bearer bearer = this.findAnnotation(method, Bearer.class);
 		if( bearer != null ) {
-			if( !this.user.isBearerAuth() ) {
+			if( this.user.getAuthType() != AuthType.BEARER ) {
 				LOG.info("User '" + this.user.getName() + "' tries to access method '" + method.getName() + "' but it is not authenticated with a bearer token");
 				throw new NotAuthorizedException();
 			}

@@ -186,11 +186,11 @@ public class NotesApplicationRepository implements ApplicationRepository {
 			}
 			uris.add(new URI(app.getRedirectUri()));
 		} catch (URISyntaxException e) {
-			throw new DataRetrievalFailureException("Invalid URI", e);
+			throw new DataIntegrityViolationException("Invalid URI", e);
 		}
 		for( URI uri : uris ) {
 			if( !uri.isAbsolute() )
-				throw new DataRetrievalFailureException("URI '" + uri.toString() + "' is not absolute");
+				throw new DataIntegrityViolationException("URI '" + uri.toString() + "' is not absolute");
 			if( uri.toString().indexOf('#') != -1 )
 				throw new DataIntegrityViolationException("URI '" + uri.toString() + "' must not contain a fragment (# character)");
 		}

@@ -1,22 +1,112 @@
 package com.github.lhervier.domino.oauth.server.model;
 
-import com.github.lhervier.domino.oauth.server.entity.ApplicationEntity;
+import java.util.List;
 
 /**
  * Une application OAUTH2
  * @author Lionel HERVIER
  */
-public class Application extends ApplicationEntity {
+public class Application {
 
-	/**
-	 * Serial UID
-	 */
-	private static final long serialVersionUID = 5374108086016550299L;
-	
 	/**
 	 * Application full name
 	 */
 	private String fullName;
+	
+	/**
+	 * Son nom
+	 */
+	private String name;
+	
+	/**
+	 * Son client_id
+	 */
+	private String clientId;
+	
+	/**
+	 * Son URI de redirection par défaut
+	 */
+	private String redirectUri;
+	
+	/**
+	 * Ses autres URIs de redirection
+	 */
+	private List<String> redirectUris;
+	
+	/**
+	 * Les personnes autorisées à se logger sur cette application
+	 */
+	private String readers;
+	
+	/**
+	 * @return the readers
+	 */
+	public String getReaders() {
+		return readers;
+	}
+
+	/**
+	 * @param readers the readers to set
+	 */
+	public void setReaders(String readers) {
+		this.readers = readers;
+	}
+
+	/**
+	 * @return the name
+	 */
+	public String getName() {
+		return name;
+	}
+
+	/**
+	 * @param name the name to set
+	 */
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	/**
+	 * @return the clientId
+	 */
+	public String getClientId() {
+		return clientId;
+	}
+
+	/**
+	 * @param clientId the clientId to set
+	 */
+	public void setClientId(String clientId) {
+		this.clientId = clientId;
+	}
+
+	/**
+	 * @return the redirectUri
+	 */
+	public String getRedirectUri() {
+		return redirectUri;
+	}
+
+	/**
+	 * @param redirectUrl the redirectUri to set
+	 */
+	public void setRedirectUri(String redirectUri) {
+		this.redirectUri = redirectUri;
+	}
+
+	/**
+	 * @return the redirectUris
+	 */
+	public List<String> getRedirectUris() {
+		return redirectUris;
+	}
+
+	/**
+	 * @param redirectUris the redirectUris to set
+	 */
+	public void setRedirectUris(List<String> redirectUris) {
+		this.redirectUris = redirectUris;
+	}
 
 	/**
 	 * @return the fullName
@@ -31,5 +121,4 @@ public class Application extends ApplicationEntity {
 	public void setFullName(String fullName) {
 		this.fullName = fullName;
 	}
-	
 }

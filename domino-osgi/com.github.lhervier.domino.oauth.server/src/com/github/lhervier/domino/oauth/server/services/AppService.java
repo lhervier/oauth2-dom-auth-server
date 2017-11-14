@@ -52,15 +52,13 @@ public class AppService {
 			return null;
 		
 		Application app = new Application();
-		app.setAppReader(entity.getAppReader());
 		app.setClientId(entity.getClientId());
 		app.setName(entity.getName());
 		app.setReaders(entity.getReaders());
 		app.setRedirectUri(entity.getRedirectUri());
 		app.setRedirectUris(new ArrayList<String>());
 		app.getRedirectUris().addAll(entity.getRedirectUris());
-		
-		app.setFullName("CN=" + entity.getName() + this.applicationRoot);
+		app.setFullName(entity.getFullName());
 		
 		return app;
 	}
@@ -75,9 +73,10 @@ public class AppService {
 			return null;
 		
 		ApplicationEntity entity = new ApplicationEntity();
-		entity.setAppReader(app.getAppReader());
+		entity.setAppReader(app.getFullName());
 		entity.setClientId(app.getClientId());
 		entity.setName(app.getName());
+		entity.setFullName("CN=" + app.getName() + this.applicationRoot);
 		entity.setReaders(app.getReaders());
 		entity.setRedirectUri(app.getRedirectUri());
 		entity.setRedirectUris(new ArrayList<String>());

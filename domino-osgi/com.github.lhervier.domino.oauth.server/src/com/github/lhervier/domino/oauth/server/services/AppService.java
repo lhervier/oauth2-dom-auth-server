@@ -56,7 +56,8 @@ public class AppService {
 		app.setReaders(entity.getReaders());
 		app.setRedirectUri(entity.getRedirectUri());
 		app.setRedirectUris(new ArrayList<String>());
-		app.getRedirectUris().addAll(entity.getRedirectUris());
+		if( entity.getRedirectUris() != null )
+			app.getRedirectUris().addAll(entity.getRedirectUris());
 		app.setFullName(entity.getFullName());
 		
 		return app;

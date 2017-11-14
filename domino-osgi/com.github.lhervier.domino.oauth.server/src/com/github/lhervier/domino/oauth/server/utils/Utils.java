@@ -50,17 +50,24 @@ public class Utils {
 			
 			// Check uri is declared in the application
 			if( app != null ) {
-				Set<String> redirectUris = new HashSet<String>();
-				redirectUris.add(app.getRedirectUri().toString());
-				for( String u : app.getRedirectUris() )
-					redirectUris.add(u);
-				if( !redirectUris.contains(redirectUri) )
+				if( !isRegistered(redirectUri, app) )
 					return "redirect_uri '" + redirectUri + "' is not declared in the uris of application '" + app.getClientId() + "'";
 			}
 		} catch (URISyntaxException e) {
 			return "Invalid redirect_uri. Syntax is invalid.";
 		}
 		return null;
+	}
+	
+	/**
+	 * Check that the redirect uri is one of the app registered values
+	 */
+	public static final boolean isRegistered(String redirectUri, Application app) {
+		Set<String> redirectUris = new HashSet<String>();
+		redirectUris.add(app.getRedirectUri().toString());
+		for( String u : app.getRedirectUris() )
+			redirectUris.add(u);
+		return redirectUris.contains(redirectUri);
 	}
 	
 	/**

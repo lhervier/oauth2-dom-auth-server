@@ -13,32 +13,8 @@ public class AuthAccessDeniedException extends BaseAuthException {
 	/**
 	 * Constructeur
 	 */
-	public AuthAccessDeniedException() {
-		super(new AccessDeniedError());
+	public AuthAccessDeniedException(String message, String redirectUri) {
+		super(message, redirectUri, new AccessDeniedError());
 	}
 
-	/**
-	 * Constructeur
-	 * @param message
-	 */
-	public AuthAccessDeniedException(String message) {
-		super(message, new AccessDeniedError());
-	}
-
-	/**
-	 * Constructeur
-	 * @param message
-	 * @param cause
-	 */
-	public AuthAccessDeniedException(String message, Throwable cause) {
-		super(message, cause, new AccessDeniedError());
-	}
-
-	/**
-	 * Constructeur
-	 * @param cause
-	 */
-	public AuthAccessDeniedException(Throwable cause) {
-		super(cause, new AccessDeniedError());
-	}
 }

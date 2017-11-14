@@ -19,42 +19,21 @@ public abstract class BaseAuthException extends Exception {
 	private AuthorizeError error;
 	
 	/**
+	 * The redirect uri
+	 */
+	private String redirectUri;
+	
+	/**
 	 * Constructeur
+	 * @param redirectUri the redirect uri
 	 * @param error l'erreur
 	 */
-	public BaseAuthException(AuthorizeError error) {
-		super();
-		this.error = error;
-	}
-	
-	/**
-	 * Constructeur
-	 * @param message
-	 */
-	public BaseAuthException(String message, AuthorizeError error) {
+	public BaseAuthException(String message, String redirectUri, AuthorizeError error) {
 		super(message);
+		this.redirectUri = redirectUri;
 		this.error = error;
 	}
 	
-	/**
-	 * Constructeur
-	 * @param cause
-	 */
-	public BaseAuthException(Throwable cause, AuthorizeError error) {
-		super(cause);
-		this.error = error;
-	}
-	
-	/**
-	 * Constructeur
-	 * @param message
-	 * @param cause
-	 */
-	public BaseAuthException(String message, Throwable cause, AuthorizeError error) {
-		super(message, cause);
-		this.error = error;
-	}
-
 	/**
 	 * @return the error
 	 */
@@ -63,9 +42,11 @@ public abstract class BaseAuthException extends Exception {
 	}
 
 	/**
-	 * @param error the error to set
+	 * @return the redirectUri
 	 */
-	public void setError(AuthorizeError error) {
-		this.error = error;
+	public String getRedirectUri() {
+		return redirectUri;
 	}
+
+	
 }

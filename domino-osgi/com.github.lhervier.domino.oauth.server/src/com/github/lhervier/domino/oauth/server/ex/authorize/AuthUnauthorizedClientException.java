@@ -13,32 +13,7 @@ public class AuthUnauthorizedClientException extends BaseAuthException {
 	/**
 	 * Constructeur
 	 */
-	public AuthUnauthorizedClientException() {
-		super(new UnauthorizedClientError());
-	}
-
-	/**
-	 * Constructeur
-	 * @param message
-	 */
-	public AuthUnauthorizedClientException(String message) {
-		super(message, new UnauthorizedClientError());
-	}
-
-	/**
-	 * Constructeur
-	 * @param message
-	 * @param cause
-	 */
-	public AuthUnauthorizedClientException(String message, Throwable cause) {
-		super(message, cause, new UnauthorizedClientError());
-	}
-
-	/**
-	 * Constructeur
-	 * @param cause
-	 */
-	public AuthUnauthorizedClientException(Throwable cause) {
-		super(cause, new UnauthorizedClientError());
+	public AuthUnauthorizedClientException(String message, String redirectUri) {
+		super(message, redirectUri, new UnauthorizedClientError());
 	}
 }

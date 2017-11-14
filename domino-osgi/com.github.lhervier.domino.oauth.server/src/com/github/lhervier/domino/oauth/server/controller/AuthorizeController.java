@@ -14,6 +14,7 @@ import com.github.lhervier.domino.oauth.server.ex.BaseAuthException;
 import com.github.lhervier.domino.oauth.server.ex.ForbiddenException;
 import com.github.lhervier.domino.oauth.server.ex.InvalidUriException;
 import com.github.lhervier.domino.oauth.server.ex.NotAuthorizedException;
+import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
 import com.github.lhervier.domino.oauth.server.ex.WrongPathException;
 import com.github.lhervier.domino.oauth.server.services.AuthorizeService;
 
@@ -44,8 +45,6 @@ public class AuthorizeController {
 	/**
 	 * Authorize endpoint.
 	 * Unable to inject user bean as a method argument...
-	 * @throws BaseAuthException If an error occur
-	 * @throws InvalidUriException if the uri is invalid
 	 */
 	@RequestMapping(value = "/authorize", method = RequestMethod.GET)
 	public ModelAndView authorize(
@@ -53,7 +52,7 @@ public class AuthorizeController {
     		@RequestParam(value = "client_id", required = false) String clientId,
     		@RequestParam(value = "scope", required = false) String scope,
     		@RequestParam(value = "state", required = false) String state,
-    		@RequestParam(value = "redirect_uri", required = false) String redirectUri) throws NotAuthorizedException, ForbiddenException, WrongPathException, BaseAuthException, InvalidUriException {
+    		@RequestParam(value = "redirect_uri", required = false) String redirectUri) throws NotAuthorizedException, ForbiddenException, WrongPathException, BaseAuthException, InvalidUriException, ServerErrorException {
 		return new ModelAndView(this.authSvc.authorize(
 				this.authorizeUser, 
 				responseType, 

@@ -13,32 +13,8 @@ public class AuthServerErrorException extends BaseAuthException {
 	/**
 	 * Constructeur
 	 */
-	public AuthServerErrorException() {
-		super(new ServerError());
+	public AuthServerErrorException(String message, String redirectUri) {
+		super(message, redirectUri, new ServerError());
 	}
 
-	/**
-	 * Constructeur
-	 * @param message
-	 */
-	public AuthServerErrorException(String message) {
-		super(message, new ServerError());
-	}
-
-	/**
-	 * Constructeur
-	 * @param message
-	 * @param cause
-	 */
-	public AuthServerErrorException(String message, Throwable cause) {
-		super(message, cause, new ServerError());
-	}
-
-	/**
-	 * Constructeur
-	 * @param cause
-	 */
-	public AuthServerErrorException(Throwable cause) {
-		super(cause, new ServerError());
-	}
 }

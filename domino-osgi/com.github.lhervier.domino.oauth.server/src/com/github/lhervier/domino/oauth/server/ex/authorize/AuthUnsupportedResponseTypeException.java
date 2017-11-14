@@ -13,32 +13,7 @@ public class AuthUnsupportedResponseTypeException extends BaseAuthException {
 	/**
 	 * Constructeur
 	 */
-	public AuthUnsupportedResponseTypeException() {
-		super(new UnsupportedResponseTypeError());
-	}
-
-	/**
-	 * Constructeur
-	 * @param message
-	 */
-	public AuthUnsupportedResponseTypeException(String message) {
-		super(message, new UnsupportedResponseTypeError());
-	}
-
-	/**
-	 * Constructeur
-	 * @param message
-	 * @param cause
-	 */
-	public AuthUnsupportedResponseTypeException(String message, Throwable cause) {
-		super(message, cause, new UnsupportedResponseTypeError());
-	}
-
-	/**
-	 * Constructeur
-	 * @param cause
-	 */
-	public AuthUnsupportedResponseTypeException(Throwable cause) {
-		super(cause, new UnsupportedResponseTypeError());
+	public AuthUnsupportedResponseTypeException(String message, String redirectUri) {
+		super(message, redirectUri, new UnsupportedResponseTypeError());
 	}
 }

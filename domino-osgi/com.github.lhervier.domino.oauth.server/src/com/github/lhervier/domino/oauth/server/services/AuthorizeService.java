@@ -19,8 +19,8 @@ import com.github.lhervier.domino.oauth.server.NotesPrincipal;
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
 import com.github.lhervier.domino.oauth.server.ex.BaseAuthException;
 import com.github.lhervier.domino.oauth.server.ex.InvalidUriException;
+import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
 import com.github.lhervier.domino.oauth.server.ex.authorize.AuthInvalidRequestException;
-import com.github.lhervier.domino.oauth.server.ex.authorize.AuthServerErrorException;
 import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.server.ext.IScopeGranter;
 import com.github.lhervier.domino.oauth.server.model.Application;
@@ -73,6 +73,7 @@ public class AuthorizeService {
 	 * @return the redirect url.
 	 * @throws BaseAuthException If an error occur
 	 * @throws InvalidUriException if the uri is invalid
+	 * @throws ServerErrorException 
 	 */
 	public String authorize(
 			NotesPrincipal user,
@@ -80,16 +81,35 @@ public class AuthorizeService {
     		String clientId,
     		String scope,
     		String state,
-    		String redirectUri) throws BaseAuthException, InvalidUriException {
+    		String redirectUri) throws BaseAuthException, InvalidUriException, ServerErrorException {
+		// client_id is mandatory
+		if( StringUtils.isEmpty(clientId) ) 
+			throw new ServerErrorException("client_id is mandatory");
+		Application app = this.appSvc.getApplicationFromClientId(clientId);
+		if( app == null )
+			throw new ServerErrorException("client_id is invalid");
+		
+		// redirect_uri is mandatory
+		if( StringUtils.isEmpty(redirectUri) )
+			redirectUri = app.getRedirectUri();
+		if( StringUtils.isEmpty(redirectUri) )
+			throw new InvalidUriException("redirect_uri is mandatory");
+		
+		// redirect_uri must be one the redirect_uris registered in the app
+		if( !Utils.isRegistered(redirectUri, app) )
+			throw new InvalidUriException("redirect_uri is invalid");
+		
 		// response_type is mandatory
 		if( StringUtils.isEmpty(responseType) )
-			throw new AuthInvalidRequestException("response_type mandatory in query string");
+			throw new AuthInvalidRequestException("response_type is mandatory", redirectUri);
 		List<String> responseTypes = new ArrayList<String>();
 		{
 			String[] tbl = responseType.split(" ");
 			for( String r : tbl )
 				responseTypes.add(r);
 		}
+		if( !this.checkResponseTypes(responseTypes) )
+			throw new AuthInvalidRequestException("response_type is invalid", redirectUri);
 		
 		// Extract the scopes
 		List<String> scopes = new ArrayList<String>();
@@ -98,24 +118,6 @@ public class AuthorizeService {
 			for( String s : tbl )
 				scopes.add(s);
 		}
-		
-		// Check that at least one extension will process the request
-		if( !this.checkResponseTypes(responseTypes) )
-			throw new AuthInvalidRequestException("response_type value is invalid");
-		
-		// Client id is mandatory
-		if( StringUtils.isEmpty(clientId) ) 
-			throw new AuthServerErrorException("client_id is mandatory");
-		
-		// Get the app
-		Application app = this.appSvc.getApplicationFromClientId(clientId);
-		if( app == null )
-			throw new AuthServerErrorException("unable to find app with client_id '" + clientId + "'");
-		
-		// validate the redirect_uri
-		String redirectError = Utils.checkRedirectUri(redirectUri, app);
-		if( redirectError != null )
-			throw new InvalidUriException(redirectError);
 		
 		// Create an authorization code
 		AuthCodeEntity authCode;
@@ -138,8 +140,7 @@ public class AuthorizeService {
 			this.initializeContexts(user, authCode, app, scopes);
 			
 			// Run the grants
-			Map<String, Object> params = new HashMap<String, Object>();
-			this.runGrants(authCode, responseTypes, params);
+			Map<String, Object> params = this.runGrants(authCode, responseTypes);
 			
 			// Add the state
 			params.put("state", state);		// May be null
@@ -228,7 +229,8 @@ public class AuthorizeService {
 	 * Run the grants
 	 */
 	@SuppressWarnings("unchecked")
-	private void runGrants(AuthCodeEntity authCode, List<String> responseType, Map<String, Object> params) {
+	private Map<String, Object> runGrants(AuthCodeEntity authCode, List<String> responseType) {
+		Map<String, Object> params = new HashMap<String, Object>();
 		for( IOAuthExtension ext : this.exts ) {
 			ext.authorize(
 					Utils.getContext(authCode, ext.getId()),
@@ -240,5 +242,6 @@ public class AuthorizeService {
 					)
 			);
 		}
+		return params;
 	}
 }

@@ -17,32 +17,8 @@ public class AuthInvalidRequestException extends BaseAuthException {
 	/**
 	 * Constructeur
 	 */
-	public AuthInvalidRequestException() {
-		super(new InvalidRequestError());
+	public AuthInvalidRequestException(String message, String redirectUri) {
+		super(message, redirectUri, new InvalidRequestError());
 	}
-
-	/**
-	 * Constructeur
-	 * @param message le message
-	 */
-	public AuthInvalidRequestException(String message) {
-		super(message, new InvalidRequestError());
-	}
-
-	/**
-	 * Constructeur
-	 * @param message
-	 * @param cause
-	 */
-	public AuthInvalidRequestException(String message, Throwable cause) {
-		super(message, cause, new InvalidRequestError());
-	}
-
-	/**
-	 * Constructeur
-	 * @param cause
-	 */
-	public AuthInvalidRequestException(Throwable cause) {
-		super(cause, new InvalidRequestError());
-	}
+	
 }

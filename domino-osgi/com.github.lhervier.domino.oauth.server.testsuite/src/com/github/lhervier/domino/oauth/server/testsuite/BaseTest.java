@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.github.lhervier.domino.oauth.server.NotesPrincipal.AuthType;
+import com.github.lhervier.domino.oauth.server.repo.SecretRepository;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {TestConfig.class})
@@ -28,6 +29,9 @@ public class BaseTest {
 	
 	@Autowired
 	protected NotesPrincipalTestImpl user;
+	
+	@Autowired
+	protected SecretRepository secretRepo;
 	
 	@Autowired
 	private WebApplicationContext wac;

@@ -3,18 +3,13 @@ package com.github.lhervier.domino.oauth.server.controller;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -30,7 +25,6 @@ import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
 import com.github.lhervier.domino.oauth.server.ex.WrongPathException;
 import com.github.lhervier.domino.oauth.server.model.error.grant.GrantError;
 import com.github.lhervier.domino.oauth.server.utils.QueryStringUtils;
-import com.github.lhervier.domino.oauth.server.utils.Utils;
 
 @ControllerAdvice
 public class ExceptionController {
@@ -41,12 +35,6 @@ public class ExceptionController {
 	private static final Log LOG = LogFactory.getLog(ExceptionController.class);
 	
 	/**
-	 * The http servlet request
-	 */
-	@Autowired
-	private HttpServletRequest request;
-	
-	/**
 	 * Handle Authorization errors.
 	 * Redirect with error detail in url if redirect_uri is present.
 	 * Throw error otherwise
@@ -54,21 +42,10 @@ public class ExceptionController {
 	 * @return the model and the view
 	 */
 	@ExceptionHandler(BaseAuthException.class)
-	public ResponseEntity<?> processAuthorizedException(BaseAuthException e) throws InvalidUriException {
-		// We need a redirect uri
-		String redirectUri = this.request.getParameter("redirect_uri");
-		
-		String redirectError;
-		if( StringUtils.isEmpty(redirectUri) )
-			redirectError = "No redirect_uri in query string.";
-		else
-			redirectError = Utils.checkRedirectUri(redirectUri);
-		if( redirectError != null )
-			return this.processInvalidUriException(new InvalidUriException(redirectError));
-		
-		MultiValueMap<String, String> headers = new LinkedMultiValueMap<String, String>();
-		headers.add("Location", QueryStringUtils.addBeanToQueryString(redirectUri, e.getError()));
-		return new ResponseEntity<String>("", headers, HttpStatus.FOUND);
+	@ResponseStatus(value = HttpStatus.OK)
+	public ModelAndView processAuthorizedException(BaseAuthException e) throws InvalidUriException {
+		LOG.error(e.getMessage());
+		return new ModelAndView("redirect:" + QueryStringUtils.addBeanToQueryString(e.getRedirectUri(), e.getError()));
 	}
 	
 	/**
@@ -77,6 +54,7 @@ public class ExceptionController {
 	@ExceptionHandler(BaseGrantException.class)
 	@ResponseStatus(value = HttpStatus.BAD_REQUEST)
 	public @ResponseBody GrantError handleGrantException(BaseGrantException e) {
+		LOG.error(e.getMessage());
 		return e.getError();
 	}
 	
@@ -131,13 +109,11 @@ public class ExceptionController {
 	 * Invalid URI exception. We cannot handle that...
 	 */
 	@ExceptionHandler(InvalidUriException.class)
-	public ResponseEntity<ModelAndView> processInvalidUriException(InvalidUriException e) {
+	@ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
+	public ModelAndView processInvalidUriException(InvalidUriException e) {
 		Map<String, Object> model = new HashMap<String, Object>();
 		model.put("error", e.getMessage());
-		return new ResponseEntity<ModelAndView>(
-				new ModelAndView("error", model), 
-				HttpStatus.INTERNAL_SERVER_ERROR
-		);
+		return new ModelAndView("error", model);
 	}
 	
 	/**

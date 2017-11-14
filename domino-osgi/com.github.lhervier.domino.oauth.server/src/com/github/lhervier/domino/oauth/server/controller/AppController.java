@@ -23,6 +23,7 @@ import com.github.lhervier.domino.oauth.server.aop.ann.security.UserAuth;
 import com.github.lhervier.domino.oauth.server.ex.ForbiddenException;
 import com.github.lhervier.domino.oauth.server.ex.NotAuthorizedException;
 import com.github.lhervier.domino.oauth.server.ex.WrongPathException;
+import com.github.lhervier.domino.oauth.server.form.ApplicationForm;
 import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.services.AppService;
 
@@ -52,6 +53,36 @@ public class AppController {
 	private HttpSession session;
 	
 	/**
+	 * Return the redirect uris
+	 */
+	@SuppressWarnings("unchecked")
+	private List<String> getSessionRedirectUris() {
+		return (List<String>) this.session.getAttribute(ATTR_REDIRECT_URIS);
+	}
+	
+	/**
+	 * Initialize the redirect uris
+	 */
+	private void initSessionRedirectUris(List<String> redirectUris) {
+		this.session.setAttribute(ATTR_REDIRECT_URIS, redirectUris);
+	}
+	
+	/**
+	 * Convert an application to a form
+	 */
+	private ApplicationForm fromApplication(Application app) {
+		ApplicationForm ret = new ApplicationForm();
+		ret.setClientId(app.getClientId());
+		ret.setName(app.getName());
+		ret.setReaders(app.getReaders());
+		ret.setRedirectUri(app.getRedirectUri());
+		ret.setExistingRedirectUris(app.getRedirectUris());
+		return ret;
+	}
+	
+	// ======================================================================================
+	
+	/**
 	 * List applications
 	 */
 	@RequestMapping(value = "/listApplications")
@@ -67,11 +98,11 @@ public class AppController {
 	@RequestMapping(value = "/newApplication", method = RequestMethod.GET)
 	public ModelAndView createApplication() throws NotAuthorizedException, ForbiddenException, WrongPathException {
 		Map<String, Object> model = new HashMap<String, Object>();
-		Application app = this.appSvc.prepareApplication();
+		ApplicationForm app = fromApplication(this.appSvc.prepareApplication());
 		model.put("app", app);
 		model.put("edit", true);
 		model.put("newApp", true);
-		this.session.setAttribute(ATTR_REDIRECT_URIS, app.getRedirectUris());
+		this.initSessionRedirectUris(app.getExistingRedirectUris());
 		return new ModelAndView("application", model);
 	}
 	
@@ -81,11 +112,11 @@ public class AppController {
 	@RequestMapping(value = "/editApplication", method = RequestMethod.GET)
 	public ModelAndView editApplication(@RequestParam(value = "name", required = true) String appName) throws NotAuthorizedException, ForbiddenException, WrongPathException {
 		Map<String, Object> model = new HashMap<String, Object>();
-		Application app = this.appSvc.getApplicationFromName(appName);
+		ApplicationForm app = fromApplication(this.appSvc.getApplicationFromName(appName));
 		model.put("app", app);
 		model.put("edit", true);
 		model.put("newApp", false);
-		this.session.setAttribute(ATTR_REDIRECT_URIS, app.getRedirectUris());
+		this.initSessionRedirectUris(app.getExistingRedirectUris());
 		return new ModelAndView("application", model);
 	}
 	
@@ -95,34 +126,13 @@ public class AppController {
 	@RequestMapping(value = "/viewApplication", method = RequestMethod.GET)
 	public ModelAndView viewApplication(@RequestParam(value = "name", required = true) String appName) throws NotAuthorizedException, ForbiddenException, WrongPathException {
 		Map<String, Object> model = new HashMap<String, Object>();
-		model.put("app", this.appSvc.getApplicationFromName(appName));
+		model.put("app", fromApplication(this.appSvc.getApplicationFromName(appName)));
 		model.put("edit", false);
 		model.put("newApp", false);
 		return new ModelAndView("application", model);
 	}
 	
 	// ===============================================================
-	
-	/**
-	 * An error object
-	 */
-	public static class AppError {
-		private String name = null;
-		private String readers = null;
-		private String redirectUri = null;
-		private String newRedirectUri = null;
-		public boolean isError() {
-			return (name != null) || (readers != null) || (redirectUri != null) || (newRedirectUri != null);
-		}
-		public String getName() {return name;}
-		public void setName(String name) {this.name = name;}
-		public String getReaders() {return readers;}
-		public void setReaders(String readers) {this.readers = readers;}
-		public String getRedirectUri() {return redirectUri;}
-		public void setRedirectUri(String redirectUri) {this.redirectUri = redirectUri;}
-		public String getNewRedirectUri() { return newRedirectUri; }
-		public void setNewRedirectUri(String newRedirectUri) { this.newRedirectUri = newRedirectUri; }
-	}
 	
 	/**
 	 * Check a redirect Uri
@@ -149,54 +159,55 @@ public class AppController {
 	 * Check an application object
 	 * @return an error object
 	 */
-	private AppError checkApp(Application app) {
-		AppError error = new AppError();
+	private void checkForm(ApplicationForm app) {
 		if( StringUtils.isEmpty(app.getName()) )
-			error.setName("name is mandatory");
+			app.setNameError("name is mandatory");
 		if( StringUtils.isEmpty(app.getReaders()) )
-			error.setReaders("readers are mandatory");
+			app.setReadersError("readers are mandatory");
 		
-		error.setRedirectUri(this.checkRedirectUri(app.getRedirectUri()));
-		
-		return error;
+		app.setRedirectUriError(this.checkRedirectUri(app.getRedirectUri()));
 	}
 	
 	/**
 	 * Save an application
 	 */
-	@SuppressWarnings("unchecked")
 	@RequestMapping(value = "/saveApplication", method = RequestMethod.POST)
-	public ModelAndView saveApplication(
-			@ModelAttribute Application app,
-			@RequestParam String newRedirectUri,
-			@RequestParam String action) throws NotAuthorizedException, ForbiddenException, WrongPathException {
+	public ModelAndView saveApplication(@ModelAttribute ApplicationForm form) throws NotAuthorizedException, ForbiddenException, WrongPathException {
 		Map<String, Object> model = new HashMap<String, Object>();
-		app.setRedirectUris((List<String>) this.session.getAttribute(ATTR_REDIRECT_URIS));
-		model.put("app", app);
 		
-		// New app ?
-		boolean newApp = this.appSvc.getApplicationFromClientId(app.getClientId()) == null;
+		// Apply changes (validation later)
+		Application app = this.appSvc.getApplicationFromClientId(form.getClientId());
+		boolean newApp = false;
+		if( app == null ) {
+			app = this.appSvc.prepareApplication();		// Will generate a new clientId !!
+			app.setClientId(form.getClientId());
+			newApp = true;
+		}
 		model.put("newApp", newApp);
+		app.setName(form.getName());
+		app.setReaders(form.getReaders());
+		app.setRedirectUri(form.getRedirectUri());
+		app.setRedirectUris(this.getSessionRedirectUris());
+		ApplicationForm newForm = fromApplication(app);
+		model.put("app", newForm);
 		
 		// Just want to add a redirectUri
-		if( "addRedirectUri".equals(action) ) {
+		if( "addRedirectUri".equals(form.getAction()) ) {
+			
+			newForm.setNewRedirectUriError(this.checkRedirectUri(form.getNewRedirectUri()));
+			if( newForm.getNewRedirectUriError() == null ) {
+				this.getSessionRedirectUris().add(form.getNewRedirectUri());		// Also add value in the session list
+				newForm.setExistingRedirectUris(this.getSessionRedirectUris());
+			} else
+				newForm.setNewRedirectUri(form.getNewRedirectUri());				// Send value back to the browser
+			
 			model.put("edit", true);
-			String err = this.checkRedirectUri(newRedirectUri);
-			if( err != null ) {
-				AppError error = new AppError();
-				error.setNewRedirectUri(err);
-				model.put("error", error);
-				model.put("newRedirectUri", newRedirectUri);
-				return new ModelAndView("application", model);
-			}
-			app.getRedirectUris().add(newRedirectUri);		// Also add value in the session list
 			return new ModelAndView("application", model);
 		}
 		
 		// Check for errors
-		AppError error = this.checkApp(app);
-		if( error.isError() ) {
-			model.put("error", error);
+		this.checkForm(newForm);
+		if( newForm.isError() ) {
 			model.put("edit", true);
 			return new ModelAndView("application", model);
 		}
@@ -206,14 +217,14 @@ public class AppController {
 		
 			// generate the secret
 			String secret = this.appSvc.addApplication(app);
-			model.put("secret", secret);
+			newForm.setSecret(secret);
 			
 			// Display app in read only
 			model.put("edit", false);
 			return new ModelAndView("application", model);
 		}
 		
-		// Update an existing application
+		// Update an existing application => Goto the list
 		this.appSvc.updateApplication(app);
 		return new ModelAndView("redirect:listApplications");
 	}

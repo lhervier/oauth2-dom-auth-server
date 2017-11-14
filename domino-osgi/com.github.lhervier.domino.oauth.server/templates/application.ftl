@@ -45,10 +45,10 @@
 				</#if>
 			</td>
 		</tr>
-		<#if secret??>
+		<#if app.secret??>
 			<tr>
 				<td>secret :</td>
-				<td style="color:red">${secret}</td>
+				<td style="color:red">${app.secret}</td>
 			</tr>
 		</#if>
 		<tr>
@@ -56,8 +56,8 @@
 			<td>
 				<#if newApp == true && edit == true>
 					<input type="text" name="name" value="${app.name?xhtml}">
-					<#if error??>
-						<span style="color:red">${error.name!}</span>
+					<#if app.error??>
+						<span style="color:red">${app.nameError!}</span>
 					</#if>
 				<#else>
 					${app.name}
@@ -72,8 +72,8 @@
 			<td>
 				<#if edit == true>
 					<input type="text" name="readers" value="${app.readers?xhtml}">
-					<#if error??>
-						<span style="color:red">${error.readers!}</span>
+					<#if app.error??>
+						<span style="color:red">${app.readersError!}</span>
 					</#if>
 				<#else>
 					${app.readers}
@@ -85,8 +85,8 @@
 			<td>
 				<#if edit == true>
 					<input type="text" name="redirectUri" value="${app.redirectUri?xhtml}">
-					<#if error??>
-						<span style="color:red">${error.redirectUri!}</span>
+					<#if app.error??>
+						<span style="color:red">${app.redirectUriError!}</span>
 					</#if>
 				<#else>
 					${app.redirectUri}
@@ -101,12 +101,12 @@
 				Other redirect URIs
 			</td>
 		</tr>
-		<#if !app.redirectUris?has_content>
+		<#if !app.existingRedirectUris?has_content>
 			<tr>
 				<td>No other redirect Uris</td>
 			</tr>
 		</#if>
-		<#list app.redirectUris as redirectUri>
+		<#list app.existingRedirectUris as redirectUri>
 			<tr>
 				<td>${redirectUri}</td>
 			</tr>
@@ -116,8 +116,8 @@
 				<td>
 					<input type="text" name="newRedirectUri" value="${newRedirectUri!}">
 					<button type="submit" name="action" value="addRedirectUri">Add redirect URI</button>
-					<#if error??>
-						<span style="color:red">${error.newRedirectUri!}</span>
+					<#if app.error??>
+						<span style="color:red">${app.newRedirectUriError!}</span>
 					</#if>
 				</td>
 			</tr>

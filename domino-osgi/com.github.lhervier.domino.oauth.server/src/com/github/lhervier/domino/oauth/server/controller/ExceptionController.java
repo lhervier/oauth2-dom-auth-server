@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -51,13 +53,15 @@ public class ExceptionController {
 	 * @return the model and the view
 	 */
 	@ExceptionHandler(BaseAuthException.class)
-	public ModelAndView processAuthorizedException(BaseAuthException e) throws InvalidUriException {
+	public ResponseEntity<?> processAuthorizedException(BaseAuthException e) throws InvalidUriException {
 		// We need a redirect uri
 		String redirectUri = this.request.getParameter("redirect_uri");
 		if( StringUtils.isEmpty(redirectUri) )
-			throw new InvalidUriException("No redirect_uri in query string.");
+			return this.processInvalidUriException(new InvalidUriException("No redirect_uri in query string."));
 		
-		return new ModelAndView("redirect:" + QueryStringUtils.addBeanToQueryString(redirectUri, e.getError()));
+		MultiValueMap<String, String> headers = new LinkedMultiValueMap<String, String>();
+		headers.add("Location", QueryStringUtils.addBeanToQueryString(redirectUri, e.getError()));
+		return new ResponseEntity<String>("", headers, HttpStatus.FOUND);
 	}
 	
 	/**
@@ -120,11 +124,13 @@ public class ExceptionController {
 	 * Invalid URI exception. We cannot handle that...
 	 */
 	@ExceptionHandler(InvalidUriException.class)
-	@ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
-	public ModelAndView processInvalidUriException(InvalidUriException e) {
+	public ResponseEntity<ModelAndView> processInvalidUriException(InvalidUriException e) {
 		Map<String, Object> model = new HashMap<String, Object>();
 		model.put("error", e.getMessage());
-		return new ModelAndView("error", model);
+		return new ResponseEntity<ModelAndView>(
+				new ModelAndView("error", model), 
+				HttpStatus.INTERNAL_SERVER_ERROR
+		);
 	}
 	
 	/**

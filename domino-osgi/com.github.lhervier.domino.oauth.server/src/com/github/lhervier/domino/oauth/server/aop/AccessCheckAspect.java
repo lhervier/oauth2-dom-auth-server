@@ -151,14 +151,15 @@ public class AccessCheckAspect {
 			}
 		}
 		
-		// Check if we are using bearer context
+		// Check if we need bearer authentication
 		Bearer bearer = this.findAnnotation(method, Bearer.class);
 		if( bearer != null ) {
 			if( this.user.getAuthType() != AuthType.BEARER ) {
 				LOG.info("User '" + this.user.getName() + "' tries to access method '" + method.getName() + "' but it is not authenticated with a bearer token");
 				throw new NotAuthorizedException();
 			}
-		}
+		} else if( this.user.getAuthType() != AuthType.NOTES )
+			throw new NotAuthorizedException();
 		
 		// Check if method is for a user or an application
 		UserAuth userAuth = this.findAnnotation(method, UserAuth.class);

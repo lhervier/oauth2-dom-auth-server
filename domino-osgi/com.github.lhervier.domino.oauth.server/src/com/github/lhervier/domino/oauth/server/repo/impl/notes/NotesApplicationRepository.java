@@ -177,6 +177,7 @@ public class NotesApplicationRepository implements ApplicationRepository {
 		Session session = this.authCtx.getUserSession();
 		
 		// Check that URIs are absolute and does not contain fragments
+		// FIXME: URI validations must be made at the service level.
 		List<URI> uris = new ArrayList<URI>();
 		try {
 			if( app.getRedirectUris() != null ) {
@@ -201,6 +202,7 @@ public class NotesApplicationRepository implements ApplicationRepository {
 			if( existing == null ) {
 			
 				// Check that an application with the same client id does not already exist 
+				// FIXME: Nothing to do in the repository
 				existing = this.findOne(app.getClientId());
 				if( existing != null )
 					throw new DataIntegrityViolationException("An application with that client id already exists");
@@ -213,6 +215,7 @@ public class NotesApplicationRepository implements ApplicationRepository {
 			// Update an existing application
 			} else {
 				// Check that the user is not trying to change the application client id
+				// FIXME: Nothing to do in the repository
 				if( !existing.getClientId().equals(app.getClientId()) )
 					throw new DataIntegrityViolationException("You cannot change an application client id");
 				

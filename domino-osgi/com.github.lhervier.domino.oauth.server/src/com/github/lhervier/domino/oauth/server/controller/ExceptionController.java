@@ -53,7 +53,7 @@ public class ExceptionController {
 	@ExceptionHandler(BaseAuthException.class)
 	public ModelAndView processAuthorizedException(BaseAuthException e) throws InvalidUriException {
 		// We need a redirect uri
-		String redirectUri = this.request.getParameter("redirect_rui");
+		String redirectUri = this.request.getParameter("redirect_uri");
 		if( StringUtils.isEmpty(redirectUri) )
 			throw new InvalidUriException("No redirect_uri in query string.");
 		

@@ -165,6 +165,10 @@ public class AppService {
 		if( existing == null )
 			throw new DataIntegrityViolationException("Application '" + app.getName() + "' does not exist...");
 		
+		existing = this.appRepo.findOne(app.getClientId());
+		if( existing == null )
+			throw new DataIntegrityViolationException("Application with id '" + app.getClientId() + "' does not exist...");
+		
 		this.appRepo.save(this.toEntity(app));
 	}
 	

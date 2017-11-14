@@ -141,9 +141,6 @@ public class AppController {
 		if( StringUtils.isEmpty(redirectUri) )
 			return "redirect_uri is mandatory";
 		
-		if( redirectUri.indexOf('#') != -1 )
-			return "redirect_uri must not contain fragments ('#')";
-		
 		try {
 			URI uri = new URI(redirectUri);
 			if( !uri.isAbsolute() )

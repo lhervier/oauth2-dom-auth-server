@@ -111,6 +111,10 @@ public class AuthorizeService {
 		if( !this.checkResponseTypes(responseTypes) )
 			throw new AuthInvalidRequestException("response_type is invalid", redirectUri);
 		
+		// Fragment not allowed in redirect uri if code response type
+		if( responseTypes.contains("code") && redirectUri.indexOf('#') != -1 )
+			throw new InvalidUriException("redirect_uri must not contain a fragment to use code flow");
+		
 		// Extract the scopes
 		List<String> scopes = new ArrayList<String>();
 		if( !StringUtils.isEmpty(scope) ) {
@@ -137,7 +141,7 @@ public class AuthorizeService {
 			authCode.setScopes(scopes);
 			
 			// Update authorized scopes and initialize contexts
-			this.initializeContexts(user, authCode, app, scopes);
+			this.initializeContexts(user, authCode, app);
 			
 			// Run the grants
 			Map<String, Object> params = this.runGrants(authCode, responseTypes);
@@ -154,8 +158,12 @@ public class AuthorizeService {
 					sep = '?';
 				else
 					sep = '&';
-			} else 
-				sep = '#';
+			} else {
+				if( redirectUri.indexOf('#') == -1 )
+					sep = '#';
+				else
+					sep = '&';
+			}
 			for( Entry<String, Object> entry : params.entrySet() ) {
 				if( entry.getValue() == null )
 					continue;
@@ -198,8 +206,7 @@ public class AuthorizeService {
 	private void initializeContexts(
 			NotesPrincipal user,
 			AuthCodeEntity authCode, 
-			Application app, 
-			List<String> scopes) throws JsonGenerationException, JsonMappingException {
+			Application app) throws JsonGenerationException, JsonMappingException {
 		final List<String> grantedScopes = new ArrayList<String>();
 		for( IOAuthExtension ext : this.exts ) {
 			Object context = ext.initContext(
@@ -211,7 +218,7 @@ public class AuthorizeService {
 						}
 					}, 
 					app.getClientId(), 
-					scopes
+					authCode.getScopes()
 			);
 			if( context != null ) {
 				try {

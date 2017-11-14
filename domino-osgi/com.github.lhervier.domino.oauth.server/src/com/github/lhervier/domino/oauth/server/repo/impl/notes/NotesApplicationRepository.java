@@ -191,8 +191,6 @@ public class NotesApplicationRepository implements ApplicationRepository {
 		for( URI uri : uris ) {
 			if( !uri.isAbsolute() )
 				throw new DataIntegrityViolationException("URI '" + uri.toString() + "' is not absolute");
-			if( uri.toString().indexOf('#') != -1 )
-				throw new DataIntegrityViolationException("URI '" + uri.toString() + "' must not contain a fragment (# character)");
 		}
 		
 		Document appDoc = null;

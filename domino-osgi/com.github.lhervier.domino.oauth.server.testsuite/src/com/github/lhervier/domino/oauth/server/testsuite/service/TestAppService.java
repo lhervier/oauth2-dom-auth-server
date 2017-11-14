@@ -49,8 +49,11 @@ public class TestAppService extends BaseTest {
 		reset(appRepoMock);
 	}
 	
+	/**
+	 * List aplications
+	 */
 	@Test
-	public void getApplicationNames() throws Exception {
+	public void listApplications() throws Exception {
 		when(appRepoMock.listNames()).thenReturn(Arrays.asList("app1", "app2"));
 		
 		assertThat(
@@ -59,6 +62,9 @@ public class TestAppService extends BaseTest {
 		);
 	}
 	
+	/**
+	 * Extract application from name
+	 */
 	@Test
 	public void getApplicationFromName() throws Exception {
 		// Expected behavior of repository
@@ -94,6 +100,9 @@ public class TestAppService extends BaseTest {
 		);
 	}
 	
+	/**
+	 * Extract application from clientId
+	 */
 	@Test
 	public void getApplicationFromClientId() throws Exception {
 		when(
@@ -125,6 +134,9 @@ public class TestAppService extends BaseTest {
 		);
 	}
 	
+	/**
+	 * Check that different client ids are generated
+	 */
 	@Test
 	public void differentIdsGenerated() throws Exception {
 		Application app1 = appSvc.prepareApplication();
@@ -136,6 +148,9 @@ public class TestAppService extends BaseTest {
 		assertThat(app1.getClientId(), not(equalTo(app2.getClientId())));
 	}
 	
+	/**
+	 * Check that the fullname is computed on save
+	 */
 	@Test
 	public void computeFullNameOnSave() throws Exception {
 		when(personRepoMock.save(any(PersonEntity.class))).thenReturn(new PersonEntity() {{
@@ -160,6 +175,9 @@ public class TestAppService extends BaseTest {
 		assertThat(added.get(0).getFullNames(), containsInAnyOrder("CN=app1/OU=APPLICATION/O=WEB", "123456"));
 	}
 	
+	/**
+	 * We cannot save if another application exists with the same name
+	 */
 	@Test(expected = DataIntegrityViolationException.class)
 	public void saveWithExistingName() throws Exception {
 		when(appRepoMock.findOneByName(eq("myApp"))).thenReturn(new ApplicationEntity() {{
@@ -177,6 +195,9 @@ public class TestAppService extends BaseTest {
 		}});
 	}
 	
+	/**
+	 * We cannot save if an application with the same client id already exists
+	 */
 	@Test(expected = DataIntegrityViolationException.class)
 	public void saveWithExistingClientId() throws Exception {
 		when(appRepoMock.findOne(eq("123456"))).thenReturn(new ApplicationEntity() {{
@@ -194,6 +215,9 @@ public class TestAppService extends BaseTest {
 		}});
 	}
 	
+	/**
+	 * Updating an application
+	 */
 	@Test
 	public void updateApplication() throws Exception {
 		ApplicationEntity entity = new ApplicationEntity() {{
@@ -220,8 +244,21 @@ public class TestAppService extends BaseTest {
 		
 	}
 	
+	/**
+	 * Update with non absolute redirect uri
+	 */
 	@Test(expected = DataIntegrityViolationException.class)
 	public void testUpdateWithInvalidRedirectUri() throws Exception {
+		ApplicationEntity entity = new ApplicationEntity() {{
+			setClientId("1234");
+			setName("myApp");
+			setReaders("XX");
+			setRedirectUri("http://acme.com/olduri");
+			setRedirectUris(new ArrayList<String>());
+		}};
+		when(appRepoMock.findOne(eq("1234"))).thenReturn(entity);
+		when(appRepoMock.findOneByName(eq("myApp"))).thenReturn(entity);
+		
 		appSvc.updateApplication(new Application() {{
 			setClientId("1234");
 			setName("myApp");
@@ -231,8 +268,21 @@ public class TestAppService extends BaseTest {
 		}});
 	}
 	
-	@Test(expected = DataIntegrityViolationException.class)
+	/**
+	 * Update with fragment in the uri should be OK
+	 */
+	@Test
 	public void testUpdateWithInvalidRedirectUri2() throws Exception {
+		ApplicationEntity entity = new ApplicationEntity() {{
+			setClientId("1234");
+			setName("myApp");
+			setReaders("XX");
+			setRedirectUri("http://acme.com/olduri");
+			setRedirectUris(new ArrayList<String>());
+		}};
+		when(appRepoMock.findOne(eq("1234"))).thenReturn(entity);
+		when(appRepoMock.findOneByName(eq("myApp"))).thenReturn(entity);
+		
 		appSvc.updateApplication(new Application() {{
 			setClientId("1234");
 			setName("myApp");

@@ -3,10 +3,12 @@ package com.github.lhervier.domino.oauth.server.testsuite.controller;
 import static com.github.lhervier.domino.oauth.server.testsuite.TestUtils.urlParameters;
 import static com.github.lhervier.domino.oauth.server.testsuite.TestUtils.urlRefs;
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.hamcrest.collection.IsMapContaining.hasKey;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.Matchers.any;
@@ -18,11 +20,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
@@ -297,6 +301,7 @@ public class TestAuthorizeController extends BaseTest {
 				get("/authorize")
 				.param("client_id", "1234")
 				.param("response_type", "code")
+				.param("state", "myState")
 		)
 		.andExpect(status().is(302))
 		.andReturn();
@@ -306,6 +311,47 @@ public class TestAuthorizeController extends BaseTest {
 		
 		Map<String, String> params = urlParameters(location);
 		assertThat(params, hasKey("code"));
+		assertThat(params, hasEntry("state", "myState"));
+		
+		ArgumentCaptor<AuthCodeEntity> authCodeCaptor = ArgumentCaptor.forClass(AuthCodeEntity.class);
+		Mockito.verify(authCodeRepoMock, Mockito.times(1)).save(authCodeCaptor.capture());
+		List<AuthCodeEntity> added = authCodeCaptor.getAllValues();
+		assertThat(added.size(), is(equalTo(1)));
+		AuthCodeEntity code = added.get(0);
+		
+		// Tester la redirect_uri, les granted scopes, la date d'expiration, le client_id et ce qu'il y a dans les contextes
+		
+	}
+	
+	/**
+	 * Additional parameters in redirect uri
+	 */
+	@Test
+	public void existingParamsInRedirectUri() throws Exception {
+		when(appRepoMock.findOne(anyString())).thenReturn(new ApplicationEntity() {{
+			setClientId("1234");
+			setName("myApp");
+			setFullName("CN=myApp/O=APP");
+			setRedirectUri("http://acme.com/myApp?param1=xxx");			// Existing parameters in uri
+		}});
+		
+		when(authCodeRepoMock.save(any(AuthCodeEntity.class))).then(returnsFirstArg());
+		
+		MvcResult result = mockMvc
+		.perform(
+				get("/authorize")
+				.param("client_id", "1234")
+				.param("response_type", "code")
+		)
+		.andExpect(status().is(302))
+		.andReturn();
+		
+		String location = result.getResponse().getHeader("Location");
+		assertThat(location, startsWith("http://acme.com/myApp"));
+		
+		Map<String, String> params = urlParameters(location);
+		assertThat(params, hasKey("code"));
+		assertThat(params, hasEntry("param1", "xxx"));
 	}
 	
 	/**
@@ -327,6 +373,7 @@ public class TestAuthorizeController extends BaseTest {
 				get("/authorize")
 				.param("client_id", "1234")
 				.param("response_type", "token")
+				.param("state", "myState")
 		)
 		.andExpect(status().is(302))
 		.andReturn();
@@ -336,6 +383,38 @@ public class TestAuthorizeController extends BaseTest {
 		
 		Map<String, String> params = urlRefs(location);
 		assertThat(params, hasKey("access_token"));
+		assertThat(params, hasEntry("state", "myState"));
 		assertThat(params, not(hasKey("refresh_token")));
+	}
+	
+	/**
+	 * Additional parameters in redirect uri
+	 */
+	@Test
+	public void existingParamsInRedirectFragment() throws Exception {
+		when(appRepoMock.findOne(anyString())).thenReturn(new ApplicationEntity() {{
+			setClientId("1234");
+			setName("myApp");
+			setFullName("CN=myApp/O=APP");
+			setRedirectUri("http://acme.com/myApp#param1=xxx");			// Existing parameters in uri
+		}});
+		
+		when(authCodeRepoMock.save(any(AuthCodeEntity.class))).then(returnsFirstArg());
+		
+		MvcResult result = mockMvc
+		.perform(
+				get("/authorize")
+				.param("client_id", "1234")
+				.param("response_type", "token")
+		)
+		.andExpect(status().is(302))
+		.andReturn();
+		
+		String location = result.getResponse().getHeader("Location");
+		assertThat(location, startsWith("http://acme.com/myApp"));
+		
+		Map<String, String> params = urlRefs(location);
+		assertThat(params, hasKey("access_token"));
+		assertThat(params, hasEntry("param1", "xxx"));
 	}
 }

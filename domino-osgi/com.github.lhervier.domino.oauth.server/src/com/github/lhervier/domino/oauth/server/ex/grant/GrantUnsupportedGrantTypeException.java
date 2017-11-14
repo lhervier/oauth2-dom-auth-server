@@ -1,9 +1,9 @@
 package com.github.lhervier.domino.oauth.server.ex.grant;
 
-import com.github.lhervier.domino.oauth.server.ex.GrantException;
+import com.github.lhervier.domino.oauth.server.ex.BaseGrantException;
 import com.github.lhervier.domino.oauth.server.model.error.grant.UnsupportedGrantTypeError;
 
-public class UnsupportedGrantTypeException extends GrantException {
+public class GrantUnsupportedGrantTypeException extends BaseGrantException {
 
 	/**
 	 * Serial UID
@@ -13,7 +13,7 @@ public class UnsupportedGrantTypeException extends GrantException {
 	/**
 	 * Constructeur
 	 */
-	public UnsupportedGrantTypeException() {
+	public GrantUnsupportedGrantTypeException() {
 		super(new UnsupportedGrantTypeError());
 	}
 
@@ -21,7 +21,7 @@ public class UnsupportedGrantTypeException extends GrantException {
 	 * Constructeur
 	 * @param message
 	 */
-	public UnsupportedGrantTypeException(String message) {
+	public GrantUnsupportedGrantTypeException(String message) {
 		super(message, new UnsupportedGrantTypeError());
 	}
 
@@ -30,7 +30,7 @@ public class UnsupportedGrantTypeException extends GrantException {
 	 * @param message
 	 * @param cause
 	 */
-	public UnsupportedGrantTypeException(String message, Throwable cause) {
+	public GrantUnsupportedGrantTypeException(String message, Throwable cause) {
 		super(message, cause, new UnsupportedGrantTypeError());
 	}
 
@@ -38,7 +38,7 @@ public class UnsupportedGrantTypeException extends GrantException {
 	 * Constructeur
 	 * @param cause
 	 */
-	public UnsupportedGrantTypeException(Throwable cause) {
+	public GrantUnsupportedGrantTypeException(Throwable cause) {
 		super(cause, new UnsupportedGrantTypeError());
 	}
 

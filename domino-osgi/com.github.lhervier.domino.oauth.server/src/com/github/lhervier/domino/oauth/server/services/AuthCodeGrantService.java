@@ -4,20 +4,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import lotus.domino.NotesException;
-
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
-import com.github.lhervier.domino.oauth.server.ex.GrantException;
+import com.github.lhervier.domino.oauth.server.ex.BaseGrantException;
 import com.github.lhervier.domino.oauth.server.ex.InvalidUriException;
 import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
-import com.github.lhervier.domino.oauth.server.ex.grant.InvalidClientException;
-import com.github.lhervier.domino.oauth.server.ex.grant.InvalidGrantException;
-import com.github.lhervier.domino.oauth.server.ex.grant.InvalidRequestException;
+import com.github.lhervier.domino.oauth.server.ex.grant.GrantInvalidClientException;
+import com.github.lhervier.domino.oauth.server.ex.grant.GrantInvalidGrantException;
+import com.github.lhervier.domino.oauth.server.ex.grant.GrantInvalidRequestException;
 import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
@@ -65,7 +63,7 @@ public class AuthCodeGrantService extends BaseGrantService {
 			String code, 
 			String scope,
 			String refreshToken, 
-			String redirectUri) throws GrantException, ServerErrorException, NotesException {
+			String redirectUri) throws BaseGrantException, ServerErrorException {
 		// Validate redirect_uri
 		try {
 			Utils.checkRedirectUri(redirectUri, app);
@@ -75,7 +73,7 @@ public class AuthCodeGrantService extends BaseGrantService {
 		
 		// Validate the code
 		if( code == null )
-			throw new InvalidRequestException("code is mandatory");
+			throw new GrantInvalidRequestException("code is mandatory");
 		
 		// Process authorization code
 		try {
@@ -85,20 +83,20 @@ public class AuthCodeGrantService extends BaseGrantService {
 			// Get the authorization code
 			AuthCodeEntity authCode = this.authCodeRepo.findOne(code);
 			if( authCode == null )
-				throw new InvalidGrantException();
+				throw new GrantInvalidGrantException();
 			
 			// Check it did not expire
 			long expired = (long) authCode.getExpires();
 			if( expired < SystemUtils.currentTimeSeconds() )
-				throw new InvalidGrantException("code has expired");
+				throw new GrantInvalidGrantException("code has expired");
 			
 			// Check it was generated for the right clientId
 			if( !app.getClientId().equals(authCode.getClientId()) )
-				throw new InvalidClientException("client_id is not the same as the one stored in the authorization code");
+				throw new GrantInvalidClientException("client_id is not the same as the one stored in the authorization code");
 			
 			// Check that the redirect_uri is the same
 			if( !redirectUri.equals(authCode.getRedirectUri()) )
-				throw new InvalidGrantException("redirect_uri is not the same as the one stored in the authorization code");
+				throw new GrantInvalidGrantException("redirect_uri is not the same as the one stored in the authorization code");
 			
 			// Make each implementation add its own properties
 			// They can change their context.

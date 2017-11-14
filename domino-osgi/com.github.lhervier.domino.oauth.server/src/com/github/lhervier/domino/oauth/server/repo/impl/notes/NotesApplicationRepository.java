@@ -14,6 +14,8 @@ import lotus.domino.ViewEntry;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.stereotype.Repository;
 
 import com.github.lhervier.domino.oauth.server.AuthContext;
@@ -104,9 +106,8 @@ public class NotesApplicationRepository implements ApplicationRepository {
 	 * Return the applications names.
 	 * We are using the user rights to access the oauth2 database.
 	 * @return the registered application names
-	 * @throws NotesException en cas de pb
 	 */
-	public List<String> listNames() throws NotesException {
+	public List<String> listNames() {
 		Session session = this.authCtx.getUserSession();
 		
 		List<String> ret = new ArrayList<String>();
@@ -120,6 +121,8 @@ public class NotesApplicationRepository implements ApplicationRepository {
 			for( ViewEntry entry : it )
 				ret.add((String) entry.getColumnValues().get(0));
 			return ret;
+		} catch(NotesException e) {
+			throw new DataRetrievalFailureException("Error getting application names", e);
 		} finally {
 			DominoUtils.recycleQuietly(it);
 		}
@@ -129,9 +132,8 @@ public class NotesApplicationRepository implements ApplicationRepository {
 	 * Retourne une application depuis son nom
 	 * @param appName le nom de l'application
 	 * @return l'application
-	 * @throws NotesException en cas de pb
 	 */
-	public ApplicationEntity findOneByName(String appName) throws NotesException {
+	public ApplicationEntity findOneByName(String appName) {
 		Session session = this.authCtx.getUserSession();
 		Document doc = null;
 		try {
@@ -139,6 +141,8 @@ public class NotesApplicationRepository implements ApplicationRepository {
 			if( doc == null )
 				return null;
 			return DominoUtils.fillObject(new ApplicationEntity(), doc);
+		} catch(NotesException e) {
+			throw new DataRetrievalFailureException("Error getting application detail", e);
 		} finally {
 			DominoUtils.recycleQuietly(doc);
 		}
@@ -148,9 +152,8 @@ public class NotesApplicationRepository implements ApplicationRepository {
 	 * Retourne une application depuis son client_id
 	 * @param clientId l'id du client
 	 * @return l'application
-	 * @throws NotesException en cas de pb
 	 */
-	public ApplicationEntity findOne(String clientId) throws NotesException {
+	public ApplicationEntity findOne(String clientId) {
 		Session session = this.authCtx.getUserSession();
 		
 		Document doc = null;
@@ -159,6 +162,8 @@ public class NotesApplicationRepository implements ApplicationRepository {
 			if( doc == null )
 				return null;
 			return DominoUtils.fillObject(new ApplicationEntity(), doc);
+		} catch(NotesException e) {
+			throw new DataRetrievalFailureException("Error getting application detail", e);
 		} finally {
 			DominoUtils.recycleQuietly(doc);
 		}
@@ -167,9 +172,8 @@ public class NotesApplicationRepository implements ApplicationRepository {
 	/**
 	 * Add a new application
 	 * @param app the application to create
-	 * @throws NotesException en cas de pb
 	 */
-	public ApplicationEntity save(ApplicationEntity app) throws NotesException {
+	public ApplicationEntity save(ApplicationEntity app) {
 		Session session = this.authCtx.getUserSession();
 		
 		// Check that URIs are absolute and does not contain fragments
@@ -181,13 +185,13 @@ public class NotesApplicationRepository implements ApplicationRepository {
 			}
 			uris.add(new URI(app.getRedirectUri()));
 		} catch (URISyntaxException e) {
-			throw new NotesException(-1, "URI is not valid");
+			throw new DataRetrievalFailureException("Invalid URI", e);
 		}
 		for( URI uri : uris ) {
 			if( !uri.isAbsolute() )
-				throw new NotesException(-1, "URI '" + uri.toString() + "' is not absolute");
+				throw new DataRetrievalFailureException("URI '" + uri.toString() + "' is not absolute");
 			if( uri.toString().indexOf('#') != -1 )
-				throw new RuntimeException("URI '" + uri.toString() + "' must not contain a fragment (# character)");
+				throw new DataIntegrityViolationException("URI '" + uri.toString() + "' must not contain a fragment (# character)");
 		}
 		
 		Document appDoc = null;
@@ -199,7 +203,7 @@ public class NotesApplicationRepository implements ApplicationRepository {
 				// Check that an application with the same client id does not already exist 
 				existing = this.findOne(app.getClientId());
 				if( existing != null )
-					throw new NotesException(-1, "An application with that client id already exists");
+					throw new DataIntegrityViolationException("An application with that client id already exists");
 				
 				// Create a new document
 				appDoc = this.getOauth2Database(session).createDocument();
@@ -210,7 +214,7 @@ public class NotesApplicationRepository implements ApplicationRepository {
 			} else {
 				// Check that the user is not trying to change the application client id
 				if( !existing.getClientId().equals(app.getClientId()) )
-					throw new NotesException(-1, "You cannot change an application client id");
+					throw new DataIntegrityViolationException("You cannot change an application client id");
 				
 				// Get application backend document
 				appDoc = this.findOneDocByName(session, app.getName());		// Should not return null here
@@ -219,6 +223,8 @@ public class NotesApplicationRepository implements ApplicationRepository {
 			// Save the document
 			DominoUtils.fillDocument(appDoc, app);
 			DominoUtils.computeAndSave(appDoc);
+		} catch(NotesException e) {
+			throw new DataRetrievalFailureException("Error saveing application", e);
 		} finally {
 			DominoUtils.recycleQuietly(appDoc);
 		}
@@ -229,9 +235,8 @@ public class NotesApplicationRepository implements ApplicationRepository {
 	/**
 	 * Supprime une application
 	 * @param name le nom de l'application
-	 * @throws NotesException en cas de pb
 	 */
-	public void deleteByName(String name) throws NotesException {
+	public void deleteByName(String name) {
 		Session session = this.authCtx.getUserSession();
 		
 		Document appDoc = null;
@@ -239,6 +244,8 @@ public class NotesApplicationRepository implements ApplicationRepository {
 			appDoc = this.findOneDocByName(session, name);
 			if( appDoc != null )
 				appDoc.remove(true);
+		} catch(NotesException e) {
+			throw new DataRetrievalFailureException("Error removing application", e);
 		} finally {
 			DominoUtils.recycleQuietly(appDoc);
 		}

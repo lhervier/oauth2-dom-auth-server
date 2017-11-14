@@ -3,11 +3,11 @@ package com.github.lhervier.domino.oauth.server.services;
 import java.io.IOException;
 import java.text.ParseException;
 
-import lotus.domino.NotesException;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -66,12 +66,11 @@ public class CheckTokenService {
 	 * @param token the token to check
 	 * @return the token
 	 * @throws IOException
-	 * @throws NotesException
 	 * @throws NotAuthorizedException
 	 */
 	public TokenContent checkToken(
 			NotesPrincipal user, 
-			String token) throws IOException, NotesException, NotAuthorizedException {
+			String token) throws NotAuthorizedException {
 		// User must be logged in as an application
 		Application userApp = this.appService.getApplicationFromName(user.getCommon());
 		if( userApp == null ) {
@@ -115,7 +114,16 @@ public class CheckTokenService {
 		}
 		
 		// Deserialize the token
-		AccessToken tk = this.mapper.readValue(jwsObj.getPayload().toString(), AccessToken.class);
+		AccessToken tk;
+		try {
+			tk = this.mapper.readValue(jwsObj.getPayload().toString(), AccessToken.class);
+		} catch (JsonParseException e) {
+			throw new NotAuthorizedException();
+		} catch (JsonMappingException e) {
+			throw new NotAuthorizedException();
+		} catch (IOException e) {
+			throw new NotAuthorizedException();
+		}
 		
 		// Mark active/inactive
 		TokenContent resp = new TokenContent();

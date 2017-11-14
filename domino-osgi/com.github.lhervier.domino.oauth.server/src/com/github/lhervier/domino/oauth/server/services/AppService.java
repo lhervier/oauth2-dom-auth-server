@@ -5,10 +5,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import lotus.domino.NotesException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import com.github.lhervier.domino.oauth.server.entity.ApplicationEntity;
@@ -88,9 +87,8 @@ public class AppService {
 	/**
 	 * Retourne les noms des applications
 	 * @return les noms des applications
-	 * @throws NotesException en cas de pb
 	 */
-	public List<String> getApplicationsNames() throws NotesException {
+	public List<String> getApplicationsNames() {
 		return this.appRepo.listNames();
 	}
 	
@@ -98,9 +96,8 @@ public class AppService {
 	 * Retourne une application depuis son nom
 	 * @param appName le nom de l'application
 	 * @return l'application
-	 * @throws NotesException en cas de pb
 	 */
-	public Application getApplicationFromName(String appName) throws NotesException {
+	public Application getApplicationFromName(String appName) {
 		return this.fromEntity(this.appRepo.findOneByName(appName));
 	}
 	
@@ -108,9 +105,8 @@ public class AppService {
 	 * Retourne une application depuis son client_id
 	 * @param clientId l'id du client
 	 * @return l'application
-	 * @throws NotesException en cas de pb
 	 */
-	public Application getApplicationFromClientId(String clientId) throws NotesException {
+	public Application getApplicationFromClientId(String clientId) {
 		return this.fromEntity(this.appRepo.findOne(clientId));
 	}
 	
@@ -132,16 +128,15 @@ public class AppService {
 	 * Ajoute une application
 	 * @param app l'application à ajouter
 	 * @return le secret
-	 * @throws NotesException en cas de pb
 	 */
-	public String addApplication(Application app) throws NotesException {
+	public String addApplication(Application app) {
 		// Check that it does not already exist
 		ApplicationEntity existing = this.appRepo.findOneByName(app.getName());
 		if( existing != null )
-			throw new NotesException(-1, "Application '" + app.getName() + "' already exists");
+			throw new DataIntegrityViolationException("Application '" + app.getName() + "' already exists");
 		existing = this.appRepo.findOne(app.getClientId());
 		if( existing != null )
-			throw new NotesException(-1, "Application with client id '" + app.getClientId() + "' already exists");
+			throw new DataIntegrityViolationException("Application with client id '" + app.getClientId() + "' already exists");
 		
 		// Compute the full name
 		app.setFullName("CN=" + app.getName() + this.applicationRoot);
@@ -163,12 +158,11 @@ public class AppService {
 	/**
 	 * Met à jour une application
 	 * @param app l'application à mettre à jour
-	 * @throws NotesException en cas de pb
 	 */
-	public void updateApplication(Application app) throws NotesException {
+	public void updateApplication(Application app) {
 		ApplicationEntity existing = this.appRepo.findOneByName(app.getName());
 		if( existing == null )
-			throw new NotesException(-1, "Application '" + app.getName() + "' does not exist...");
+			throw new DataIntegrityViolationException("Application '" + app.getName() + "' does not exist...");
 		
 		this.appRepo.save(this.toEntity(app));
 	}
@@ -176,9 +170,8 @@ public class AppService {
 	/**
 	 * Supprime une application
 	 * @param name le nom de l'application
-	 * @throws NotesException en cas de pb
 	 */
-	public void removeApplication(String name) throws NotesException {
+	public void removeApplication(String name) {
 		Application app = this.getApplicationFromName(name);
 		if( app == null )
 			return;

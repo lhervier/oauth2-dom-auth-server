@@ -14,6 +14,7 @@ import lotus.domino.View;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.stereotype.Repository;
 
 import com.github.lhervier.domino.oauth.server.AuthContext;
@@ -157,8 +158,8 @@ public class NotesPersonRepository implements PersonRepository {
 			
 			// Return the secret
 			return entity;
-		} catch (NotesException e) {
-			throw new RuntimeException(e);
+		} catch(NotesException e) {
+			throw new DataRetrievalFailureException("Error saving person", e);
 		} finally {
 			DominoUtils.recycleQuietly(person);
 		}
@@ -167,35 +168,37 @@ public class NotesPersonRepository implements PersonRepository {
 	/**
 	 * Return the person with the given name.
 	 * The search is made using server rights.
-	 * @throws NotesException
 	 */
 	@SuppressWarnings("unchecked")
-	public PersonEntity findOne(String fullName) throws NotesException {
+	public PersonEntity findOne(String fullName) {
 		Session serverSession = this.authContext.getServerSession();
-		
-		Document doc = this.findPersonDoc(serverSession, fullName);
-		if( doc == null )
-			return null;
-		
-		PersonEntity person = new PersonEntity();
-		person.setFullNames(doc.getItemValue(FULL_NAME));
-		person.setFirstName(doc.getItemValueString(FIRST_NAME));
-		person.setLastName(doc.getItemValueString(LAST_NAME));
-		person.setMiddleInitial(doc.getItemValueString(MIDDLE_INITIAL));
-		person.setTitle(doc.getItemValueString(TITLE)); 
-		person.setShortName(doc.getItemValueString(SHORT_NAME));
-		person.setWebsite(doc.getItemValueString(WEBSITE));
-		person.setPhotoUrl(doc.getItemValueString(PHOTO_URL));
-		person.setInternetAddress(doc.getItemValueString(INTERNET_ADDRESS));
-		person.setOfficePhoneNumber(doc.getItemValueString(OFFICE_PHONE_NUMBER));
-		
-		return person;
+		try {
+			Document doc = this.findPersonDoc(serverSession, fullName);
+			if( doc == null )
+				return null;
+			
+			PersonEntity person = new PersonEntity();
+			person.setFullNames(doc.getItemValue(FULL_NAME));
+			person.setFirstName(doc.getItemValueString(FIRST_NAME));
+			person.setLastName(doc.getItemValueString(LAST_NAME));
+			person.setMiddleInitial(doc.getItemValueString(MIDDLE_INITIAL));
+			person.setTitle(doc.getItemValueString(TITLE)); 
+			person.setShortName(doc.getItemValueString(SHORT_NAME));
+			person.setWebsite(doc.getItemValueString(WEBSITE));
+			person.setPhotoUrl(doc.getItemValueString(PHOTO_URL));
+			person.setInternetAddress(doc.getItemValueString(INTERNET_ADDRESS));
+			person.setOfficePhoneNumber(doc.getItemValueString(OFFICE_PHONE_NUMBER));
+			
+			return person;
+		} catch(NotesException e) {
+			throw new DataRetrievalFailureException("Error getting person", e);
+		}
 	}
 	
 	/**
 	 * Remove a person
 	 */
-	public void delete(String fullName) throws NotesException {
+	public void delete(String fullName) {
 		Session userSession = this.authContext.getUserSession();
 		
 		Document doc = null;
@@ -205,6 +208,8 @@ public class NotesPersonRepository implements PersonRepository {
 				doc.remove(true);
 				DominoUtils.refreshNab(this.getNabDatabase(userSession));
 			}
+		} catch(NotesException e) {
+			throw new DataRetrievalFailureException("Error removing person", e);
 		} finally {
 			DominoUtils.recycleQuietly(doc);
 		}

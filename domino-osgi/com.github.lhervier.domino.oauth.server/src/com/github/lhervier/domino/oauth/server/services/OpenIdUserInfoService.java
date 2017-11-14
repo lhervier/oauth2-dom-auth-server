@@ -1,7 +1,5 @@
 package com.github.lhervier.domino.oauth.server.services;
 
-import lotus.domino.NotesException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,10 +27,9 @@ public class OpenIdUserInfoService {
 	 * Extract the IdToken
 	 * @param user the currently connected user
 	 * @return the id token
-	 * @throws NotesException
 	 * @throws NotAuthorizedException
 	 */
-	public IdToken userInfo(NotesPrincipal user) throws NotesException, NotAuthorizedException {
+	public IdToken userInfo(NotesPrincipal user) throws NotAuthorizedException {
 		// Run through authorize to get the context
 		OpenIdContext ctx = this.openIdExt.initContext(
 				user, 

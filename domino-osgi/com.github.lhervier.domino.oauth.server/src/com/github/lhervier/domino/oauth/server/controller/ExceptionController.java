@@ -10,6 +10,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -18,8 +19,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.github.lhervier.domino.oauth.server.ex.AuthorizeException;
-import com.github.lhervier.domino.oauth.server.ex.GrantException;
+import com.github.lhervier.domino.oauth.server.ex.BaseAuthException;
+import com.github.lhervier.domino.oauth.server.ex.BaseGrantException;
+import com.github.lhervier.domino.oauth.server.ex.ForbiddenException;
 import com.github.lhervier.domino.oauth.server.ex.InvalidUriException;
 import com.github.lhervier.domino.oauth.server.ex.NotAuthorizedException;
 import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
@@ -48,8 +50,8 @@ public class ExceptionController {
 	 * @param e the error
 	 * @return the model and the view
 	 */
-	@ExceptionHandler(AuthorizeException.class)
-	public ModelAndView processAuthorizedException(AuthorizeException e) throws InvalidUriException {
+	@ExceptionHandler(BaseAuthException.class)
+	public ModelAndView processAuthorizedException(BaseAuthException e) throws InvalidUriException {
 		// We need a redirect uri
 		String redirectUri = this.request.getParameter("redirect_rui");
 		if( StringUtils.isEmpty(redirectUri) )
@@ -61,9 +63,9 @@ public class ExceptionController {
 	/**
 	 * Handle Grant errors.
 	 */
-	@ExceptionHandler(GrantException.class)
+	@ExceptionHandler(BaseGrantException.class)
 	@ResponseStatus(value = HttpStatus.BAD_REQUEST)
-	public @ResponseBody GrantError handleGrantException(GrantException e) {
+	public @ResponseBody GrantError handleGrantException(BaseGrantException e) {
 		return e.getError();
 	}
 	
@@ -73,6 +75,45 @@ public class ExceptionController {
 	@ExceptionHandler(WrongPathException.class)
 	public ResponseEntity<Void> handleWrongPathException(WrongPathException e) {
 		return new ResponseEntity<Void>(HttpStatus.NOT_FOUND);
+	}
+	
+	// ======================================================================================
+	
+	/**
+	 * NotAuthorizedException. 
+	 * FIXME: Sending cors headers here, event when it is not a Cors request...
+	 * This is needed to make the browser get the http status...
+	 */
+	@ExceptionHandler(NotAuthorizedException.class)
+	@ResponseStatus(value = HttpStatus.UNAUTHORIZED)
+	public ModelAndView processNotAuthorizedException(NotAuthorizedException e, HttpServletResponse response) {
+		response.addHeader("Access-Control-Allow-Origin", "*");
+		Map<String, Object> model = new HashMap<String, Object>();
+		model.put("error", e.getMessage());
+		return new ModelAndView("error", model);
+	}
+	
+	/**
+	 * ForbiddenException. 
+	 * This is needed to make the browser get the http status...
+	 */
+	@ExceptionHandler(ForbiddenException.class)
+	@ResponseStatus(value = HttpStatus.UNAUTHORIZED)
+	public ModelAndView processForbiddenException(ForbiddenException e) {
+		Map<String, Object> model = new HashMap<String, Object>();
+		model.put("error", e.getMessage());
+		return new ModelAndView("error", model);
+	}
+	
+	/**
+	 * Data access exception. We cannot handle that...
+	 */
+	@ExceptionHandler(DataAccessException.class)
+	@ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
+	public ModelAndView processDataAccessException(DataAccessException e) {
+		Map<String, Object> model = new HashMap<String, Object>();
+		model.put("error", e.getMessage());
+		return new ModelAndView("error", model);
 	}
 	
 	/**
@@ -97,24 +138,7 @@ public class ExceptionController {
 		return new ModelAndView("error", model);
 	}
 	
-	public static class NotAuthorizedResponse {
-		private String error;
-		public String getError() {return this.error; }
-		public void setError(String error) { this.error = error; }
-	}
-	/**
-	 * NotAuthorizedException. 
-	 * FIXME: Sending cors headers here, event when it is not a Cors request...
-	 * This is needed to make the browser get the http status...
-	 */
-	@ExceptionHandler(NotAuthorizedException.class)
-	@ResponseStatus(value = HttpStatus.UNAUTHORIZED)
-	public @ResponseBody NotAuthorizedResponse processNotAuthorizedException(NotAuthorizedException e, HttpServletResponse response) {
-		response.addHeader("Access-Control-Allow-Origin", "*");
-		NotAuthorizedResponse ret = new NotAuthorizedResponse();
-		ret.setError("not_authorized");
-		return ret;
-	}
+	// ==========================================================================================
 	
 	/**
 	 * Other exception. We cannot handle that...

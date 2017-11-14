@@ -1,9 +1,9 @@
 package com.github.lhervier.domino.oauth.server.ex.authorize;
 
-import com.github.lhervier.domino.oauth.server.ex.AuthorizeException;
+import com.github.lhervier.domino.oauth.server.ex.BaseAuthException;
 import com.github.lhervier.domino.oauth.server.model.error.authorize.AccessDeniedError;
 
-public class AccessDeniedException extends AuthorizeException {
+public class AuthAccessDeniedException extends BaseAuthException {
 
 	/**
 	 * Serial UID
@@ -13,7 +13,7 @@ public class AccessDeniedException extends AuthorizeException {
 	/**
 	 * Constructeur
 	 */
-	public AccessDeniedException() {
+	public AuthAccessDeniedException() {
 		super(new AccessDeniedError());
 	}
 
@@ -21,7 +21,7 @@ public class AccessDeniedException extends AuthorizeException {
 	 * Constructeur
 	 * @param message
 	 */
-	public AccessDeniedException(String message) {
+	public AuthAccessDeniedException(String message) {
 		super(message, new AccessDeniedError());
 	}
 
@@ -30,7 +30,7 @@ public class AccessDeniedException extends AuthorizeException {
 	 * @param message
 	 * @param cause
 	 */
-	public AccessDeniedException(String message, Throwable cause) {
+	public AuthAccessDeniedException(String message, Throwable cause) {
 		super(message, cause, new AccessDeniedError());
 	}
 
@@ -38,7 +38,7 @@ public class AccessDeniedException extends AuthorizeException {
 	 * Constructeur
 	 * @param cause
 	 */
-	public AccessDeniedException(Throwable cause) {
+	public AuthAccessDeniedException(Throwable cause) {
 		super(cause, new AccessDeniedError());
 	}
 }

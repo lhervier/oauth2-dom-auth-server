@@ -6,7 +6,7 @@ import com.github.lhervier.domino.oauth.server.model.error.authorize.AuthorizeEr
  * Erreur pendant l'exécution du code grand 'authorize'
  * @author Lionel HERVIER
  */
-public abstract class AuthorizeException extends Exception {
+public abstract class BaseAuthException extends Exception {
 
 	/**
 	 * Serial UID
@@ -22,7 +22,7 @@ public abstract class AuthorizeException extends Exception {
 	 * Constructeur
 	 * @param error l'erreur
 	 */
-	public AuthorizeException(AuthorizeError error) {
+	public BaseAuthException(AuthorizeError error) {
 		super();
 		this.error = error;
 	}
@@ -31,7 +31,7 @@ public abstract class AuthorizeException extends Exception {
 	 * Constructeur
 	 * @param message
 	 */
-	public AuthorizeException(String message, AuthorizeError error) {
+	public BaseAuthException(String message, AuthorizeError error) {
 		super(message);
 		this.error = error;
 	}
@@ -40,7 +40,7 @@ public abstract class AuthorizeException extends Exception {
 	 * Constructeur
 	 * @param cause
 	 */
-	public AuthorizeException(Throwable cause, AuthorizeError error) {
+	public BaseAuthException(Throwable cause, AuthorizeError error) {
 		super(cause);
 		this.error = error;
 	}
@@ -50,7 +50,7 @@ public abstract class AuthorizeException extends Exception {
 	 * @param message
 	 * @param cause
 	 */
-	public AuthorizeException(String message, Throwable cause, AuthorizeError error) {
+	public BaseAuthException(String message, Throwable cause, AuthorizeError error) {
 		super(message, cause);
 		this.error = error;
 	}

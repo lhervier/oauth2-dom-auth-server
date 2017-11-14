@@ -1,14 +1,11 @@
 package com.github.lhervier.domino.oauth.server.services;
 
-import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import lotus.domino.NotesException;
 
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
@@ -19,11 +16,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
-import com.github.lhervier.domino.oauth.server.ex.GrantException;
+import com.github.lhervier.domino.oauth.server.ex.BaseGrantException;
 import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
-import com.github.lhervier.domino.oauth.server.ex.authorize.AuthorizeServerErrorException;
-import com.github.lhervier.domino.oauth.server.ex.grant.InvalidGrantException;
-import com.github.lhervier.domino.oauth.server.ex.grant.InvalidScopeException;
+import com.github.lhervier.domino.oauth.server.ex.authorize.AuthServerErrorException;
+import com.github.lhervier.domino.oauth.server.ex.grant.GrantInvalidGrantException;
+import com.github.lhervier.domino.oauth.server.ex.grant.GrantInvalidScopeException;
 import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.repo.SecretRepository;
@@ -67,7 +64,7 @@ public class RefreshTokenGrantService extends BaseGrantService {
 			String code, 
 			String scope, 
 			String refreshToken, 
-			String redirectUri) throws GrantException, ServerErrorException, NotesException {
+			String redirectUri) throws BaseGrantException, ServerErrorException {
 		// Extract scopes
 		List<String> scopes;
 		if( StringUtils.isEmpty(scope) )
@@ -88,27 +85,26 @@ public class RefreshTokenGrantService extends BaseGrantService {
 	 * @param app the currently logged in user (application)
 	 * @param sRefreshToken le refresh token
 	 * @param scopes d'éventuels nouveaux scopes.
-	 * @throws GrantException 
-	 * @throws AuthorizeServerErrorException
-	 * @throws NotesException
+	 * @throws BaseGrantException 
+	 * @throws AuthServerErrorException
 	 */
 	@SuppressWarnings("unchecked")
 	private Map<String, Object> refreshToken(
 			Application app,
 			String sRefreshToken, 
-			List<String> scopes) throws GrantException, ServerErrorException, NotesException {
+			List<String> scopes) throws BaseGrantException, ServerErrorException {
 		// Sanity check
 		if( sRefreshToken == null )
-			throw new InvalidGrantException("refresh_token is mandatory");
+			throw new GrantInvalidGrantException("refresh_token is mandatory");
 		
 		// Decrypt refresh token
 		AuthCodeEntity authCode = this.authCodeFromRefreshToken(sRefreshToken);
 		if( authCode == null )
-			throw new InvalidGrantException("refresh_token is invalid");
+			throw new GrantInvalidGrantException("refresh_token is invalid");
 			
 		// Check that scopes are already in the initial scopes
 		if( !authCode.getGrantedScopes().containsAll(scopes) )
-			throw new InvalidScopeException("scopes must be a subset of already accorded scopes");
+			throw new GrantInvalidScopeException("scopes must be a subset of already accorded scopes");
 		
 		// If no scope, use the scopes originally granted by the resource owner 
 		if( scopes.size() == 0 )
@@ -116,7 +112,7 @@ public class RefreshTokenGrantService extends BaseGrantService {
 		
 		// Check that the token has been generated for the current application
 		if( !app.getClientId().equals(authCode.getClientId()) )
-			throw new InvalidGrantException();
+			throw new GrantInvalidGrantException();
 		
 		// Prepare the response
 		Map<String, Object> resp = new HashMap<String, Object>();
@@ -196,11 +192,7 @@ public class RefreshTokenGrantService extends BaseGrantService {
 			return ret;
 		} catch (KeyLengthException e) {
 			throw new ServerErrorException(e);
-		} catch (NotesException e) {
-			throw new ServerErrorException(e);
 		} catch (JOSEException e) {
-			throw new ServerErrorException(e);
-		} catch (IOException e) {
 			throw new ServerErrorException(e);
 		} catch (ParseException e) {
 			return null;

@@ -1,9 +1,9 @@
 package com.github.lhervier.domino.oauth.server.ex.grant;
 
-import com.github.lhervier.domino.oauth.server.ex.GrantException;
+import com.github.lhervier.domino.oauth.server.ex.BaseGrantException;
 import com.github.lhervier.domino.oauth.server.model.error.grant.InvalidClientError;
 
-public class InvalidClientException extends GrantException {
+public class GrantInvalidClientException extends BaseGrantException {
 
 	/**
 	 * Serial UID
@@ -13,7 +13,7 @@ public class InvalidClientException extends GrantException {
 	/**
 	 * Constructeur
 	 */
-	public InvalidClientException() {
+	public GrantInvalidClientException() {
 		super(new InvalidClientError());
 	}
 
@@ -21,7 +21,7 @@ public class InvalidClientException extends GrantException {
 	 * Constructeur
 	 * @param message
 	 */
-	public InvalidClientException(String message) {
+	public GrantInvalidClientException(String message) {
 		super(message, new InvalidClientError());
 	}
 
@@ -30,7 +30,7 @@ public class InvalidClientException extends GrantException {
 	 * @param message
 	 * @param cause
 	 */
-	public InvalidClientException(String message, Throwable cause) {
+	public GrantInvalidClientException(String message, Throwable cause) {
 		super(message, cause, new InvalidClientError());
 	}
 
@@ -38,7 +38,7 @@ public class InvalidClientException extends GrantException {
 	 * Constructeur
 	 * @param cause
 	 */
-	public InvalidClientException(Throwable cause) {
+	public GrantInvalidClientException(Throwable cause) {
 		super(cause, new InvalidClientError());
 	}
 

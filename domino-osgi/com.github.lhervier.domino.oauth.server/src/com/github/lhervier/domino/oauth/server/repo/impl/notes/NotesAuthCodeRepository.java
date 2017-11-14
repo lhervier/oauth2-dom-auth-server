@@ -11,6 +11,7 @@ import lotus.domino.View;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.stereotype.Repository;
 
 import com.github.lhervier.domino.oauth.server.AuthContext;
@@ -47,7 +48,7 @@ public class NotesAuthCodeRepository implements AuthCodeRepository {
 	 * @param session the session to use to open the database
 	 * @throws NotesException 
 	 */
-	public Database getOauth2Database(Session session) throws NotesException {
+	private Database getOauth2Database(Session session) throws NotesException {
 		return DominoUtils.openDatabase(session, this.oauth2db);
 	}
 	
@@ -55,7 +56,7 @@ public class NotesAuthCodeRepository implements AuthCodeRepository {
 	 * Save an authorization code
 	 * @param authCode the authorization code to save
 	 */
-	public AuthCodeEntity save(AuthCodeEntity authCode) throws NotesException {
+	public AuthCodeEntity save(AuthCodeEntity authCode) {
 		Session session = this.authContext.getServerSession();
 		
 		Document authDoc = null;
@@ -77,6 +78,8 @@ public class NotesAuthCodeRepository implements AuthCodeRepository {
 			}
 			authDoc.replaceItemValue("Context_ExtIds", extIds);
 			DominoUtils.computeAndSave(authDoc);
+		} catch(NotesException e) {
+			throw new DataRetrievalFailureException("Error saving authcode", e);
 		} finally {
 			DominoUtils.recycleQuietly(authDoc);
 		}
@@ -89,7 +92,7 @@ public class NotesAuthCodeRepository implements AuthCodeRepository {
 	 * @return the authorization code (or null if it does not exists)
 	 */
 	@SuppressWarnings("unchecked")
-	public AuthCodeEntity findOne(String code) throws NotesException {
+	public AuthCodeEntity findOne(String code) {
 		Session session = this.authContext.getUserSession();
 		
 		Document authDoc = null;
@@ -115,6 +118,8 @@ public class NotesAuthCodeRepository implements AuthCodeRepository {
 			}
 			
 			return authCode;
+		} catch(NotesException e) {
+			throw new DataRetrievalFailureException("Error getting auth code", e);
 		} finally {
 			DominoUtils.recycleQuietly(authDoc);
 			DominoUtils.recycleQuietly(v);
@@ -125,7 +130,7 @@ public class NotesAuthCodeRepository implements AuthCodeRepository {
 	 * Remove an authorization code
 	 * @param code the auth code
 	 */
-	public void delete(String code) throws NotesException {
+	public void delete(String code) {
 		Session session = this.authContext.getServerSession();
 		
 		View v = null;
@@ -137,7 +142,9 @@ public class NotesAuthCodeRepository implements AuthCodeRepository {
 			if( authDoc == null )
 				return;
 			if( !authDoc.remove(true) )
-				throw new NotesException(-1, "Unable to remove auth code document !");
+				throw new DataRetrievalFailureException("Unable to remove auth code document !");
+		} catch(NotesException e) {
+			throw new DataRetrievalFailureException("Error removing auth code", e);
 		} finally {
 			DominoUtils.recycleQuietly(authDoc);
 			DominoUtils.recycleQuietly(v);

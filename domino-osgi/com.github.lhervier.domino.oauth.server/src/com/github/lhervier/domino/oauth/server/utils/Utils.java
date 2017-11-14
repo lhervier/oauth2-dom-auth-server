@@ -1,9 +1,11 @@
 package com.github.lhervier.domino.oauth.server.utils;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.security.SecureRandom;
 import java.util.HashSet;
 import java.util.Set;
@@ -85,6 +87,20 @@ public class Utils {
 			throw new RuntimeException(e);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
+		}
+	}
+	
+	/**
+	 * URLEncode a string, without throwing an IOException
+	 * @param s the string to url encode
+	 * @return the url encoded value
+	 * @return
+	 */
+	public static final String urlEncode(String s) {
+		try {
+			return URLEncoder.encode(s, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(e);			// UTF-8 is supported !!
 		}
 	}
 }

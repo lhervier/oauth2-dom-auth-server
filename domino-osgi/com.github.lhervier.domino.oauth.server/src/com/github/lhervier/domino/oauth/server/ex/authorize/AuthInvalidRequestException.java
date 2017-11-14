@@ -1,13 +1,13 @@
 package com.github.lhervier.domino.oauth.server.ex.authorize;
 
-import com.github.lhervier.domino.oauth.server.ex.AuthorizeException;
+import com.github.lhervier.domino.oauth.server.ex.BaseAuthException;
 import com.github.lhervier.domino.oauth.server.model.error.authorize.InvalidRequestError;
 
 /**
  * Exception levée quand on a une requête "authorize" incorrecte.
  * @author Lionel HERVIER
  */
-public class InvalidRequestException extends AuthorizeException {
+public class AuthInvalidRequestException extends BaseAuthException {
 
 	/**
 	 * Serial UID
@@ -17,7 +17,7 @@ public class InvalidRequestException extends AuthorizeException {
 	/**
 	 * Constructeur
 	 */
-	public InvalidRequestException() {
+	public AuthInvalidRequestException() {
 		super(new InvalidRequestError());
 	}
 
@@ -25,7 +25,7 @@ public class InvalidRequestException extends AuthorizeException {
 	 * Constructeur
 	 * @param message le message
 	 */
-	public InvalidRequestException(String message) {
+	public AuthInvalidRequestException(String message) {
 		super(message, new InvalidRequestError());
 	}
 
@@ -34,7 +34,7 @@ public class InvalidRequestException extends AuthorizeException {
 	 * @param message
 	 * @param cause
 	 */
-	public InvalidRequestException(String message, Throwable cause) {
+	public AuthInvalidRequestException(String message, Throwable cause) {
 		super(message, cause, new InvalidRequestError());
 	}
 
@@ -42,7 +42,7 @@ public class InvalidRequestException extends AuthorizeException {
 	 * Constructeur
 	 * @param cause
 	 */
-	public InvalidRequestException(Throwable cause) {
+	public AuthInvalidRequestException(Throwable cause) {
 		super(cause, new InvalidRequestError());
 	}
 }

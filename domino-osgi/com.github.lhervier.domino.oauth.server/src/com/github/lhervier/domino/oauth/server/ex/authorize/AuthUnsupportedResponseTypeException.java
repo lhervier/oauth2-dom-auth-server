@@ -1,9 +1,9 @@
 package com.github.lhervier.domino.oauth.server.ex.authorize;
 
-import com.github.lhervier.domino.oauth.server.ex.AuthorizeException;
+import com.github.lhervier.domino.oauth.server.ex.BaseAuthException;
 import com.github.lhervier.domino.oauth.server.model.error.authorize.UnsupportedResponseTypeError;
 
-public class UnsupportedResponseTypeException extends AuthorizeException {
+public class AuthUnsupportedResponseTypeException extends BaseAuthException {
 
 	/**
 	 * Serial UID
@@ -13,7 +13,7 @@ public class UnsupportedResponseTypeException extends AuthorizeException {
 	/**
 	 * Constructeur
 	 */
-	public UnsupportedResponseTypeException() {
+	public AuthUnsupportedResponseTypeException() {
 		super(new UnsupportedResponseTypeError());
 	}
 
@@ -21,7 +21,7 @@ public class UnsupportedResponseTypeException extends AuthorizeException {
 	 * Constructeur
 	 * @param message
 	 */
-	public UnsupportedResponseTypeException(String message) {
+	public AuthUnsupportedResponseTypeException(String message) {
 		super(message, new UnsupportedResponseTypeError());
 	}
 
@@ -30,7 +30,7 @@ public class UnsupportedResponseTypeException extends AuthorizeException {
 	 * @param message
 	 * @param cause
 	 */
-	public UnsupportedResponseTypeException(String message, Throwable cause) {
+	public AuthUnsupportedResponseTypeException(String message, Throwable cause) {
 		super(message, cause, new UnsupportedResponseTypeError());
 	}
 
@@ -38,7 +38,7 @@ public class UnsupportedResponseTypeException extends AuthorizeException {
 	 * Constructeur
 	 * @param cause
 	 */
-	public UnsupportedResponseTypeException(Throwable cause) {
+	public AuthUnsupportedResponseTypeException(Throwable cause) {
 		super(cause, new UnsupportedResponseTypeError());
 	}
 }

@@ -11,4 +11,7 @@ package com.github.lhervier.domino.oauth.server.ex;
 	 */
 	private static final long serialVersionUID = 5129382983444635767L;
 
+	public NotAuthorizedException() {
+		super("not_authorized");
+	}
 }

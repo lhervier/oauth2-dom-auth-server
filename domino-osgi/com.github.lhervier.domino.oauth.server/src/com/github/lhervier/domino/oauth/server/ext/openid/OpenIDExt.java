@@ -4,8 +4,6 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
-import lotus.domino.NotesException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -83,7 +81,7 @@ public class OpenIDExt implements IOAuthExtension<OpenIdContext> {
 			NotesPrincipal user,
 			IScopeGranter granter, 
 			String clientId, 
-			List<String> scopes) throws NotesException {
+			List<String> scopes) {
 		// On ne réagit que si on nous demande le scope "openid"
 		if( !scopes.contains("openid") )
 			return null;
@@ -151,7 +149,7 @@ public class OpenIDExt implements IOAuthExtension<OpenIdContext> {
 	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#authorize(Object, List, AuthCodeEntity, IPropertyAdder)
 	 */
 	@Override
-	public void authorize(OpenIdContext ctx, List<String> responseTypes, AuthCodeEntity authCode, IPropertyAdder adder) throws NotesException {
+	public void authorize(OpenIdContext ctx, List<String> responseTypes, AuthCodeEntity authCode, IPropertyAdder adder) {
 		// Hybrid flow
 		if( responseTypes.contains("id_token") ) {
 			this.token(

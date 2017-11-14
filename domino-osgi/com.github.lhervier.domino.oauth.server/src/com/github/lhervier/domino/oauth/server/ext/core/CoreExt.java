@@ -2,8 +2,6 @@ package com.github.lhervier.domino.oauth.server.ext.core;
 
 import java.util.List;
 
-import lotus.domino.NotesException;
-
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -87,7 +85,7 @@ public class CoreExt implements IOAuthExtension<CoreContext> {
 			NotesPrincipal user,
 			IScopeGranter granter, 
 			String clientId, 
-			List<String> scopes) throws NotesException {
+			List<String> scopes) {
 		CoreContext ctx = new CoreContext();
 		ctx.setIss(this.iss);
 		ctx.setAud(clientId);
@@ -103,7 +101,7 @@ public class CoreExt implements IOAuthExtension<CoreContext> {
 			CoreContext ctx,
 			List<String> responseTypes, 
 			AuthCodeEntity authCode,
-			IPropertyAdder adder) throws NotesException {
+			IPropertyAdder adder) {
 		// Authorization code grant
 		if( responseTypes.contains("code") ) {
 			
@@ -131,7 +129,7 @@ public class CoreExt implements IOAuthExtension<CoreContext> {
 	public void token(
 			CoreContext context, 
 			IPropertyAdder adder,
-			List<String> scopes) throws NotesException {
+			List<String> scopes) {
 		AccessToken token = new AccessToken();
 		BeanUtils.copyProperties(context, token);
 		token.setExp(SystemUtils.currentTimeSeconds() + this.expiresIn);

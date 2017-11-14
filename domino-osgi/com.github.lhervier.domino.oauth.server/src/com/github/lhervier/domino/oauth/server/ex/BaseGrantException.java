@@ -2,7 +2,7 @@ package com.github.lhervier.domino.oauth.server.ex;
 
 import com.github.lhervier.domino.oauth.server.model.error.grant.GrantError;
 
-public class GrantException extends Exception {
+public class BaseGrantException extends Exception {
 
 	/**
 	 * Serial UID
@@ -18,7 +18,7 @@ public class GrantException extends Exception {
 	 * Constructeur
 	 * @param error l'erreur
 	 */
-	public GrantException(GrantError error) {
+	public BaseGrantException(GrantError error) {
 		super();
 		this.error = error;
 	}
@@ -28,7 +28,7 @@ public class GrantException extends Exception {
 	 * @param message
 	 * @param error l'erreur
 	 */
-	public GrantException(String message, GrantError error) {
+	public BaseGrantException(String message, GrantError error) {
 		super(message);
 		this.error = error;
 	}
@@ -39,7 +39,7 @@ public class GrantException extends Exception {
 	 * @param cause
 	 * @param error l'erreur
 	 */
-	public GrantException(String message, Throwable cause, GrantError error) {
+	public BaseGrantException(String message, Throwable cause, GrantError error) {
 		super(message, cause);
 		this.error = error;
 	}
@@ -49,7 +49,7 @@ public class GrantException extends Exception {
 	 * @param cause
 	 * @param error l'erreur
 	 */
-	public GrantException(Throwable cause, GrantError error) {
+	public BaseGrantException(Throwable cause, GrantError error) {
 		super(cause);
 		this.error = error;
 	}

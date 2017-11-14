@@ -1,9 +1,9 @@
 package com.github.lhervier.domino.oauth.server.ex.grant;
 
-import com.github.lhervier.domino.oauth.server.ex.GrantException;
+import com.github.lhervier.domino.oauth.server.ex.BaseGrantException;
 import com.github.lhervier.domino.oauth.server.model.error.grant.InvalidScopeError;
 
-public class InvalidScopeException extends GrantException {
+public class GrantInvalidScopeException extends BaseGrantException {
 
 	/**
 	 * Serial UID
@@ -13,7 +13,7 @@ public class InvalidScopeException extends GrantException {
 	/**
 	 * Constructeur
 	 */
-	public InvalidScopeException() {
+	public GrantInvalidScopeException() {
 		super(new InvalidScopeError());
 	}
 
@@ -21,7 +21,7 @@ public class InvalidScopeException extends GrantException {
 	 * Constructeur
 	 * @param message
 	 */
-	public InvalidScopeException(String message) {
+	public GrantInvalidScopeException(String message) {
 		super(message, new InvalidScopeError());
 	}
 
@@ -30,7 +30,7 @@ public class InvalidScopeException extends GrantException {
 	 * @param message
 	 * @param cause
 	 */
-	public InvalidScopeException(String message, Throwable cause) {
+	public GrantInvalidScopeException(String message, Throwable cause) {
 		super(message, cause, new InvalidScopeError());
 	}
 
@@ -38,7 +38,7 @@ public class InvalidScopeException extends GrantException {
 	 * Constructeur
 	 * @param cause
 	 */
-	public InvalidScopeException(Throwable cause) {
+	public GrantInvalidScopeException(Throwable cause) {
 		super(cause, new InvalidScopeError());
 	}
 

@@ -8,8 +8,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpSession;
 
-import lotus.domino.NotesException;
-
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -22,6 +20,9 @@ import org.springframework.web.servlet.ModelAndView;
 import com.github.lhervier.domino.oauth.server.aop.ann.ctx.Oauth2DbContext;
 import com.github.lhervier.domino.oauth.server.aop.ann.security.Roles;
 import com.github.lhervier.domino.oauth.server.aop.ann.security.UserAuth;
+import com.github.lhervier.domino.oauth.server.ex.ForbiddenException;
+import com.github.lhervier.domino.oauth.server.ex.NotAuthorizedException;
+import com.github.lhervier.domino.oauth.server.ex.WrongPathException;
 import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.services.AppService;
 
@@ -52,10 +53,9 @@ public class AppController {
 	
 	/**
 	 * List applications
-	 * @throws NotesException 
 	 */
 	@RequestMapping(value = "/listApplications")
-	public ModelAndView listApplications() throws NotesException {
+	public ModelAndView listApplications() throws NotAuthorizedException, ForbiddenException, WrongPathException {
 		Map<String, Object> model = new HashMap<String, Object>();
 		model.put("apps", this.appSvc.getApplicationsNames());
 		return new ModelAndView("applications", model);
@@ -65,7 +65,7 @@ public class AppController {
 	 * The screen to display the creation of a new application
 	 */
 	@RequestMapping(value = "/newApplication", method = RequestMethod.GET)
-	public ModelAndView createApplication() {
+	public ModelAndView createApplication() throws NotAuthorizedException, ForbiddenException, WrongPathException {
 		Map<String, Object> model = new HashMap<String, Object>();
 		Application app = this.appSvc.prepareApplication();
 		model.put("app", app);
@@ -77,10 +77,9 @@ public class AppController {
 	
 	/**
 	 * Edits an application
-	 * @throws NotesException 
 	 */
 	@RequestMapping(value = "/editApplication", method = RequestMethod.GET)
-	public ModelAndView editApplication(@RequestParam(value = "name", required = true) String appName) throws NotesException {
+	public ModelAndView editApplication(@RequestParam(value = "name", required = true) String appName) throws NotAuthorizedException, ForbiddenException, WrongPathException {
 		Map<String, Object> model = new HashMap<String, Object>();
 		Application app = this.appSvc.getApplicationFromName(appName);
 		model.put("app", app);
@@ -92,10 +91,9 @@ public class AppController {
 	
 	/**
 	 * Display the details of an application
-	 * @throws NotesException 
 	 */
 	@RequestMapping(value = "/viewApplication", method = RequestMethod.GET)
-	public ModelAndView viewApplication(@RequestParam(value = "name", required = true) String appName) throws NotesException {
+	public ModelAndView viewApplication(@RequestParam(value = "name", required = true) String appName) throws NotAuthorizedException, ForbiddenException, WrongPathException {
 		Map<String, Object> model = new HashMap<String, Object>();
 		model.put("app", this.appSvc.getApplicationFromName(appName));
 		model.put("edit", false);
@@ -165,14 +163,13 @@ public class AppController {
 	
 	/**
 	 * Save an application
-	 * @throws NotesException
 	 */
 	@SuppressWarnings("unchecked")
 	@RequestMapping(value = "/saveApplication", method = RequestMethod.POST)
 	public ModelAndView saveApplication(
 			@ModelAttribute Application app,
 			@RequestParam String newRedirectUri,
-			@RequestParam String action) throws NotesException {
+			@RequestParam String action) throws NotAuthorizedException, ForbiddenException, WrongPathException {
 		Map<String, Object> model = new HashMap<String, Object>();
 		app.setRedirectUris((List<String>) this.session.getAttribute(ATTR_REDIRECT_URIS));
 		model.put("app", app);
@@ -223,10 +220,9 @@ public class AppController {
 	
 	/**
 	 * Removes an application
-	 * @throws NotesException 
 	 */
 	@RequestMapping(value = "/deleteApplication", method = RequestMethod.GET)
-	public ModelAndView removeApplication(@RequestParam(value = "name", required = true) String name) throws NotesException {
+	public ModelAndView removeApplication(@RequestParam(value = "name", required = true) String name) throws NotAuthorizedException, ForbiddenException, WrongPathException {
 		this.appSvc.removeApplication(name);
 		return new ModelAndView("redirect:listApplications");
 	}

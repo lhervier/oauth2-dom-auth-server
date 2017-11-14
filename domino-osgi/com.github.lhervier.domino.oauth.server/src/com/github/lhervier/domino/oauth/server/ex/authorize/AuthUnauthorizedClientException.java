@@ -1,9 +1,9 @@
 package com.github.lhervier.domino.oauth.server.ex.authorize;
 
-import com.github.lhervier.domino.oauth.server.ex.AuthorizeException;
+import com.github.lhervier.domino.oauth.server.ex.BaseAuthException;
 import com.github.lhervier.domino.oauth.server.model.error.authorize.UnauthorizedClientError;
 
-public class UnauthorizedClientException extends AuthorizeException {
+public class AuthUnauthorizedClientException extends BaseAuthException {
 
 	/**
 	 * Serial UID
@@ -13,7 +13,7 @@ public class UnauthorizedClientException extends AuthorizeException {
 	/**
 	 * Constructeur
 	 */
-	public UnauthorizedClientException() {
+	public AuthUnauthorizedClientException() {
 		super(new UnauthorizedClientError());
 	}
 
@@ -21,7 +21,7 @@ public class UnauthorizedClientException extends AuthorizeException {
 	 * Constructeur
 	 * @param message
 	 */
-	public UnauthorizedClientException(String message) {
+	public AuthUnauthorizedClientException(String message) {
 		super(message, new UnauthorizedClientError());
 	}
 
@@ -30,7 +30,7 @@ public class UnauthorizedClientException extends AuthorizeException {
 	 * @param message
 	 * @param cause
 	 */
-	public UnauthorizedClientException(String message, Throwable cause) {
+	public AuthUnauthorizedClientException(String message, Throwable cause) {
 		super(message, cause, new UnauthorizedClientError());
 	}
 
@@ -38,7 +38,7 @@ public class UnauthorizedClientException extends AuthorizeException {
 	 * Constructeur
 	 * @param cause
 	 */
-	public UnauthorizedClientException(Throwable cause) {
+	public AuthUnauthorizedClientException(Throwable cause) {
 		super(cause, new UnauthorizedClientError());
 	}
 }

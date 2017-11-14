@@ -9,6 +9,7 @@ import lotus.domino.View;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.stereotype.Repository;
 
 import com.github.lhervier.domino.oauth.server.AuthContext;
@@ -64,7 +65,7 @@ public class NotesSecretRepository implements SecretRepository {
 	 * @param ssoConfig la config sso
 	 * @param size la taille
 	 */
-	private byte[] getSecret(String ssoConfig, int size) throws NotesException, IOException {
+	private byte[] getSecret(String ssoConfig, int size) {
 		if( ssoConfig == null )
 			return null;
 		Database nab = null;
@@ -80,6 +81,10 @@ public class NotesSecretRepository implements SecretRepository {
 				return null;
 			String secret = docSsoConfig.getItemValueString(SECRET_FIELD_NAME);
 			return this.genSecret(secret, size);
+		} catch(NotesException e) {
+			throw new DataRetrievalFailureException("Error extracting secret", e);
+		} catch(IOException e) {
+			throw new DataRetrievalFailureException("Error extracting secret", e);
 		} finally {
 			DominoUtils.recycleQuietly(docSsoConfig);
 			DominoUtils.recycleQuietly(v);
@@ -93,7 +98,7 @@ public class NotesSecretRepository implements SecretRepository {
 	 * Retourne un secret pour signer
 	 * @param ssoConfig la config sso
 	 */
-	public byte[] findSignSecret(String ssoConfig) throws NotesException, IOException {
+	public byte[] findSignSecret(String ssoConfig) {
 		return this.getSecret(ssoConfig, 32);
 	}
 	
@@ -101,7 +106,7 @@ public class NotesSecretRepository implements SecretRepository {
 	 * Retourne un secret pour crypter
 	 * @param ssoConfig la config sso
 	 */
-	public byte[] findCryptSecret(String ssoConfig) throws NotesException, IOException {
+	public byte[] findCryptSecret(String ssoConfig) {
 		return this.getSecret(ssoConfig, 16);
 	}
 	
@@ -109,7 +114,7 @@ public class NotesSecretRepository implements SecretRepository {
 	 * Retourne le secret utilisé pour crypter le refresh token
 	 * @throws IOException 
 	 */
-	public byte[] findRefreshTokenSecret() throws NotesException, IOException {
+	public byte[] findRefreshTokenSecret() {
 		return this.findCryptSecret(this.refreshTokenConfig);
 	}
 }

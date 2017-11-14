@@ -2,8 +2,6 @@ package com.github.lhervier.domino.oauth.server.ext;
 
 import java.util.List;
 
-import lotus.domino.NotesException;
-
 import com.github.lhervier.domino.oauth.server.NotesPrincipal;
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
 
@@ -36,13 +34,12 @@ public interface IOAuthExtension<T> {
 	 * @param clientId l'id client de l'application demandée.
 	 * @param scopes les scopes demandés
 	 * @return le contexte ou null pour ne pas participer.
-	 * @throws NotesException en ca de pb
 	 */
 	public T initContext(
 			NotesPrincipal user,
 			IScopeGranter granter, 
 			String clientId, 
-			List<String> scopes) throws NotesException;
+			List<String> scopes);
 	
 	/**
 	 * Process authorization code
@@ -54,7 +51,7 @@ public interface IOAuthExtension<T> {
 			T context,
 			List<String> responseTypes, 
 			AuthCodeEntity authCode,
-			IPropertyAdder adder) throws NotesException;
+			IPropertyAdder adder);
 	
 	/**
 	 * Génère des attributs à ajouter à la réponse de grant.
@@ -63,10 +60,9 @@ public interface IOAuthExtension<T> {
 	 * @param context le contexte généré lors de l'appel à authorize
 	 * @param adder pour ajouter des propriétés à la réponse au grant.
 	 * @param scopes les scopes demandés
-	 * @throws NotesException en ca de pb
 	 */
 	public void token(
 			T context, 
 			IPropertyAdder adder,
-			List<String> scopes) throws NotesException;
+			List<String> scopes);
 }

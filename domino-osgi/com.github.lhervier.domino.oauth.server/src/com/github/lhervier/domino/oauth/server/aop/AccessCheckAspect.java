@@ -25,6 +25,7 @@ import com.github.lhervier.domino.oauth.server.aop.ann.security.AppAuth;
 import com.github.lhervier.domino.oauth.server.aop.ann.security.Bearer;
 import com.github.lhervier.domino.oauth.server.aop.ann.security.Roles;
 import com.github.lhervier.domino.oauth.server.aop.ann.security.UserAuth;
+import com.github.lhervier.domino.oauth.server.ex.ForbiddenException;
 import com.github.lhervier.domino.oauth.server.ex.NotAuthorizedException;
 import com.github.lhervier.domino.oauth.server.ex.WrongPathException;
 import com.github.lhervier.domino.oauth.server.model.Application;
@@ -106,7 +107,7 @@ public class AccessCheckAspect {
 	 * @throws Throwable
 	 */
 	@Before("controller()")
-	public void checkEcriturenBefore(JoinPoint joinPoint) throws Throwable {
+	public void checkEcriturenBefore(JoinPoint joinPoint) throws NotAuthorizedException, ForbiddenException, WrongPathException {
 		MethodSignature signature = (MethodSignature) joinPoint.getSignature();
 		Method method = signature.getMethod();
 		
@@ -145,7 +146,7 @@ public class AccessCheckAspect {
 					continue;
 				if( !this.user.getRoles().contains("[" + role + "]") ) {
 					LOG.info("User '" + this.user.getName() + "' tries to access method '" + method.getName() + "' but it does not have the required roles");
-					throw new NotAuthorizedException();
+					throw new ForbiddenException();
 				}
 			}
 		}
@@ -166,11 +167,11 @@ public class AccessCheckAspect {
 			Application app = this.appService.getApplicationFromName(user.getCommon());
 			if( userAuth != null && app != null ) {
 				LOG.info("Application '" + this.user.getName() + "' tries to access method '" + method.getName() + "', but only regular users can access it!");
-				throw new NotAuthorizedException();
+				throw new ForbiddenException();
 			}
 			if( appAuth != null && app == null ) {
 				LOG.info("Regular user '" + this.user.getName() + "' tries to access method '" + method.getName() + "', but only applications can access it!");
-				throw new NotAuthorizedException();
+				throw new ForbiddenException();
 			}
 		}
 	}

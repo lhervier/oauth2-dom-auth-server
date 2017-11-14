@@ -1,14 +1,11 @@
 package com.github.lhervier.domino.oauth.server.services;
 
 import java.io.IOException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import lotus.domino.NotesException;
 
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.JsonGenerationException;
@@ -20,10 +17,10 @@ import org.springframework.stereotype.Service;
 
 import com.github.lhervier.domino.oauth.server.NotesPrincipal;
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
-import com.github.lhervier.domino.oauth.server.ex.AuthorizeException;
+import com.github.lhervier.domino.oauth.server.ex.BaseAuthException;
 import com.github.lhervier.domino.oauth.server.ex.InvalidUriException;
-import com.github.lhervier.domino.oauth.server.ex.authorize.AuthorizeServerErrorException;
-import com.github.lhervier.domino.oauth.server.ex.authorize.InvalidRequestException;
+import com.github.lhervier.domino.oauth.server.ex.authorize.AuthInvalidRequestException;
+import com.github.lhervier.domino.oauth.server.ex.authorize.AuthServerErrorException;
 import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.server.ext.IScopeGranter;
 import com.github.lhervier.domino.oauth.server.model.Application;
@@ -74,9 +71,8 @@ public class AuthorizeService {
 	/**
 	 * Authorize endpoint.
 	 * @return the redirect url.
-	 * @throws AuthorizeException If an error occur
+	 * @throws BaseAuthException If an error occur
 	 * @throws InvalidUriException if the uri is invalid
-	 * @throws NotesException may happend...
 	 */
 	public String authorize(
 			NotesPrincipal user,
@@ -84,10 +80,10 @@ public class AuthorizeService {
     		String clientId,
     		String scope,
     		String state,
-    		String redirectUri) throws AuthorizeException, InvalidUriException, NotesException, IOException {
+    		String redirectUri) throws BaseAuthException, InvalidUriException {
 		// response_type is mandatory
 		if( StringUtils.isEmpty(responseType) )
-			throw new InvalidRequestException("response_type mandatory in query string");
+			throw new AuthInvalidRequestException("response_type mandatory in query string");
 		List<String> responseTypes = new ArrayList<String>();
 		{
 			String[] tbl = responseType.split(" ");
@@ -105,16 +101,16 @@ public class AuthorizeService {
 		
 		// Check that at least one extension will process the request
 		if( !this.checkResponseTypes(responseTypes) )
-			throw new InvalidRequestException("response_type value is invalid");
+			throw new AuthInvalidRequestException("response_type value is invalid");
 		
 		// Client id is mandatory
 		if( StringUtils.isEmpty(clientId) ) 
-			throw new AuthorizeServerErrorException("client_id is mandatory");
+			throw new AuthServerErrorException("client_id is mandatory");
 		
 		// Get the app
 		Application app = this.appSvc.getApplicationFromClientId(clientId);
 		if( app == null )
-			throw new AuthorizeServerErrorException("unable to find app with client_id '" + clientId + "'");
+			throw new AuthServerErrorException("unable to find app with client_id '" + clientId + "'");
 		
 		// validate the redirect_uri
 		Utils.checkRedirectUri(redirectUri, app);
@@ -160,8 +156,8 @@ public class AuthorizeService {
 			for( Entry<String, Object> entry : params.entrySet() ) {
 				if( entry.getValue() == null )
 					continue;
-				String key = URLEncoder.encode(entry.getKey(), "UTF-8");
-				String value = URLEncoder.encode(entry.getValue().toString(), "UTF-8");
+				String key = Utils.urlEncode(entry.getKey());
+				String value = Utils.urlEncode(entry.getValue().toString());
 				sbRedirect.append(sep).append(key).append('=').append(value);
 				sep = '&';
 			}
@@ -191,7 +187,6 @@ public class AuthorizeService {
 	
 	/**
 	 * Initialize the context
-	 * @throws NotesException 
 	 * @throws IOException 
 	 * @throws JsonMappingException 
 	 * @throws JsonGenerationException 
@@ -201,7 +196,7 @@ public class AuthorizeService {
 			NotesPrincipal user,
 			AuthCodeEntity authCode, 
 			Application app, 
-			List<String> scopes) throws NotesException, JsonGenerationException, JsonMappingException, IOException {
+			List<String> scopes) throws JsonGenerationException, JsonMappingException {
 		final List<String> grantedScopes = new ArrayList<String>();
 		for( IOAuthExtension ext : this.exts ) {
 			Object context = ext.initContext(
@@ -216,8 +211,12 @@ public class AuthorizeService {
 					scopes
 			);
 			if( context != null ) {
-				authCode.getContextObjects().put(ext.getId(), this.mapper.writeValueAsString(context));
-				authCode.getContextClasses().put(ext.getId(), ext.getContextClass().getName());
+				try {
+					authCode.getContextObjects().put(ext.getId(), this.mapper.writeValueAsString(context));
+					authCode.getContextClasses().put(ext.getId(), ext.getContextClass().getName());
+				} catch(IOException e) {
+					throw new RuntimeException(e);			// Should not happen...
+				}
 			}
 		}
 		authCode.setGrantedScopes(grantedScopes);
@@ -225,10 +224,9 @@ public class AuthorizeService {
 	
 	/**
 	 * Run the grants
-	 * @throws NotesException 
 	 */
 	@SuppressWarnings("unchecked")
-	private void runGrants(AuthCodeEntity authCode, List<String> responseType, Map<String, Object> params) throws NotesException {
+	private void runGrants(AuthCodeEntity authCode, List<String> responseType, Map<String, Object> params) {
 		for( IOAuthExtension ext : this.exts ) {
 			ext.authorize(
 					Utils.getContext(authCode, ext.getId()),

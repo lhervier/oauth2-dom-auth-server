@@ -2,8 +2,6 @@ package com.github.lhervier.domino.oauth.server.controller;
 
 import java.util.Map;
 
-import lotus.domino.NotesException;
-
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -15,11 +13,14 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.github.lhervier.domino.oauth.server.NotesPrincipal;
 import com.github.lhervier.domino.oauth.server.aop.ann.ctx.Oauth2DbContext;
 import com.github.lhervier.domino.oauth.server.aop.ann.security.AppAuth;
-import com.github.lhervier.domino.oauth.server.ex.GrantException;
+import com.github.lhervier.domino.oauth.server.ex.BaseGrantException;
+import com.github.lhervier.domino.oauth.server.ex.ForbiddenException;
+import com.github.lhervier.domino.oauth.server.ex.NotAuthorizedException;
 import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
-import com.github.lhervier.domino.oauth.server.ex.grant.InvalidClientException;
-import com.github.lhervier.domino.oauth.server.ex.grant.InvalidRequestException;
-import com.github.lhervier.domino.oauth.server.ex.grant.UnsupportedGrantTypeException;
+import com.github.lhervier.domino.oauth.server.ex.WrongPathException;
+import com.github.lhervier.domino.oauth.server.ex.grant.GrantInvalidClientException;
+import com.github.lhervier.domino.oauth.server.ex.grant.GrantInvalidRequestException;
+import com.github.lhervier.domino.oauth.server.ex.grant.GrantUnsupportedGrantTypeException;
 import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.services.AppService;
 import com.github.lhervier.domino.oauth.server.services.BaseGrantService;
@@ -54,9 +55,8 @@ public class TokenController {
 	
 	/**
 	 * Generate a token
-	 * @throws GrantException error that must be serialized to the user
+	 * @throws BaseGrantException error that must be serialized to the user
 	 * @throws ServerErrorException main error
-	 * @throws NotesException 
 	 */
 	@RequestMapping(value = "/token", method = RequestMethod.POST)
 	public @ResponseBody Map<String, Object> token(
@@ -65,7 +65,7 @@ public class TokenController {
 			@RequestParam(value = "code", required = false) String code,
 			@RequestParam(value = "scope", required = false) String scope,
 			@RequestParam(value = "refresh_token", required = false) String refreshToken,
-			@RequestParam(value = "redirect_uri", required = false) String redirectUri) throws GrantException, ServerErrorException, NotesException {
+			@RequestParam(value = "redirect_uri", required = false) String redirectUri) throws NotAuthorizedException, ForbiddenException, WrongPathException, BaseGrantException, ServerErrorException {
 		return this.token(this.tokenUser, clientId, grantType, code, scope, refreshToken, redirectUri);
 	}
 	public Map<String, Object> token(
@@ -75,27 +75,27 @@ public class TokenController {
 			String code,
 			String scope,
 			String refreshToken,
-			String redirectUri) throws GrantException, ServerErrorException, NotesException {
+			String redirectUri) throws BaseGrantException, ServerErrorException {
 		// Extract application from current user (the application)
 		Application app = this.appSvc.getApplicationFromName(user.getCommon());
 		if( app == null )
-			throw new InvalidClientException("Current user do not correspond to a declared application");
+			throw new GrantInvalidClientException("Current user do not correspond to a declared application");
 		
 		// Validate client_id : Must be the same as the client_id associated with the current user (application)
 		// As the application is authenticated, the clientId is not mandatory.
 		if( StringUtils.isEmpty(clientId) )
 			clientId = app.getClientId();
 		if( !app.getClientId().equals(clientId) )
-			throw new InvalidClientException("client_id do not correspond to the currently logged in application");
+			throw new GrantInvalidClientException("client_id do not correspond to the currently logged in application");
 		
 		// grant_type is mandatory
 		if( StringUtils.isEmpty(grantType) )
-			throw new InvalidRequestException();
+			throw new GrantInvalidRequestException();
 		
 		// run grant
 		BaseGrantService svc = this.grantServices.get(grantType);
 		if( svc == null )
-			throw new UnsupportedGrantTypeException("grant_type '" + grantType + "' is not supported");
+			throw new GrantUnsupportedGrantTypeException("grant_type '" + grantType + "' is not supported");
 		return svc.createGrant(app, grantType, code, scope, refreshToken, redirectUri);
 	}
 }

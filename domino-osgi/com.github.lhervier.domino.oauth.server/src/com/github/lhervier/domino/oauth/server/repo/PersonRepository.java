@@ -1,7 +1,5 @@
 package com.github.lhervier.domino.oauth.server.repo;
 
-import lotus.domino.NotesException;
-
 import com.github.lhervier.domino.oauth.server.entity.PersonEntity;
 
 public interface PersonRepository {
@@ -13,12 +11,11 @@ public interface PersonRepository {
 	/**
 	 * Return the person with the given name.
 	 * The search is made using server rights.
-	 * @throws NotesException
 	 */
-	public PersonEntity findOne(String fullName) throws NotesException;
+	public PersonEntity findOne(String fullName);
 	
 	/**
 	 * Remove a person
 	 */
-	public void delete(String fullName) throws NotesException;
+	public void delete(String fullName);
 }

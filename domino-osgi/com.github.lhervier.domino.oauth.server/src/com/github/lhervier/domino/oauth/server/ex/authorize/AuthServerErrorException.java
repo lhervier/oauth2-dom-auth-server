@@ -1,9 +1,9 @@
 package com.github.lhervier.domino.oauth.server.ex.authorize;
 
-import com.github.lhervier.domino.oauth.server.ex.AuthorizeException;
+import com.github.lhervier.domino.oauth.server.ex.BaseAuthException;
 import com.github.lhervier.domino.oauth.server.model.error.authorize.ServerError;
 
-public class AuthorizeServerErrorException extends AuthorizeException {
+public class AuthServerErrorException extends BaseAuthException {
 
 	/**
 	 * Serial UID
@@ -13,7 +13,7 @@ public class AuthorizeServerErrorException extends AuthorizeException {
 	/**
 	 * Constructeur
 	 */
-	public AuthorizeServerErrorException() {
+	public AuthServerErrorException() {
 		super(new ServerError());
 	}
 
@@ -21,7 +21,7 @@ public class AuthorizeServerErrorException extends AuthorizeException {
 	 * Constructeur
 	 * @param message
 	 */
-	public AuthorizeServerErrorException(String message) {
+	public AuthServerErrorException(String message) {
 		super(message, new ServerError());
 	}
 
@@ -30,7 +30,7 @@ public class AuthorizeServerErrorException extends AuthorizeException {
 	 * @param message
 	 * @param cause
 	 */
-	public AuthorizeServerErrorException(String message, Throwable cause) {
+	public AuthServerErrorException(String message, Throwable cause) {
 		super(message, cause, new ServerError());
 	}
 
@@ -38,7 +38,7 @@ public class AuthorizeServerErrorException extends AuthorizeException {
 	 * Constructeur
 	 * @param cause
 	 */
-	public AuthorizeServerErrorException(Throwable cause) {
+	public AuthServerErrorException(Throwable cause) {
 		super(cause, new ServerError());
 	}
 }

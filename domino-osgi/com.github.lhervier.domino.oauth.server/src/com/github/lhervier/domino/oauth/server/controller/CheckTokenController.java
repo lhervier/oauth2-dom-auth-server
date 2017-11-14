@@ -1,10 +1,6 @@
 package com.github.lhervier.domino.oauth.server.controller;
 
-import java.io.IOException;
-
 import javax.servlet.http.HttpServletResponse;
-
-import lotus.domino.NotesException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -16,7 +12,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.github.lhervier.domino.oauth.server.NotesPrincipal;
 import com.github.lhervier.domino.oauth.server.aop.ann.ctx.Oauth2DbContext;
 import com.github.lhervier.domino.oauth.server.aop.ann.security.AppAuth;
+import com.github.lhervier.domino.oauth.server.ex.ForbiddenException;
 import com.github.lhervier.domino.oauth.server.ex.NotAuthorizedException;
+import com.github.lhervier.domino.oauth.server.ex.WrongPathException;
 import com.github.lhervier.domino.oauth.server.model.TokenContent;
 import com.github.lhervier.domino.oauth.server.services.CheckTokenService;
 
@@ -26,7 +24,6 @@ import com.github.lhervier.domino.oauth.server.services.CheckTokenService;
  * @author Lionel HERVIER
  */
 @Controller
-
 @Oauth2DbContext			// Endpoint only available when accessing the oauth2.nsf database
 @AppAuth					// Must be logged in as an application
 public class CheckTokenController {
@@ -47,14 +44,11 @@ public class CheckTokenController {
 	 * Check a given token
 	 * @param token the token
 	 * @return the token content
-	 * @throws IOException
-	 * @throws NotesException
-	 * @throws NotAuthorizedException
 	 */
 	@RequestMapping(value = "/checkToken", method = RequestMethod.POST)
 	public @ResponseBody TokenContent checkToken(
 			@RequestParam("token") String token,
-			HttpServletResponse response) throws IOException, NotesException, NotAuthorizedException {
+			HttpServletResponse response) throws NotAuthorizedException, ForbiddenException, WrongPathException {
 		response.addHeader("Access-Control-Allow-Origin", "*");
 		return this.checkTokenSvc.checkToken(this.checkTokenUser, token);
 	}

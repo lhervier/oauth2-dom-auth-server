@@ -3,7 +3,6 @@ package com.github.lhervier.domino.oauth.server.services;
 import java.io.IOException;
 import java.util.Map;
 
-import lotus.domino.NotesException;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 
@@ -11,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
-import com.github.lhervier.domino.oauth.server.ex.GrantException;
+import com.github.lhervier.domino.oauth.server.ex.BaseGrantException;
 import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
 import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.repo.SecretRepository;
@@ -52,7 +51,7 @@ public abstract class BaseGrantService {
 		String code,
 		String scope,
 		String refreshToken,
-		String redirectUri) throws GrantException, ServerErrorException, NotesException;
+		String redirectUri) throws BaseGrantException, ServerErrorException;
 	
 	/**
 	 * Generate a new refresh token
@@ -60,7 +59,6 @@ public abstract class BaseGrantService {
 	 * @return the refresh token
 	 * @throws IOException 
 	 * @throws JOSEException 
-	 * @throws NotesException 
 	 * @throws KeyLengthException 
 	 */
 	protected String refreshTokenFromAuthCode(AuthCodeEntity authCode) throws ServerErrorException {
@@ -109,11 +107,7 @@ public abstract class BaseGrantService {
 			return jweObject.serialize();
 		} catch (KeyLengthException e) {
 			throw new ServerErrorException(e);
-		} catch (NotesException e) {
-			throw new ServerErrorException(e);
 		} catch (JOSEException e) {
-			throw new ServerErrorException(e);
-		} catch (IOException e) {
 			throw new ServerErrorException(e);
 		}
 	}

@@ -3,8 +3,6 @@ package com.github.lhervier.domino.oauth.server.utils;
 import java.io.IOException;
 import java.util.Map;
 
-import lotus.domino.NotesException;
-
 import org.codehaus.jackson.map.ObjectMapper;
 
 import com.github.lhervier.domino.oauth.server.ext.IPropertyAdder;
@@ -73,8 +71,6 @@ public class PropertyAdderImpl implements IPropertyAdder {
 			throw new RuntimeException(e);
 		} catch(IOException e) {
 			throw new RuntimeException(e);
-		} catch (NotesException e) {
-			throw new RuntimeException(e);
 		}
 	}
 
@@ -100,8 +96,6 @@ public class PropertyAdderImpl implements IPropertyAdder {
 		} catch (KeyLengthException e) {
 			throw new RuntimeException(e);
 		} catch (JOSEException e) {
-			throw new RuntimeException(e);
-		} catch (NotesException e) {
 			throw new RuntimeException(e);
 		} catch (IOException e) {
 			throw new RuntimeException(e);

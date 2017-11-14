@@ -220,13 +220,25 @@ public class TestAppService extends BaseTest {
 		
 	}
 	
-	@Test
+	@Test(expected = DataIntegrityViolationException.class)
 	public void testUpdateWithInvalidRedirectUri() throws Exception {
-		
+		appSvc.updateApplication(new Application() {{
+			setClientId("1234");
+			setName("myApp");
+			setReaders("*");
+			setRedirectUri("acme.com/myapp");		// Non absolute URI
+			setRedirectUris(new ArrayList<String>());
+		}});
 	}
 	
-	@Test
-	public void testUpdateWithOneInvalidRedirectUri() throws Exception {
-		
+	@Test(expected = DataIntegrityViolationException.class)
+	public void testUpdateWithInvalidRedirectUri2() throws Exception {
+		appSvc.updateApplication(new Application() {{
+			setClientId("1234");
+			setName("myApp");
+			setReaders("*");
+			setRedirectUri("http://acme.com/myapp#xxx");		// Fragment in URI
+			setRedirectUris(new ArrayList<String>());
+		}});
 	}
 }

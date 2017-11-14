@@ -98,7 +98,7 @@ public class ExceptionController {
 	 * This is needed to make the browser get the http status...
 	 */
 	@ExceptionHandler(ForbiddenException.class)
-	@ResponseStatus(value = HttpStatus.UNAUTHORIZED)
+	@ResponseStatus(value = HttpStatus.FORBIDDEN)
 	public ModelAndView processForbiddenException(ForbiddenException e) {
 		Map<String, Object> model = new HashMap<String, Object>();
 		model.put("error", e.getMessage());

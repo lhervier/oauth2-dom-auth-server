@@ -13,7 +13,7 @@ import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.server.ext.IPropertyAdder;
 import com.github.lhervier.domino.oauth.server.ext.IScopeGranter;
 import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
-import com.github.lhervier.domino.oauth.server.utils.SystemUtils;
+import com.github.lhervier.domino.oauth.server.services.TimeService;
 
 /**
  * OAUTH2 Core extension
@@ -45,6 +45,12 @@ public class CoreExt implements IOAuthExtension<CoreContext> {
 	 */
 	@Autowired
 	private AuthCodeRepository authCodeRepo;
+	
+	/**
+	 * The time service
+	 */
+	@Autowired
+	private TimeService timeSvc;
 	
 	/**
 	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#getId()
@@ -132,7 +138,7 @@ public class CoreExt implements IOAuthExtension<CoreContext> {
 			List<String> scopes) {
 		AccessToken token = new AccessToken();
 		BeanUtils.copyProperties(context, token);
-		token.setExp(SystemUtils.currentTimeSeconds() + this.expiresIn);
+		token.setExp(this.timeSvc.currentTimeSeconds() + this.expiresIn);
 		token.setScopes(scopes);
 		adder.addSignedProperty("access_token", token, this.signKey);
 	}

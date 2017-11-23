@@ -24,8 +24,8 @@ import com.github.lhervier.domino.oauth.server.ex.grant.GrantInvalidScopeExcepti
 import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.repo.SecretRepository;
+import com.github.lhervier.domino.oauth.server.services.TimeService;
 import com.github.lhervier.domino.oauth.server.utils.PropertyAdderImpl;
-import com.github.lhervier.domino.oauth.server.utils.SystemUtils;
 import com.github.lhervier.domino.oauth.server.utils.Utils;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWEObject;
@@ -40,6 +40,12 @@ public class RefreshTokenGrantServiceImpl extends BaseGrantService {
 	 */
 	@Value("${oauth2.server.refreshTokenLifetime}")
 	private long refreshTokenLifetime;
+	
+	/**
+	 * Time service
+	 */
+	@Autowired
+	private TimeService timeSvc;
 	
 	/**
 	 * Secret repository
@@ -161,7 +167,7 @@ public class RefreshTokenGrantServiceImpl extends BaseGrantService {
 			JSONObject payload = jweObject.getPayload().toJSONObject();
 			
 			// Check it is not expired
-			if( payload.getAsNumber("exp").longValue() < SystemUtils.currentTimeSeconds() )
+			if( payload.getAsNumber("exp").longValue() < this.timeSvc.currentTimeSeconds() )
 				return null;
 			
 			AuthCodeEntity ret = new AuthCodeEntity();

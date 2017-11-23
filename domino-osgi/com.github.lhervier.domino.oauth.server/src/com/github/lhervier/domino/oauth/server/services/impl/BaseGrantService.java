@@ -12,7 +12,7 @@ import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
 import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
 import com.github.lhervier.domino.oauth.server.repo.SecretRepository;
 import com.github.lhervier.domino.oauth.server.services.GrantService;
-import com.github.lhervier.domino.oauth.server.utils.SystemUtils;
+import com.github.lhervier.domino.oauth.server.services.TimeService;
 import com.nimbusds.jose.EncryptionMethod;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWEAlgorithm;
@@ -41,6 +41,12 @@ public abstract class BaseGrantService implements GrantService {
 	private SecretRepository secretRespo;
 	
 	/**
+	 * Time service
+	 */
+	@Autowired
+	private TimeService timeSvc;
+	
+	/**
 	 * Generate a new refresh token
 	 * @param authCode the authorization code
 	 * @return the refresh token
@@ -54,7 +60,7 @@ public abstract class BaseGrantService implements GrantService {
 			
 			JSONObject payload = new JSONObject();
 			payload.put("id", authCode.getId());
-			payload.put("exp", SystemUtils.currentTimeSeconds() + this.refreshTokenLifetime);
+			payload.put("exp", this.timeSvc.currentTimeSeconds() + this.refreshTokenLifetime);
 			payload.put("application", authCode.getApplication());
 			payload.put("clientId", authCode.getClientId());
 			payload.put("redirectUri", authCode.getRedirectUri());

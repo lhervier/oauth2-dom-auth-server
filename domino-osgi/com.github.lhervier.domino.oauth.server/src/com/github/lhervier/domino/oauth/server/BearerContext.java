@@ -22,8 +22,8 @@ import org.springframework.stereotype.Component;
 
 import com.github.lhervier.domino.oauth.server.ext.core.AccessToken;
 import com.github.lhervier.domino.oauth.server.repo.SecretRepository;
+import com.github.lhervier.domino.oauth.server.services.TimeService;
 import com.github.lhervier.domino.oauth.server.utils.DominoUtils;
-import com.github.lhervier.domino.oauth.server.utils.SystemUtils;
 import com.ibm.domino.napi.NException;
 import com.ibm.domino.napi.c.NotesUtil;
 import com.ibm.domino.napi.c.Os;
@@ -54,6 +54,12 @@ public class BearerContext {
 	 */
 	@Autowired
 	private SecretRepository secretRepo;
+	
+	/**
+	 * Time service
+	 */
+	@Autowired
+	private TimeService timeSvc;
 	
 	/**
 	 * The sign key
@@ -140,7 +146,7 @@ public class BearerContext {
 			AccessToken accessToken = this.mapper.readValue(jwsObj.getPayload().toString(), AccessToken.class);
 			
 			// Check token is not expired
-			if( accessToken.getExp() < SystemUtils.currentTimeSeconds() ) {
+			if( accessToken.getExp() < this.timeSvc.currentTimeSeconds() ) {
 				LOG.error("Bearer token expired");
 				return;
 			}

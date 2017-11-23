@@ -21,7 +21,7 @@ import com.github.lhervier.domino.oauth.server.model.TokenContent;
 import com.github.lhervier.domino.oauth.server.repo.SecretRepository;
 import com.github.lhervier.domino.oauth.server.services.AppService;
 import com.github.lhervier.domino.oauth.server.services.CheckTokenService;
-import com.github.lhervier.domino.oauth.server.utils.SystemUtils;
+import com.github.lhervier.domino.oauth.server.services.TimeService;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSObject;
 import com.nimbusds.jose.JWSVerifier;
@@ -50,6 +50,12 @@ public class CheckTokenServiceImpl implements CheckTokenService {
 	 */
 	@Autowired
 	private AppService appService;
+	
+	/**
+	 * Time service
+	 */
+	@Autowired
+	private TimeService timeSvc;
 	
 	/**
 	 * SSO config used to sign access tokens
@@ -124,7 +130,7 @@ public class CheckTokenServiceImpl implements CheckTokenService {
 		
 		// Mark active/inactive
 		TokenContent resp = new TokenContent();
-		resp.setActive(tk.getExp() > SystemUtils.currentTimeSeconds());
+		resp.setActive(tk.getExp() > this.timeSvc.currentTimeSeconds());
 		if( resp.isActive() ) {
 			resp.setClientId(tk.getAud());
 			resp.setExp(tk.getExp());

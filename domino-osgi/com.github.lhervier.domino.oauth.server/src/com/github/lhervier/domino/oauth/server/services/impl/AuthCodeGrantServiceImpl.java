@@ -19,8 +19,8 @@ import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
 import com.github.lhervier.domino.oauth.server.repo.SecretRepository;
+import com.github.lhervier.domino.oauth.server.services.TimeService;
 import com.github.lhervier.domino.oauth.server.utils.PropertyAdderImpl;
-import com.github.lhervier.domino.oauth.server.utils.SystemUtils;
 import com.github.lhervier.domino.oauth.server.utils.Utils;
 
 @Service("authorization_code")
@@ -37,6 +37,12 @@ public class AuthCodeGrantServiceImpl extends BaseGrantService {
 	 */
 	@Autowired
 	private SecretRepository secretRespo;
+	
+	/**
+	 * Time service
+	 */
+	@Autowired
+	private TimeService timeSvc;
 	
 	/**
 	 * The refresh token life time
@@ -84,7 +90,7 @@ public class AuthCodeGrantServiceImpl extends BaseGrantService {
 			
 			// Check it did not expire
 			long expired = (long) authCode.getExpires();
-			if( expired < SystemUtils.currentTimeSeconds() )
+			if( expired < this.timeSvc.currentTimeSeconds() )
 				throw new GrantInvalidGrantException("code has expired");
 			
 			// Check it was generated for the right clientId

@@ -15,8 +15,8 @@ import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.server.ext.IPropertyAdder;
 import com.github.lhervier.domino.oauth.server.ext.IScopeGranter;
 import com.github.lhervier.domino.oauth.server.repo.PersonRepository;
+import com.github.lhervier.domino.oauth.server.services.TimeService;
 import com.github.lhervier.domino.oauth.server.utils.ReflectionUtils;
-import com.github.lhervier.domino.oauth.server.utils.SystemUtils;
 
 /**
  * Implémentation de OpenID par dessus OAUth2
@@ -48,6 +48,12 @@ public class OpenIDExt implements IOAuthExtension<OpenIdContext> {
 	 */
 	@Autowired
 	private PersonRepository personRepo;
+
+	/**
+	 * Time service
+	 */
+	@Autowired
+	private TimeService timeSvc;
 	
 	/**
 	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#getContextClass()
@@ -95,7 +101,7 @@ public class OpenIDExt implements IOAuthExtension<OpenIdContext> {
 		ctx.setAcr(null);				// TODO: acr non généré
 		ctx.setAmr(null);				// TODO: amr non généré
 		ctx.setAzp(null);				// TODO: azp non généré
-		ctx.setAuthTime(SystemUtils.currentTimeSeconds());
+		ctx.setAuthTime(this.timeSvc.currentTimeSeconds());
 		if( this.request.getParameter("nonce") != null )
 			ctx.setNonce(this.request.getParameter("nonce"));
 		else
@@ -168,7 +174,7 @@ public class OpenIDExt implements IOAuthExtension<OpenIdContext> {
 			return null;
 		
 		IdToken idToken = new IdToken();
-		idToken.setIat(SystemUtils.currentTimeSeconds());
+		idToken.setIat(this.timeSvc.currentTimeSeconds());
 		
 		// Main properties
 		ReflectionUtils.copyProperties(

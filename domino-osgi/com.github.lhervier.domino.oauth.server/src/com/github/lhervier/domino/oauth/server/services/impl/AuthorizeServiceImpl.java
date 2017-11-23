@@ -27,8 +27,8 @@ import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.repo.SecretRepository;
 import com.github.lhervier.domino.oauth.server.services.AppService;
 import com.github.lhervier.domino.oauth.server.services.AuthorizeService;
+import com.github.lhervier.domino.oauth.server.services.TimeService;
 import com.github.lhervier.domino.oauth.server.utils.PropertyAdderImpl;
-import com.github.lhervier.domino.oauth.server.utils.SystemUtils;
 import com.github.lhervier.domino.oauth.server.utils.Utils;
 
 /**
@@ -43,6 +43,12 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 	 */
 	@Autowired
 	private AppService appSvc;
+	
+	/**
+	 * The time service
+	 */
+	@Autowired
+	private TimeService timeSvc;
 	
 	/**
 	 * The secret repository
@@ -131,7 +137,7 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 			authCode.setApplication(app.getFullName());
 			authCode.setClientId(app.getClientId());
 			authCode.setRedirectUri(redirectUri);
-			authCode.setExpires(SystemUtils.currentTimeSeconds() + this.authCodeLifeTime);
+			authCode.setExpires(this.timeSvc.currentTimeSeconds() + this.authCodeLifeTime);
 			authCode.setContextClasses(new HashMap<String, String>());
 			authCode.setContextObjects(new HashMap<String, String>());
 			

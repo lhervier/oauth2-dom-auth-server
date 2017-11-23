@@ -1,5 +1,7 @@
 package com.github.lhervier.domino.oauth.server.controller;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,7 +11,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -35,6 +36,17 @@ public class ExceptionController {
 	private static final Log LOG = LogFactory.getLog(ExceptionController.class);
 	
 	/**
+	 * Domino v9.0.1 no longer trace stack traces...
+	 * @return the stack trace
+	 */
+	private String getStackTrace(Throwable e) {
+		StringWriter wrt = new StringWriter();
+		PrintWriter pw = new PrintWriter(wrt);
+		e.printStackTrace(pw);
+		return wrt.toString();
+	}
+	
+	/**
 	 * Handle Authorization errors.
 	 * Redirect with error detail in url if redirect_uri is present.
 	 * Throw error otherwise
@@ -54,7 +66,7 @@ public class ExceptionController {
 	@ExceptionHandler(BaseGrantException.class)
 	@ResponseStatus(value = HttpStatus.BAD_REQUEST)
 	public @ResponseBody GrantError handleGrantException(BaseGrantException e) {
-		LOG.error(e.getMessage());
+		LOG.error(getStackTrace(e));
 		return e.getError();
 	}
 	
@@ -62,8 +74,13 @@ public class ExceptionController {
 	 * Handle wrong path exceptions sending a 404 error
 	 */
 	@ExceptionHandler(WrongPathException.class)
-	public ResponseEntity<Void> handleWrongPathException(WrongPathException e) {
-		return new ResponseEntity<Void>(HttpStatus.NOT_FOUND);
+	@ResponseStatus(value = HttpStatus.NOT_FOUND)
+	public ModelAndView handleWrongPathException(WrongPathException e) {
+		LOG.info(getStackTrace(e));
+		Map<String, Object> model = new HashMap<String, Object>();
+		model.put("error", e);
+		model.put("status", HttpStatus.NOT_FOUND.value());
+		return new ModelAndView("error", model);
 	}
 	
 	// ======================================================================================
@@ -76,10 +93,11 @@ public class ExceptionController {
 	@ExceptionHandler(NotAuthorizedException.class)
 	@ResponseStatus(value = HttpStatus.UNAUTHORIZED)
 	public ModelAndView processNotAuthorizedException(NotAuthorizedException e, HttpServletResponse response) {
-		LOG.info(e);
+		LOG.info(getStackTrace(e));
 		response.addHeader("Access-Control-Allow-Origin", "*");
 		Map<String, Object> model = new HashMap<String, Object>();
 		model.put("error", e.getMessage());
+		model.put("status", HttpStatus.UNAUTHORIZED.value());
 		return new ModelAndView("error", model);
 	}
 	
@@ -90,9 +108,10 @@ public class ExceptionController {
 	@ExceptionHandler(ForbiddenException.class)
 	@ResponseStatus(value = HttpStatus.FORBIDDEN)
 	public ModelAndView processForbiddenException(ForbiddenException e) {
-		LOG.info(e);
+		LOG.info(getStackTrace(e));
 		Map<String, Object> model = new HashMap<String, Object>();
 		model.put("error", e.getMessage());
+		model.put("status", HttpStatus.FORBIDDEN.value());
 		return new ModelAndView("error", model);
 	}
 	
@@ -102,9 +121,10 @@ public class ExceptionController {
 	@ExceptionHandler(InvalidUriException.class)
 	@ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
 	public ModelAndView processInvalidUriException(InvalidUriException e) {
-		LOG.fatal(e);
+		LOG.fatal(getStackTrace(e));
 		Map<String, Object> model = new HashMap<String, Object>();
 		model.put("error", e.getMessage());
+		model.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
 		return new ModelAndView("error", model);
 	}
 	
@@ -116,9 +136,10 @@ public class ExceptionController {
 	@ExceptionHandler(DataAccessException.class)
 	@ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
 	public ModelAndView processDataAccessException(DataAccessException e) {
-		LOG.fatal(e);
+		LOG.fatal(getStackTrace(e));
 		Map<String, Object> model = new HashMap<String, Object>();
 		model.put("error", e.getMessage());
+		model.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
 		return new ModelAndView("error", model);
 	}
 	
@@ -128,9 +149,10 @@ public class ExceptionController {
 	@ExceptionHandler(ServerErrorException.class)
 	@ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
 	public ModelAndView processServerErrorException(ServerErrorException e) {
-		LOG.error(e);
+		LOG.error(getStackTrace(e));
 		Map<String, Object> model = new HashMap<String, Object>();
 		model.put("error", e.getMessage());
+		model.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
 		return new ModelAndView("error", model);
 	}
 	
@@ -142,9 +164,10 @@ public class ExceptionController {
 	@ExceptionHandler(Throwable.class)
 	@ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
 	public ModelAndView processThrowable(Throwable e) {
-		LOG.fatal(e);
+		LOG.fatal(getStackTrace(e));
 		Map<String, Object> model = new HashMap<String, Object>();
 		model.put("error", e.getMessage());
+		model.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
 		return new ModelAndView("error", model);
 	}	
 }

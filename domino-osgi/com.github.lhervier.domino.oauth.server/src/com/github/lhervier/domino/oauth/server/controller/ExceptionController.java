@@ -76,6 +76,7 @@ public class ExceptionController {
 	@ExceptionHandler(NotAuthorizedException.class)
 	@ResponseStatus(value = HttpStatus.UNAUTHORIZED)
 	public ModelAndView processNotAuthorizedException(NotAuthorizedException e, HttpServletResponse response) {
+		LOG.info(e);
 		response.addHeader("Access-Control-Allow-Origin", "*");
 		Map<String, Object> model = new HashMap<String, Object>();
 		model.put("error", e.getMessage());
@@ -89,17 +90,7 @@ public class ExceptionController {
 	@ExceptionHandler(ForbiddenException.class)
 	@ResponseStatus(value = HttpStatus.FORBIDDEN)
 	public ModelAndView processForbiddenException(ForbiddenException e) {
-		Map<String, Object> model = new HashMap<String, Object>();
-		model.put("error", e.getMessage());
-		return new ModelAndView("error", model);
-	}
-	
-	/**
-	 * Data access exception. We cannot handle that...
-	 */
-	@ExceptionHandler(DataAccessException.class)
-	@ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
-	public ModelAndView processDataAccessException(DataAccessException e) {
+		LOG.info(e);
 		Map<String, Object> model = new HashMap<String, Object>();
 		model.put("error", e.getMessage());
 		return new ModelAndView("error", model);
@@ -111,6 +102,21 @@ public class ExceptionController {
 	@ExceptionHandler(InvalidUriException.class)
 	@ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
 	public ModelAndView processInvalidUriException(InvalidUriException e) {
+		LOG.fatal(e);
+		Map<String, Object> model = new HashMap<String, Object>();
+		model.put("error", e.getMessage());
+		return new ModelAndView("error", model);
+	}
+	
+	// ========================================================================================
+	
+	/**
+	 * Data access exception. We cannot handle that...
+	 */
+	@ExceptionHandler(DataAccessException.class)
+	@ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
+	public ModelAndView processDataAccessException(DataAccessException e) {
+		LOG.fatal(e);
 		Map<String, Object> model = new HashMap<String, Object>();
 		model.put("error", e.getMessage());
 		return new ModelAndView("error", model);
@@ -122,6 +128,7 @@ public class ExceptionController {
 	@ExceptionHandler(ServerErrorException.class)
 	@ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
 	public ModelAndView processServerErrorException(ServerErrorException e) {
+		LOG.error(e);
 		Map<String, Object> model = new HashMap<String, Object>();
 		model.put("error", e.getMessage());
 		return new ModelAndView("error", model);
@@ -135,7 +142,7 @@ public class ExceptionController {
 	@ExceptionHandler(Throwable.class)
 	@ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
 	public ModelAndView processThrowable(Throwable e) {
-		LOG.error(e);
+		LOG.fatal(e);
 		Map<String, Object> model = new HashMap<String, Object>();
 		model.put("error", e.getMessage());
 		return new ModelAndView("error", model);

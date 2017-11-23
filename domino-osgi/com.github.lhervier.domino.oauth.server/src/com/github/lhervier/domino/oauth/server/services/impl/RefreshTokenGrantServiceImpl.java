@@ -1,4 +1,4 @@
-package com.github.lhervier.domino.oauth.server.services;
+package com.github.lhervier.domino.oauth.server.services.impl;
 
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -33,7 +33,7 @@ import com.nimbusds.jose.KeyLengthException;
 import com.nimbusds.jose.crypto.DirectDecrypter;
 
 @Service("refresh_token")
-public class RefreshTokenGrantService extends BaseGrantService {
+public class RefreshTokenGrantServiceImpl extends BaseGrantService {
 
 	/**
 	 * The refresh token life time
@@ -55,7 +55,7 @@ public class RefreshTokenGrantService extends BaseGrantService {
 	private List<IOAuthExtension> exts;
 	
 	/**
-	 * @see com.github.lhervier.domino.oauth.server.services.BaseGrantService#createGrant(com.github.lhervier.domino.oauth.server.model.Application, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+	 * @see com.github.lhervier.domino.oauth.server.services.GrantService#createGrant(com.github.lhervier.domino.oauth.server.model.Application, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
 	 */
 	@Override
 	public Map<String, Object> createGrant(

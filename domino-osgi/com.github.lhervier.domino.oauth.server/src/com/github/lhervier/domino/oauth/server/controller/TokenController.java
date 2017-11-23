@@ -23,7 +23,7 @@ import com.github.lhervier.domino.oauth.server.ex.grant.GrantInvalidRequestExcep
 import com.github.lhervier.domino.oauth.server.ex.grant.GrantUnsupportedGrantTypeException;
 import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.services.AppService;
-import com.github.lhervier.domino.oauth.server.services.BaseGrantService;
+import com.github.lhervier.domino.oauth.server.services.GrantService;
 
 /**
  * Bean pour le endpoint "token"
@@ -39,7 +39,7 @@ public class TokenController {
 	 * The grant services
 	 */
 	@Autowired
-	private Map<String, BaseGrantService> grantServices;
+	private Map<String, GrantService> grantServices;
 	
 	/**
 	 * Application service
@@ -93,7 +93,7 @@ public class TokenController {
 			throw new GrantInvalidRequestException();
 		
 		// run grant
-		BaseGrantService svc = this.grantServices.get(grantType);
+		GrantService svc = this.grantServices.get(grantType);
 		if( svc == null )
 			throw new GrantUnsupportedGrantTypeException("grant_type '" + grantType + "' is not supported");
 		return svc.createGrant(app, grantType, code, scope, refreshToken, redirectUri);

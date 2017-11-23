@@ -1,4 +1,4 @@
-package com.github.lhervier.domino.oauth.server.services;
+package com.github.lhervier.domino.oauth.server.services.impl;
 
 import java.util.HashMap;
 import java.util.List;
@@ -24,7 +24,7 @@ import com.github.lhervier.domino.oauth.server.utils.SystemUtils;
 import com.github.lhervier.domino.oauth.server.utils.Utils;
 
 @Service("authorization_code")
-public class AuthCodeGrantService extends BaseGrantService {
+public class AuthCodeGrantServiceImpl extends BaseGrantService {
 
 	/**
 	 * Authorization code repository
@@ -52,7 +52,7 @@ public class AuthCodeGrantService extends BaseGrantService {
 	private List<IOAuthExtension> exts;
 	
 	/**
-	 * @see com.github.lhervier.domino.oauth.server.services.BaseGrantService#createGrant(Application, String, String, String, String)
+	 * @see com.github.lhervier.domino.oauth.server.services.GrantService#createGrant(com.github.lhervier.domino.oauth.server.model.Application, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
 	 */
 	@SuppressWarnings("unchecked")
 	@Override

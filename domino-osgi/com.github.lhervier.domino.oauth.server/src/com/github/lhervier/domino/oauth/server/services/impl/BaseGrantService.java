@@ -1,7 +1,6 @@
-package com.github.lhervier.domino.oauth.server.services;
+package com.github.lhervier.domino.oauth.server.services.impl;
 
 import java.io.IOException;
-import java.util.Map;
 
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
@@ -10,10 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
-import com.github.lhervier.domino.oauth.server.ex.BaseGrantException;
 import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
-import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.repo.SecretRepository;
+import com.github.lhervier.domino.oauth.server.services.GrantService;
 import com.github.lhervier.domino.oauth.server.utils.SystemUtils;
 import com.nimbusds.jose.EncryptionMethod;
 import com.nimbusds.jose.JOSEException;
@@ -28,7 +26,7 @@ import com.nimbusds.jose.crypto.DirectEncrypter;
  * Base class to manage the grant requests
  * @author Lionel HERVIER
  */
-public abstract class BaseGrantService {
+public abstract class BaseGrantService implements GrantService {
 
 	/**
 	 * The refresh token life time
@@ -41,17 +39,6 @@ public abstract class BaseGrantService {
 	 */
 	@Autowired
 	private SecretRepository secretRespo;
-	
-	/**
-	 * Generate the grant
-	 */
-	public abstract Map<String, Object> createGrant(
-		Application app,
-		String grantType,
-		String code,
-		String scope,
-		String refreshToken,
-		String redirectUri) throws BaseGrantException, ServerErrorException;
 	
 	/**
 	 * Generate a new refresh token

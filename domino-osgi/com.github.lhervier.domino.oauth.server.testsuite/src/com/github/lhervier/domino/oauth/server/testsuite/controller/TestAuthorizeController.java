@@ -6,6 +6,8 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.startsWith;
+import static org.hamcrest.collection.IsEmptyIterable.emptyIterable;
+import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.hamcrest.collection.IsMapContaining.hasKey;
 import static org.hamcrest.core.Is.is;
@@ -20,9 +22,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,10 +41,14 @@ import org.springframework.test.web.servlet.MvcResult;
 import com.github.lhervier.domino.oauth.server.NotesPrincipal.AuthType;
 import com.github.lhervier.domino.oauth.server.entity.ApplicationEntity;
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
+import com.github.lhervier.domino.oauth.server.ext.core.CoreContext;
+import com.github.lhervier.domino.oauth.server.ext.core.CoreExt;
 import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
 import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
 import com.github.lhervier.domino.oauth.server.testsuite.BaseTest;
+import com.github.lhervier.domino.oauth.server.testsuite.NotesPrincipalTestImpl;
 import com.github.lhervier.domino.oauth.server.testsuite.TestConfig;
+import com.github.lhervier.domino.oauth.server.testsuite.TimeServiceTestImpl;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {TestConfig.class})
@@ -53,10 +61,24 @@ public class TestAuthorizeController extends BaseTest {
 	@Autowired
 	private AuthCodeRepository authCodeRepoMock;
 	
+	@Autowired
+	private CoreExt coreExt;
+	
+	@Autowired
+	protected NotesPrincipalTestImpl user;
+	
 	@Before
 	public void setUp() {
 		reset(appRepoMock);
 		reset(authCodeRepoMock);
+		
+		user.setAuthType(AuthType.NOTES);
+		user.setName("CN=Lionel/O=USER");
+		user.setCommon("Lionel");
+		user.setRoles(new ArrayList<String>());
+		user.setClientId(null);
+		user.setScopes(null);
+		user.setCurrentDatabasePath(this.oauth2Db);
 	}
 	
 	/**
@@ -283,14 +305,15 @@ public class TestAuthorizeController extends BaseTest {
 	// =======================================================================
 	
 	/**
-	 * Get an authorization code
+	 * Get an authorization code without a redirect uri.
+	 * App only have one, so it's ok.
 	 */
 	@Test
-	public void authCodeFlow() throws Exception {
+	public void authCodeFlowNoRedirectUri() throws Exception {
 		when(appRepoMock.findOne(anyString())).thenReturn(new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");
-			setFullName("CN=myApp/O=APP");
+			setFullName("CN=myApp" + appRoot);
 			setRedirectUri("http://acme.com/myApp");
 		}});
 		
@@ -302,6 +325,7 @@ public class TestAuthorizeController extends BaseTest {
 				.param("client_id", "1234")
 				.param("response_type", "code")
 				.param("state", "myState")
+				.param("scope", "azerty uiop")
 		)
 		.andExpect(status().is(302))
 		.andReturn();
@@ -319,8 +343,25 @@ public class TestAuthorizeController extends BaseTest {
 		assertThat(added.size(), is(equalTo(1)));
 		AuthCodeEntity code = added.get(0);
 		
-		// Tester la redirect_uri, les granted scopes, la date d'expiration, le client_id et ce qu'il y a dans les contextes
+		assertThat(code.getId(), equalTo(params.get("code")));
 		
+		assertThat(code.getRedirectUri(), equalTo("http://acme.com/myApp"));
+		assertThat(code.getClientId(), equalTo("1234"));
+		assertThat(code.getExpires(), equalTo(TimeServiceTestImpl.CURRENT_TIME + authCodeLifetime));
+		
+		assertThat(code.getScopes(), containsInAnyOrder("azerty", "uiop"));
+		assertThat(code.getGrantedScopes(), emptyIterable());
+		
+		assertThat(code.getContextClasses().size(), is(equalTo(1)));
+		assertThat(code.getContextClasses(), hasKey(this.coreExt.getId()));
+		
+		String jsonCtx = code.getContextObjects().get(this.coreExt.getId());
+		ObjectMapper mapper = new ObjectMapper();
+		CoreContext ctx = mapper.readValue(jsonCtx, CoreContext.class);
+		
+		assertThat(ctx.getAud(), equalTo("1234"));
+		assertThat(ctx.getIss(), equalTo(coreIss));
+		assertThat(ctx.getSub(), equalTo("CN=Lionel/O=USER"));
 	}
 	
 	/**
@@ -331,7 +372,7 @@ public class TestAuthorizeController extends BaseTest {
 		when(appRepoMock.findOne(anyString())).thenReturn(new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");
-			setFullName("CN=myApp/O=APP");
+			setFullName("CN=myApp" + appRoot);
 			setRedirectUri("http://acme.com/myApp?param1=xxx");			// Existing parameters in uri
 		}});
 		
@@ -354,6 +395,8 @@ public class TestAuthorizeController extends BaseTest {
 		assertThat(params, hasEntry("param1", "xxx"));
 	}
 	
+	// ======================================================================================
+	
 	/**
 	 * Get an access token
 	 */
@@ -362,7 +405,7 @@ public class TestAuthorizeController extends BaseTest {
 		when(appRepoMock.findOne(anyString())).thenReturn(new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");
-			setFullName("CN=myApp/O=APP");
+			setFullName("CN=myApp" + appRoot);
 			setRedirectUri("http://acme.com/myApp");
 		}});
 		
@@ -395,7 +438,7 @@ public class TestAuthorizeController extends BaseTest {
 		when(appRepoMock.findOne(anyString())).thenReturn(new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");
-			setFullName("CN=myApp/O=APP");
+			setFullName("CN=myApp" + appRoot);
 			setRedirectUri("http://acme.com/myApp#param1=xxx");			// Existing parameters in uri
 		}});
 		

@@ -2,8 +2,13 @@ package com.github.lhervier.domino.oauth.server.testsuite;
 
 import java.util.List;
 
+import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Component;
+
 import com.github.lhervier.domino.oauth.server.NotesPrincipal;
 
+@Component
+@Primary
 public class NotesPrincipalTestImpl implements NotesPrincipal {
 
 	private AuthType authType;

@@ -10,13 +10,13 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
 
-import com.github.lhervier.domino.oauth.server.NotesPrincipal;
 import com.github.lhervier.domino.oauth.server.OauthServerConfig;
 import com.github.lhervier.domino.oauth.server.WebConfig;
 import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
 import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
 import com.github.lhervier.domino.oauth.server.repo.PersonRepository;
 import com.github.lhervier.domino.oauth.server.repo.SecretRepository;
+import com.github.lhervier.domino.oauth.server.services.TimeService;
 import com.github.lhervier.domino.spring.servlet.SpringServletConfig;
 
 @Configuration
@@ -40,6 +40,12 @@ public class TestConfig {
 	@Primary
 	public AuthCodeRepository authCodeRepository() {
 		return mock(AuthCodeRepository.class);
+	}
+	
+	@Bean
+	@Primary
+	public TimeService timeService() {
+		return new TimeServiceTestImpl();
 	}
 	
 	@Bean
@@ -73,11 +79,5 @@ public class TestConfig {
 				}
 			}
 		};
-	}
-	
-	@Bean
-	@Primary
-	public NotesPrincipal notesPrincipal() {
-		return new NotesPrincipalTestImpl();
 	}
 }

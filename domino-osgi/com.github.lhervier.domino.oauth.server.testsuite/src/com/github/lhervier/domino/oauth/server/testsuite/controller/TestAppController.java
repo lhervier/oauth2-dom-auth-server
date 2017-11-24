@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -21,6 +22,7 @@ import com.github.lhervier.domino.oauth.server.NotesPrincipal.AuthType;
 import com.github.lhervier.domino.oauth.server.entity.ApplicationEntity;
 import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
 import com.github.lhervier.domino.oauth.server.testsuite.BaseTest;
+import com.github.lhervier.domino.oauth.server.testsuite.NotesPrincipalTestImpl;
 import com.github.lhervier.domino.oauth.server.testsuite.TestConfig;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -32,9 +34,20 @@ public class TestAppController extends BaseTest {
 	@Autowired
 	private ApplicationRepository appRepoMock;
 	
+	@Autowired
+	protected NotesPrincipalTestImpl user;
+	
 	@Before
 	public void setUp() {
 		reset(appRepoMock);
+		
+		user.setAuthType(AuthType.NOTES);
+		user.setName("CN=Lionel/O=USER");
+		user.setCommon("Lionel");
+		user.setRoles(Arrays.asList("[AppsManager]"));
+		user.setClientId(null);
+		user.setScopes(null);
+		user.setCurrentDatabasePath(this.oauth2Db);
 	}
 	
 	@Test

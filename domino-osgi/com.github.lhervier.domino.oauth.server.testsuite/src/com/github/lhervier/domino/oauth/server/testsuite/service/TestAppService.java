@@ -248,7 +248,7 @@ public class TestAppService extends BaseTest {
 	 * Update with non absolute redirect uri
 	 */
 	@Test(expected = DataIntegrityViolationException.class)
-	public void testUpdateWithInvalidRedirectUri() throws Exception {
+	public void updateWithNonAbsoluteRedirectUri() throws Exception {
 		ApplicationEntity entity = new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");
@@ -272,7 +272,7 @@ public class TestAppService extends BaseTest {
 	 * Update with fragment in the uri should be OK
 	 */
 	@Test
-	public void testUpdateWithInvalidRedirectUri2() throws Exception {
+	public void updateWithFragmentInRedirectUri() throws Exception {
 		ApplicationEntity entity = new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");

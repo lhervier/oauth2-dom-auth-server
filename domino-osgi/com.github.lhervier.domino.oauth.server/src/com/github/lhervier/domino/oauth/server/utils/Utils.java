@@ -33,13 +33,6 @@ public class Utils {
 	/**
 	 * Check the redirectUri
 	 */
-	public static final String checkRedirectUri(String redirectUri) {
-		return checkRedirectUri(redirectUri, null);
-	}
-	
-	/**
-	 * Check the redirectUri
-	 */
 	public static final String checkRedirectUri(String redirectUri, Application app) {
 		if( StringUtils.isEmpty(redirectUri) )
 			return "No redirect_uri in query string.";

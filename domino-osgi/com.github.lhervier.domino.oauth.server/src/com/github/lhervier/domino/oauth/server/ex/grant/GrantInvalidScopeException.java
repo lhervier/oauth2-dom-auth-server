@@ -12,13 +12,6 @@ public class GrantInvalidScopeException extends BaseGrantException {
 
 	/**
 	 * Constructeur
-	 */
-	public GrantInvalidScopeException() {
-		super(new InvalidScopeError());
-	}
-
-	/**
-	 * Constructeur
 	 * @param message
 	 */
 	public GrantInvalidScopeException(String message) {

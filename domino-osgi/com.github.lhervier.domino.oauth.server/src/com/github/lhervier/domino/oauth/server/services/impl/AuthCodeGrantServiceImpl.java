@@ -94,7 +94,7 @@ public class AuthCodeGrantServiceImpl extends BaseGrantService {
 			// Get the authorization code
 			AuthCodeEntity authCode = this.authCodeRepo.findOne(code);
 			if( authCode == null )
-				throw new GrantInvalidGrantException();
+				throw new GrantInvalidGrantException("code is invalid");
 			
 			// Check it did not expire
 			long expired = (long) authCode.getExpires();
@@ -107,7 +107,7 @@ public class AuthCodeGrantServiceImpl extends BaseGrantService {
 			
 			// Check that the redirect_uri is the same
 			if( !redirectUri.equals(authCode.getRedirectUri()) )
-				throw new GrantInvalidGrantException("redirect_uri is not the same as the one stored in the authorization code");
+				throw new GrantInvalidGrantException("invalid redirect_uri : It is not the same as the one stored in the authorization code");
 			
 			// Make each implementation add its own properties
 			// They can change their context.

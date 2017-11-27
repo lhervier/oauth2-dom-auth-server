@@ -12,13 +12,6 @@ public class GrantInvalidRequestException extends BaseGrantException {
 
 	/**
 	 * Constructeur
-	 */
-	public GrantInvalidRequestException() {
-		super(new InvalidRequestError());
-	}
-
-	/**
-	 * Constructeur
 	 * @param message
 	 */
 	public GrantInvalidRequestException(String message) {

@@ -124,7 +124,7 @@ public class RefreshTokenGrantServiceImpl extends BaseGrantService {
 		
 		// Check that the token has been generated for the current application
 		if( !app.getClientId().equals(authCode.getClientId()) )
-			throw new GrantInvalidGrantException();
+			throw new GrantInvalidGrantException("client_id is invalid");
 		
 		// Prepare the response
 		Map<String, Object> resp = new HashMap<String, Object>();

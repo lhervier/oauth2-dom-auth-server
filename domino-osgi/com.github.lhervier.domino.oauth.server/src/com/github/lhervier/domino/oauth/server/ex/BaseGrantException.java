@@ -31,6 +31,7 @@ public class BaseGrantException extends Exception {
 	public BaseGrantException(String message, GrantError error) {
 		super(message);
 		this.error = error;
+		this.error.setErrorDescription(message);
 	}
 
 	/**

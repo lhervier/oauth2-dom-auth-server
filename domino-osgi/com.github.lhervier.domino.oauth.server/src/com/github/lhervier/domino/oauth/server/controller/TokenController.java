@@ -90,7 +90,7 @@ public class TokenController {
 		
 		// grant_type is mandatory
 		if( StringUtils.isEmpty(grantType) )
-			throw new GrantInvalidRequestException();
+			throw new GrantInvalidRequestException("grant_type is mandatory");
 		
 		// run grant
 		GrantService svc = this.grantServices.get(grantType);

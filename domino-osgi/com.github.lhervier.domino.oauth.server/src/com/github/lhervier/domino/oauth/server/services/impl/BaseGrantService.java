@@ -35,6 +35,12 @@ public abstract class BaseGrantService implements GrantService {
 	private long refreshTokenLifetime;
 	
 	/**
+	 * Name of the LTPA config used to encrypt refresh tokens
+	 */
+	@Value("${oauth2.server.refreshTokenConfig}")
+	private String refreshTokenConfig;
+	
+	/**
 	 * Secret repository
 	 */
 	@Autowired
@@ -95,7 +101,7 @@ public abstract class BaseGrantService implements GrantService {
 					new Payload(payload)
 			);
 			jweObject.encrypt(new DirectEncrypter(
-					this.secretRespo.findRefreshTokenSecret()
+					this.secretRespo.findCryptSecret(this.refreshTokenConfig)
 			));
 			return jweObject.serialize();
 		} catch (KeyLengthException e) {

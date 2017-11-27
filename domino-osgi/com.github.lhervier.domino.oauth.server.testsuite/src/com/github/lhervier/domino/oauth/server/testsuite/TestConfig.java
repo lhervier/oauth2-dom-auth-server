@@ -55,16 +55,7 @@ public class TestConfig {
 			@Override
 			public byte[] findCryptSecret(String ssoConfig) {
 				try {
-					return "01234567890123456789012345678901".getBytes("UTF-8");
-				} catch (UnsupportedEncodingException e) {
-					throw new RuntimeException(e);
-				}
-			}
-
-			@Override
-			public byte[] findRefreshTokenSecret() {
-				try {
-					return "azertyuiopqsdfghjklmwxcvbnazerty".getBytes("UTF-8");
+					return "0123456789012345".getBytes("UTF-8");
 				} catch (UnsupportedEncodingException e) {
 					throw new RuntimeException(e);
 				}

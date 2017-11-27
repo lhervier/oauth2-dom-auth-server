@@ -17,9 +17,4 @@ public interface SecretRepository {
 	 * @param ssoConfig la config sso
 	 */
 	public byte[] findCryptSecret(String ssoConfig);
-	
-	/**
-	 * Retourne le secret utilisé pour crypter le refresh token
-	 */
-	public byte[] findRefreshTokenSecret();
 }

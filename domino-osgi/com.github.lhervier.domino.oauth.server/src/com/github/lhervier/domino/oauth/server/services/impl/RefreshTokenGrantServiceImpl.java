@@ -42,6 +42,12 @@ public class RefreshTokenGrantServiceImpl extends BaseGrantService {
 	private long refreshTokenLifetime;
 	
 	/**
+	 * Name of the LTPA config used to encrypt refresh tokens
+	 */
+	@Value("${oauth2.server.refreshTokenConfig}")
+	private String refreshTokenConfig;
+	
+	/**
 	 * Time service
 	 */
 	@Autowired
@@ -163,7 +169,11 @@ public class RefreshTokenGrantServiceImpl extends BaseGrantService {
 	private AuthCodeEntity authCodeFromRefreshToken(String sRefreshToken) throws ServerErrorException {
 		try {
 			JWEObject jweObject = JWEObject.parse(sRefreshToken);
-			jweObject.decrypt(new DirectDecrypter(this.secretRespo.findRefreshTokenSecret()));
+			jweObject.decrypt(
+					new DirectDecrypter(
+							this.secretRespo.findCryptSecret(this.refreshTokenConfig)
+					)
+			);
 			JSONObject payload = jweObject.getPayload().toJSONObject();
 			
 			// Check it is not expired

@@ -8,7 +8,6 @@ import lotus.domino.NotesException;
 import lotus.domino.View;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.stereotype.Repository;
 
@@ -33,12 +32,6 @@ public class NotesSecretRepository implements SecretRepository {
 	 * Le nom du champ dans lequel récupérer le secret
 	 */
 	public static final String SECRET_FIELD_NAME = "LTPA_DominoSecret";
-	
-	/**
-	 * Name of the LTPA config used to encrypt refresh tokens
-	 */
-	@Value("${oauth2.server.refreshTokenConfig}")
-	private String refreshTokenConfig;
 	
 	/**
 	 * The notes context
@@ -108,13 +101,5 @@ public class NotesSecretRepository implements SecretRepository {
 	 */
 	public byte[] findCryptSecret(String ssoConfig) {
 		return this.getSecret(ssoConfig, 16);
-	}
-	
-	/**
-	 * Retourne le secret utilisé pour crypter le refresh token
-	 * @throws IOException 
-	 */
-	public byte[] findRefreshTokenSecret() {
-		return this.findCryptSecret(this.refreshTokenConfig);
 	}
 }

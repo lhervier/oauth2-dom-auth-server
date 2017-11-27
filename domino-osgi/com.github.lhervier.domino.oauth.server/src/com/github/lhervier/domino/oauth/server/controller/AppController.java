@@ -1,7 +1,5 @@
 package com.github.lhervier.domino.oauth.server.controller;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +24,7 @@ import com.github.lhervier.domino.oauth.server.ex.WrongPathException;
 import com.github.lhervier.domino.oauth.server.form.ApplicationForm;
 import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.services.AppService;
+import com.github.lhervier.domino.oauth.server.utils.Utils;
 
 @Controller
 @RequestMapping(value = "/html")
@@ -135,24 +134,6 @@ public class AppController {
 	// ===============================================================
 	
 	/**
-	 * Check a redirect Uri
-	 */
-	private String checkRedirectUri(String redirectUri) {
-		if( StringUtils.isEmpty(redirectUri) )
-			return "redirect_uri is mandatory";
-		
-		try {
-			URI uri = new URI(redirectUri);
-			if( !uri.isAbsolute() )
-				return "redirect_uri must be an absolute URI";
-		} catch (URISyntaxException e) {
-			return "redirect_uri must be a valid URI";
-		}
-		
-		return null;
-	}
-	
-	/**
 	 * Check an application object
 	 * @return an error object
 	 */
@@ -162,7 +143,7 @@ public class AppController {
 		if( StringUtils.isEmpty(app.getReaders()) )
 			app.setReadersError("readers are mandatory");
 		
-		app.setRedirectUriError(this.checkRedirectUri(app.getRedirectUri()));
+		app.setRedirectUriError(Utils.checkRedirectUri(app.getRedirectUri()));
 	}
 	
 	/**
@@ -191,7 +172,7 @@ public class AppController {
 		// Just want to add a redirectUri
 		if( "addRedirectUri".equals(form.getAction()) ) {
 			
-			newForm.setNewRedirectUriError(this.checkRedirectUri(form.getNewRedirectUri()));
+			newForm.setNewRedirectUriError(Utils.checkRedirectUri(form.getNewRedirectUri()));
 			if( newForm.getNewRedirectUriError() == null ) {
 				this.getSessionRedirectUris().add(form.getNewRedirectUri());		// Also add value in the session list
 				newForm.setExistingRedirectUris(this.getSessionRedirectUris());

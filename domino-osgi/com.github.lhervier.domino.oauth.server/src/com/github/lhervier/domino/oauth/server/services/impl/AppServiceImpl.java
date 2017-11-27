@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import com.github.lhervier.domino.oauth.server.entity.ApplicationEntity;
 import com.github.lhervier.domino.oauth.server.entity.PersonEntity;
@@ -16,6 +17,7 @@ import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
 import com.github.lhervier.domino.oauth.server.repo.PersonRepository;
 import com.github.lhervier.domino.oauth.server.services.AppService;
+import com.github.lhervier.domino.oauth.server.utils.Utils;
 
 /**
  * Service to manipualte applications
@@ -79,9 +81,21 @@ public class AppServiceImpl implements AppService {
 		entity.setName(app.getName());
 		entity.setFullName("CN=" + app.getName() + this.applicationRoot);
 		entity.setReaders(app.getReaders());
-		entity.setRedirectUri(app.getRedirectUri());
+		if( !StringUtils.isEmpty(app.getRedirectUri()) ) { 
+			String error = Utils.checkRedirectUri(app.getRedirectUri());
+			if( error != null )
+				throw new DataIntegrityViolationException(error);
+			entity.setRedirectUri(app.getRedirectUri());
+		}
 		entity.setRedirectUris(new ArrayList<String>());
-		entity.getRedirectUris().addAll(app.getRedirectUris());
+		if( app.getRedirectUris() != null ) {
+			for( String uri : app.getRedirectUris() ) {
+				String error = Utils.checkRedirectUri(uri);
+				if( error != null )
+					throw new DataIntegrityViolationException(error);
+				entity.getRedirectUris().add(uri);
+			}
+		}
 		
 		return entity;
 	}

@@ -1,5 +1,6 @@
 package com.github.lhervier.domino.oauth.server.testsuite.controller;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -19,7 +20,6 @@ import java.util.HashMap;
 
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.hamcrest.CoreMatchers;
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -71,23 +71,6 @@ public class TestTokenController extends BaseTest {
 		user.setClientId(null);
 		user.setScopes(null);
 		user.setCurrentDatabasePath(this.oauth2Db);
-	}
-	
-	/**
-	 * Mock the app repo
-	 */
-	private void mockApp() throws Exception {
-		ApplicationEntity app = new ApplicationEntity() {{
-			this.setAppReader("CN=myApp/OU=APPLICATION/O=WEB");
-			this.setClientId("1234");
-			this.setFullName("CN=myApp/OU=APPLICATION/O=WEB");
-			this.setName("myApp");
-			this.setReaders("*");
-			this.setRedirectUri("http://acme.com/myApp");
-			this.setRedirectUris(new ArrayList<String>());
-		}};
-		when(this.appRepoMock.findOne(eq("1234"))).thenReturn(app);
-		when(this.appRepoMock.findOneByName(eq("myApp"))).thenReturn(app);
 	}
 	
 	/**
@@ -147,21 +130,88 @@ public class TestTokenController extends BaseTest {
 		public void setScope(String scope) { this.scope = scope; }
 	};
 	
-	
 	/**
 	 * Get tokens from auth code using GET is forbidden
 	 */
 	@Test
-	public void tokensFromAuthCodeWithGet() throws Exception {
+	public void postMandatory() throws Exception {
 		this.mockAuthCode();
-		this.mockApp();
+		
+		ApplicationEntity app = new ApplicationEntity() {{
+			this.setAppReader("CN=myApp/OU=APPLICATION/O=WEB");
+			this.setClientId("1234");
+			this.setFullName("CN=myApp/OU=APPLICATION/O=WEB");
+			this.setName("myApp");
+			this.setReaders("*");
+			this.setRedirectUri("http://acme.com/myApp");
+			this.setRedirectUris(new ArrayList<String>());
+		}};
+		when(this.appRepoMock.findOne(eq("1234"))).thenReturn(app);
+		when(this.appRepoMock.findOneByName(eq("myApp"))).thenReturn(app);
 		
 		this.mockMvc.perform(
 				get("/token")
 				.param("grant_type", "authorization_code")
 				.param("code", "012345")
-		).andExpect(status().is(500))
+		).andExpect(status().is(500))		// RFC is not specifying that we must return a 400 error here. 500 is spring default behaviour and we don't want to change it...
 		.andExpect(content().string(CoreMatchers.containsString("Request method 'GET' not supported")));
+	}
+	
+	/**
+	 * Code is mandatory
+	 */
+	@Test
+	public void codeMandatory() throws Exception {
+		this.mockAuthCode();
+		
+		ApplicationEntity app = new ApplicationEntity() {{
+			this.setAppReader("CN=myApp/OU=APPLICATION/O=WEB");
+			this.setClientId("1234");
+			this.setFullName("CN=myApp/OU=APPLICATION/O=WEB");
+			this.setName("myApp");
+			this.setReaders("*");
+			this.setRedirectUri("http://acme.com/myApp");
+			this.setRedirectUris(new ArrayList<String>());
+		}};
+		when(this.appRepoMock.findOne(eq("1234"))).thenReturn(app);
+		when(this.appRepoMock.findOneByName(eq("myApp"))).thenReturn(app);
+		
+		this.mockMvc.perform(
+				post("/token")
+				.param("grant_type", "authorization_code")
+				.param("code", "")
+		).andExpect(status().is(400))
+		.andExpect(content().string(containsString("code is mandatory")));
+	}
+	
+	/**
+	 * Redirect uri must be the same as the one asked in authorize request
+	 */
+	@Test
+	public void wrongRedirectUri() throws Exception {
+		this.mockAuthCode();
+		
+		ApplicationEntity app = new ApplicationEntity() {{
+			this.setAppReader("CN=myApp/OU=APPLICATION/O=WEB");
+			this.setClientId("1234");
+			this.setFullName("CN=myApp/OU=APPLICATION/O=WEB");
+			this.setName("myApp");
+			this.setReaders("*");
+			this.setRedirectUri("http://acme.com/myApp");
+			this.setRedirectUris(new ArrayList<String>() {{
+				add("http://other.redirect/uri");				// App have another redirect uri
+			}});
+		}};
+		when(this.appRepoMock.findOne(eq("1234"))).thenReturn(app);
+		when(this.appRepoMock.findOneByName(eq("myApp"))).thenReturn(app);
+		
+		this.mockMvc.perform(
+				post("/token")
+				.param("grant_type", "authorization_code")
+				.param("code", "012345")
+				.param("redirect_uri", "http://other.redirect/uri")
+		).andExpect(status().is(400))
+		.andExpect(content().string(containsString("invalid redirect_uri")));
 	}
 	
 	/**
@@ -170,11 +220,23 @@ public class TestTokenController extends BaseTest {
 	@Test
 	public void tokensFromAuthCode() throws Exception {
 		this.mockAuthCode();
-		this.mockApp();
+		
+		ApplicationEntity app = new ApplicationEntity() {{
+			this.setAppReader("CN=myApp/OU=APPLICATION/O=WEB");
+			this.setClientId("1234");
+			this.setFullName("CN=myApp/OU=APPLICATION/O=WEB");
+			this.setName("myApp");
+			this.setReaders("*");
+			this.setRedirectUri("http://acme.com/myApp");
+			this.setRedirectUris(new ArrayList<String>());
+		}};
+		when(this.appRepoMock.findOne(eq("1234"))).thenReturn(app);
+		when(this.appRepoMock.findOneByName(eq("myApp"))).thenReturn(app);
 		
 		MvcResult result = this.mockMvc.perform(
 				post("/token")
 				.param("grant_type", "authorization_code")
+				.param("redirect_uri", "http://acme.com/myApp")
 				.param("code", "012345")
 		).andExpect(status().is(200))
 		.andExpect(content().contentType("application/json;charset=UTF-8"))

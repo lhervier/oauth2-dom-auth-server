@@ -3,11 +3,14 @@ package com.github.lhervier.domino.oauth.server.utils;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.security.SecureRandom;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -86,5 +89,23 @@ public class Utils {
 		} catch (UnsupportedEncodingException e) {
 			throw new RuntimeException(e);			// UTF-8 is supported !!
 		}
+	}
+	
+	/**
+	 * Check a redirect Uri
+	 */
+	public static final String checkRedirectUri(String redirectUri) {
+		if( StringUtils.isEmpty(redirectUri) )
+			return "redirect_uri is mandatory";
+		
+		try {
+			URI uri = new URI(redirectUri);
+			if( !uri.isAbsolute() )
+				return "redirect_uri must be an absolute URI";
+		} catch (URISyntaxException e) {
+			return "redirect_uri must be a valid URI";
+		}
+		
+		return null;
 	}
 }

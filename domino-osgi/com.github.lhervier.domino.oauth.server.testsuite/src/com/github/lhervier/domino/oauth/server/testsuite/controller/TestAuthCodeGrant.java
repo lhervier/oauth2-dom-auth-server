@@ -46,7 +46,7 @@ import com.github.lhervier.domino.oauth.server.testsuite.TimeServiceTestImpl;
 @ContextConfiguration(classes = {TestConfig.class})
 @ActiveProfiles("test")
 @SuppressWarnings("serial")
-public class TestTokenController extends BaseTest {
+public class TestAuthCodeGrant extends BaseTest {
 
 	/**
 	 * "normal" application.

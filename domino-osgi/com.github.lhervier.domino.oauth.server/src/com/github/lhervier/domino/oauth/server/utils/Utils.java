@@ -3,14 +3,11 @@ package com.github.lhervier.domino.oauth.server.utils;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.security.SecureRandom;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -29,28 +26,6 @@ public class Utils {
 	 * Jackson mapper
 	 */
 	private static final ObjectMapper MAPPER = new ObjectMapper();
-	
-	/**
-	 * Check the redirectUri
-	 */
-	public static final String checkRedirectUri(String redirectUri, Application app) {
-		if( StringUtils.isEmpty(redirectUri) )
-			return "No redirect_uri in query string.";
-		try {
-			URI uri = new URI(redirectUri);
-			if( !uri.isAbsolute() )
-				return "Invalid redirect_uri. Must be absolute.";
-			
-			// Check uri is declared in the application
-			if( app != null ) {
-				if( !isRegistered(redirectUri, app) )
-					return "redirect_uri '" + redirectUri + "' is not declared in the uris of application '" + app.getClientId() + "'";
-			}
-		} catch (URISyntaxException e) {
-			return "Invalid redirect_uri. Syntax is invalid.";
-		}
-		return null;
-	}
 	
 	/**
 	 * Check that the redirect uri is one of the app registered values

@@ -69,10 +69,18 @@ public class AuthCodeGrantServiceImpl extends BaseGrantService {
 			String scope,
 			String refreshToken, 
 			String redirectUri) throws BaseGrantException, ServerErrorException {
-		// Validate redirect_uri
-		String redirectError = Utils.checkRedirectUri(redirectUri, app);
-		if( redirectError != null )
-			throw new ServerErrorException(redirectError);
+		// Get URI from app if it only have one
+		if( StringUtils.isEmpty(redirectUri) )
+			if( app.getRedirectUris() == null || app.getRedirectUris().size() == 0 )
+				redirectUri = app.getRedirectUri();
+		
+		// RedirectURI must not be empty
+		if( StringUtils.isEmpty(redirectUri) )
+			throw new ServerErrorException("No redirect_uri in query string.");
+		
+		// Check uri is declared in the application
+		if( !Utils.isRegistered(redirectUri, app) )
+			throw new ServerErrorException("redirect_uri '" + redirectUri + "' is not declared in the uris of application '" + app.getClientId() + "'");
 		
 		// Validate the code
 		if( code == null )

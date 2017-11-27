@@ -84,9 +84,6 @@ public class AuthCodeGrantServiceImpl extends BaseGrantService {
 		
 		// Process authorization code
 		try {
-			// Prepare the response
-			Map<String, Object> resp = new HashMap<String, Object>();
-		
 			// Get the authorization code
 			AuthCodeEntity authCode = this.authCodeRepo.findOne(code);
 			if( authCode == null )
@@ -99,7 +96,7 @@ public class AuthCodeGrantServiceImpl extends BaseGrantService {
 			
 			// Check it was generated for the right clientId
 			if( !app.getClientId().equals(authCode.getClientId()) )
-				throw new GrantInvalidClientException("client_id is not the same as the one stored in the authorization code");
+				throw new GrantInvalidClientException("code generated for another app");
 			
 			// Check that the redirect_uri is the same
 			if( !redirectUri.equals(authCode.getRedirectUri()) )
@@ -107,6 +104,7 @@ public class AuthCodeGrantServiceImpl extends BaseGrantService {
 			
 			// Make each implementation add its own properties
 			// They can change their context.
+			Map<String, Object> resp = new HashMap<String, Object>();
 			for( IOAuthExtension ext : this.exts ) {
 				Object context = Utils.getContext(authCode, ext.getId());
 				if( context == null )

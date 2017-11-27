@@ -14,6 +14,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -47,44 +48,88 @@ import com.github.lhervier.domino.oauth.server.testsuite.TimeServiceTestImpl;
 @SuppressWarnings("serial")
 public class TestTokenController extends BaseTest {
 
+	/**
+	 * "normal" application.
+	 */
+	private static final String APP_NAME = "myApp";
+	private static final String APP_FULL_NAME = "CN=myApp/OU=APPLICATION/O=WEB";
+	private static final String APP_CLIENT_ID = "1234";
+	private static final String APP_REDIRECT_URI = "http://acme.com/myApp";
+	
+	/**
+	 * Hacky app: Try to declare another app that points to the same redirect uri
+	 */
+	private static final String HACKY_APP_NAME = "hackyApp";
+	private static final String HACKY_APP_FULL_NAME = "CN=hackyApp/OU=APPLICATION/O=WEB";
+	private static final String HACKY_APP_CLIENT_ID = "3456";
+	private static final String HACKY_APP_REDIRECT_URI = "http://acme.com/myApp";
+	
+	/**
+	 * Authorization codes
+	 */
+	private static final String AUTH_CODE_ID = "012345";								// for normal app, as Lionel
+	
+	/**
+	 * App repo mock
+	 */
 	@Autowired
 	private ApplicationRepository appRepoMock;
 	
+	/**
+	 * Auth code repo mock
+	 */
 	@Autowired
 	private AuthCodeRepository authCodeRepoMock;
 	
+	/**
+	 * Core extension
+	 */
 	@Autowired
 	private CoreExt coreExt;
 	
+	/**
+	 * User principal
+	 */
 	@Autowired
 	protected NotesPrincipalTestImpl user;
 	
+	/**
+	 * Before
+	 */
 	@Before
-	public void setUp() {
+	public void before() throws IOException {
+		// Reset repositories
 		reset(appRepoMock);
 		reset(authCodeRepoMock);
 		
-		user.setAuthType(AuthType.NOTES);
-		user.setName("CN=myApp/OU=APPLICATION/O=WEB");
-		user.setCommon("myApp");
-		user.setRoles(new ArrayList<String>());
-		user.setClientId(null);
-		user.setScopes(null);
-		user.setCurrentDatabasePath(this.oauth2Db);
-	}
-	
-	/**
-	 * Mock the auth code repo
-	 */
-	private void mockAuthCode() throws Exception {
-		when(this.authCodeRepoMock.findOne(eq("012345"))).thenReturn(new AuthCodeEntity() {{
-			this.setId("012345");
-			this.setApplication("myApp");
-			this.setClientId("1234");
+		// Declare applications
+		ApplicationEntity normalApp = new ApplicationEntity() {{
+			this.setClientId(APP_CLIENT_ID);
+			this.setFullName(APP_FULL_NAME);
+			this.setName(APP_NAME);
+			this.setRedirectUri(APP_REDIRECT_URI);
+		}};
+		when(this.appRepoMock.findOne(eq(APP_CLIENT_ID))).thenReturn(normalApp);
+		when(this.appRepoMock.findOneByName(eq(APP_NAME))).thenReturn(normalApp);
+		
+		ApplicationEntity hackyApp = new ApplicationEntity() {{
+			this.setClientId(HACKY_APP_CLIENT_ID);
+			this.setFullName(HACKY_APP_FULL_NAME);
+			this.setName(HACKY_APP_NAME);
+			this.setRedirectUri(HACKY_APP_REDIRECT_URI);
+		}};
+		when(this.appRepoMock.findOne(eq(HACKY_APP_CLIENT_ID))).thenReturn(hackyApp);
+		when(this.appRepoMock.findOneByName(eq(HACKY_APP_NAME))).thenReturn(hackyApp);
+		
+		// Declare authorization codes
+		AuthCodeEntity code = new AuthCodeEntity() {{
+			this.setId(AUTH_CODE_ID);
+			this.setApplication(APP_NAME);
+			this.setClientId(APP_CLIENT_ID);
 			this.setExpires(TimeServiceTestImpl.CURRENT_TIME + 600);
 			this.setScopes(Arrays.asList("scope1", "scope2"));
 			this.setGrantedScopes(new ArrayList<String>());
-			this.setRedirectUri("http://acme.com/myApp");
+			this.setRedirectUri(APP_REDIRECT_URI);
 			this.setContextClasses(new HashMap<String, String>() {{
 				put(
 						coreExt.getId(), 
@@ -95,13 +140,23 @@ public class TestTokenController extends BaseTest {
 				put(
 						coreExt.getId(),
 						mapper.writeValueAsString(new CoreContext() {{
-							this.setAud("1234");
+							this.setAud(APP_CLIENT_ID);
 							this.setSub("CN=Lionel/o=USER");
 							this.setIss("https://acme.com/domino/oauth2/");
 						}})
 				);
 			}});
-		}});
+		}};
+		when(this.authCodeRepoMock.findOne(eq(AUTH_CODE_ID))).thenReturn(code);
+		
+		// Login as normal application.
+		user.setAuthType(AuthType.NOTES);
+		user.setName(APP_FULL_NAME);
+		user.setCommon(APP_NAME);
+		user.setRoles(new ArrayList<String>());
+		user.setClientId(null);
+		user.setScopes(null);
+		user.setCurrentDatabasePath(this.oauth2Db);
 	}
 	
 	public static class TokenResponse {
@@ -130,29 +185,17 @@ public class TestTokenController extends BaseTest {
 		public void setScope(String scope) { this.scope = scope; }
 	};
 	
+	// ======================================================================
+	
 	/**
 	 * Get tokens from auth code using GET is forbidden
 	 */
 	@Test
 	public void postMandatory() throws Exception {
-		this.mockAuthCode();
-		
-		ApplicationEntity app = new ApplicationEntity() {{
-			this.setAppReader("CN=myApp/OU=APPLICATION/O=WEB");
-			this.setClientId("1234");
-			this.setFullName("CN=myApp/OU=APPLICATION/O=WEB");
-			this.setName("myApp");
-			this.setReaders("*");
-			this.setRedirectUri("http://acme.com/myApp");
-			this.setRedirectUris(new ArrayList<String>());
-		}};
-		when(this.appRepoMock.findOne(eq("1234"))).thenReturn(app);
-		when(this.appRepoMock.findOneByName(eq("myApp"))).thenReturn(app);
-		
 		this.mockMvc.perform(
 				get("/token")
 				.param("grant_type", "authorization_code")
-				.param("code", "012345")
+				.param("code", AUTH_CODE_ID)
 		).andExpect(status().is(500))		// RFC is not specifying that we must return a 400 error here. 500 is spring default behaviour and we don't want to change it...
 		.andExpect(content().string(CoreMatchers.containsString("Request method 'GET' not supported")));
 	}
@@ -162,20 +205,6 @@ public class TestTokenController extends BaseTest {
 	 */
 	@Test
 	public void codeMandatory() throws Exception {
-		this.mockAuthCode();
-		
-		ApplicationEntity app = new ApplicationEntity() {{
-			this.setAppReader("CN=myApp/OU=APPLICATION/O=WEB");
-			this.setClientId("1234");
-			this.setFullName("CN=myApp/OU=APPLICATION/O=WEB");
-			this.setName("myApp");
-			this.setReaders("*");
-			this.setRedirectUri("http://acme.com/myApp");
-			this.setRedirectUris(new ArrayList<String>());
-		}};
-		when(this.appRepoMock.findOne(eq("1234"))).thenReturn(app);
-		when(this.appRepoMock.findOneByName(eq("myApp"))).thenReturn(app);
-		
 		this.mockMvc.perform(
 				post("/token")
 				.param("grant_type", "authorization_code")
@@ -189,29 +218,49 @@ public class TestTokenController extends BaseTest {
 	 */
 	@Test
 	public void wrongRedirectUri() throws Exception {
-		this.mockAuthCode();
-		
-		ApplicationEntity app = new ApplicationEntity() {{
-			this.setAppReader("CN=myApp/OU=APPLICATION/O=WEB");
-			this.setClientId("1234");
-			this.setFullName("CN=myApp/OU=APPLICATION/O=WEB");
-			this.setName("myApp");
-			this.setReaders("*");
-			this.setRedirectUri("http://acme.com/myApp");
-			this.setRedirectUris(new ArrayList<String>() {{
-				add("http://other.redirect/uri");				// App have another redirect uri
-			}});
-		}};
-		when(this.appRepoMock.findOne(eq("1234"))).thenReturn(app);
-		when(this.appRepoMock.findOneByName(eq("myApp"))).thenReturn(app);
+		this.mockMvc.perform(
+				post("/token")
+				.param("grant_type", "authorization_code")
+				.param("code", AUTH_CODE_ID)
+				.param("redirect_uri", "http://wrong.redirect/uri")
+		).andExpect(status().is(400))
+		.andExpect(content().string(containsString("invalid redirect_uri")));
+	}
+	
+	/**
+	 * Expires auth code
+	 */
+	@Test
+	public void expiredAuthCode() throws Exception {
+		TimeServiceTestImpl.CURRENT_TIME = (System.currentTimeMillis() / 1000L) + 700L;
 		
 		this.mockMvc.perform(
 				post("/token")
 				.param("grant_type", "authorization_code")
-				.param("code", "012345")
-				.param("redirect_uri", "http://other.redirect/uri")
+				.param("code", AUTH_CODE_ID)
+				.param("redirect_uri", APP_REDIRECT_URI)
 		).andExpect(status().is(400))
-		.andExpect(content().string(containsString("invalid redirect_uri")));
+		.andExpect(content().string(containsString("code has expired")));
+	}
+	
+	/**
+	 * Auth code must have been generated for the
+	 * currently authenticated app
+	 */
+	@Test
+	public void wrongClientId() throws Exception {
+		// Login as hacky app
+		user.setName(HACKY_APP_FULL_NAME);
+		user.setCommon(HACKY_APP_NAME);
+		
+		// Try to exchange the auth code from normal app
+		this.mockMvc.perform(
+				post("/token")
+				.param("grant_type", "authorization_code")
+				.param("code", AUTH_CODE_ID)
+				.param("redirect_uri", APP_REDIRECT_URI)
+		).andExpect(status().is(400))
+		.andExpect(content().string(containsString("code generated for another app")));
 	}
 	
 	/**
@@ -219,25 +268,11 @@ public class TestTokenController extends BaseTest {
 	 */
 	@Test
 	public void tokensFromAuthCode() throws Exception {
-		this.mockAuthCode();
-		
-		ApplicationEntity app = new ApplicationEntity() {{
-			this.setAppReader("CN=myApp/OU=APPLICATION/O=WEB");
-			this.setClientId("1234");
-			this.setFullName("CN=myApp/OU=APPLICATION/O=WEB");
-			this.setName("myApp");
-			this.setReaders("*");
-			this.setRedirectUri("http://acme.com/myApp");
-			this.setRedirectUris(new ArrayList<String>());
-		}};
-		when(this.appRepoMock.findOne(eq("1234"))).thenReturn(app);
-		when(this.appRepoMock.findOneByName(eq("myApp"))).thenReturn(app);
-		
 		MvcResult result = this.mockMvc.perform(
 				post("/token")
 				.param("grant_type", "authorization_code")
-				.param("redirect_uri", "http://acme.com/myApp")
-				.param("code", "012345")
+				.param("redirect_uri", APP_REDIRECT_URI)
+				.param("code", AUTH_CODE_ID)
 		).andExpect(status().is(200))
 		.andExpect(content().contentType("application/json;charset=UTF-8"))
 		.andReturn();
@@ -252,6 +287,5 @@ public class TestTokenController extends BaseTest {
 		assertThat(resp.getExpiresIn(), is(equalTo(36000L)));
 		
 		assertThat(resp.getIdToken(), is(nullValue()));
-		
 	}
 }

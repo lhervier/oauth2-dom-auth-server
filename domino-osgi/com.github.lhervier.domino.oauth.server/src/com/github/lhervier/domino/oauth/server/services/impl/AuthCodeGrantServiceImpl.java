@@ -76,14 +76,10 @@ public class AuthCodeGrantServiceImpl extends BaseGrantService {
 		
 		// RedirectURI must not be empty
 		if( StringUtils.isEmpty(redirectUri) )
-			throw new ServerErrorException("No redirect_uri in query string.");
-		
-		// Check uri is declared in the application
-		if( !Utils.isRegistered(redirectUri, app) )
-			throw new ServerErrorException("redirect_uri '" + redirectUri + "' is not declared in the uris of application '" + app.getClientId() + "'");
+			throw new ServerErrorException("no redirect_uri in query string.");
 		
 		// Validate the code
-		if( code == null )
+		if( StringUtils.isEmpty(code) )
 			throw new GrantInvalidRequestException("code is mandatory");
 		
 		// Process authorization code

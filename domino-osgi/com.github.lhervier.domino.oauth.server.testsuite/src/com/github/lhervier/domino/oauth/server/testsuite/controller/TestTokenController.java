@@ -1,5 +1,10 @@
 package com.github.lhervier.domino.oauth.server.testsuite.controller;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
@@ -12,7 +17,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import org.codehaus.jackson.annotate.JsonProperty;
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -70,7 +77,7 @@ public class TestTokenController extends BaseTest {
 	 * Mock the app repo
 	 */
 	private void mockApp() throws Exception {
-		when(this.appRepoMock.findOne(eq("1234"))).thenReturn(new ApplicationEntity() {{
+		ApplicationEntity app = new ApplicationEntity() {{
 			this.setAppReader("CN=myApp/OU=APPLICATION/O=WEB");
 			this.setClientId("1234");
 			this.setFullName("CN=myApp/OU=APPLICATION/O=WEB");
@@ -78,7 +85,9 @@ public class TestTokenController extends BaseTest {
 			this.setReaders("*");
 			this.setRedirectUri("http://acme.com/myApp");
 			this.setRedirectUris(new ArrayList<String>());
-		}});
+		}};
+		when(this.appRepoMock.findOne(eq("1234"))).thenReturn(app);
+		when(this.appRepoMock.findOneByName(eq("myApp"))).thenReturn(app);
 	}
 	
 	/**
@@ -92,6 +101,7 @@ public class TestTokenController extends BaseTest {
 			this.setExpires(TimeServiceTestImpl.CURRENT_TIME + 600);
 			this.setScopes(Arrays.asList("scope1", "scope2"));
 			this.setGrantedScopes(new ArrayList<String>());
+			this.setRedirectUri("http://acme.com/myApp");
 			this.setContextClasses(new HashMap<String, String>() {{
 				put(
 						coreExt.getId(), 
@@ -110,6 +120,33 @@ public class TestTokenController extends BaseTest {
 			}});
 		}});
 	}
+	
+	public static class TokenResponse {
+		@JsonProperty("refresh_token")
+		private String refreshToken;
+		@JsonProperty("access_token")
+		private String accessToken;
+		@JsonProperty("id_token")
+		private String idToken;
+		@JsonProperty("expires_in")
+		private long expiresIn;
+		@JsonProperty("token_type")
+		private String tokenType;
+		private String scope;
+		public String getRefreshToken() { return refreshToken; }
+		public void setRefreshToken(String refreshToken) { this.refreshToken = refreshToken; }
+		public String getAccessToken() { return accessToken; }
+		public void setAccessToken(String accessToken) { this.accessToken = accessToken; }
+		public String getIdToken() { return idToken; }
+		public void setIdToken(String idToken) { this.idToken = idToken; }
+		public long getExpiresIn() { return expiresIn; }
+		public void setExpiresIn(long expiresIn) { this.expiresIn = expiresIn; }
+		public String getTokenType() { return tokenType; }
+		public void setTokenType(String tokenType) { this.tokenType = tokenType; }
+		public String getScope() { return scope; }
+		public void setScope(String scope) { this.scope = scope; }
+	};
+	
 	
 	/**
 	 * Get tokens from auth code using GET is forbidden
@@ -140,7 +177,19 @@ public class TestTokenController extends BaseTest {
 				.param("grant_type", "authorization_code")
 				.param("code", "012345")
 		).andExpect(status().is(200))
-		.andExpect(content().contentType("application/json"))
+		.andExpect(content().contentType("application/json;charset=UTF-8"))
 		.andReturn();
+		
+		String json = result.getResponse().getContentAsString();
+		
+		TokenResponse resp = this.mapper.readValue(json, TokenResponse.class);
+		assertThat(resp.getRefreshToken(), is(notNullValue()));
+		assertThat(resp.getAccessToken(), is(notNullValue()));
+		assertThat(resp.getTokenType(), is("Bearer"));
+		assertThat(resp.getScope(), is(""));
+		assertThat(resp.getExpiresIn(), is(equalTo(36000L)));
+		
+		assertThat(resp.getIdToken(), is(nullValue()));
+		
 	}
 }

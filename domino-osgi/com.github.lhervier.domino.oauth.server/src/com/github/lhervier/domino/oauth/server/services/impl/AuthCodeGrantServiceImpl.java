@@ -136,7 +136,7 @@ public class AuthCodeGrantServiceImpl extends BaseGrantService {
 			resp.put("token_type", "Bearer");
 			
 			// scopes only if they are different from the one asked when calling authorize end point
-			if( !authCode.getScopes().containsAll(authCode.getGrantedScopes()) )
+			if( !authCode.getGrantedScopes().containsAll(authCode.getScopes()) )
 				resp.put("scope", StringUtils.join(authCode.getGrantedScopes().iterator(), " "));
 			
 			return resp;

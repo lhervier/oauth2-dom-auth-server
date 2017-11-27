@@ -287,7 +287,7 @@ public class TestAppService extends BaseTest {
 			setClientId("1234");
 			setName("myApp");
 			setReaders("*");
-			setRedirectUri("http://acme.com/myapp#xxx");		// Fragment in URI
+			setRedirectUri("http://acme.com/myapp#xxx");		// Fragment in URI => No Problem !
 			setRedirectUris(new ArrayList<String>());
 		}});
 	}

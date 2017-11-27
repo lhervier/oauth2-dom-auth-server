@@ -20,7 +20,7 @@ import com.github.lhervier.domino.oauth.server.repo.SecretRepository;
 @ContextConfiguration(classes = {TestConfig.class})
 @ActiveProfiles("test")
 @WebAppConfiguration(value = "../com.github.lhervier.domino.oauth.server/")		// To access freemarkers templates
-public class BaseTest {
+public abstract class BaseTest {
 
 	@Value("${oauth2.server.db}")
 	protected String oauth2Db;

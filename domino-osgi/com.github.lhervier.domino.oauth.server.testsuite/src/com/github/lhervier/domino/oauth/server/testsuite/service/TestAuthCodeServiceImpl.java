@@ -24,12 +24,6 @@ import com.github.lhervier.domino.oauth.server.testsuite.TimeServiceTestImpl;
 public class TestAuthCodeServiceImpl extends BaseTest {
 
 	/**
-	 * The time service
-	 */
-	@Autowired
-	private TimeServiceTestImpl timeSvc;
-	
-	/**
 	 * The auth code service
 	 */
 	@Autowired

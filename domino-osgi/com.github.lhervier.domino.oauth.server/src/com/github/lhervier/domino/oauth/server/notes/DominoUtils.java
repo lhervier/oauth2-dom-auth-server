@@ -11,13 +11,13 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
-
-import com.github.lhervier.domino.oauth.server.utils.ReflectionUtils;
 
 import lotus.domino.Base;
 import lotus.domino.Database;
@@ -35,6 +35,21 @@ import lotus.domino.View;
  */
 public class DominoUtils {
 
+	/**
+	 * Pour la convertion des types primitifs en types Objets
+	 */
+	private final static Map<Class<?>, Class<?>> PRIMITIVES = new HashMap<Class<?>, Class<?>>();
+	static {
+		PRIMITIVES.put(boolean.class, Boolean.class);
+		PRIMITIVES.put(byte.class, Byte.class);
+		PRIMITIVES.put(short.class, Short.class);
+		PRIMITIVES.put(char.class, Character.class);
+		PRIMITIVES.put(int.class, Integer.class);
+		PRIMITIVES.put(long.class, Long.class);
+		PRIMITIVES.put(float.class, Float.class);
+		PRIMITIVES.put(double.class, Double.class);
+	}
+	
 	/**
 	 * La liste des objets supportés pour stocker dans un champ
 	 */
@@ -282,7 +297,7 @@ public class DominoUtils {
 					continue;			// Un setter avec 2 paramètres ???
 				Class<?> paramClass;
 				if( parameters[0].isPrimitive() )
-					paramClass = ReflectionUtils.PRIMITIVES.get(parameters[0]);
+					paramClass = PRIMITIVES.get(parameters[0]);
 				else
 					paramClass = parameters[0];
 				

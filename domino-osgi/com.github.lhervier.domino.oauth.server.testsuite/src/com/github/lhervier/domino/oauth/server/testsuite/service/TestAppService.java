@@ -7,8 +7,12 @@ import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInA
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertThat;
+import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -47,6 +51,7 @@ public class TestAppService extends BaseTest {
 	@Before
 	public void setUp() {
 		reset(appRepoMock);
+		reset(personRepoMock);
 	}
 	
 	/**
@@ -216,6 +221,38 @@ public class TestAppService extends BaseTest {
 	}
 	
 	/**
+	 * Cannot save with invalid uri
+	 */
+	@Test(expected = DataIntegrityViolationException.class)
+	public void saveWithInvalidUri() throws Exception {
+		when(personRepoMock.save(any(PersonEntity.class))).then(returnsFirstArg());
+		
+		appSvc.addApplication(new Application() {{
+			setClientId("123456");
+			setName("myApp");
+			setReaders("*");
+			setRedirectUri("http://acme.com/app1?param=^invalid");		// ^ must be replaced with %5E
+			setRedirectUris(new ArrayList<String>());
+		}});
+	}
+	
+	/**
+	 * Cannot save with invalid uri even in additional uris
+	 */
+	@Test(expected = DataIntegrityViolationException.class)
+	public void saveWithInvalidAdditionalUri() throws Exception {
+		when(personRepoMock.save(any(PersonEntity.class))).then(returnsFirstArg());
+		
+		appSvc.addApplication(new Application() {{
+			setClientId("123456");
+			setName("myApp");
+			setReaders("*");
+			setRedirectUri("http://acme.com/app1");
+			setRedirectUris(Arrays.asList("http://acme.com/app1?param=^invalid"));		// ^ must be replaced with %5E
+		}});
+	}
+	
+	/**
 	 * Updating an application
 	 */
 	@Test
@@ -242,6 +279,44 @@ public class TestAppService extends BaseTest {
 		ArgumentCaptor<ApplicationEntity> appCaptor = ArgumentCaptor.forClass(ApplicationEntity.class);
 		verify(appRepoMock, times(1)).save(appCaptor.capture());
 		
+	}
+	
+	/**
+	 * Update a non existing application
+	 */
+	@Test(expected = DataIntegrityViolationException.class)
+	public void updateNonExisting() throws Exception {
+		appSvc.updateApplication(new Application() {{
+			setClientId("1234");
+			setName("myApp");
+			setReaders("*");
+			setRedirectUri("http://acme.com/myapp");
+			setRedirectUris(new ArrayList<String>());
+			getRedirectUris().add("http://acme.com/myapp2");
+		}});
+	}
+	
+	/**
+	 * Try to change the name of an application
+	 */
+	@Test(expected = DataIntegrityViolationException.class)
+	public void changeName() throws Exception {
+		when(appRepoMock.findOne(eq("1234"))).thenReturn(new ApplicationEntity() {{
+			setClientId("1234");
+			setName("myApp");
+			setReaders("XX");
+			setRedirectUri("http://acme.com/olduri");
+			setRedirectUris(new ArrayList<String>());
+		}});
+		
+		appSvc.updateApplication(new Application() {{
+			setClientId("1234");
+			setName("newAppName");
+			setReaders("*");
+			setRedirectUri("http://acme.com/myapp");
+			setRedirectUris(new ArrayList<String>());
+			getRedirectUris().add("http://acme.com/myapp2");
+		}});
 	}
 	
 	/**
@@ -290,5 +365,36 @@ public class TestAppService extends BaseTest {
 			setRedirectUri("http://acme.com/myapp#xxx");		// Fragment in URI => No Problem !
 			setRedirectUris(new ArrayList<String>());
 		}});
+	}
+	
+	/**
+	 * Remove a non existing app
+	 */
+	@Test
+	public void removeNonExisting() throws Exception {
+		doThrow(RuntimeException.class).when(appRepoMock).deleteByName(anyString());
+		doThrow(RuntimeException.class).when(personRepoMock).delete(anyString());
+		appSvc.removeApplication("non_existing");		// Should just do nothing
+	}
+	
+	/**
+	 * Remove an existing app
+	 */
+	@Test
+	public void removeExisting() throws Exception {
+		when(appRepoMock.findOneByName(eq("myApp"))).thenReturn(new ApplicationEntity() {{
+			setName("myApp");
+			setFullName("CN=myApp/O=APP");
+		}});
+		doNothing().when(appRepoMock).deleteByName(eq("myApp"));
+		doNothing().when(personRepoMock).delete(eq("CN=myApp/O=APP"));
+		
+		appSvc.removeApplication("myApp");
+		
+		verify(appRepoMock, times(1)).findOneByName(eq("myApp"));
+		verify(appRepoMock, times(1)).deleteByName(eq("myApp"));
+		verify(personRepoMock, times(1)).delete(eq("CN=myApp/O=APP"));
+		verifyNoMoreInteractions(appRepoMock);
+		verifyNoMoreInteractions(personRepoMock);
 	}
 }

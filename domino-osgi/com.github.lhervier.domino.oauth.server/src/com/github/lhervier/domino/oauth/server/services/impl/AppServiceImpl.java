@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import com.github.lhervier.domino.oauth.server.entity.ApplicationEntity;
 import com.github.lhervier.domino.oauth.server.entity.PersonEntity;
@@ -72,25 +71,22 @@ public class AppServiceImpl implements AppService {
 	 * @return the entity
 	 */
 	private ApplicationEntity toEntity(Application app) {
-		if( app == null )
-			return null;
-		
 		ApplicationEntity entity = new ApplicationEntity();
 		entity.setAppReader(app.getFullName());
 		entity.setClientId(app.getClientId());
 		entity.setName(app.getName());
 		entity.setFullName("CN=" + app.getName() + this.applicationRoot);
 		entity.setReaders(app.getReaders());
-		if( !StringUtils.isEmpty(app.getRedirectUri()) ) { 
-			String error = Utils.checkRedirectUri(app.getRedirectUri());
-			if( error != null )
-				throw new DataIntegrityViolationException(error);
-			entity.setRedirectUri(app.getRedirectUri());
-		}
+	
+		String error = Utils.checkRedirectUri(app.getRedirectUri());
+		if( error != null )
+			throw new DataIntegrityViolationException(error);
+		entity.setRedirectUri(app.getRedirectUri());
+
 		entity.setRedirectUris(new ArrayList<String>());
 		if( app.getRedirectUris() != null ) {
 			for( String uri : app.getRedirectUris() ) {
-				String error = Utils.checkRedirectUri(uri);
+				error = Utils.checkRedirectUri(uri);
 				if( error != null )
 					throw new DataIntegrityViolationException(error);
 				entity.getRedirectUris().add(uri);
@@ -167,13 +163,11 @@ public class AppServiceImpl implements AppService {
 	 * @see com.github.lhervier.domino.oauth.server.services.AppService#updateApplication(com.github.lhervier.domino.oauth.server.model.Application)
 	 */
 	public void updateApplication(Application app) {
-		ApplicationEntity existing = this.appRepo.findOneByName(app.getName());
+		ApplicationEntity existing = this.appRepo.findOne(app.getClientId());
 		if( existing == null )
-			throw new DataIntegrityViolationException("Application '" + app.getName() + "' does not exist...");
-		
-		existing = this.appRepo.findOne(app.getClientId());
-		if( existing == null )
-			throw new DataIntegrityViolationException("Application with id '" + app.getClientId() + "' does not exist...");
+			throw new DataIntegrityViolationException("Application does not exist...");
+		if( !Utils.equals(app.getName(), existing.getName()) )
+			throw new DataIntegrityViolationException("Cannot change name of application...");
 		
 		this.appRepo.save(this.toEntity(app));
 	}

@@ -108,4 +108,17 @@ public class Utils {
 		
 		return null;
 	}
+	
+	/**
+	 * Check if two objects are equals
+	 */
+	public static final <T> boolean equals(T o1, T o2) {
+		if( o1 == null && o2 == null )
+			return true;
+		if( o1 == null && o2 != null )
+			return false;
+		if( o1 != null && o2 == null )
+			return false;
+		return o1.equals(o2);
+	}
 }

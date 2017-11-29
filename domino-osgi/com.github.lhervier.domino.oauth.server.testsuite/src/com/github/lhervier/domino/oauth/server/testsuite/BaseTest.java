@@ -64,6 +64,9 @@ public abstract class BaseTest {
 	@Autowired
 	private WebApplicationContext wac;
 	
+	@Autowired
+	protected TimeServiceTestImpl timeSvc;
+	
 	protected MockMvc mockMvc;
 	
 	protected ObjectMapper mapper = new ObjectMapper();
@@ -71,5 +74,6 @@ public abstract class BaseTest {
 	@Before
 	public void baseSetUp() {
 		mockMvc = webAppContextSetup(wac).build();
+		TimeServiceTestImpl.CURRENT_TIME = System.currentTimeMillis() / 1000L;
 	}
 }

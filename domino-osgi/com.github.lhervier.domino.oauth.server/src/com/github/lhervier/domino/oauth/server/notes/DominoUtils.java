@@ -1,4 +1,4 @@
-package com.github.lhervier.domino.oauth.server.utils;
+package com.github.lhervier.domino.oauth.server.notes;
 
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -16,6 +16,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
+
+import com.github.lhervier.domino.oauth.server.utils.ReflectionUtils;
 
 import lotus.domino.Base;
 import lotus.domino.Database;

@@ -1,17 +1,17 @@
-package com.github.lhervier.domino.oauth.server;
+package com.github.lhervier.domino.oauth.server.notes;
 
 import java.util.List;
-
-import lotus.domino.Name;
-import lotus.domino.NotesException;
-import lotus.domino.Session;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.github.lhervier.domino.oauth.server.utils.DominoUtils;
+import com.github.lhervier.domino.oauth.server.NotesPrincipal;
+
+import lotus.domino.Name;
+import lotus.domino.NotesException;
+import lotus.domino.Session;
 
 /**
  * @author Lionel HERVIER

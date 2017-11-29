@@ -1,4 +1,4 @@
-package com.github.lhervier.domino.oauth.server;
+package com.github.lhervier.domino.oauth.server.notes;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -23,7 +23,6 @@ import org.springframework.stereotype.Component;
 import com.github.lhervier.domino.oauth.server.ext.core.AccessToken;
 import com.github.lhervier.domino.oauth.server.repo.SecretRepository;
 import com.github.lhervier.domino.oauth.server.services.TimeService;
-import com.github.lhervier.domino.oauth.server.utils.DominoUtils;
 import com.ibm.domino.napi.NException;
 import com.ibm.domino.napi.c.NotesUtil;
 import com.ibm.domino.napi.c.Os;

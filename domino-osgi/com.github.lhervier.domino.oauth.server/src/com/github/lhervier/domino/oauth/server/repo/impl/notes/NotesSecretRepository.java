@@ -11,10 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.stereotype.Repository;
 
-import com.github.lhervier.domino.oauth.server.AuthContext;
+import com.github.lhervier.domino.oauth.server.notes.AuthContext;
+import com.github.lhervier.domino.oauth.server.notes.DominoUtils;
 import com.github.lhervier.domino.oauth.server.repo.SecretRepository;
 import com.github.lhervier.domino.oauth.server.utils.Base64Utils;
-import com.github.lhervier.domino.oauth.server.utils.DominoUtils;
 
 /**
  * Registre pour mémoriser les secrets

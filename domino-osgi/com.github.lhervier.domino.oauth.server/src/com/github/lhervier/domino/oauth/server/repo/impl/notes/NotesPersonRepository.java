@@ -17,10 +17,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.stereotype.Repository;
 
-import com.github.lhervier.domino.oauth.server.AuthContext;
 import com.github.lhervier.domino.oauth.server.entity.PersonEntity;
+import com.github.lhervier.domino.oauth.server.notes.AuthContext;
+import com.github.lhervier.domino.oauth.server.notes.DominoUtils;
 import com.github.lhervier.domino.oauth.server.repo.PersonRepository;
-import com.github.lhervier.domino.oauth.server.utils.DominoUtils;
 
 @Repository
 public class NotesPersonRepository implements PersonRepository {

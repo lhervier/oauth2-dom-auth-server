@@ -18,11 +18,11 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.stereotype.Repository;
 
-import com.github.lhervier.domino.oauth.server.AuthContext;
 import com.github.lhervier.domino.oauth.server.entity.ApplicationEntity;
+import com.github.lhervier.domino.oauth.server.notes.AuthContext;
+import com.github.lhervier.domino.oauth.server.notes.DominoUtils;
+import com.github.lhervier.domino.oauth.server.notes.ViewIterator;
 import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
-import com.github.lhervier.domino.oauth.server.utils.DominoUtils;
-import com.github.lhervier.domino.oauth.server.utils.ViewIterator;
 
 /**
  * Repository to access applications

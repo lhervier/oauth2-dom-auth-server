@@ -1,9 +1,12 @@
 package com.github.lhervier.domino.oauth.server.services.impl;
 
+import java.io.IOException;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.HashMap;
 
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -22,9 +25,6 @@ import com.nimbusds.jose.KeyLengthException;
 import com.nimbusds.jose.Payload;
 import com.nimbusds.jose.crypto.DirectDecrypter;
 import com.nimbusds.jose.crypto.DirectEncrypter;
-
-import net.minidev.json.JSONArray;
-import net.minidev.json.JSONObject;
 
 @Service
 public class AuthCodeServiceImpl implements AuthCodeService {
@@ -54,6 +54,11 @@ public class AuthCodeServiceImpl implements AuthCodeService {
 	private TimeService timeSvc;
 	
 	/**
+	 * Jackson mapper
+	 */
+	private ObjectMapper mapper = new ObjectMapper();
+	
+	/**
 	 * @see com.github.lhervier.domino.oauth.server.services.AuthCodeService#toEntity(java.lang.String)
 	 */
 	public AuthCodeEntity toEntity(String sRefreshToken) throws ServerErrorException {
@@ -64,44 +69,25 @@ public class AuthCodeServiceImpl implements AuthCodeService {
 							this.secretRepo.findCryptSecret(this.refreshTokenConfig)
 					)
 			);
-			JSONObject payload = jweObject.getPayload().toJSONObject();
+			String json = jweObject.getPayload().toString();
+			AuthCodeEntity entity = this.mapper.readValue(json, AuthCodeEntity.class);
 			
-			// Check it is not expired
-			if( payload.getAsNumber("exp").longValue() < this.timeSvc.currentTimeSeconds() )
+			if( entity.getExpires() < this.timeSvc.currentTimeSeconds() )
 				return null;
 			
-			AuthCodeEntity ret = new AuthCodeEntity();
-			ret.setId(payload.getAsString("id"));
-			ret.setApplication(payload.getAsString("application"));
-			ret.setClientId(payload.getAsString("clientId"));
-			ret.setRedirectUri(payload.getAsString("redirectUri"));
-			
-			JSONArray scopes = (JSONArray) payload.get("scopes");
-			ret.setScopes(new ArrayList<String>());
-			for( Object scope : scopes )
-				ret.getScopes().add((String) scope);
-			
-			JSONArray grantedScopes = (JSONArray) payload.get("grantedScopes");
-			ret.setGrantedScopes(new ArrayList<String>());
-			for( Object scope : grantedScopes )
-				ret.getGrantedScopes().add((String) scope);
-			
-			JSONObject contexts = (JSONObject) payload.get("contexts");
-			ret.setContextClasses(new HashMap<String, String>());
-			ret.setContextObjects(new HashMap<String, String>());
-			for( String extId : contexts.keySet() ) {
-				JSONObject context = (JSONObject) contexts.get(extId);
-				ret.getContextClasses().put(extId, context.getAsString("clazz"));
-				ret.getContextObjects().put(extId, context.getAsString("jsonValue"));
-			}
-			
-			return ret;
-		} catch (KeyLengthException e) {
-			throw new ServerErrorException(e);
-		} catch (JOSEException e) {
-			throw new ServerErrorException(e);
+			return entity;
+		} catch (JsonParseException e) {
+			return null;				// Invalid json in JWE
 		} catch (ParseException e) {
-			return null;
+			return null;				// Invalid JWE
+		} catch (JsonMappingException e) {
+			throw new RuntimeException(e);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		} catch (KeyLengthException e) {
+			throw new RuntimeException(e);
+		} catch (JOSEException e) {
+			throw new RuntimeException(e);
 		}
 	}
 	
@@ -112,41 +98,16 @@ public class AuthCodeServiceImpl implements AuthCodeService {
 		try {
 			JWEHeader header = new JWEHeader(JWEAlgorithm.DIR, EncryptionMethod.A128GCM);
 			
-			JSONObject payload = new JSONObject();
-			payload.put("id", authCode.getId());
-			payload.put("exp", this.timeSvc.currentTimeSeconds() + this.refreshTokenLifetime);
-			payload.put("application", authCode.getApplication());
-			payload.put("clientId", authCode.getClientId());
-			payload.put("redirectUri", authCode.getRedirectUri());
+			// Update expiration. Avoiding updating the object
+			long oldExpires = authCode.getExpires();
+			authCode.setExpires(this.timeSvc.currentTimeSeconds() + this.refreshTokenLifetime);
+			String json = this.mapper.writeValueAsString(authCode);
+			authCode.setExpires(oldExpires);
 			
-			JSONArray scopes = new JSONArray();
-			for( String scope : authCode.getScopes() )
-				scopes.add(scope);
-			payload.put("scopes", scopes);
-			
-			JSONArray grantedScopes = new JSONArray();
-			for( String scope : authCode.getGrantedScopes() )
-				grantedScopes.add(scope);
-			payload.put("grantedScopes", grantedScopes);
-			
-			JSONObject contexts = new JSONObject();
-			for( String extId : authCode.getContextClasses().keySet() ) {
-				JSONObject context = new JSONObject();
-				context.put(
-						"clazz", 
-						authCode.getContextClasses().get(extId)
-				);
-				context.put(
-						"jsonValue", 
-						authCode.getContextObjects().get(extId)
-				);
-				contexts.put(extId, context);
-			}
-			payload.put("contexts", contexts);
-			
+			// Create JWE
 			JWEObject jweObject = new JWEObject(
 					header, 
-					new Payload(payload)
+					new Payload(json)
 			);
 			jweObject.encrypt(new DirectEncrypter(
 					this.secretRepo.findCryptSecret(this.refreshTokenConfig)
@@ -155,6 +116,12 @@ public class AuthCodeServiceImpl implements AuthCodeService {
 		} catch (KeyLengthException e) {
 			throw new ServerErrorException(e);
 		} catch (JOSEException e) {
+			throw new ServerErrorException(e);
+		} catch (JsonGenerationException e) {
+			throw new ServerErrorException(e);
+		} catch (JsonMappingException e) {
+			throw new ServerErrorException(e);
+		} catch (IOException e) {
 			throw new ServerErrorException(e);
 		}
 	}

@@ -1,6 +1,5 @@
 package com.github.lhervier.domino.oauth.server.ext;
 
-
 /**
  * Pour ajouter une propriété à la réponse du grant
  * @author Lionel HERVIER
@@ -14,14 +13,6 @@ public interface IPropertyAdder {
 	 * @param kid the key id to sign
 	 */
 	public void addSignedProperty(String name, Object obj, String kid);
-	
-	/**
-	 * Ajoute une propriété cryptée
-	 * @param name le nom de la propriété
-	 * @param obj l'objet à serialiser
-	 * @param kid the key id to crypt
-	 */
-	public void addCryptedProperty(String name, Object obj, String kid);
 	
 	/**
 	 * Add a standard property

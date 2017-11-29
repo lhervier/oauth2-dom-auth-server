@@ -30,12 +30,6 @@ import com.nimbusds.jose.crypto.DirectEncrypter;
 public class AuthCodeServiceImpl implements AuthCodeService {
 
 	/**
-	 * The refresh token life time
-	 */
-	@Value("${oauth2.server.refreshTokenLifetime}")
-	private long refreshTokenLifetime;
-	
-	/**
 	 * Name of the LTPA config used to encrypt refresh tokens
 	 */
 	@Value("${oauth2.server.refreshTokenConfig}")
@@ -61,9 +55,9 @@ public class AuthCodeServiceImpl implements AuthCodeService {
 	/**
 	 * @see com.github.lhervier.domino.oauth.server.services.AuthCodeService#toEntity(java.lang.String)
 	 */
-	public AuthCodeEntity toEntity(String sRefreshToken) throws ServerErrorException {
+	public AuthCodeEntity toEntity(String refreshToken) throws ServerErrorException {
 		try {
-			JWEObject jweObject = JWEObject.parse(sRefreshToken);
+			JWEObject jweObject = JWEObject.parse(refreshToken);
 			jweObject.decrypt(
 					new DirectDecrypter(
 							this.secretRepo.findCryptSecret(this.refreshTokenConfig)
@@ -77,9 +71,9 @@ public class AuthCodeServiceImpl implements AuthCodeService {
 			
 			return entity;
 		} catch (JsonParseException e) {
-			return null;				// Invalid json in JWE
+			throw new RuntimeException(e);				// Invalid json in JWE. May not happen (we generated the JWE)
 		} catch (ParseException e) {
-			return null;				// Invalid JWE
+			return null;								// Invalid JWE
 		} catch (JsonMappingException e) {
 			throw new RuntimeException(e);
 		} catch (IOException e) {
@@ -98,13 +92,8 @@ public class AuthCodeServiceImpl implements AuthCodeService {
 		try {
 			JWEHeader header = new JWEHeader(JWEAlgorithm.DIR, EncryptionMethod.A128GCM);
 			
-			// Update expiration. Avoiding updating the object
-			long oldExpires = authCode.getExpires();
-			authCode.setExpires(this.timeSvc.currentTimeSeconds() + this.refreshTokenLifetime);
-			String json = this.mapper.writeValueAsString(authCode);
-			authCode.setExpires(oldExpires);
-			
 			// Create JWE
+			String json = this.mapper.writeValueAsString(authCode);
 			JWEObject jweObject = new JWEObject(
 					header, 
 					new Payload(json)

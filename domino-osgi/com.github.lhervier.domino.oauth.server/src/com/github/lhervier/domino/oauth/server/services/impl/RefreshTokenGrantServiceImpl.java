@@ -24,6 +24,7 @@ import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.repo.SecretRepository;
 import com.github.lhervier.domino.oauth.server.services.AuthCodeService;
 import com.github.lhervier.domino.oauth.server.services.GrantService;
+import com.github.lhervier.domino.oauth.server.services.TimeService;
 import com.github.lhervier.domino.oauth.server.utils.PropertyAdderImpl;
 import com.github.lhervier.domino.oauth.server.utils.Utils;
 
@@ -53,6 +54,12 @@ public class RefreshTokenGrantServiceImpl implements GrantService {
 	 */
 	@Autowired
 	private AuthCodeService authCodeSvc;
+	
+	/**
+	 * The time service
+	 */
+	@Autowired
+	private TimeService timeSvc;
 	
 	/**
 	 * The extensions
@@ -157,7 +164,8 @@ public class RefreshTokenGrantServiceImpl implements GrantService {
 			}
 		}
 		
-		// Regenerate the refresh token
+		// Regenerate the refresh token (update expiration date)
+		authCode.setExpires(this.timeSvc.currentTimeSeconds() + this.refreshTokenLifetime);
 		String newRefreshToken = this.authCodeSvc.fromEntity(authCode);
 		resp.put("refresh_token", newRefreshToken);
 		

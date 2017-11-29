@@ -137,6 +137,7 @@ public class AuthCodeGrantServiceImpl implements GrantService {
 			}
 			
 			// Generate the refresh token
+			authCode.setExpires(this.timeSvc.currentTimeSeconds() + this.refreshTokenLifetime);
 			String sRefreshToken = this.authCodeSvc.fromEntity(authCode);
 			resp.put("refresh_token", sRefreshToken);
 			

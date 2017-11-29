@@ -13,5 +13,5 @@ public interface AuthCodeService {
 	/**
 	 * Extract a refresh token
 	 */
-	public AuthCodeEntity toEntity(String sRefreshToken) throws ServerErrorException;
+	public AuthCodeEntity toEntity(String refreshToken) throws ServerErrorException;
 }

@@ -2,11 +2,7 @@ package com.github.lhervier.domino.oauth.server.repo.impl.notes;
 
 import java.io.IOException;
 
-import lotus.domino.Database;
-import lotus.domino.Document;
-import lotus.domino.NotesException;
-import lotus.domino.View;
-
+import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.stereotype.Repository;
@@ -14,7 +10,11 @@ import org.springframework.stereotype.Repository;
 import com.github.lhervier.domino.oauth.server.notes.AuthContext;
 import com.github.lhervier.domino.oauth.server.notes.DominoUtils;
 import com.github.lhervier.domino.oauth.server.repo.SecretRepository;
-import com.github.lhervier.domino.oauth.server.utils.Base64Utils;
+
+import lotus.domino.Database;
+import lotus.domino.Document;
+import lotus.domino.NotesException;
+import lotus.domino.View;
 
 /**
  * Registre pour mémoriser les secrets
@@ -46,7 +46,7 @@ public class NotesSecretRepository implements SecretRepository {
 	 * @throws IOException 
 	 */
 	private byte[] genSecret(String base64, int size) throws IOException {
-		byte[] min = Base64Utils.decode(base64);
+		byte[] min = Base64.decodeBase64(base64.getBytes("UTF-8"));
 		byte[] ret = new byte[size];
 		for( int nb = 0; nb < size; nb++ )
 			ret[nb] = min[nb % min.length];

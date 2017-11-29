@@ -1,17 +1,17 @@
 package com.github.lhervier.domino.oauth.server.services.impl;
 
-import java.io.IOException;
-
-import net.minidev.json.JSONArray;
-import net.minidev.json.JSONObject;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
 import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
 import com.github.lhervier.domino.oauth.server.repo.SecretRepository;
-import com.github.lhervier.domino.oauth.server.services.GrantService;
+import com.github.lhervier.domino.oauth.server.services.AuthCodeService;
 import com.github.lhervier.domino.oauth.server.services.TimeService;
 import com.nimbusds.jose.EncryptionMethod;
 import com.nimbusds.jose.JOSEException;
@@ -20,13 +20,14 @@ import com.nimbusds.jose.JWEHeader;
 import com.nimbusds.jose.JWEObject;
 import com.nimbusds.jose.KeyLengthException;
 import com.nimbusds.jose.Payload;
+import com.nimbusds.jose.crypto.DirectDecrypter;
 import com.nimbusds.jose.crypto.DirectEncrypter;
 
-/**
- * Base class to manage the grant requests
- * @author Lionel HERVIER
- */
-public abstract class BaseGrantService implements GrantService {
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
+
+@Service
+public class AuthCodeServiceImpl implements AuthCodeService {
 
 	/**
 	 * The refresh token life time
@@ -41,26 +42,73 @@ public abstract class BaseGrantService implements GrantService {
 	private String refreshTokenConfig;
 	
 	/**
-	 * Secret repository
+	 * The secret repo
 	 */
 	@Autowired
-	private SecretRepository secretRespo;
+	private SecretRepository secretRepo;
 	
 	/**
-	 * Time service
+	 * The time service
 	 */
 	@Autowired
 	private TimeService timeSvc;
 	
 	/**
-	 * Generate a new refresh token
-	 * @param authCode the authorization code
-	 * @return the refresh token
-	 * @throws IOException 
-	 * @throws JOSEException 
-	 * @throws KeyLengthException 
+	 * @see com.github.lhervier.domino.oauth.server.services.AuthCodeService#toEntity(java.lang.String)
 	 */
-	protected String refreshTokenFromAuthCode(AuthCodeEntity authCode) throws ServerErrorException {
+	public AuthCodeEntity toEntity(String sRefreshToken) throws ServerErrorException {
+		try {
+			JWEObject jweObject = JWEObject.parse(sRefreshToken);
+			jweObject.decrypt(
+					new DirectDecrypter(
+							this.secretRepo.findCryptSecret(this.refreshTokenConfig)
+					)
+			);
+			JSONObject payload = jweObject.getPayload().toJSONObject();
+			
+			// Check it is not expired
+			if( payload.getAsNumber("exp").longValue() < this.timeSvc.currentTimeSeconds() )
+				return null;
+			
+			AuthCodeEntity ret = new AuthCodeEntity();
+			ret.setId(payload.getAsString("id"));
+			ret.setApplication(payload.getAsString("application"));
+			ret.setClientId(payload.getAsString("clientId"));
+			ret.setRedirectUri(payload.getAsString("redirectUri"));
+			
+			JSONArray scopes = (JSONArray) payload.get("scopes");
+			ret.setScopes(new ArrayList<String>());
+			for( Object scope : scopes )
+				ret.getScopes().add((String) scope);
+			
+			JSONArray grantedScopes = (JSONArray) payload.get("grantedScopes");
+			ret.setGrantedScopes(new ArrayList<String>());
+			for( Object scope : grantedScopes )
+				ret.getGrantedScopes().add((String) scope);
+			
+			JSONObject contexts = (JSONObject) payload.get("contexts");
+			ret.setContextClasses(new HashMap<String, String>());
+			ret.setContextObjects(new HashMap<String, String>());
+			for( String extId : contexts.keySet() ) {
+				JSONObject context = (JSONObject) contexts.get(extId);
+				ret.getContextClasses().put(extId, context.getAsString("clazz"));
+				ret.getContextObjects().put(extId, context.getAsString("jsonValue"));
+			}
+			
+			return ret;
+		} catch (KeyLengthException e) {
+			throw new ServerErrorException(e);
+		} catch (JOSEException e) {
+			throw new ServerErrorException(e);
+		} catch (ParseException e) {
+			return null;
+		}
+	}
+	
+	/**
+	 * @see com.github.lhervier.domino.oauth.server.services.AuthCodeService#fromEntity(com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity)
+	 */
+	public String fromEntity(AuthCodeEntity authCode) throws ServerErrorException {
 		try {
 			JWEHeader header = new JWEHeader(JWEAlgorithm.DIR, EncryptionMethod.A128GCM);
 			
@@ -101,7 +149,7 @@ public abstract class BaseGrantService implements GrantService {
 					new Payload(payload)
 			);
 			jweObject.encrypt(new DirectEncrypter(
-					this.secretRespo.findCryptSecret(this.refreshTokenConfig)
+					this.secretRepo.findCryptSecret(this.refreshTokenConfig)
 			));
 			return jweObject.serialize();
 		} catch (KeyLengthException e) {

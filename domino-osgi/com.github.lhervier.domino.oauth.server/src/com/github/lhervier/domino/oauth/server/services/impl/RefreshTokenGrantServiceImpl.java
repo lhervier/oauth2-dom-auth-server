@@ -1,6 +1,5 @@
 package com.github.lhervier.domino.oauth.server.services.impl;
 
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -8,9 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
-
-import net.minidev.json.JSONArray;
-import net.minidev.json.JSONObject;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,16 +22,13 @@ import com.github.lhervier.domino.oauth.server.ex.grant.GrantInvalidScopeExcepti
 import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.repo.SecretRepository;
-import com.github.lhervier.domino.oauth.server.services.TimeService;
+import com.github.lhervier.domino.oauth.server.services.AuthCodeService;
+import com.github.lhervier.domino.oauth.server.services.GrantService;
 import com.github.lhervier.domino.oauth.server.utils.PropertyAdderImpl;
 import com.github.lhervier.domino.oauth.server.utils.Utils;
-import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.JWEObject;
-import com.nimbusds.jose.KeyLengthException;
-import com.nimbusds.jose.crypto.DirectDecrypter;
 
 @Service("refresh_token")
-public class RefreshTokenGrantServiceImpl extends BaseGrantService {
+public class RefreshTokenGrantServiceImpl implements GrantService {
 
 	/**
 	 * The refresh token life time
@@ -50,16 +43,16 @@ public class RefreshTokenGrantServiceImpl extends BaseGrantService {
 	private String refreshTokenConfig;
 	
 	/**
-	 * Time service
-	 */
-	@Autowired
-	private TimeService timeSvc;
-	
-	/**
 	 * Secret repository
 	 */
 	@Autowired
-	private SecretRepository secretRespo;
+	private SecretRepository secretRepo;
+	
+	/**
+	 * The auth code service
+	 */
+	@Autowired
+	private AuthCodeService authCodeSvc;
 	
 	/**
 	 * The extensions
@@ -122,7 +115,7 @@ public class RefreshTokenGrantServiceImpl extends BaseGrantService {
 			throw new GrantInvalidGrantException("refresh_token is mandatory");
 		
 		// Decrypt refresh token
-		AuthCodeEntity authCode = this.authCodeFromRefreshToken(sRefreshToken);
+		AuthCodeEntity authCode = this.authCodeSvc.toEntity(sRefreshToken);
 		if( authCode == null )
 			throw new GrantInvalidGrantException("refresh_token is invalid");
 			
@@ -150,7 +143,7 @@ public class RefreshTokenGrantServiceImpl extends BaseGrantService {
 					context, 
 					new PropertyAdderImpl(
 							resp,
-							this.secretRespo
+							this.secretRepo
 					), 
 					scopes
 			);
@@ -165,7 +158,7 @@ public class RefreshTokenGrantServiceImpl extends BaseGrantService {
 		}
 		
 		// Regenerate the refresh token
-		String newRefreshToken = this.refreshTokenFromAuthCode(authCode);
+		String newRefreshToken = this.authCodeSvc.fromEntity(authCode);
 		resp.put("refresh_token", newRefreshToken);
 		
 		// Other information
@@ -175,55 +168,5 @@ public class RefreshTokenGrantServiceImpl extends BaseGrantService {
 		return resp;
 	}
 	
-	/**
-	 * Extract a refresh token
-	 */
-	private AuthCodeEntity authCodeFromRefreshToken(String sRefreshToken) throws ServerErrorException {
-		try {
-			JWEObject jweObject = JWEObject.parse(sRefreshToken);
-			jweObject.decrypt(
-					new DirectDecrypter(
-							this.secretRespo.findCryptSecret(this.refreshTokenConfig)
-					)
-			);
-			JSONObject payload = jweObject.getPayload().toJSONObject();
-			
-			// Check it is not expired
-			if( payload.getAsNumber("exp").longValue() < this.timeSvc.currentTimeSeconds() )
-				return null;
-			
-			AuthCodeEntity ret = new AuthCodeEntity();
-			ret.setId(payload.getAsString("id"));
-			ret.setApplication(payload.getAsString("application"));
-			ret.setClientId(payload.getAsString("clientId"));
-			ret.setRedirectUri(payload.getAsString("redirectUri"));
-			
-			JSONArray scopes = (JSONArray) payload.get("scopes");
-			ret.setScopes(new ArrayList<String>());
-			for( Object scope : scopes )
-				ret.getScopes().add((String) scope);
-			
-			JSONArray grantedScopes = (JSONArray) payload.get("grantedScopes");
-			ret.setGrantedScopes(new ArrayList<String>());
-			for( Object scope : grantedScopes )
-				ret.getGrantedScopes().add((String) scope);
-			
-			JSONObject contexts = (JSONObject) payload.get("contexts");
-			ret.setContextClasses(new HashMap<String, String>());
-			ret.setContextObjects(new HashMap<String, String>());
-			for( String extId : contexts.keySet() ) {
-				JSONObject context = (JSONObject) contexts.get(extId);
-				ret.getContextClasses().put(extId, context.getAsString("clazz"));
-				ret.getContextObjects().put(extId, context.getAsString("jsonValue"));
-			}
-			
-			return ret;
-		} catch (KeyLengthException e) {
-			throw new ServerErrorException(e);
-		} catch (JOSEException e) {
-			throw new ServerErrorException(e);
-		} catch (ParseException e) {
-			return null;
-		}
-	}
+	
 }

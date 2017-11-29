@@ -8,14 +8,14 @@ import org.springframework.stereotype.Service;
 import com.github.lhervier.domino.oauth.server.ex.BaseGrantException;
 import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
 import com.github.lhervier.domino.oauth.server.model.Application;
-import com.github.lhervier.domino.oauth.server.services.impl.BaseGrantService;
+import com.github.lhervier.domino.oauth.server.services.GrantService;
 
 /**
  * Dummy grant to test TokenController
  * @author Lionel HERVIER
  */
 @Service("dummy_grant")
-public class DummyGrant extends BaseGrantService {
+public class DummyGrant implements GrantService {
 
 	/**
 	 * @see com.github.lhervier.domino.oauth.server.services.GrantService#createGrant(com.github.lhervier.domino.oauth.server.model.Application, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)

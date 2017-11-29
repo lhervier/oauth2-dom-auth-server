@@ -21,12 +21,14 @@ import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
 import com.github.lhervier.domino.oauth.server.repo.SecretRepository;
+import com.github.lhervier.domino.oauth.server.services.AuthCodeService;
+import com.github.lhervier.domino.oauth.server.services.GrantService;
 import com.github.lhervier.domino.oauth.server.services.TimeService;
 import com.github.lhervier.domino.oauth.server.utils.PropertyAdderImpl;
 import com.github.lhervier.domino.oauth.server.utils.Utils;
 
 @Service("authorization_code")
-public class AuthCodeGrantServiceImpl extends BaseGrantService {
+public class AuthCodeGrantServiceImpl implements GrantService {
 
 	/**
 	 * Authorization code repository
@@ -45,6 +47,12 @@ public class AuthCodeGrantServiceImpl extends BaseGrantService {
 	 */
 	@Autowired
 	private TimeService timeSvc;
+	
+	/**
+	 * Auth code service
+	 */
+	@Autowired
+	private AuthCodeService authCodeSvc;
 	
 	/**
 	 * Request
@@ -129,7 +137,7 @@ public class AuthCodeGrantServiceImpl extends BaseGrantService {
 			}
 			
 			// Generate the refresh token
-			String sRefreshToken = this.refreshTokenFromAuthCode(authCode);
+			String sRefreshToken = this.authCodeSvc.fromEntity(authCode);
 			resp.put("refresh_token", sRefreshToken);
 			
 			// expiration date

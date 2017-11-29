@@ -70,6 +70,7 @@ public class TestAuthCodeGrant extends BaseTest {
 	 * Authorization codes
 	 */
 	private static final String AUTH_CODE_ID = "012345";								// for normal app, as Lionel
+	private AuthCodeEntity code;
 	
 	/**
 	 * App repo mock
@@ -94,6 +95,32 @@ public class TestAuthCodeGrant extends BaseTest {
 	 */
 	@Autowired
 	protected NotesPrincipalTestImpl user;
+	
+	public static class TokenResponse {
+		@JsonProperty("refresh_token")
+		private String refreshToken;
+		@JsonProperty("access_token")
+		private String accessToken;
+		@JsonProperty("id_token")
+		private String idToken;
+		@JsonProperty("expires_in")
+		private long expiresIn;
+		@JsonProperty("token_type")
+		private String tokenType;
+		private String scope;
+		public String getRefreshToken() { return refreshToken; }
+		public void setRefreshToken(String refreshToken) { this.refreshToken = refreshToken; }
+		public String getAccessToken() { return accessToken; }
+		public void setAccessToken(String accessToken) { this.accessToken = accessToken; }
+		public String getIdToken() { return idToken; }
+		public void setIdToken(String idToken) { this.idToken = idToken; }
+		public long getExpiresIn() { return expiresIn; }
+		public void setExpiresIn(long expiresIn) { this.expiresIn = expiresIn; }
+		public String getTokenType() { return tokenType; }
+		public void setTokenType(String tokenType) { this.tokenType = tokenType; }
+		public String getScope() { return scope; }
+		public void setScope(String scope) { this.scope = scope; }
+	};
 	
 	/**
 	 * Before
@@ -124,13 +151,13 @@ public class TestAuthCodeGrant extends BaseTest {
 		when(this.appRepoMock.findOneByName(eq(HACKY_APP_NAME))).thenReturn(hackyApp);
 		
 		// Declare authorization codes
-		AuthCodeEntity code = new AuthCodeEntity() {{
+		this.code = new AuthCodeEntity() {{
 			this.setId(AUTH_CODE_ID);
 			this.setApplication(APP_NAME);
 			this.setClientId(APP_CLIENT_ID);
 			this.setExpires(TimeServiceTestImpl.CURRENT_TIME + 600);
 			this.setScopes(Arrays.asList("scope1", "scope2"));
-			this.setGrantedScopes(new ArrayList<String>());
+			this.setGrantedScopes(Arrays.asList("scope1", "scope2"));
 			this.setRedirectUri(APP_REDIRECT_URI);
 			this.setContextClasses(new HashMap<String, String>() {{
 				put(
@@ -160,32 +187,6 @@ public class TestAuthCodeGrant extends BaseTest {
 		user.setScopes(null);
 		user.setCurrentDatabasePath(this.oauth2Db);
 	}
-	
-	public static class TokenResponse {
-		@JsonProperty("refresh_token")
-		private String refreshToken;
-		@JsonProperty("access_token")
-		private String accessToken;
-		@JsonProperty("id_token")
-		private String idToken;
-		@JsonProperty("expires_in")
-		private long expiresIn;
-		@JsonProperty("token_type")
-		private String tokenType;
-		private String scope;
-		public String getRefreshToken() { return refreshToken; }
-		public void setRefreshToken(String refreshToken) { this.refreshToken = refreshToken; }
-		public String getAccessToken() { return accessToken; }
-		public void setAccessToken(String accessToken) { this.accessToken = accessToken; }
-		public String getIdToken() { return idToken; }
-		public void setIdToken(String idToken) { this.idToken = idToken; }
-		public long getExpiresIn() { return expiresIn; }
-		public void setExpiresIn(long expiresIn) { this.expiresIn = expiresIn; }
-		public String getTokenType() { return tokenType; }
-		public void setTokenType(String tokenType) { this.tokenType = tokenType; }
-		public String getScope() { return scope; }
-		public void setScope(String scope) { this.scope = scope; }
-	};
 	
 	// ======================================================================
 	
@@ -244,6 +245,20 @@ public class TestAuthCodeGrant extends BaseTest {
 	}
 	
 	/**
+	 * Invalid auth code
+	 */
+	@Test
+	public void invalidAuthCode() throws Exception {
+		this.mockMvc.perform(
+				post("/token")
+				.param("grant_type", "authorization_code")
+				.param("code", "invalid_auth_code")
+				.param("redirect_uri", APP_REDIRECT_URI)
+		).andExpect(status().is(400))
+		.andExpect(content().string(containsString("invalid auth code")));
+	}
+	
+	/**
 	 * Expires auth code
 	 */
 	@Test
@@ -280,6 +295,42 @@ public class TestAuthCodeGrant extends BaseTest {
 	}
 	
 	/**
+	 * Scopes must be present in response if granted scopes are different from asked scope (in authorize request)
+	 */
+	@Test
+	public void scopePresentIfGrantedDifferentFromAsked() throws Exception {
+		// Granted scopes = Asked scopes => No scope attribute in response
+		MvcResult result = this.mockMvc.perform(
+				post("/token")
+				.param("grant_type", "authorization_code")
+				.param("code", AUTH_CODE_ID)
+				.param("redirect_uri", APP_REDIRECT_URI)
+		).andExpect(status().is(200))
+		.andReturn();
+		
+		String json = result.getResponse().getContentAsString();
+		TokenResponse response = this.mapper.readValue(json, TokenResponse.class);
+		assertThat(response.getScope(), nullValue());
+		
+		// Remove one scope from the granted set
+		this.code.setScopes(Arrays.asList("scope1", "scope2", "scope3"));
+		this.code.setGrantedScopes(Arrays.asList("scope1", "scope2"));
+		
+		// Granted scopes < Asked Scopes => Scope attribute in response
+		result = this.mockMvc.perform(
+				post("/token")
+				.param("grant_type", "authorization_code")
+				.param("code", AUTH_CODE_ID)
+				.param("redirect_uri", APP_REDIRECT_URI)
+		).andExpect(status().is(200))
+		.andReturn();
+		
+		json = result.getResponse().getContentAsString();
+		response = this.mapper.readValue(json, TokenResponse.class);
+		assertThat(response.getScope(), equalTo("scope1 scope2"));
+	}
+	
+	/**
 	 * Get tokens from auth code
 	 */
 	@Test
@@ -299,7 +350,7 @@ public class TestAuthCodeGrant extends BaseTest {
 		assertThat(resp.getRefreshToken(), is(notNullValue()));
 		assertThat(resp.getAccessToken(), is(notNullValue()));
 		assertThat(resp.getTokenType(), is("Bearer"));
-		assertThat(resp.getScope(), is(""));
+		assertThat(resp.getScope(), nullValue());
 		assertThat(resp.getExpiresIn(), is(equalTo(36000L)));
 		
 		assertThat(resp.getIdToken(), is(nullValue()));

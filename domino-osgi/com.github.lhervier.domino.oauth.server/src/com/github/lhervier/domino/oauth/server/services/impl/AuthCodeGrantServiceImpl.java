@@ -96,7 +96,7 @@ public class AuthCodeGrantServiceImpl extends BaseGrantService {
 			// Get the authorization code
 			AuthCodeEntity authCode = this.authCodeRepo.findOne(code);
 			if( authCode == null )
-				throw new GrantInvalidGrantException("code is invalid");
+				throw new GrantInvalidGrantException("invalid auth code");
 			
 			// Check it did not expire
 			long expired = (long) authCode.getExpires();

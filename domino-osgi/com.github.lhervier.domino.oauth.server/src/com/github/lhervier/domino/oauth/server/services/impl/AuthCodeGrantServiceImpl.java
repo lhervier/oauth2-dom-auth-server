@@ -107,8 +107,7 @@ public class AuthCodeGrantServiceImpl implements GrantService {
 				throw new GrantInvalidGrantException("invalid auth code");
 			
 			// Check it did not expire
-			long expired = (long) authCode.getExpires();
-			if( expired < this.timeSvc.currentTimeSeconds() )
+			if( authCode.getExpires() < this.timeSvc.currentTimeSeconds() )
 				throw new GrantInvalidGrantException("code has expired");
 			
 			// Check it was generated for the right clientId

@@ -55,6 +55,7 @@ public class TestAuthCodeGrant extends BaseTest {
 	private static final String APP_FULL_NAME = "CN=myApp/OU=APPLICATION/O=WEB";
 	private static final String APP_CLIENT_ID = "1234";
 	private static final String APP_REDIRECT_URI = "http://acme.com/myApp";
+	private ApplicationEntity normalApp;
 	
 	/**
 	 * Hacky app: Try to declare another app that points to the same redirect uri
@@ -63,6 +64,7 @@ public class TestAuthCodeGrant extends BaseTest {
 	private static final String HACKY_APP_FULL_NAME = "CN=hackyApp/OU=APPLICATION/O=WEB";
 	private static final String HACKY_APP_CLIENT_ID = "3456";
 	private static final String HACKY_APP_REDIRECT_URI = "http://acme.com/myApp";
+	private ApplicationEntity hackyApp;
 	
 	/**
 	 * Authorization codes
@@ -103,7 +105,7 @@ public class TestAuthCodeGrant extends BaseTest {
 		reset(authCodeRepoMock);
 		
 		// Declare applications
-		ApplicationEntity normalApp = new ApplicationEntity() {{
+		this.normalApp = new ApplicationEntity() {{
 			this.setClientId(APP_CLIENT_ID);
 			this.setFullName(APP_FULL_NAME);
 			this.setName(APP_NAME);
@@ -112,7 +114,7 @@ public class TestAuthCodeGrant extends BaseTest {
 		when(this.appRepoMock.findOne(eq(APP_CLIENT_ID))).thenReturn(normalApp);
 		when(this.appRepoMock.findOneByName(eq(APP_NAME))).thenReturn(normalApp);
 		
-		ApplicationEntity hackyApp = new ApplicationEntity() {{
+		this.hackyApp = new ApplicationEntity() {{
 			this.setClientId(HACKY_APP_CLIENT_ID);
 			this.setFullName(HACKY_APP_FULL_NAME);
 			this.setName(HACKY_APP_NAME);
@@ -225,6 +227,20 @@ public class TestAuthCodeGrant extends BaseTest {
 				.param("redirect_uri", "http://wrong.redirect/uri")
 		).andExpect(status().is(400))
 		.andExpect(content().string(containsString("invalid redirect_uri")));
+	}
+	
+	/**
+	 * No redirect uri in URI, and additional uris in app
+	 */
+	@Test
+	public void noRedirectUriEvenInApp() throws Exception {
+		this.normalApp.setRedirectUris(Arrays.asList("http://acme.com/aditionnal"));
+		this.mockMvc.perform(
+				post("/token")
+				.param("grant_type", "authorization_code")
+				.param("code", AUTH_CODE_ID)
+		).andExpect(status().is(400))
+		.andExpect(content().string(containsString("redirect_uri is mandatory")));
 	}
 	
 	/**

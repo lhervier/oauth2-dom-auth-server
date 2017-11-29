@@ -72,9 +72,9 @@ public class AuthCodeGrantServiceImpl extends BaseGrantService {
 	public Map<String, Object> createGrant(Application app) throws BaseGrantException, ServerErrorException {
 		return this.createGrant(
 				app, 
-				this.request.getParameter("request_uri"),
+				this.request.getParameter("redirect_uri"),
 				this.request.getParameter("code")
-				);
+		);
 	}
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Map<String, Object> createGrant(Application app, String redirectUri, String code) throws BaseGrantException, ServerErrorException {
@@ -85,7 +85,7 @@ public class AuthCodeGrantServiceImpl extends BaseGrantService {
 		
 		// RedirectURI must not be empty
 		if( StringUtils.isEmpty(redirectUri) )
-			throw new ServerErrorException("no redirect_uri in query string.");
+			throw new GrantInvalidRequestException("redirect_uri is mandatory");
 		
 		// Validate the code
 		if( StringUtils.isEmpty(code) )

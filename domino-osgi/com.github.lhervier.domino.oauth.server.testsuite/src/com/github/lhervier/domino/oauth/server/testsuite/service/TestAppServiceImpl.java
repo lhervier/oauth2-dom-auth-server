@@ -34,10 +34,10 @@ import com.github.lhervier.domino.oauth.server.entity.PersonEntity;
 import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
 import com.github.lhervier.domino.oauth.server.repo.PersonRepository;
-import com.github.lhervier.domino.oauth.server.services.AppService;
+import com.github.lhervier.domino.oauth.server.services.impl.AppServiceImpl;
 import com.github.lhervier.domino.oauth.server.testsuite.BaseTest;
 
-public class TestAppService extends BaseTest {
+public class TestAppServiceImpl extends BaseTest {
 
 	@Autowired
 	private ApplicationRepository appRepoMock;
@@ -46,7 +46,7 @@ public class TestAppService extends BaseTest {
 	private PersonRepository personRepoMock;
 	
 	@Autowired
-	private AppService appSvc;
+	private AppServiceImpl appSvc;
 	
 	@Before
 	public void setUp() {

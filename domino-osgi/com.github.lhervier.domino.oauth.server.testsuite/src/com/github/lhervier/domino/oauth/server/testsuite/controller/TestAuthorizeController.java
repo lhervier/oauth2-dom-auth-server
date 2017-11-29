@@ -30,13 +30,9 @@ import java.util.Map;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MvcResult;
 
 import com.github.lhervier.domino.oauth.server.NotesPrincipal.AuthType;
@@ -48,12 +44,8 @@ import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
 import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
 import com.github.lhervier.domino.oauth.server.testsuite.BaseTest;
 import com.github.lhervier.domino.oauth.server.testsuite.NotesPrincipalTestImpl;
-import com.github.lhervier.domino.oauth.server.testsuite.TestConfig;
 import com.github.lhervier.domino.oauth.server.testsuite.TimeServiceTestImpl;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {TestConfig.class})
-@ActiveProfiles("test")
 public class TestAuthorizeController extends BaseTest {
 
 	@Autowired

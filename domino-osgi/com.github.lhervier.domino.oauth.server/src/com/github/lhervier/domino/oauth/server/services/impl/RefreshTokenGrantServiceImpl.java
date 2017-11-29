@@ -100,7 +100,7 @@ public class RefreshTokenGrantServiceImpl implements GrantService {
 	/**
 	 * Refresh a token
 	 * @param app the currently logged in user (application)
-	 * @param sRefreshToken le refresh token
+	 * @param refreshToken le refresh token
 	 * @param scopes d'éventuels nouveaux scopes.
 	 * @throws BaseGrantException 
 	 * @throws AuthServerErrorException
@@ -108,14 +108,14 @@ public class RefreshTokenGrantServiceImpl implements GrantService {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private Map<String, Object> refreshToken(
 			Application app,
-			String sRefreshToken, 
+			String refreshToken, 
 			List<String> scopes) throws BaseGrantException, ServerErrorException {
 		// Sanity check
-		if( sRefreshToken == null )
+		if( refreshToken == null )
 			throw new GrantInvalidGrantException("refresh_token is mandatory");
 		
 		// Decrypt refresh token
-		AuthCodeEntity authCode = this.authCodeSvc.toEntity(sRefreshToken);
+		AuthCodeEntity authCode = this.authCodeSvc.toEntity(refreshToken);
 		if( authCode == null )
 			throw new GrantInvalidGrantException("refresh_token is invalid");
 			

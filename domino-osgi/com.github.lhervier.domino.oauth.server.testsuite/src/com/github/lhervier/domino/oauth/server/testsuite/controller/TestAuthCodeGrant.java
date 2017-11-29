@@ -147,7 +147,7 @@ public class TestAuthCodeGrant extends BaseTest {
 			this.setId(AUTH_CODE_ID);
 			this.setApplication(APP_NAME);
 			this.setClientId(APP_CLIENT_ID);
-			this.setExpires(TimeServiceTestImpl.CURRENT_TIME + 600);
+			this.setExpires(TimeServiceTestImpl.CURRENT_TIME + authCodeLifetime);
 			this.setScopes(Arrays.asList("scope1", "scope2"));
 			this.setGrantedScopes(Arrays.asList("scope1", "scope2"));
 			this.setRedirectUri(APP_REDIRECT_URI);
@@ -255,7 +255,7 @@ public class TestAuthCodeGrant extends BaseTest {
 	 */
 	@Test
 	public void expiredAuthCode() throws Exception {
-		TimeServiceTestImpl.CURRENT_TIME = (System.currentTimeMillis() / 1000L) + 700L;
+		TimeServiceTestImpl.CURRENT_TIME += this.authCodeLifetime + 10L;
 		
 		this.mockMvc.perform(
 				post("/token")

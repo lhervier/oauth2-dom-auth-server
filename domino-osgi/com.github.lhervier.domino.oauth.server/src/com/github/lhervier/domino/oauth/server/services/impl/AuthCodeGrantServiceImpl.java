@@ -53,14 +53,14 @@ public class AuthCodeGrantServiceImpl extends BaseGrantService {
 	/**
 	 * The extensions
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "rawtypes" })
 	@Autowired
 	private List<IOAuthExtension> exts;
 	
 	/**
 	 * @see com.github.lhervier.domino.oauth.server.services.GrantService#createGrant(com.github.lhervier.domino.oauth.server.model.Application, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public Map<String, Object> createGrant(
 			Application app,

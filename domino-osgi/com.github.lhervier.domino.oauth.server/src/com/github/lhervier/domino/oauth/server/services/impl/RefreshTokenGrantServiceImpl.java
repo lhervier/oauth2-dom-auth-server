@@ -62,7 +62,7 @@ public class RefreshTokenGrantServiceImpl extends BaseGrantService {
 	/**
 	 * The extensions
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "rawtypes" })
 	@Autowired
 	private List<IOAuthExtension> exts;
 	
@@ -100,7 +100,7 @@ public class RefreshTokenGrantServiceImpl extends BaseGrantService {
 	 * @throws BaseGrantException 
 	 * @throws AuthServerErrorException
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private Map<String, Object> refreshToken(
 			Application app,
 			String sRefreshToken, 

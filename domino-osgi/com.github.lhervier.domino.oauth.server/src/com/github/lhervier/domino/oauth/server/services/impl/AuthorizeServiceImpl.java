@@ -59,7 +59,7 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 	/**
 	 * The extensions
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "rawtypes" })
 	@Autowired
 	private List<IOAuthExtension> exts;
 	
@@ -191,7 +191,7 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 	 * @param responseTypes the response types
 	 * @return true if ok. False otherwise
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private boolean checkResponseTypes(List<String> responseTypes) {
 		for( IOAuthExtension ext : this.exts ) {
 			if( ext.validateResponseTypes(responseTypes) )
@@ -206,7 +206,7 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 	 * @throws JsonMappingException 
 	 * @throws JsonGenerationException 
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void initializeContexts(
 			NotesPrincipal user,
 			AuthCodeEntity authCode, 
@@ -239,7 +239,7 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 	/**
 	 * Run the grants
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private Map<String, Object> runGrants(AuthCodeEntity authCode, List<String> responseType) {
 		Map<String, Object> params = new HashMap<String, Object>();
 		for( IOAuthExtension ext : this.exts ) {

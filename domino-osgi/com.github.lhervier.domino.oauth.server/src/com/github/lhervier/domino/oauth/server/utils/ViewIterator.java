@@ -86,7 +86,7 @@ public class ViewIterator implements Iterable<ViewEntry>, Base {
 		/**
 		 * @see lotus.domino.Base#recycle(java.util.Vector)
 		 */
-		@SuppressWarnings("unchecked")
+		@SuppressWarnings({ "rawtypes" })
 		public void recycle(Vector arg0) throws NotesException {
 			throw new UnsupportedOperationException();
 		}
@@ -228,7 +228,7 @@ public class ViewIterator implements Iterable<ViewEntry>, Base {
 	/**
 	 * @see lotus.domino.Base#recycle(java.util.Vector)
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "rawtypes" })
 	public void recycle(Vector arg0) throws NotesException {
 		throw new UnsupportedOperationException("Not implemented");
 	}

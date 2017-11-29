@@ -75,7 +75,6 @@ public class AccessCheckAspect {
 	/**
 	 * Pointcut to detect classes we will log access
 	 */
-	@SuppressWarnings("unused")
 	@Pointcut("within(com.github.lhervier.domino.oauth.server.controller.*)")
 	private void controller() {
 	}

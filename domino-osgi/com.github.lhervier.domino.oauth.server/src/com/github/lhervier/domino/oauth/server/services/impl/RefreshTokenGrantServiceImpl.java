@@ -72,7 +72,6 @@ public class RefreshTokenGrantServiceImpl extends BaseGrantService {
 	@Override
 	public Map<String, Object> createGrant(
 			Application app, 
-			String grantType,
 			String code, 
 			String scope, 
 			String refreshToken, 

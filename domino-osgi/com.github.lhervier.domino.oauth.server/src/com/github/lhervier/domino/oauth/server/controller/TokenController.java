@@ -96,6 +96,6 @@ public class TokenController {
 		GrantService svc = this.grantServices.get(grantType);
 		if( svc == null )
 			throw new GrantUnsupportedGrantTypeException("grant_type '" + grantType + "' is not supported");
-		return svc.createGrant(app, grantType, code, scope, refreshToken, redirectUri);
+		return svc.createGrant(app, code, scope, refreshToken, redirectUri);
 	}
 }

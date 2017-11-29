@@ -23,6 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -85,7 +86,7 @@ public class TestAuthorizeController extends BaseTest {
 	 * User must not be authenticated using bearer tokens
 	 */
 	@Test
-	public void usingBearerAuth() throws Exception {
+	public void notUsingBearerAuth() throws Exception {
 		user.setAuthType(AuthType.BEARER);
 		
 		mockMvc
@@ -97,7 +98,7 @@ public class TestAuthorizeController extends BaseTest {
 	 * User cannot be logged in as an application
 	 */
 	@Test
-	public void loggedAsAnApplication() throws Exception {
+	public void notLoggedAsAnApplication() throws Exception {
 		when(appRepoMock.findOneByName(eq("Lionel"))).thenReturn(new ApplicationEntity() {{
 			setClientId("567890");
 			setName("Lionel");
@@ -166,7 +167,6 @@ public class TestAuthorizeController extends BaseTest {
 	 */
 	@Test
 	public void invalidClientId() throws Exception {
-		when(appRepoMock.findOne(anyString())).thenReturn(null);
 		mockMvc
 		.perform(
 				get("/authorize")
@@ -183,7 +183,7 @@ public class TestAuthorizeController extends BaseTest {
 	 */
 	@Test
 	public void noRedirectUriEvenInApp() throws Exception {
-		when(appRepoMock.findOne(Mockito.anyString())).thenReturn(new ApplicationEntity() {{
+		when(appRepoMock.findOne(anyString())).thenReturn(new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");
 			setRedirectUri(null);
@@ -215,6 +215,30 @@ public class TestAuthorizeController extends BaseTest {
 		)
 		.andExpect(status().is(500))
 		.andExpect(content().string(containsString("redirect_uri is invalid")));
+	}
+	
+	/**
+	 * RedirectUri is one of the additionnal URIs
+	 */
+	@Test
+	public void usingAdditionalRedirectUri() throws Exception {
+		when(appRepoMock.findOne(eq("1234"))).thenReturn(new ApplicationEntity() {{
+			setClientId("1234");
+			setName("myApp");
+			setRedirectUri("http://acme.com/myApp");
+			setRedirectUris(Arrays.asList("http://acme.com/otherUri"));
+		}});
+		MvcResult result = mockMvc
+		.perform(
+				get("/authorize")
+				.param("client_id", "1234")
+				.param("redirect_uri", "http://acme.com/otherUri")
+				.param("response_type", "token")
+		)
+		.andExpect(status().is(302))
+		.andReturn();
+		String location = result.getResponse().getHeader("Location");
+		assertThat(location, not(equalTo("error")));
 	}
 	
 	// ========================================================================
@@ -393,6 +417,60 @@ public class TestAuthorizeController extends BaseTest {
 		Map<String, String> params = urlParameters(location);
 		assertThat(params, hasKey("code"));
 		assertThat(params, hasEntry("param1", "xxx"));
+	}
+	
+	/**
+	 * Fragment in redirect_uri, and response_type = code
+	 */
+	@Test
+	public void fragmentInCodeResponseType() throws Exception {
+		when(appRepoMock.findOne(eq("1234"))).thenReturn(new ApplicationEntity() {{
+			setClientId("1234");
+			setName("myApp");
+			setFullName("CN=myApp" + appRoot);
+			setRedirectUri("http://acme.com/myApp#param1=xxx");			// Fragment in uri
+		}});
+		mockMvc
+		.perform(
+				get("/authorize")
+				.param("client_id", "1234")
+				.param("response_type", "code")
+		)
+		.andExpect(status().is(500))
+		.andExpect(content().string(containsString("invalid redirect_uri")));
+	}
+	
+	/**
+	 * Not all scopes grantes
+	 */
+	@Test
+	public void dontGrantAllScopes() throws Exception {
+		when(appRepoMock.findOne(anyString())).thenReturn(new ApplicationEntity() {{
+			setClientId("1234");
+			setName("myApp");
+			setFullName("CN=myApp" + appRoot);
+			setRedirectUri("http://acme.com/myApp");
+		}});
+		
+		when(authCodeRepoMock.save(any(AuthCodeEntity.class))).then(returnsFirstArg());
+		
+		mockMvc
+		.perform(
+				get("/authorize")
+				.param("client_id", "1234")
+				.param("response_type", "code")
+				.param("scope", "openid non_existing_scope")
+		)
+		.andExpect(status().is(302));
+		
+		ArgumentCaptor<AuthCodeEntity> authCodeCaptor = ArgumentCaptor.forClass(AuthCodeEntity.class);
+		Mockito.verify(authCodeRepoMock, Mockito.times(1)).save(authCodeCaptor.capture());
+		List<AuthCodeEntity> added = authCodeCaptor.getAllValues();
+		assertThat(added.size(), is(equalTo(1)));
+		AuthCodeEntity code = added.get(0);
+		
+		assertThat(code.getScopes(), containsInAnyOrder("openid", "non_existing_scope"));
+		assertThat(code.getGrantedScopes(), containsInAnyOrder("openid"));
 	}
 	
 	// ======================================================================================

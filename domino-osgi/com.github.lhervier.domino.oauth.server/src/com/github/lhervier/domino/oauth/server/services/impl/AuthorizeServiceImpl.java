@@ -117,7 +117,7 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 		
 		// Fragment not allowed in redirect uri if code response type
 		if( responseTypes.contains("code") && redirectUri.indexOf('#') != -1 )
-			throw new InvalidUriException("redirect_uri must not contain a fragment to use code flow");
+			throw new InvalidUriException("invalid redirect_uri : Auth code flow not allowed when a fragment is present in URI");
 		
 		// Extract the scopes
 		List<String> scopes = new ArrayList<String>();
@@ -155,7 +155,7 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 			
 			// Compute the query string
 			StringBuffer sbRedirect = new StringBuffer();
-			sbRedirect.append("redirect:").append(redirectUri);
+			sbRedirect.append(redirectUri);
 			char sep;
 			if( responseTypes.contains("code") ) {
 				if( redirectUri.indexOf('?') == -1 )
@@ -179,10 +179,8 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 			
 			// Redirect
 			return sbRedirect.toString();
-		} catch (JsonGenerationException e) {
-			throw new RuntimeException(e);
-		} catch (JsonMappingException e) {
-			throw new RuntimeException(e);
+		} catch (IOException e) {
+			throw new RuntimeException(e);			// May not happen
 		}
 	}
 	
@@ -210,7 +208,7 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 	private void initializeContexts(
 			NotesPrincipal user,
 			AuthCodeEntity authCode, 
-			Application app) throws JsonGenerationException, JsonMappingException {
+			Application app) throws IOException {
 		final List<String> grantedScopes = new ArrayList<String>();
 		for( IOAuthExtension ext : this.exts ) {
 			Object context = ext.initContext(
@@ -225,12 +223,8 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 					authCode.getScopes()
 			);
 			if( context != null ) {
-				try {
-					authCode.getContextObjects().put(ext.getId(), this.mapper.writeValueAsString(context));
-					authCode.getContextClasses().put(ext.getId(), ext.getContextClass().getName());
-				} catch(IOException e) {
-					throw new RuntimeException(e);			// Should not happen...
-				}
+				authCode.getContextObjects().put(ext.getId(), this.mapper.writeValueAsString(context));
+				authCode.getContextClasses().put(ext.getId(), ext.getContextClass().getName());
 			}
 		}
 		authCode.setGrantedScopes(grantedScopes);

@@ -53,7 +53,7 @@ public class AuthorizeController {
     		@RequestParam(value = "scope", required = false) String scope,
     		@RequestParam(value = "state", required = false) String state,
     		@RequestParam(value = "redirect_uri", required = false) String redirectUri) throws NotAuthorizedException, ForbiddenException, WrongPathException, BaseAuthException, InvalidUriException, ServerErrorException {
-		return new ModelAndView(this.authSvc.authorize(
+		return new ModelAndView("redirect:" + this.authSvc.authorize(
 				this.authorizeUser, 
 				responseType, 
 				clientId, 

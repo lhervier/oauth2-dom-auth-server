@@ -62,10 +62,22 @@ public class TestTokenController extends BaseTest {
 	}
 	
 	/**
+	 * User must not be authenticated using bearer tokens
+	 */
+	@Test
+	public void notUsingBearerAuth() throws Exception {
+		user.setAuthType(AuthType.BEARER);
+		
+		mockMvc
+		.perform(post("/token"))
+		.andExpect(status().is(401));
+	}
+	
+	/**
 	 * User must be logged in as an application
 	 */
 	@Test
-	public void loggedInAsApp() throws Exception {
+	public void notLoggedInAsApp() throws Exception {
 		user.setName("CN=Lionel/O=USER");
 		user.setCommon("Lionel");
 		
@@ -81,6 +93,18 @@ public class TestTokenController extends BaseTest {
 	public void usingDbRoot() throws Exception {
 		user.setCurrentDatabasePath(null);
 		this.mockMvc
+		.perform(post("/token"))
+		.andExpect(status().is(404));
+	}
+	
+	/**
+	 * Controller must be called on oauth2 db path
+	 */
+	@Test
+	public void notOnOauth2Db() throws Exception {
+		user.setCurrentDatabasePath("otherdb.nsf");		// Other database
+		
+		mockMvc
 		.perform(post("/token"))
 		.andExpect(status().is(404));
 	}

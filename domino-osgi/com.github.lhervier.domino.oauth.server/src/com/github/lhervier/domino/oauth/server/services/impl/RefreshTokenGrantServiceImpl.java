@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 
@@ -67,15 +69,26 @@ public class RefreshTokenGrantServiceImpl extends BaseGrantService {
 	private List<IOAuthExtension> exts;
 	
 	/**
+	 * The request
+	 */
+	@Autowired
+	private HttpServletRequest request;
+	
+	/**
 	 * @see com.github.lhervier.domino.oauth.server.services.GrantService#createGrant(com.github.lhervier.domino.oauth.server.model.Application, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
 	 */
 	@Override
+	public Map<String, Object> createGrant(Application app) throws BaseGrantException, ServerErrorException {
+		return this.createGrant(
+				app,
+				this.request.getParameter("scope"),
+				this.request.getParameter("refresh_token")
+		);
+	}
 	public Map<String, Object> createGrant(
-			Application app, 
-			String code, 
-			String scope, 
-			String refreshToken, 
-			String redirectUri) throws BaseGrantException, ServerErrorException {
+			Application app,
+			String scope,
+			String refreshToken) throws BaseGrantException, ServerErrorException {
 		// Extract scopes
 		List<String> scopes;
 		if( StringUtils.isEmpty(scope) )

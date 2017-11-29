@@ -61,32 +61,23 @@ public class TokenController {
 	@RequestMapping(value = "/token", method = RequestMethod.POST)
 	public @ResponseBody Map<String, Object> token(
 			@RequestParam(value = "client_id", required = false) String clientId,
-			@RequestParam(value = "grant_type", required = false) String grantType,
-			@RequestParam(value = "code", required = false) String code,
-			@RequestParam(value = "scope", required = false) String scope,
-			@RequestParam(value = "refresh_token", required = false) String refreshToken,
-			@RequestParam(value = "redirect_uri", required = false) String redirectUri) throws NotAuthorizedException, ForbiddenException, WrongPathException, BaseGrantException, ServerErrorException {
-		return this.token(this.tokenUser, clientId, grantType, code, scope, refreshToken, redirectUri);
+			@RequestParam(value = "grant_type", required = false) String grantType) throws NotAuthorizedException, ForbiddenException, WrongPathException, BaseGrantException, ServerErrorException {
+		return this.token(this.tokenUser, clientId, grantType);
 	}
 	public Map<String, Object> token(
 			NotesPrincipal user,
 			String clientId,
-			String grantType,
-			String code,
-			String scope,
-			String refreshToken,
-			String redirectUri) throws BaseGrantException, ServerErrorException {
+			String grantType) throws BaseGrantException, ServerErrorException {
 		// Extract application from current user (the application)
-		Application app = this.appSvc.getApplicationFromName(user.getCommon());
-		if( app == null )
-			throw new GrantInvalidClientException("Current user do not correspond to a declared application");
+		// Must not be null as @AppAuth has already checked that the app exists
+		Application app = this.appSvc.getApplicationFromName(user.getCommon()); 
 		
 		// Validate client_id : Must be the same as the client_id associated with the current user (application)
 		// As the application is authenticated, the clientId is not mandatory.
 		if( StringUtils.isEmpty(clientId) )
 			clientId = app.getClientId();
 		if( !app.getClientId().equals(clientId) )
-			throw new GrantInvalidClientException("client_id do not correspond to the currently logged in application");
+			throw new GrantInvalidClientException("invalid client_id : It does not correspond to the currently logged in application");
 		
 		// grant_type is mandatory
 		if( StringUtils.isEmpty(grantType) )
@@ -95,7 +86,7 @@ public class TokenController {
 		// run grant
 		GrantService svc = this.grantServices.get(grantType);
 		if( svc == null )
-			throw new GrantUnsupportedGrantTypeException("grant_type '" + grantType + "' is not supported");
-		return svc.createGrant(app, code, scope, refreshToken, redirectUri);
+			throw new GrantUnsupportedGrantTypeException("unknown grant_type '" + grantType + "'");
+		return svc.createGrant(app);
 	}
 }

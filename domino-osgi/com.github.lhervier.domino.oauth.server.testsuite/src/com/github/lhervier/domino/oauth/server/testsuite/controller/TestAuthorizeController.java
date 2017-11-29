@@ -65,7 +65,7 @@ public class TestAuthorizeController extends BaseTest {
 	private CoreExt coreExt;
 	
 	@Autowired
-	protected NotesPrincipalTestImpl user;
+	private NotesPrincipalTestImpl user;
 	
 	@Before
 	public void setUp() {

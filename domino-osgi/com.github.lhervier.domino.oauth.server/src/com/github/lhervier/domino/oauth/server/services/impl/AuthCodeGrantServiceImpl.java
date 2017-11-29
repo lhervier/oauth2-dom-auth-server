@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,6 +47,12 @@ public class AuthCodeGrantServiceImpl extends BaseGrantService {
 	private TimeService timeSvc;
 	
 	/**
+	 * Request
+	 */
+	@Autowired
+	private HttpServletRequest request;
+	
+	/**
 	 * The refresh token life time
 	 */
 	@Value("${oauth2.server.refreshTokenLifetime}")
@@ -60,14 +68,16 @@ public class AuthCodeGrantServiceImpl extends BaseGrantService {
 	/**
 	 * @see com.github.lhervier.domino.oauth.server.services.GrantService#createGrant(com.github.lhervier.domino.oauth.server.model.Application, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
-	public Map<String, Object> createGrant(
-			Application app,
-			String code, 
-			String scope,
-			String refreshToken, 
-			String redirectUri) throws BaseGrantException, ServerErrorException {
+	public Map<String, Object> createGrant(Application app) throws BaseGrantException, ServerErrorException {
+		return this.createGrant(
+				app, 
+				this.request.getParameter("request_uri"),
+				this.request.getParameter("code")
+				);
+	}
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public Map<String, Object> createGrant(Application app, String redirectUri, String code) throws BaseGrantException, ServerErrorException {
 		// Get URI from app if it only have one
 		if( StringUtils.isEmpty(redirectUri) )
 			if( app.getRedirectUris() == null || app.getRedirectUris().size() == 0 )

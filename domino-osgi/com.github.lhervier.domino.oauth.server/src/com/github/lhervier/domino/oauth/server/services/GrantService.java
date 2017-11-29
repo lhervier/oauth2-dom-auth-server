@@ -15,10 +15,5 @@ public interface GrantService {
 	/**
 	 * Generate the grant
 	 */
-	public Map<String, Object> createGrant(
-		Application app,
-		String code,
-		String scope,
-		String refreshToken,
-		String redirectUri) throws BaseGrantException, ServerErrorException;
+	public Map<String, Object> createGrant(Application app) throws BaseGrantException, ServerErrorException;
 }

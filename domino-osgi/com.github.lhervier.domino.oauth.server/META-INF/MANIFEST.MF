@@ -36,4 +36,5 @@ Export-Package: com.github.lhervier.domino.oauth.server,
  com.github.lhervier.domino.oauth.server.repo,
  com.github.lhervier.domino.oauth.server.repo.impl.notes,
  com.github.lhervier.domino.oauth.server.services,
+ com.github.lhervier.domino.oauth.server.services.impl,
  com.github.lhervier.domino.oauth.server.utils

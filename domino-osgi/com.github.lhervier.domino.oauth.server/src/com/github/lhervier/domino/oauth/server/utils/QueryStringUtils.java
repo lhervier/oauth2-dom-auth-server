@@ -15,10 +15,6 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.commons.lang.StringUtils;
-
 /**
  * Méthode utiles pour gérer les utls
  * @author Lionel HERVIER
@@ -93,72 +89,6 @@ public class QueryStringUtils {
 		} catch (IllegalAccessException e) {
 			throw new RuntimeException(e);
 		} catch (InvocationTargetException e) {
-			throw new RuntimeException(e);
-		}
-	}
-	
-	/**
-	 * Créé une bean à partir du queryString
-	 * @param request the http request
-	 * @param cl la classe de la bean à créer
-	 * @return la bean
-	 */
-	public static final <T> T createBean(HttpServletRequest request, Class<T> cl) {
-		try {
-			T ret = cl.newInstance();
-			
-			BeanInfo beanInfo = Introspector.getBeanInfo(cl);
-			PropertyDescriptor[] descs = beanInfo.getPropertyDescriptors();
-			for( PropertyDescriptor desc : descs ) {
-				String name = desc.getName();
-				if( "class".equals(name) )
-					continue;
-				
-				if( StringUtils.isEmpty(request.getParameter(name)) )
-					continue;
-				
-				Class<?> t = desc.getWriteMethod().getParameterTypes()[0];
-				if( t.isPrimitive() )
-					t = ReflectionUtils.PRIMITIVES.get(t);
-				
-				String prop;
-				if( desc.getReadMethod() != null ) {
-					QueryStringName ann = desc.getReadMethod().getAnnotation(QueryStringName.class);
-					if( ann != null ) {
-						prop = ann.value();
-					} else 
-						prop = name;
-				} else
-					prop = name;
-				
-				
-				Object value;
-				if( !t.isAssignableFrom(List.class) )
-					value = t.getConstructor(String.class).newInstance(request.getParameter(prop));
-				else {
-					List<Object> lst = new ArrayList<Object>();
-					String[] values = request.getParameter(prop).split(",");
-					for( String v : values )
-						lst.add(v);
-					value = lst;
-				}
-				
-				desc.getWriteMethod().invoke(ret, new Object[] {value});
-			}
-			return ret;
-		} catch (IllegalAccessException e) {
-			throw new RuntimeException(e);
-		} catch (InstantiationException e) {
-			throw new RuntimeException(e);
-		} catch (IntrospectionException e) {
-			throw new RuntimeException(e);
-		} catch (IllegalArgumentException e) {
-			throw new RuntimeException(e);
-		} catch (SecurityException e) {
-			throw new RuntimeException(e);
-		} catch (InvocationTargetException e) {
-			throw new RuntimeException(e);
-		} catch (NoSuchMethodException e) {
 			throw new RuntimeException(e);
 		}
 	}

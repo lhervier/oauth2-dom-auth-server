@@ -23,6 +23,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -33,6 +34,7 @@ import com.github.lhervier.domino.oauth.server.ext.core.CoreContext;
 import com.github.lhervier.domino.oauth.server.ext.core.CoreExt;
 import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
 import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
+import com.github.lhervier.domino.oauth.server.services.AuthCodeService;
 import com.github.lhervier.domino.oauth.server.testsuite.BaseTest;
 import com.github.lhervier.domino.oauth.server.testsuite.NotesPrincipalTestImpl;
 import com.github.lhervier.domino.oauth.server.testsuite.TimeServiceTestImpl;
@@ -75,6 +77,12 @@ public class TestAuthCodeGrant extends BaseTest {
 	 */
 	@Autowired
 	private AuthCodeRepository authCodeRepoMock;
+	
+	/**
+	 * Auth code service
+	 */
+	@Autowired
+	private AuthCodeService authCodeSvc;
 	
 	/**
 	 * Core extension
@@ -122,6 +130,7 @@ public class TestAuthCodeGrant extends BaseTest {
 		// Reset repositories
 		reset(appRepoMock);
 		reset(authCodeRepoMock);
+		reset(authCodeSvc);
 		
 		// Declare applications
 		this.normalApp = new ApplicationEntity() {{
@@ -327,6 +336,9 @@ public class TestAuthCodeGrant extends BaseTest {
 	 */
 	@Test
 	public void tokensFromAuthCode() throws Exception {
+		when(this.authCodeSvc.fromEntity(Mockito.any(AuthCodeEntity.class)))
+		.thenReturn("012345");
+		
 		MvcResult result = this.mockMvc.perform(
 				post("/token")
 				.param("grant_type", "authorization_code")

@@ -124,11 +124,15 @@ public class RefreshTokenGrantServiceImpl implements GrantService {
 		// Decrypt refresh token
 		AuthCodeEntity authCode = this.authCodeSvc.toEntity(refreshToken);
 		if( authCode == null )
-			throw new GrantInvalidGrantException("refresh_token is invalid");
-			
+			throw new GrantInvalidGrantException("invalid refresh_token");
+		
+		// Check that token has not expired
+		if( authCode.getExpires() < this.timeSvc.currentTimeSeconds() )
+			throw new GrantInvalidGrantException("invalid refresh_token");
+		
 		// Check that scopes are already in the initial scopes
 		if( !authCode.getGrantedScopes().containsAll(scopes) )
-			throw new GrantInvalidScopeException("scopes must be a subset of already accorded scopes");
+			throw new GrantInvalidScopeException("invalid scope: Must be a subset of already granted scopes");
 		
 		// If no scope, use the scopes originally granted by the resource owner 
 		if( scopes.size() == 0 )
@@ -136,7 +140,7 @@ public class RefreshTokenGrantServiceImpl implements GrantService {
 		
 		// Check that the token has been generated for the current application
 		if( !app.getClientId().equals(authCode.getClientId()) )
-			throw new GrantInvalidGrantException("client_id is invalid");
+			throw new GrantInvalidGrantException("invalid client_id");
 		
 		// Prepare the response
 		Map<String, Object> resp = new HashMap<String, Object>();
@@ -156,13 +160,8 @@ public class RefreshTokenGrantServiceImpl implements GrantService {
 			);
 		}
 		
-		// Update scopes
-		if( scopes.size() != 0 ) {
-			if( !scopes.containsAll(authCode.getGrantedScopes())) {
-				resp.put("scope", StringUtils.join(scopes.iterator(), " "));
-				authCode.setGrantedScopes(scopes);
-			}
-		}
+		// Update scopes. Here, we have granted all the asked scopes (otherwise, we would have thrown).
+		authCode.setGrantedScopes(scopes);
 		
 		// Regenerate the refresh token (update expiration date)
 		authCode.setExpires(this.timeSvc.currentTimeSeconds() + this.refreshTokenLifetime);

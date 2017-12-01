@@ -429,7 +429,8 @@ public class TestAuthorizeController extends BaseTest {
 	}
 	
 	/**
-	 * Additional parameters in redirect uri
+	 * Additional parameters in redirect uri.
+	 * https://tools.ietf.org/html/rfc6749#section-3.1
 	 */
 	@Test
 	public void existingParamsInRedirectUri() throws Exception {
@@ -461,6 +462,7 @@ public class TestAuthorizeController extends BaseTest {
 	
 	/**
 	 * Fragment in redirect_uri, and response_type = code
+	 * https://tools.ietf.org/html/rfc6749#section-3.1
 	 */
 	@Test
 	public void fragmentInCodeResponseType() throws Exception {
@@ -550,9 +552,12 @@ public class TestAuthorizeController extends BaseTest {
 	
 	/**
 	 * Additional parameters in redirect uri
+	 * WARNING: RFC says that fragments are not allowed. 
+	 * But our implementation allowed them when using "token" response type, because token is already sent in a fragment.
+	 * https://tools.ietf.org/html/rfc6749#section-3.1
 	 */
 	@Test
-	public void existingParamsInRedirectFragment() throws Exception {
+	public void fragmentInTokenResponseType() throws Exception {
 		when(appRepoMock.findOne(anyString())).thenReturn(new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");

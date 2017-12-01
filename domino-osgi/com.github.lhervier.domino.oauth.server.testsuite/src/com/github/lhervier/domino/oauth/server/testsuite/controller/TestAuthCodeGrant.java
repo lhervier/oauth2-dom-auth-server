@@ -29,8 +29,8 @@ import org.springframework.test.web.servlet.MvcResult;
 import com.github.lhervier.domino.oauth.server.NotesPrincipal.AuthType;
 import com.github.lhervier.domino.oauth.server.entity.ApplicationEntity;
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
+import com.github.lhervier.domino.oauth.server.ext.core.CodeExt;
 import com.github.lhervier.domino.oauth.server.ext.core.CoreContext;
-import com.github.lhervier.domino.oauth.server.ext.core.CoreExt;
 import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
 import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
 import com.github.lhervier.domino.oauth.server.services.AuthCodeService;
@@ -82,12 +82,6 @@ public class TestAuthCodeGrant extends BaseTest {
 	 */
 	@Autowired
 	private AuthCodeService authCodeSvcMock;
-	
-	/**
-	 * Core extension
-	 */
-	@Autowired
-	private CoreExt coreExt;
 	
 	/**
 	 * User principal
@@ -161,13 +155,13 @@ public class TestAuthCodeGrant extends BaseTest {
 			this.setRedirectUri(APP_REDIRECT_URI);
 			this.setContextClasses(new HashMap<String, String>() {{
 				put(
-						coreExt.getId(), 
+						CodeExt.RESPONSE_TYPE, 
 						CoreContext.class.getName()
 				);
 			}});
 			this.setContextObjects(new HashMap<String, String>() {{
 				put(
-						coreExt.getId(),
+						CodeExt.RESPONSE_TYPE,
 						mapper.writeValueAsString(new CoreContext() {{
 							setAud(APP_CLIENT_ID);
 							setSub("CN=Lionel/O=USER");

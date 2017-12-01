@@ -114,7 +114,7 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 			for( String r : tbl )
 				responseTypes.add(r);
 		}
-		if( !this.checkResponseTypes(responseTypes) )
+		if( !this.extSvc.getResponseTypes().containsAll(responseTypes) )
 			throw new AuthUnsupportedResponseTypeException("response_type is invalid", redirectUri);
 		
 		// Fragment not allowed in redirect uri if code response type
@@ -147,7 +147,7 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 			authCode.setScopes(scopes);
 			
 			// Update authorized scopes and initialize contexts
-			this.initializeContexts(user, authCode, app);
+			this.initializeContexts(user, authCode, app, responseTypes);
 			
 			// Run the grants
 			Map<String, Object> params = this.runGrants(authCode, responseTypes);
@@ -187,20 +187,6 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 	}
 	
 	/**
-	 * Check that ate least one extension will process the request
-	 * @param responseTypes the response types
-	 * @return true if ok. False otherwise
-	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private boolean checkResponseTypes(List<String> responseTypes) {
-		for( IOAuthExtension ext : this.extSvc.getExtensions() ) {
-			if( ext.validateResponseTypes(responseTypes) )
-				return true;
-		}
-		return false;
-	}
-	
-	/**
 	 * Initialize the context
 	 * @throws IOException 
 	 * @throws JsonMappingException 
@@ -210,9 +196,11 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 	private void initializeContexts(
 			NotesPrincipal user,
 			AuthCodeEntity authCode, 
-			Application app) throws IOException {
+			Application app,
+			List<String> responseTypes) throws IOException {
 		final List<String> grantedScopes = new ArrayList<String>();
-		for( IOAuthExtension ext : this.extSvc.getExtensions() ) {
+		for( String responseType : responseTypes ) {
+			IOAuthExtension ext = this.extSvc.getExtension(responseType);
 			Object context = ext.initContext(
 					user,
 					new IScopeGranter() {
@@ -225,8 +213,8 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 					authCode.getScopes()
 			);
 			if( context != null ) {
-				authCode.getContextObjects().put(ext.getId(), this.mapper.writeValueAsString(context));
-				authCode.getContextClasses().put(ext.getId(), ext.getContextClass().getName());
+				authCode.getContextObjects().put(responseType, this.mapper.writeValueAsString(context));
+				authCode.getContextClasses().put(responseType, ext.getContextClass().getName());
 			}
 		}
 		authCode.setGrantedScopes(grantedScopes);
@@ -236,12 +224,14 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 	 * Run the grants
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private Map<String, Object> runGrants(AuthCodeEntity authCode, List<String> responseType) {
+	private Map<String, Object> runGrants(
+			AuthCodeEntity authCode, 
+			List<String> responseTypes) {
 		Map<String, Object> params = new HashMap<String, Object>();
-		for( IOAuthExtension ext : this.extSvc.getExtensions() ) {
+		for( String responseType : responseTypes ) {
+			IOAuthExtension ext = this.extSvc.getExtension(responseType);
 			ext.authorize(
-					Utils.getContext(authCode, ext.getId()),
-					responseType, 
+					Utils.getContext(authCode, responseType),
 					authCode,
 					new PropertyAdderImpl(
 							params,

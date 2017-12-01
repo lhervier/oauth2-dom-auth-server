@@ -40,12 +40,11 @@ import org.springframework.test.web.servlet.MvcResult;
 import com.github.lhervier.domino.oauth.server.NotesPrincipal.AuthType;
 import com.github.lhervier.domino.oauth.server.entity.ApplicationEntity;
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
+import com.github.lhervier.domino.oauth.server.ext.core.CodeExt;
 import com.github.lhervier.domino.oauth.server.ext.core.CoreContext;
-import com.github.lhervier.domino.oauth.server.ext.core.CoreExt;
 import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
 import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
 import com.github.lhervier.domino.oauth.server.testsuite.BaseTest;
-import com.github.lhervier.domino.oauth.server.testsuite.impl.DummyExt;
 import com.github.lhervier.domino.oauth.server.testsuite.impl.NotesPrincipalTestImpl;
 import com.github.lhervier.domino.oauth.server.testsuite.impl.TimeServiceTestImpl;
 
@@ -56,12 +55,6 @@ public class TestAuthorizeController extends BaseTest {
 	
 	@Autowired
 	private AuthCodeRepository authCodeRepoMock;
-	
-	@Autowired
-	private CoreExt coreExt;
-	
-	@Autowired
-	private DummyExt dummyExt;
 	
 	@Autowired
 	private NotesPrincipalTestImpl user;
@@ -266,6 +259,7 @@ public class TestAuthorizeController extends BaseTest {
 	
 	/**
 	 * RedirectUri is one of the additionnal URIs
+	 * https://tools.ietf.org/html/rfc6749#section-3.1.2.3
 	 */
 	@Test
 	public void usingAdditionalRedirectUri() throws Exception {
@@ -402,6 +396,7 @@ public class TestAuthorizeController extends BaseTest {
 	/**
 	 * Get an authorization code without a redirect uri.
 	 * App only have one, so it's ok.
+	 * https://tools.ietf.org/html/rfc6749#section-3.1
 	 */
 	@Test
 	public void authCodeFlowNoRedirectUri() throws Exception {
@@ -447,11 +442,10 @@ public class TestAuthorizeController extends BaseTest {
 		assertThat(code.getScopes(), containsInAnyOrder("azerty", "uiop"));
 		assertThat(code.getGrantedScopes(), emptyIterable());
 		
-		assertThat(code.getContextClasses().size(), is(equalTo(2)));
-		assertThat(code.getContextClasses(), hasKey(this.coreExt.getId()));
-		assertThat(code.getContextClasses(), hasKey(this.dummyExt.getId()));
+		assertThat(code.getContextClasses().size(), is(equalTo(1)));
+		assertThat(code.getContextClasses(), hasKey(CodeExt.RESPONSE_TYPE));
 		
-		String jsonCtx = code.getContextObjects().get(this.coreExt.getId());
+		String jsonCtx = code.getContextObjects().get(CodeExt.RESPONSE_TYPE);
 		ObjectMapper mapper = new ObjectMapper();
 		CoreContext ctx = mapper.readValue(jsonCtx, CoreContext.class);
 		
@@ -532,7 +526,7 @@ public class TestAuthorizeController extends BaseTest {
 		.perform(
 				get("/authorize")
 				.param("client_id", "1234")
-				.param("response_type", "code")
+				.param("response_type", "dummy")		// Using dummy extension
 				.param("scope", DUMMY_SCOPE + " non_existing_scope")
 		)
 		.andExpect(status().is(302));

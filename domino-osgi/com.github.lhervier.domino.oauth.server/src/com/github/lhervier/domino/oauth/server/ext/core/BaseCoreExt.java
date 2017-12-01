@@ -5,22 +5,19 @@ import java.util.List;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
 import com.github.lhervier.domino.oauth.server.NotesPrincipal;
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
 import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.server.ext.IPropertyAdder;
 import com.github.lhervier.domino.oauth.server.ext.IScopeGranter;
-import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
 import com.github.lhervier.domino.oauth.server.services.TimeService;
 
 /**
  * OAUTH2 Core extension
  * @author Lionel HERVIER
  */
-@Component
-public class CoreExt implements IOAuthExtension<CoreContext> {
+public abstract class BaseCoreExt implements IOAuthExtension<CoreContext> {
 
 	/**
 	 * The issuer
@@ -41,46 +38,17 @@ public class CoreExt implements IOAuthExtension<CoreContext> {
 	private String signKey;
 	
 	/**
-	 * The authorization code repository
-	 */
-	@Autowired
-	private AuthCodeRepository authCodeRepo;
-	
-	/**
 	 * The time service
 	 */
 	@Autowired
 	private TimeService timeSvc;
 	
 	/**
-	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#getId()
-	 */
-	@Override
-	public String getId() {
-		return "core";
-	}
-
-	/**
 	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#getContextClass()
 	 */
 	@Override
 	public Class<CoreContext> getContextClass() {
 		return CoreContext.class;
-	}
-
-	/**
-	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#validateResponseTypes(List)
-	 */
-	@Override
-	public boolean validateResponseTypes(List<String> responseTypes) {
-		// Authorization code flow
-		if( responseTypes.contains("code") )
-			return true;
-		// Implicit flow
-		if( responseTypes.contains("token") )
-			return true;
-		// Otherwise, not supported
-		return false;
 	}
 
 	/**
@@ -97,35 +65,6 @@ public class CoreExt implements IOAuthExtension<CoreContext> {
 		ctx.setAud(clientId);
 		ctx.setSub(user.getName());
 		return ctx;
-	}
-
-	/**
-	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#authorize(Object, List, AuthCodeEntity, IPropertyAdder)
-	 */
-	@Override
-	public void authorize(
-			CoreContext ctx,
-			List<String> responseTypes, 
-			AuthCodeEntity authCode,
-			IPropertyAdder adder) {
-		// Authorization code grant
-		if( responseTypes.contains("code") ) {
-			
-			// Save the authorization code
-			AuthCodeEntity saved = this.authCodeRepo.save(authCode);
-			
-			// Add the code to the query string
-			adder.addProperty("code", saved.getId());
-		}
-		
-		// Implicit grant
-		if( responseTypes.contains("token") ) {
-			this.token(
-					ctx, 
-					adder, 
-					authCode
-			);
-		}
 	}
 
 	/**

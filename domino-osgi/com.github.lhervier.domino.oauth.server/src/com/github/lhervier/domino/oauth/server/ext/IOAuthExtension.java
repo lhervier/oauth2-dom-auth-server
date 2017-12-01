@@ -12,20 +12,9 @@ import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
 public interface IOAuthExtension<T> {
 
 	/**
-	 * Retourne un id
-	 */
-	public String getId();
-	
-	/**
 	 * Return the context class
 	 */
 	public Class<T> getContextClass();
-	
-	/**
-	 * Check if this extension will process the request
-	 * @return true if the extension will process the request
-	 */
-	public boolean validateResponseTypes(List<String> responseTypes);
 	
 	/**
 	 * Initialization of the context.
@@ -49,7 +38,6 @@ public interface IOAuthExtension<T> {
 	 */
 	public void authorize(
 			T context,
-			List<String> responseTypes, 
 			AuthCodeEntity authCode,
 			IPropertyAdder adder);
 	

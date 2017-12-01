@@ -1,15 +1,5 @@
 package com.github.lhervier.domino.oauth.server.ext.openid;
 
-import static com.github.lhervier.domino.oauth.server.ext.openid.OpenIdConstants.EXT_ID;
-import static com.github.lhervier.domino.oauth.server.ext.openid.OpenIdConstants.PARAM_NONCE;
-import static com.github.lhervier.domino.oauth.server.ext.openid.OpenIdConstants.RESPONSE_TYPE;
-import static com.github.lhervier.domino.oauth.server.ext.openid.OpenIdConstants.SCOPE_ADDRESS;
-import static com.github.lhervier.domino.oauth.server.ext.openid.OpenIdConstants.SCOPE_EMAIL;
-import static com.github.lhervier.domino.oauth.server.ext.openid.OpenIdConstants.SCOPE_OPENID;
-import static com.github.lhervier.domino.oauth.server.ext.openid.OpenIdConstants.SCOPE_PHONE;
-import static com.github.lhervier.domino.oauth.server.ext.openid.OpenIdConstants.SCOPE_PROFILE;
-import static com.github.lhervier.domino.oauth.server.ext.openid.OpenIdConstants.TOKEN_RESPONSE_ATTR;
-
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -32,9 +22,21 @@ import com.github.lhervier.domino.oauth.server.utils.ReflectionUtils;
  * Implémentation de OpenID par dessus OAUth2
  * @author Lionel HERVIER
  */
-@Component
+@Component(OpenIDExt.RESPONSE_TYPE)
 public class OpenIDExt implements IOAuthExtension<OpenIdContext> {
 
+	public static final String RESPONSE_TYPE = "openid";
+	
+	public final static String PARAM_NONCE = "nonce";
+	
+	public static final String TOKEN_RESPONSE_ATTR = "id_token";
+	
+	public static final String SCOPE_OPENID = "openid";
+	public static final String SCOPE_PROFILE = "profile";
+	public static final String SCOPE_EMAIL = "email";
+	public static final String SCOPE_ADDRESS = "address";
+	public static final String SCOPE_PHONE = "phone";
+	
 	/**
 	 * The issuer
 	 */
@@ -71,22 +73,6 @@ public class OpenIDExt implements IOAuthExtension<OpenIdContext> {
 	@Override
 	public Class<OpenIdContext> getContextClass() {
 		return OpenIdContext.class;
-	}
-
-	/**
-	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#validateResponseTypes(List)
-	 */
-	@Override
-	public boolean validateResponseTypes(List<String> responseTypes) {
-		return responseTypes.contains(RESPONSE_TYPE);
-	}
-
-	/**
-	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#getId()
-	 */
-	@Override
-	public String getId() {
-		return EXT_ID;
 	}
 
 	/**
@@ -162,25 +148,6 @@ public class OpenIDExt implements IOAuthExtension<OpenIdContext> {
 	}
 
 	/**
-	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#authorize(Object, List, AuthCodeEntity, IPropertyAdder)
-	 */
-	@Override
-	public void authorize(
-			OpenIdContext ctx, 
-			List<String> responseTypes, 
-			AuthCodeEntity authCode, 
-			IPropertyAdder adder) {
-		// Hybrid flow
-		if( responseTypes.contains(RESPONSE_TYPE) ) {
-			this.token(
-					ctx, 
-					adder, 
-					authCode
-			);
-		}
-	}
-
-	/**
 	 * Returns an Id token
 	 */
 	public IdToken createIdToken(OpenIdContext context, List<String> scopes) {
@@ -236,6 +203,21 @@ public class OpenIDExt implements IOAuthExtension<OpenIdContext> {
 		return idToken;
 	}
 	
+	/**
+	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#authorize(Object, AuthCodeEntity, IPropertyAdder)
+	 */
+	@Override
+	public void authorize(
+			OpenIdContext ctx,  
+			AuthCodeEntity authCode, 
+			IPropertyAdder adder) {
+		this.token(
+				ctx, 
+				adder, 
+				authCode
+		);
+	}
+
 	/**
 	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#token(Object, IPropertyAdder, List)
 	 */

@@ -11,8 +11,12 @@ import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 public interface ExtensionService {
 
 	/**
-	 * Returns the extensions
-	 * @return the extensions
+	 * Return the list of supported response types
 	 */
-	public List<? extends IOAuthExtension<?>> getExtensions();
+	public List<String> getResponseTypes();
+	
+	/**
+	 * Return the extension for the given response type
+	 */
+	public IOAuthExtension<?> getExtension(String responseType);
 }

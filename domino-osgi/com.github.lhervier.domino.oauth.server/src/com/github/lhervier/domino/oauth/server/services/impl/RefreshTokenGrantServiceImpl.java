@@ -154,8 +154,9 @@ public class RefreshTokenGrantServiceImpl implements GrantService {
 				
 		// Call for extensions
 		Map<String, Object> resp = new HashMap<String, Object>();
-		for( IOAuthExtension ext : this.extSvc.getExtensions() ) {
-			Object context = Utils.getContext(authCode, ext.getId());
+		for( String responseType : this.extSvc.getResponseTypes() ) {
+			IOAuthExtension ext = this.extSvc.getExtension(responseType);
+			Object context = Utils.getContext(authCode, responseType);
 			if( context == null )
 				continue;
 			ext.token(

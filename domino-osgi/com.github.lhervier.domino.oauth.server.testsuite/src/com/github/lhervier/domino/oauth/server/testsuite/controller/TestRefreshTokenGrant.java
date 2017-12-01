@@ -24,8 +24,8 @@ import org.springframework.test.web.servlet.MvcResult;
 import com.github.lhervier.domino.oauth.server.NotesPrincipal.AuthType;
 import com.github.lhervier.domino.oauth.server.entity.ApplicationEntity;
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
+import com.github.lhervier.domino.oauth.server.ext.core.CodeExt;
 import com.github.lhervier.domino.oauth.server.ext.core.CoreContext;
-import com.github.lhervier.domino.oauth.server.ext.core.CoreExt;
 import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
 import com.github.lhervier.domino.oauth.server.services.AuthCodeService;
 import com.github.lhervier.domino.oauth.server.testsuite.BaseTest;
@@ -55,12 +55,6 @@ public class TestRefreshTokenGrant extends BaseTest {
 	 */
 	@Autowired
 	private AuthCodeService authCodeSvcMock;
-	
-	/**
-	 * The core extension
-	 */
-	@Autowired
-	private CoreExt coreExt;
 	
 	/**
 	 * User principal
@@ -131,10 +125,10 @@ public class TestRefreshTokenGrant extends BaseTest {
 			setScopes(new ArrayList<String>());
 			setGrantedScopes(new ArrayList<String>());
 			setContextClasses(new HashMap<String, String>() {{
-				put(coreExt.getId(), CoreContext.class.getName());
+				put(CodeExt.RESPONSE_TYPE, CoreContext.class.getName());
 			}});
 			setContextObjects(new HashMap<String, String>() {{
-				put(coreExt.getId(), mapper.writeValueAsString(new CoreContext() {{
+				put(CodeExt.RESPONSE_TYPE, mapper.writeValueAsString(new CoreContext() {{
 					setAud(APP_CLIENT_ID);
 					setSub("CN=Lionel/O=USER");
 					setIss(coreIss);
@@ -163,10 +157,10 @@ public class TestRefreshTokenGrant extends BaseTest {
 			setScopes(Arrays.asList("scope1", "scope2", "scope3"));
 			setGrantedScopes(Arrays.asList("scope1", "scope2"));
 			setContextClasses(new HashMap<String, String>() {{
-				put(coreExt.getId(), CoreContext.class.getName());
+				put(CodeExt.RESPONSE_TYPE, CoreContext.class.getName());
 			}});
 			setContextObjects(new HashMap<String, String>() {{
-				put(coreExt.getId(), mapper.writeValueAsString(new CoreContext() {{
+				put(CodeExt.RESPONSE_TYPE, mapper.writeValueAsString(new CoreContext() {{
 					setAud(APP_CLIENT_ID);
 					setSub("CN=Lionel/O=USER");
 					setIss(coreIss);
@@ -209,10 +203,10 @@ public class TestRefreshTokenGrant extends BaseTest {
 			setScopes(Arrays.asList("scope1", "scope2"));
 			setGrantedScopes(Arrays.asList("scope1"));
 			setContextClasses(new HashMap<String, String>() {{
-				put(coreExt.getId(), CoreContext.class.getName());
+				put(CodeExt.RESPONSE_TYPE, CoreContext.class.getName());
 			}});
 			setContextObjects(new HashMap<String, String>() {{
-				put(coreExt.getId(), mapper.writeValueAsString(new CoreContext() {{
+				put(CodeExt.RESPONSE_TYPE, mapper.writeValueAsString(new CoreContext() {{
 					setAud(APP_CLIENT_ID);
 					setSub("CN=Lionel/O=USER");
 					setIss(coreIss);
@@ -247,10 +241,10 @@ public class TestRefreshTokenGrant extends BaseTest {
 			setScopes(new ArrayList<String>());
 			setGrantedScopes(new ArrayList<String>());
 			setContextClasses(new HashMap<String, String>() {{
-				put(coreExt.getId(), CoreContext.class.getName());
+				put(CodeExt.RESPONSE_TYPE, CoreContext.class.getName());
 			}});
 			setContextObjects(new HashMap<String, String>() {{
-				put(coreExt.getId(), mapper.writeValueAsString(new CoreContext() {{
+				put(CodeExt.RESPONSE_TYPE, mapper.writeValueAsString(new CoreContext() {{
 					setAud("5678");
 					setSub("CN=Lionel/O=USER");
 					setIss(coreIss);

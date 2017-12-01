@@ -309,6 +309,7 @@ public class TestAuthorizeController extends BaseTest {
 	
 	/**
 	 * No response_type
+	 * https://tools.ietf.org/html/rfc6749#section-4.1.2.1
 	 */
 	@Test
 	public void noResponseType() throws Exception {
@@ -336,6 +337,7 @@ public class TestAuthorizeController extends BaseTest {
 	
 	/**
 	 * Empty response_type
+	 * https://tools.ietf.org/html/rfc6749#section-4.1.2.1
 	 */
 	@Test
 	public void emptyResponseType() throws Exception {
@@ -364,6 +366,7 @@ public class TestAuthorizeController extends BaseTest {
 	
 	/**
 	 * Invalid response type
+	 * https://tools.ietf.org/html/rfc6749#section-4.1.2.1
 	 */
 	@Test
 	public void invalidResponseType() throws Exception {
@@ -385,7 +388,7 @@ public class TestAuthorizeController extends BaseTest {
 		assertThat(location, startsWith("http://acme.com/myApp"));
 		
 		Map<String, String> params = urlParameters(location);
-		assertThat(params, hasEntry("error", "invalid_request"));
+		assertThat(params, hasEntry("error", "unsupported_response_type"));
 		assertThat(params, hasKey("error_uri"));
 		assertThat(params, hasKey("error_description"));
 	}

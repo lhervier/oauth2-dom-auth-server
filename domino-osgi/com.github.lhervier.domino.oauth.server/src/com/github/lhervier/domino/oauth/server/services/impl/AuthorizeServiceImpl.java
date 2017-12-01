@@ -21,6 +21,7 @@ import com.github.lhervier.domino.oauth.server.ex.BaseAuthException;
 import com.github.lhervier.domino.oauth.server.ex.InvalidUriException;
 import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
 import com.github.lhervier.domino.oauth.server.ex.authorize.AuthInvalidRequestException;
+import com.github.lhervier.domino.oauth.server.ex.authorize.AuthUnsupportedResponseTypeException;
 import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.server.ext.IScopeGranter;
 import com.github.lhervier.domino.oauth.server.model.Application;
@@ -114,7 +115,7 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 				responseTypes.add(r);
 		}
 		if( !this.checkResponseTypes(responseTypes) )
-			throw new AuthInvalidRequestException("response_type is invalid", redirectUri);
+			throw new AuthUnsupportedResponseTypeException("response_type is invalid", redirectUri);
 		
 		// Fragment not allowed in redirect uri if code response type
 		if( responseTypes.contains("code") && redirectUri.indexOf('#') != -1 )

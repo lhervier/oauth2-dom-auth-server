@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 import org.codehaus.jackson.annotate.JsonProperty;
-import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -201,7 +200,7 @@ public class TestAuthCodeGrant extends BaseTest {
 				.param("grant_type", "authorization_code")
 				.param("code", AUTH_CODE_ID)
 		).andExpect(status().is(500))		// RFC is not specifying that we must return a 400 error here. 500 is spring default behaviour and we don't want to change it...
-		.andExpect(content().string(CoreMatchers.containsString("Request method 'GET' not supported")));
+		.andExpect(content().string(containsString("Request method 'GET' not supported")));
 	}
 	
 	/**

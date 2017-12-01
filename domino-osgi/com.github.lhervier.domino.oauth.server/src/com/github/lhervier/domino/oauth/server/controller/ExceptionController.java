@@ -9,7 +9,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -22,7 +21,6 @@ import com.github.lhervier.domino.oauth.server.ex.BaseGrantException;
 import com.github.lhervier.domino.oauth.server.ex.ForbiddenException;
 import com.github.lhervier.domino.oauth.server.ex.InvalidUriException;
 import com.github.lhervier.domino.oauth.server.ex.NotAuthorizedException;
-import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
 import com.github.lhervier.domino.oauth.server.ex.WrongPathException;
 import com.github.lhervier.domino.oauth.server.model.error.grant.GrantError;
 import com.github.lhervier.domino.oauth.server.utils.QueryStringUtils;
@@ -112,47 +110,6 @@ public class ExceptionController {
 		Map<String, Object> model = new HashMap<String, Object>();
 		model.put("error", e.getMessage());
 		model.put("status", HttpStatus.FORBIDDEN.value());
-		return new ModelAndView("error", model);
-	}
-	
-	/**
-	 * Invalid URI exception. We cannot handle that...
-	 */
-	@ExceptionHandler(InvalidUriException.class)
-	@ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
-	public ModelAndView processInvalidUriException(InvalidUriException e) {
-		LOG.fatal(getStackTrace(e));
-		Map<String, Object> model = new HashMap<String, Object>();
-		model.put("error", e.getMessage());
-		model.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-		return new ModelAndView("error", model);
-	}
-	
-	// ========================================================================================
-	
-	/**
-	 * Data access exception. We cannot handle that...
-	 */
-	@ExceptionHandler(DataAccessException.class)
-	@ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
-	public ModelAndView processDataAccessException(DataAccessException e) {
-		LOG.fatal(getStackTrace(e));
-		Map<String, Object> model = new HashMap<String, Object>();
-		model.put("error", e.getMessage());
-		model.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-		return new ModelAndView("error", model);
-	}
-	
-	/**
-	 * Server error exception. We cannot handle that...
-	 */
-	@ExceptionHandler(ServerErrorException.class)
-	@ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
-	public ModelAndView processServerErrorException(ServerErrorException e) {
-		LOG.error(getStackTrace(e));
-		Map<String, Object> model = new HashMap<String, Object>();
-		model.put("error", e.getMessage());
-		model.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
 		return new ModelAndView("error", model);
 	}
 	

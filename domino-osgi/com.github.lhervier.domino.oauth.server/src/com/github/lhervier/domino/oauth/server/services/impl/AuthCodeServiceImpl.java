@@ -76,13 +76,13 @@ public class AuthCodeServiceImpl implements AuthCodeService {
 		} catch (ParseException e) {
 			return null;								// Invalid JWE
 		} catch (JsonMappingException e) {
-			throw new RuntimeException(e);
+			throw new ServerErrorException(e);
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new ServerErrorException(e);
 		} catch (KeyLengthException e) {
-			throw new RuntimeException(e);
+			throw new ServerErrorException(e);
 		} catch (JOSEException e) {
-			throw new RuntimeException(e);
+			throw new ServerErrorException(e);
 		}
 	}
 	

@@ -1,4 +1,4 @@
-package com.github.lhervier.domino.oauth.server.testsuite;
+package com.github.lhervier.domino.oauth.server.testsuite.impl;
 
 import com.github.lhervier.domino.oauth.server.services.TimeService;
 

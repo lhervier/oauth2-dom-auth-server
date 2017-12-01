@@ -35,8 +35,8 @@ import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
 import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
 import com.github.lhervier.domino.oauth.server.services.AuthCodeService;
 import com.github.lhervier.domino.oauth.server.testsuite.BaseTest;
-import com.github.lhervier.domino.oauth.server.testsuite.NotesPrincipalTestImpl;
-import com.github.lhervier.domino.oauth.server.testsuite.TimeServiceTestImpl;
+import com.github.lhervier.domino.oauth.server.testsuite.impl.NotesPrincipalTestImpl;
+import com.github.lhervier.domino.oauth.server.testsuite.impl.TimeServiceTestImpl;
 
 @SuppressWarnings("serial")
 public class TestAuthCodeGrant extends BaseTest {

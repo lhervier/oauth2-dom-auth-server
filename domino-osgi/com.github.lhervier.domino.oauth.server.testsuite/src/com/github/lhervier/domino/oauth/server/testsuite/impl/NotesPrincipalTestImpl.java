@@ -1,4 +1,4 @@
-package com.github.lhervier.domino.oauth.server.testsuite;
+package com.github.lhervier.domino.oauth.server.testsuite.impl;
 
 import java.util.List;
 

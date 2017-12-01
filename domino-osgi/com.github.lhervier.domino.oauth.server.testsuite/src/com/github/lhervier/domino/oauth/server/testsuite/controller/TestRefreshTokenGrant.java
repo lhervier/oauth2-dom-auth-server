@@ -29,8 +29,8 @@ import com.github.lhervier.domino.oauth.server.ext.core.CoreExt;
 import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
 import com.github.lhervier.domino.oauth.server.services.AuthCodeService;
 import com.github.lhervier.domino.oauth.server.testsuite.BaseTest;
-import com.github.lhervier.domino.oauth.server.testsuite.NotesPrincipalTestImpl;
 import com.github.lhervier.domino.oauth.server.testsuite.controller.TestAuthCodeGrant.TokenResponse;
+import com.github.lhervier.domino.oauth.server.testsuite.impl.NotesPrincipalTestImpl;
 
 @SuppressWarnings("serial")
 public class TestRefreshTokenGrant extends BaseTest {

@@ -1,4 +1,4 @@
-package com.github.lhervier.domino.oauth.server.testsuite;
+package com.github.lhervier.domino.oauth.server.testsuite.impl;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,7 +15,7 @@ import com.github.lhervier.domino.oauth.server.services.GrantService;
  * @author Lionel HERVIER
  */
 @Service("dummy_grant")
-public class DummyGrant implements GrantService {
+public class DummyGrantServiceImpl implements GrantService {
 
 	/**
 	 * @see com.github.lhervier.domino.oauth.server.services.GrantService#createGrant(com.github.lhervier.domino.oauth.server.model.Application, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)

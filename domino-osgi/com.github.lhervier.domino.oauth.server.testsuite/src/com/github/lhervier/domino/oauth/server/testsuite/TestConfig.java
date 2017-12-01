@@ -18,6 +18,7 @@ import com.github.lhervier.domino.oauth.server.repo.PersonRepository;
 import com.github.lhervier.domino.oauth.server.repo.SecretRepository;
 import com.github.lhervier.domino.oauth.server.services.AuthCodeService;
 import com.github.lhervier.domino.oauth.server.services.TimeService;
+import com.github.lhervier.domino.oauth.server.testsuite.impl.TimeServiceTestImpl;
 import com.github.lhervier.domino.spring.servlet.SpringServletConfig;
 
 @Configuration

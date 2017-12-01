@@ -1,4 +1,4 @@
-package com.github.lhervier.domino.oauth.server.testsuite;
+package com.github.lhervier.domino.oauth.server.testsuite.utils;
 
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;

@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.github.lhervier.domino.oauth.server.repo.SecretRepository;
+import com.github.lhervier.domino.oauth.server.testsuite.impl.TimeServiceTestImpl;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {TestConfig.class})

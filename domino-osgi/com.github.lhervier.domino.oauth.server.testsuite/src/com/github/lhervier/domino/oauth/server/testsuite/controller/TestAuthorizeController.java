@@ -1,7 +1,7 @@
 package com.github.lhervier.domino.oauth.server.testsuite.controller;
 
-import static com.github.lhervier.domino.oauth.server.testsuite.TestUtils.urlParameters;
-import static com.github.lhervier.domino.oauth.server.testsuite.TestUtils.urlRefs;
+import static com.github.lhervier.domino.oauth.server.testsuite.utils.TestUtils.urlParameters;
+import static com.github.lhervier.domino.oauth.server.testsuite.utils.TestUtils.urlRefs;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
@@ -43,8 +43,8 @@ import com.github.lhervier.domino.oauth.server.ext.core.CoreExt;
 import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
 import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
 import com.github.lhervier.domino.oauth.server.testsuite.BaseTest;
-import com.github.lhervier.domino.oauth.server.testsuite.NotesPrincipalTestImpl;
-import com.github.lhervier.domino.oauth.server.testsuite.TimeServiceTestImpl;
+import com.github.lhervier.domino.oauth.server.testsuite.impl.NotesPrincipalTestImpl;
+import com.github.lhervier.domino.oauth.server.testsuite.impl.TimeServiceTestImpl;
 
 public class TestAuthorizeController extends BaseTest {
 

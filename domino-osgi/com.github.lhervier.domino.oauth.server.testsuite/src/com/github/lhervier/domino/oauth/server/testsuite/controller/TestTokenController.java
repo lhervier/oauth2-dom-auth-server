@@ -17,7 +17,7 @@ import com.github.lhervier.domino.oauth.server.NotesPrincipal.AuthType;
 import com.github.lhervier.domino.oauth.server.entity.ApplicationEntity;
 import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
 import com.github.lhervier.domino.oauth.server.testsuite.BaseTest;
-import com.github.lhervier.domino.oauth.server.testsuite.NotesPrincipalTestImpl;
+import com.github.lhervier.domino.oauth.server.testsuite.impl.NotesPrincipalTestImpl;
 
 public class TestTokenController extends BaseTest {
 

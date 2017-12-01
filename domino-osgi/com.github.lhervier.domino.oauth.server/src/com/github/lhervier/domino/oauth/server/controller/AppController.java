@@ -31,7 +31,7 @@ import com.github.lhervier.domino.oauth.server.utils.Utils;
 @RequestMapping(value = "/html")
 
 @UserAuth							// Only regular users can access those methods
-@Roles(roles = {"AppsManager"})		// Users must have the AppsManager role
+@Roles("AppsManager")				// Users must have the AppsManager role
 @Oauth2DbContext					// Controller accessible only on the oauth2.nsf context
 public class AppController {
 

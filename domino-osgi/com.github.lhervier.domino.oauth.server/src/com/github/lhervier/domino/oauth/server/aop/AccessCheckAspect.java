@@ -123,9 +123,7 @@ public class AccessCheckAspect {
 		// Check that we have the right roles
 		Roles roles = findAnnotation(method, Roles.class);
 		if( roles != null ) {
-			for( String role : roles.roles() ) {
-				if( role.length() == 0 )
-					continue;
+			for( String role : roles.value() ) {
 				if( !this.user.getRoles().contains("[" + role + "]") ) {
 					LOG.info("User '" + this.user.getName() + "' tries to access method '" + method.getName() + "' but it does not have the required roles");
 					throw new ForbiddenException();

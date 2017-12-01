@@ -202,6 +202,7 @@ public class TestAuthorizeController extends BaseTest {
 	
 	/**
 	 * No redirect_uri, and value not defined in app
+	 * https://tools.ietf.org/html/rfc6749#section-3.1.2.3
 	 */
 	@Test
 	public void noRedirectUriEvenInApp() throws Exception {
@@ -221,6 +222,7 @@ public class TestAuthorizeController extends BaseTest {
 	
 	/**
 	 * No redirect uri, but app only have one
+	 * https://tools.ietf.org/html/rfc6749#section-3.1.2.3
 	 */
 	@Test
 	public void noRedirectUriButAppOnlyHaveOne() throws Exception {
@@ -287,6 +289,7 @@ public class TestAuthorizeController extends BaseTest {
 	
 	/**
 	 * No redirect uri, and app have multiple
+	 * https://tools.ietf.org/html/rfc6749#section-3.1.2.3
 	 */
 	@Test
 	public void noRedirectUriAndAppHaveMultiple() throws Exception {

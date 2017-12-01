@@ -1,5 +1,15 @@
 package com.github.lhervier.domino.oauth.server.ext.openid;
 
+import static com.github.lhervier.domino.oauth.server.ext.openid.OpenIdConstants.EXT_ID;
+import static com.github.lhervier.domino.oauth.server.ext.openid.OpenIdConstants.PARAM_NONCE;
+import static com.github.lhervier.domino.oauth.server.ext.openid.OpenIdConstants.RESPONSE_TYPE;
+import static com.github.lhervier.domino.oauth.server.ext.openid.OpenIdConstants.SCOPE_ADDRESS;
+import static com.github.lhervier.domino.oauth.server.ext.openid.OpenIdConstants.SCOPE_EMAIL;
+import static com.github.lhervier.domino.oauth.server.ext.openid.OpenIdConstants.SCOPE_OPENID;
+import static com.github.lhervier.domino.oauth.server.ext.openid.OpenIdConstants.SCOPE_PHONE;
+import static com.github.lhervier.domino.oauth.server.ext.openid.OpenIdConstants.SCOPE_PROFILE;
+import static com.github.lhervier.domino.oauth.server.ext.openid.OpenIdConstants.TOKEN_RESPONSE_ATTR;
+
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -68,7 +78,7 @@ public class OpenIDExt implements IOAuthExtension<OpenIdContext> {
 	 */
 	@Override
 	public boolean validateResponseTypes(List<String> responseTypes) {
-		return responseTypes.contains("id_token");
+		return responseTypes.contains(RESPONSE_TYPE);
 	}
 
 	/**
@@ -76,7 +86,7 @@ public class OpenIDExt implements IOAuthExtension<OpenIdContext> {
 	 */
 	@Override
 	public String getId() {
-		return "openid";
+		return EXT_ID;
 	}
 
 	/**
@@ -89,9 +99,9 @@ public class OpenIDExt implements IOAuthExtension<OpenIdContext> {
 			String clientId, 
 			List<String> scopes) {
 		// On ne réagit que si on nous demande le scope "openid"
-		if( !scopes.contains("openid") )
+		if( !scopes.contains(SCOPE_OPENID) )
 			return null;
-		granter.grant("openid");
+		granter.grant(SCOPE_OPENID);
 		
 		// Les attributs par défaut
 		OpenIdContext ctx = new OpenIdContext();
@@ -102,15 +112,15 @@ public class OpenIDExt implements IOAuthExtension<OpenIdContext> {
 		ctx.setAmr(null);				// TODO: amr non généré
 		ctx.setAzp(null);				// TODO: azp non généré
 		ctx.setAuthTime(this.timeSvc.currentTimeSeconds());
-		if( this.request.getParameter("nonce") != null )
-			ctx.setNonce(this.request.getParameter("nonce"));
+		if( this.request.getParameter(PARAM_NONCE) != null )
+			ctx.setNonce(this.request.getParameter(PARAM_NONCE));
 		else
 			ctx.setNonce(null);
 		
 		PersonEntity person = this.personRepo.findOne(user.getName());
 		
-		if( scopes.contains("profile") ) {
-			granter.grant("profile");
+		if( scopes.contains(SCOPE_PROFILE) ) {
+			granter.grant(SCOPE_PROFILE);
 			
 			ctx.setName(person.getFullNames().get(0));
 			ctx.setGivenName(person.getFirstName());
@@ -130,20 +140,20 @@ public class OpenIDExt implements IOAuthExtension<OpenIdContext> {
 			ctx.setNickname(null);						// "Mike" for someone called "Mickael"
 		}
 		
-		if( scopes.contains("email") ) {
-			granter.grant("email");
+		if( scopes.contains(SCOPE_EMAIL) ) {
+			granter.grant(SCOPE_EMAIL);
 			ctx.setEmail(person.getInternetAddress());
 			ctx.setEmailVerified(null);
 		}
 		
-		if( scopes.contains("address") ) {
-			granter.grant("address");
+		if( scopes.contains(SCOPE_ADDRESS) ) {
+			granter.grant(SCOPE_ADDRESS);
 			// FIXME: Extract street address.
 			ctx.setAddress(null);
 		}
 		
-		if( scopes.contains("phone") ) {
-			granter.grant("phone");
+		if( scopes.contains(SCOPE_PHONE) ) {
+			granter.grant(SCOPE_PHONE);
 			ctx.setPhoneNumber(person.getOfficePhoneNumber());
 			ctx.setPhoneNumberVerified(null);
 		}
@@ -161,7 +171,7 @@ public class OpenIDExt implements IOAuthExtension<OpenIdContext> {
 			AuthCodeEntity authCode, 
 			IPropertyAdder adder) {
 		// Hybrid flow
-		if( responseTypes.contains("id_token") ) {
+		if( responseTypes.contains(RESPONSE_TYPE) ) {
 			this.token(
 					ctx, 
 					adder, 
@@ -174,7 +184,7 @@ public class OpenIDExt implements IOAuthExtension<OpenIdContext> {
 	 * Returns an Id token
 	 */
 	public IdToken createIdToken(OpenIdContext context, List<String> scopes) {
-		if( !scopes.contains("openid") )
+		if( !scopes.contains(SCOPE_OPENID) )
 			return null;
 		
 		IdToken idToken = new IdToken();
@@ -188,7 +198,7 @@ public class OpenIDExt implements IOAuthExtension<OpenIdContext> {
 		);
 		
 		// Profile properties
-		if( scopes.contains("profile") ) {
+		if( scopes.contains(SCOPE_PROFILE) ) {
 			ReflectionUtils.copyProperties(
 					context, 
 					idToken, 
@@ -197,7 +207,7 @@ public class OpenIDExt implements IOAuthExtension<OpenIdContext> {
 		}
 		
 		// Email properties
-		if( scopes.contains("email") ) {
+		if( scopes.contains(SCOPE_EMAIL) ) {
 			ReflectionUtils.copyProperties(
 					context, 
 					idToken, 
@@ -206,7 +216,7 @@ public class OpenIDExt implements IOAuthExtension<OpenIdContext> {
 		}
 		
 		// Address properties
-		if( scopes.contains("address") ) {
+		if( scopes.contains(SCOPE_ADDRESS) ) {
 			ReflectionUtils.copyProperties(
 					context, 
 					idToken, 
@@ -215,7 +225,7 @@ public class OpenIDExt implements IOAuthExtension<OpenIdContext> {
 		}
 		
 		// Phone properties
-		if( scopes.contains("phone") ) {
+		if( scopes.contains(SCOPE_PHONE) ) {
 			ReflectionUtils.copyProperties(
 					context, 
 					idToken, 
@@ -238,6 +248,6 @@ public class OpenIDExt implements IOAuthExtension<OpenIdContext> {
 		if( idToken == null )
 			return;
 		
-		adder.addSignedProperty("id_token", idToken, this.signKey);
+		adder.addSignedProperty(TOKEN_RESPONSE_ATTR, idToken, this.signKey);
 	}
 }

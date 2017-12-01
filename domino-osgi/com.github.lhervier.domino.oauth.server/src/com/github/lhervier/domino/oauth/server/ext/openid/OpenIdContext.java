@@ -23,12 +23,6 @@ public class OpenIdContext {
 	private String aud;
 	
 	/**
-	 * Authorization time
-	 */
-	@JsonProperty("auth_time")
-	private long authTime;
-	
-	/**
 	 * ACR
 	 */
 	private String acr;
@@ -42,6 +36,12 @@ public class OpenIdContext {
 	 * AZP
 	 */
 	private String azp;
+	
+	/**
+	 * Authorization time
+	 */
+	@JsonProperty("auth_time")
+	private long authTime;
 	
 	/**
 	 * Nonce

@@ -123,23 +123,23 @@ public class CoreExt implements IOAuthExtension<CoreContext> {
 			this.token(
 					ctx, 
 					adder, 
-					authCode.getGrantedScopes()
+					authCode
 			);
 		}
 	}
 
 	/**
-	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#token(Object, IPropertyAdder, List)
+	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#token(Object, IPropertyAdder, AuthCodeEntity)
 	 */
 	@Override
 	public void token(
 			CoreContext context, 
 			IPropertyAdder adder,
-			List<String> scopes) {
+			AuthCodeEntity authCode) {
 		AccessToken token = new AccessToken();
 		BeanUtils.copyProperties(context, token);
 		token.setExp(this.timeSvc.currentTimeSeconds() + this.expiresIn);
-		token.setScopes(scopes);
+		token.setScopes(authCode.getGrantedScopes());
 		adder.addSignedProperty("access_token", token, this.signKey);
 	}
 }

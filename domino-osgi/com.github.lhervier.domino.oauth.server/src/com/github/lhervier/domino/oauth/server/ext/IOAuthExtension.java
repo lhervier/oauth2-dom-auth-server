@@ -59,10 +59,10 @@ public interface IOAuthExtension<T> {
 	 * Ce code est appelé alors que la session courante est ouverte en tant que l'application.
 	 * @param context le contexte généré lors de l'appel à authorize
 	 * @param adder pour ajouter des propriétés à la réponse au grant.
-	 * @param scopes les scopes demandés
+	 * @param authCode the authorization code
 	 */
 	public void token(
 			T context, 
 			IPropertyAdder adder,
-			List<String> scopes);
+			AuthCodeEntity authCode);
 }

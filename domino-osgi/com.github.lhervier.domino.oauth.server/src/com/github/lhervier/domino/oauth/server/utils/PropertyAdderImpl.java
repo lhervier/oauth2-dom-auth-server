@@ -30,16 +30,18 @@ public class PropertyAdderImpl implements IPropertyAdder {
 	/**
 	 * The jackson mapper
 	 */
-	private ObjectMapper mapper = new ObjectMapper();
+	private ObjectMapper mapper;
 	
 	/**
 	 * Constructeur
 	 */
 	public PropertyAdderImpl(
 			Map<String, Object> dest, 
-			SecretRepository secretRepo) {
+			SecretRepository secretRepo,
+			ObjectMapper mapper) {
 		this.dest = dest;
 		this.secretRepo = secretRepo;
+		this.mapper = mapper;
 	}
 	
 	/**

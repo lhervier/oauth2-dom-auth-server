@@ -9,6 +9,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -73,6 +74,12 @@ public class RefreshTokenGrantServiceImpl implements GrantService {
 	 */
 	@Autowired
 	private HttpServletRequest request;
+	
+	/**
+	 * Jackson object mapper
+	 */
+	@Autowired
+	private ObjectMapper mapper;
 	
 	/**
 	 * @see com.github.lhervier.domino.oauth.server.services.GrantService#createGrant(com.github.lhervier.domino.oauth.server.model.Application, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
@@ -142,10 +149,11 @@ public class RefreshTokenGrantServiceImpl implements GrantService {
 		if( !app.getClientId().equals(authCode.getClientId()) )
 			throw new GrantInvalidGrantException("invalid client_id");
 		
-		// Prepare the response
-		Map<String, Object> resp = new HashMap<String, Object>();
-		
+		// Update scopes. Here, we have granted all the asked scopes (otherwise, we would have thrown).
+		authCode.setGrantedScopes(scopes);
+				
 		// Call for extensions
+		Map<String, Object> resp = new HashMap<String, Object>();
 		for( IOAuthExtension ext : this.extSvc.getExtensions() ) {
 			Object context = Utils.getContext(authCode, ext.getId());
 			if( context == null )
@@ -154,14 +162,12 @@ public class RefreshTokenGrantServiceImpl implements GrantService {
 					context, 
 					new PropertyAdderImpl(
 							resp,
-							this.secretRepo
+							this.secretRepo,
+							this.mapper
 					), 
-					scopes
+					authCode
 			);
 		}
-		
-		// Update scopes. Here, we have granted all the asked scopes (otherwise, we would have thrown).
-		authCode.setGrantedScopes(scopes);
 		
 		// Regenerate the refresh token (update expiration date)
 		authCode.setExpires(this.timeSvc.currentTimeSeconds() + this.refreshTokenLifetime);

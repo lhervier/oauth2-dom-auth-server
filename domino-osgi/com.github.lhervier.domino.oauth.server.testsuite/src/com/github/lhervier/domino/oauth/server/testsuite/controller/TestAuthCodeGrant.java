@@ -62,7 +62,7 @@ public class TestAuthCodeGrant extends BaseTest {
 	/**
 	 * Authorization codes
 	 */
-	private static final String AUTH_CODE_ID = "012345";								// for normal app, as Lionel
+	private static final String AUTH_CODE_ID = "012345";			// for normal app, as Lionel
 	private AuthCodeEntity code;
 	
 	/**
@@ -81,7 +81,7 @@ public class TestAuthCodeGrant extends BaseTest {
 	 * Auth code service
 	 */
 	@Autowired
-	private AuthCodeService authCodeSvc;
+	private AuthCodeService authCodeSvcMock;
 	
 	/**
 	 * Core extension
@@ -129,7 +129,7 @@ public class TestAuthCodeGrant extends BaseTest {
 		// Reset repositories
 		reset(appRepoMock);
 		reset(authCodeRepoMock);
-		reset(authCodeSvc);
+		reset(authCodeSvcMock);
 		
 		// Declare applications
 		this.normalApp = new ApplicationEntity() {{
@@ -169,9 +169,9 @@ public class TestAuthCodeGrant extends BaseTest {
 				put(
 						coreExt.getId(),
 						mapper.writeValueAsString(new CoreContext() {{
-							this.setAud(APP_CLIENT_ID);
-							this.setSub("CN=Lionel/o=USER");
-							this.setIss("https://acme.com/domino/oauth2/");
+							setAud(APP_CLIENT_ID);
+							setSub("CN=Lionel/O=USER");
+							setIss(coreIss);
 						}})
 				);
 			}});
@@ -335,7 +335,7 @@ public class TestAuthCodeGrant extends BaseTest {
 	 */
 	@Test
 	public void tokensFromAuthCode() throws Exception {
-		when(this.authCodeSvc.fromEntity(Mockito.any(AuthCodeEntity.class)))
+		when(this.authCodeSvcMock.fromEntity(Mockito.any(AuthCodeEntity.class)))
 		.thenReturn("012345");
 		
 		MvcResult result = this.mockMvc.perform(

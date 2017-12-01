@@ -14,6 +14,7 @@ import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.SerializationConfig.Feature;
 
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
 import com.github.lhervier.domino.oauth.server.model.Application;
@@ -29,6 +30,9 @@ public class Utils {
 	 * Jackson mapper
 	 */
 	private static final ObjectMapper MAPPER = new ObjectMapper();
+	static {
+		MAPPER.configure(Feature.FAIL_ON_EMPTY_BEANS, false);
+	}
 	
 	/**
 	 * Check that the redirect uri is one of the app registered values

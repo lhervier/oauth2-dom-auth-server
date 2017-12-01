@@ -69,7 +69,8 @@ public class BearerContext {
 	/**
 	 * Object mapper
 	 */
-	private ObjectMapper mapper = new ObjectMapper();
+	@Autowired
+	private ObjectMapper mapper;
 	
 	/**
 	 * Delegated

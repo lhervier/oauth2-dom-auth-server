@@ -50,7 +50,8 @@ public class AuthCodeServiceImpl implements AuthCodeService {
 	/**
 	 * Jackson mapper
 	 */
-	private ObjectMapper mapper = new ObjectMapper();
+	@Autowired
+	private ObjectMapper mapper;
 	
 	/**
 	 * @see com.github.lhervier.domino.oauth.server.services.AuthCodeService#toEntity(java.lang.String)

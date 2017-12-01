@@ -68,9 +68,10 @@ public abstract class BaseTest {
 	@Autowired
 	private WebApplicationContext wac;
 	
-	protected MockMvc mockMvc;
+	@Autowired
+	protected ObjectMapper mapper;
 	
-	protected ObjectMapper mapper = new ObjectMapper();
+	protected MockMvc mockMvc;
 	
 	@Before
 	public void baseSetUp() {

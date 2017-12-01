@@ -1,5 +1,6 @@
 package com.github.lhervier.domino.oauth.server.testsuite.controller;
 
+import static com.github.lhervier.domino.oauth.server.testsuite.impl.DummyExt.DUMMY_SCOPE;
 import static com.github.lhervier.domino.oauth.server.testsuite.utils.TestUtils.urlParameters;
 import static com.github.lhervier.domino.oauth.server.testsuite.utils.TestUtils.urlRefs;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -43,6 +44,7 @@ import com.github.lhervier.domino.oauth.server.ext.core.CoreExt;
 import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
 import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
 import com.github.lhervier.domino.oauth.server.testsuite.BaseTest;
+import com.github.lhervier.domino.oauth.server.testsuite.impl.DummyExt;
 import com.github.lhervier.domino.oauth.server.testsuite.impl.NotesPrincipalTestImpl;
 import com.github.lhervier.domino.oauth.server.testsuite.impl.TimeServiceTestImpl;
 
@@ -56,6 +58,9 @@ public class TestAuthorizeController extends BaseTest {
 	
 	@Autowired
 	private CoreExt coreExt;
+	
+	@Autowired
+	private DummyExt dummyExt;
 	
 	@Autowired
 	private NotesPrincipalTestImpl user;
@@ -410,8 +415,9 @@ public class TestAuthorizeController extends BaseTest {
 		assertThat(code.getScopes(), containsInAnyOrder("azerty", "uiop"));
 		assertThat(code.getGrantedScopes(), emptyIterable());
 		
-		assertThat(code.getContextClasses().size(), is(equalTo(1)));
+		assertThat(code.getContextClasses().size(), is(equalTo(2)));
 		assertThat(code.getContextClasses(), hasKey(this.coreExt.getId()));
+		assertThat(code.getContextClasses(), hasKey(this.dummyExt.getId()));
 		
 		String jsonCtx = code.getContextObjects().get(this.coreExt.getId());
 		ObjectMapper mapper = new ObjectMapper();
@@ -493,7 +499,7 @@ public class TestAuthorizeController extends BaseTest {
 				get("/authorize")
 				.param("client_id", "1234")
 				.param("response_type", "code")
-				.param("scope", "openid non_existing_scope")
+				.param("scope", DUMMY_SCOPE + " non_existing_scope")
 		)
 		.andExpect(status().is(302));
 		
@@ -503,8 +509,8 @@ public class TestAuthorizeController extends BaseTest {
 		assertThat(added.size(), is(equalTo(1)));
 		AuthCodeEntity code = added.get(0);
 		
-		assertThat(code.getScopes(), containsInAnyOrder("openid", "non_existing_scope"));
-		assertThat(code.getGrantedScopes(), containsInAnyOrder("openid"));
+		assertThat(code.getScopes(), containsInAnyOrder(DUMMY_SCOPE, "non_existing_scope"));
+		assertThat(code.getGrantedScopes(), containsInAnyOrder(DUMMY_SCOPE));
 	}
 	
 	// ======================================================================================

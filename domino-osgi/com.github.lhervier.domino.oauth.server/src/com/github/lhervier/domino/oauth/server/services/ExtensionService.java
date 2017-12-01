@@ -14,5 +14,5 @@ public interface ExtensionService {
 	 * Returns the extensions
 	 * @return the extensions
 	 */
-	public List<IOAuthExtension<?>> getExtensions();
+	public List<? extends IOAuthExtension<?>> getExtensions();
 }

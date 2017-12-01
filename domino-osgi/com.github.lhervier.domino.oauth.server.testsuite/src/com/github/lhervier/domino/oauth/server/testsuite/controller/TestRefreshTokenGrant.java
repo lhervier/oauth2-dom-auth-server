@@ -54,7 +54,7 @@ public class TestRefreshTokenGrant extends BaseTest {
 	 * The auth code service
 	 */
 	@Autowired
-	private AuthCodeService authCodeSvc;
+	private AuthCodeService authCodeSvcMock;
 	
 	/**
 	 * The core extension
@@ -71,7 +71,7 @@ public class TestRefreshTokenGrant extends BaseTest {
 	@Before
 	public void before() throws Exception {
 		reset(appRepoMock);
-		reset(authCodeSvc);
+		reset(authCodeSvcMock);
 		
 		this.normalApp = new ApplicationEntity() {{
 			this.setClientId(APP_CLIENT_ID);
@@ -108,7 +108,7 @@ public class TestRefreshTokenGrant extends BaseTest {
 	 */
 	@Test
 	public void invalidRefreshToken() throws Exception {
-		when(authCodeSvc.toEntity(Mockito.eq("AZERTY"))).thenReturn(null);
+		when(authCodeSvcMock.toEntity(Mockito.eq("AZERTY"))).thenReturn(null);
 		
 		this.mockMvc.perform(
 				post("/token")
@@ -123,7 +123,7 @@ public class TestRefreshTokenGrant extends BaseTest {
 	 */
 	@Test
 	public void expiredRefreshToken() throws Exception {
-		when(authCodeSvc.toEntity(Mockito.eq("AZERTY"))).thenReturn(new AuthCodeEntity() {{
+		when(authCodeSvcMock.toEntity(Mockito.eq("AZERTY"))).thenReturn(new AuthCodeEntity() {{
 			setId("012345");
 			setApplication(APP_NAME);
 			setClientId(APP_CLIENT_ID);
@@ -173,7 +173,7 @@ public class TestRefreshTokenGrant extends BaseTest {
 				}}));
 			}});
 		}};
-		when(authCodeSvc.toEntity(Mockito.eq("AZERTY"))).thenReturn(code);
+		when(authCodeSvcMock.toEntity(Mockito.eq("AZERTY"))).thenReturn(code);
 		
 		this.mockMvc.perform(
 				post("/token")
@@ -201,7 +201,7 @@ public class TestRefreshTokenGrant extends BaseTest {
 	 */
 	@Test
 	public void scopesDefaultsToGrantedScopes() throws Exception {
-		when(authCodeSvc.toEntity(Mockito.eq("AZERTY"))).thenReturn(new AuthCodeEntity() {{
+		when(authCodeSvcMock.toEntity(Mockito.eq("AZERTY"))).thenReturn(new AuthCodeEntity() {{
 			setId("012345");
 			setApplication(APP_NAME);
 			setClientId(APP_CLIENT_ID);
@@ -220,7 +220,7 @@ public class TestRefreshTokenGrant extends BaseTest {
 			}});
 		}});
 		
-		when(authCodeSvc.fromEntity(Mockito.any(AuthCodeEntity.class))).thenReturn("QSDFGH");
+		when(authCodeSvcMock.fromEntity(Mockito.any(AuthCodeEntity.class))).thenReturn("QSDFGH");
 		
 		MvcResult result = this.mockMvc.perform(
 				post("/token")
@@ -239,7 +239,7 @@ public class TestRefreshTokenGrant extends BaseTest {
 	 */
 	@Test
 	public void generatedForAnotherApp() throws Exception {
-		when(authCodeSvc.toEntity(Mockito.eq("AZERTY"))).thenReturn(new AuthCodeEntity() {{
+		when(authCodeSvcMock.toEntity(Mockito.eq("AZERTY"))).thenReturn(new AuthCodeEntity() {{
 			setId("012345");
 			setApplication("otherApp");
 			setClientId("5678");

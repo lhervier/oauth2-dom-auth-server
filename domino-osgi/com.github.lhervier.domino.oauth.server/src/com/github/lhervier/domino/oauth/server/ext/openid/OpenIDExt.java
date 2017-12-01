@@ -155,13 +155,17 @@ public class OpenIDExt implements IOAuthExtension<OpenIdContext> {
 	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#authorize(Object, List, AuthCodeEntity, IPropertyAdder)
 	 */
 	@Override
-	public void authorize(OpenIdContext ctx, List<String> responseTypes, AuthCodeEntity authCode, IPropertyAdder adder) {
+	public void authorize(
+			OpenIdContext ctx, 
+			List<String> responseTypes, 
+			AuthCodeEntity authCode, 
+			IPropertyAdder adder) {
 		// Hybrid flow
 		if( responseTypes.contains("id_token") ) {
 			this.token(
 					ctx, 
 					adder, 
-					authCode.getGrantedScopes()
+					authCode
 			);
 		}
 	}
@@ -229,8 +233,8 @@ public class OpenIDExt implements IOAuthExtension<OpenIdContext> {
 	public void token(
 			OpenIdContext context, 
 			IPropertyAdder adder,
-			List<String> scopes) {
-		IdToken idToken = this.createIdToken(context, scopes);
+			AuthCodeEntity authCode) {
+		IdToken idToken = this.createIdToken(context, authCode.getGrantedScopes());
 		if( idToken == null )
 			return;
 		

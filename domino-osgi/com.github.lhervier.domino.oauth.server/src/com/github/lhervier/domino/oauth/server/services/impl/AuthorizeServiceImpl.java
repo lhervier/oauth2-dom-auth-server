@@ -72,7 +72,8 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 	/**
 	 * Jackson object mapper
 	 */
-	private ObjectMapper mapper = new ObjectMapper();
+	@Autowired
+	private ObjectMapper mapper;
 	
 	// ========================================================================================================
 	
@@ -243,7 +244,8 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 					authCode,
 					new PropertyAdderImpl(
 							params,
-							this.secretRepo
+							this.secretRepo,
+							this.mapper
 					)
 			);
 		}

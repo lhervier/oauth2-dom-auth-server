@@ -6,6 +6,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -59,6 +60,12 @@ public class AuthCodeGrantServiceImpl implements GrantService {
 	 */
 	@Autowired
 	private ExtensionService extSvc;
+	
+	/**
+	 * Jackson object mapper
+	 */
+	@Autowired
+	private ObjectMapper mapper;
 	
 	/**
 	 * Request
@@ -128,9 +135,10 @@ public class AuthCodeGrantServiceImpl implements GrantService {
 						context, 
 						new PropertyAdderImpl(
 								resp, 
-								this.secretRespo
+								this.secretRespo,
+								this.mapper
 						),
-						authCode.getGrantedScopes()
+						authCode
 				);
 			}
 			

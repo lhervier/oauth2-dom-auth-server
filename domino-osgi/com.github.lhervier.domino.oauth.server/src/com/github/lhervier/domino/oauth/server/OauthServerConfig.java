@@ -3,6 +3,9 @@ package com.github.lhervier.domino.oauth.server;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.SerializationConfig.Feature;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
@@ -35,4 +38,13 @@ public class OauthServerConfig extends WebMvcConfigurerAdapter {
 	    }).addPathPatterns("/html/*");
 	}
 
+	/**
+	 * The jackson object mapper
+	 */
+	@Bean
+	public ObjectMapper objectMapper() {
+		ObjectMapper ret = new ObjectMapper();
+		ret.configure(Feature.FAIL_ON_EMPTY_BEANS, false);
+		return ret;
+	}
 }

@@ -218,6 +218,7 @@ public class TestAppServiceImpl extends BaseTest {
 	
 	/**
 	 * Cannot save with invalid uri
+	 * https://tools.ietf.org/html/rfc6749#section-3.1.2
 	 */
 	@Test(expected = DataIntegrityViolationException.class)
 	public void saveWithInvalidUri() throws Exception {
@@ -232,7 +233,42 @@ public class TestAppServiceImpl extends BaseTest {
 	}
 	
 	/**
+	 * Cannot save with non absolute uri
+	 * https://tools.ietf.org/html/rfc6749#section-3.1.2
+	 */
+	@Test(expected = DataIntegrityViolationException.class)
+	public void saveWithNonAbsoluteUri() throws Exception {
+		when(personRepoMock.save(any(PersonEntity.class))).then(returnsFirstArg());
+		
+		appSvc.addApplication(new Application() {{
+			setClientId("123456");
+			setName("myApp");
+			setReaders("*");
+			setRedirectUri("/app1");
+		}});
+	}
+	
+	/**
+	 * RFC says we can't save with fragment in uri.
+	 * But out implementation allows it. The authorize end point will take care of this
+	 * when response_type is "code". But when response is "token", it will allow it.
+	 * https://tools.ietf.org/html/rfc6749#section-3.1.2
+	 */
+	@Test
+	public void saveWithFragmentInUri() throws Exception {
+		when(personRepoMock.save(any(PersonEntity.class))).then(returnsFirstArg());
+		
+		appSvc.addApplication(new Application() {{
+			setClientId("123456");
+			setName("myApp");
+			setReaders("*");
+			setRedirectUri("http://acme.com/app1?param=value#fragment=xxx"); // Should be OK
+		}});
+	}
+	
+	/**
 	 * Cannot save with invalid uri even in additional uris
+	 * https://tools.ietf.org/html/rfc6749#section-3.1.2
 	 */
 	@Test(expected = DataIntegrityViolationException.class)
 	public void saveWithInvalidAdditionalUri() throws Exception {
@@ -244,6 +280,42 @@ public class TestAppServiceImpl extends BaseTest {
 			setReaders("*");
 			setRedirectUri("http://acme.com/app1");
 			setRedirectUris(Arrays.asList("http://acme.com/app1?param=^invalid"));		// ^ must be replaced with %5E
+		}});
+	}
+	
+	/**
+	 * Cannot save with non absolute uri even in additional uris
+	 * https://tools.ietf.org/html/rfc6749#section-3.1.2
+	 */
+	@Test(expected = DataIntegrityViolationException.class)
+	public void saveWithNonAbsoluteAdditionalUri() throws Exception {
+		when(personRepoMock.save(any(PersonEntity.class))).then(returnsFirstArg());
+		
+		appSvc.addApplication(new Application() {{
+			setClientId("123456");
+			setName("myApp");
+			setReaders("*");
+			setRedirectUri("http://acme.com/app1");
+			setRedirectUris(Arrays.asList("/app1"));
+		}});
+	}
+	
+	/**
+	 * RFC says we can't save with fragment in uri.
+	 * But out implementation allows it. The authorize end point will take care of this
+	 * when response_type is "code". But when response is "token", it will allow it.
+	 * https://tools.ietf.org/html/rfc6749#section-3.1.2
+	 */
+	@Test
+	public void saveWithFragmentInAdditionalUri() throws Exception {
+		when(personRepoMock.save(any(PersonEntity.class))).then(returnsFirstArg());
+		
+		appSvc.addApplication(new Application() {{
+			setClientId("123456");
+			setName("myApp");
+			setReaders("*");
+			setRedirectUri("http://acme.com/app1");
+			getRedirectUris().add("http://acme.com/myApp#fragment=xxx");
 		}});
 	}
 	
@@ -310,7 +382,53 @@ public class TestAppServiceImpl extends BaseTest {
 	}
 	
 	/**
+	 * Update with invalid redirect uri
+	 */
+	@Test(expected = DataIntegrityViolationException.class)
+	public void updateWithInvalidRedirectUri() throws Exception {
+		ApplicationEntity entity = new ApplicationEntity() {{
+			setClientId("1234");
+			setName("myApp");
+			setReaders("XX");
+			setRedirectUri("http://acme.com/myApp");
+		}};
+		when(appRepoMock.findOne(eq("1234"))).thenReturn(entity);
+		when(appRepoMock.findOneByName(eq("myApp"))).thenReturn(entity);
+		
+		appSvc.updateApplication(new Application() {{
+			setClientId("1234");
+			setName("myApp");
+			setReaders("*");
+			setRedirectUri("http://acme.com/myapp?param=^value");		// Invalid uri
+		}});
+	}
+	
+	/**
+	 * Update with invalid redirect uri
+	 */
+	@Test(expected = DataIntegrityViolationException.class)
+	public void updateWithInvalidAditionnalRedirectUri() throws Exception {
+		ApplicationEntity entity = new ApplicationEntity() {{
+			setClientId("1234");
+			setName("myApp");
+			setReaders("XX");
+			setRedirectUri("http://acme.com/myApp");
+		}};
+		when(appRepoMock.findOne(eq("1234"))).thenReturn(entity);
+		when(appRepoMock.findOneByName(eq("myApp"))).thenReturn(entity);
+		
+		appSvc.updateApplication(new Application() {{
+			setClientId("1234");
+			setName("myApp");
+			setReaders("*");
+			setRedirectUri("http://acme.com/myapp");
+			getRedirectUris().add("http://acme.com/myapp?param=^value");		// Invalid URI
+		}});
+	}
+	
+	/**
 	 * Update with non absolute redirect uri
+	 * https://tools.ietf.org/html/rfc6749#section-3.1.2
 	 */
 	@Test(expected = DataIntegrityViolationException.class)
 	public void updateWithNonAbsoluteRedirectUri() throws Exception {
@@ -332,7 +450,34 @@ public class TestAppServiceImpl extends BaseTest {
 	}
 	
 	/**
-	 * Update with fragment in the uri should be OK
+	 * Update with non absolute additional redirect uri
+	 * https://tools.ietf.org/html/rfc6749#section-3.1.2
+	 */
+	@Test(expected = DataIntegrityViolationException.class)
+	public void updateWithNonAbsoluteAdditionalRedirectUri() throws Exception {
+		ApplicationEntity entity = new ApplicationEntity() {{
+			setClientId("1234");
+			setName("myApp");
+			setReaders("XX");
+			setRedirectUri("http://acme.com/myApp");
+		}};
+		when(appRepoMock.findOne(eq("1234"))).thenReturn(entity);
+		when(appRepoMock.findOneByName(eq("myApp"))).thenReturn(entity);
+		
+		appSvc.updateApplication(new Application() {{
+			setClientId("1234");
+			setName("myApp");
+			setReaders("*");
+			setRedirectUri("http://acme.com/myapp");
+			getRedirectUris().add("/acme.com/myApp");		// Non absolute URI
+		}});
+	}
+	
+	/**
+	 * Update with fragment in the uri should be OK.
+	 * RFC says that we cannot. But in our case, check is made when using "code" response type
+	 * (fragments are ok when using "token" response type).
+	 * https://tools.ietf.org/html/rfc6749#section-3.1
 	 */
 	@Test
 	public void updateWithFragmentInRedirectUri() throws Exception {
@@ -350,6 +495,32 @@ public class TestAppServiceImpl extends BaseTest {
 			setName("myApp");
 			setReaders("*");
 			setRedirectUri("http://acme.com/myapp#xxx");		// Fragment in URI => No Problem !
+		}});
+	}
+	
+	/**
+	 * Update with fragment in an additional uri should be OK.
+	 * RFC says that we cannot. But in our case, check is made when using "code" response type
+	 * (fragments are ok when using "token" response type).
+	 * https://tools.ietf.org/html/rfc6749#section-3.1
+	 */
+	@Test
+	public void updateWithFragmentInAdditionalRedirectUri() throws Exception {
+		ApplicationEntity entity = new ApplicationEntity() {{
+			setClientId("1234");
+			setName("myApp");
+			setReaders("XX");
+			setRedirectUri("http://acme.com/myApp");
+		}};
+		when(appRepoMock.findOne(eq("1234"))).thenReturn(entity);
+		when(appRepoMock.findOneByName(eq("myApp"))).thenReturn(entity);
+		
+		appSvc.updateApplication(new Application() {{
+			setClientId("1234");
+			setName("myApp");
+			setReaders("*");
+			setRedirectUri("http://acme.com/myApp");
+			getRedirectUris().add("http://acme.com/myApp#fragment=xxx");		// Fragment in URI => No Problem !
 		}});
 	}
 	

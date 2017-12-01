@@ -127,7 +127,7 @@ public class TestRefreshTokenGrant extends BaseTest {
 			setId("012345");
 			setApplication(APP_NAME);
 			setClientId(APP_CLIENT_ID);
-			setExpires(timeSvc.currentTimeSeconds() - 10L);		// Expired 10s ago
+			setExpires(timeSvcStub.currentTimeSeconds() - 10L);		// Expired 10s ago
 			setScopes(new ArrayList<String>());
 			setGrantedScopes(new ArrayList<String>());
 			setContextClasses(new HashMap<String, String>() {{
@@ -159,7 +159,7 @@ public class TestRefreshTokenGrant extends BaseTest {
 			setId("012345");
 			setApplication(APP_NAME);
 			setClientId(APP_CLIENT_ID);
-			setExpires(timeSvc.currentTimeSeconds() + 10L);
+			setExpires(timeSvcStub.currentTimeSeconds() + 10L);
 			setScopes(Arrays.asList("scope1", "scope2", "scope3"));
 			setGrantedScopes(Arrays.asList("scope1", "scope2"));
 			setContextClasses(new HashMap<String, String>() {{
@@ -205,7 +205,7 @@ public class TestRefreshTokenGrant extends BaseTest {
 			setId("012345");
 			setApplication(APP_NAME);
 			setClientId(APP_CLIENT_ID);
-			setExpires(timeSvc.currentTimeSeconds() + 10L);
+			setExpires(timeSvcStub.currentTimeSeconds() + 10L);
 			setScopes(Arrays.asList("scope1", "scope2"));
 			setGrantedScopes(Arrays.asList("scope1"));
 			setContextClasses(new HashMap<String, String>() {{
@@ -243,7 +243,7 @@ public class TestRefreshTokenGrant extends BaseTest {
 			setId("012345");
 			setApplication("otherApp");
 			setClientId("5678");
-			setExpires(timeSvc.currentTimeSeconds() + 10L);
+			setExpires(timeSvcStub.currentTimeSeconds() + 10L);
 			setScopes(new ArrayList<String>());
 			setGrantedScopes(new ArrayList<String>());
 			setContextClasses(new HashMap<String, String>() {{

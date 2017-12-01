@@ -60,13 +60,13 @@ public abstract class BaseTest {
 	protected long openidExpiresIn;
 	
 	@Autowired
-	protected SecretRepository secretRepo;
+	protected SecretRepository secretRepoStub;
+	
+	@Autowired
+	protected TimeServiceTestImpl timeSvcStub;
 	
 	@Autowired
 	private WebApplicationContext wac;
-	
-	@Autowired
-	protected TimeServiceTestImpl timeSvc;
 	
 	protected MockMvc mockMvc;
 	

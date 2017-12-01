@@ -60,7 +60,7 @@ public class TestAuthCodeServiceImpl extends BaseTest {
 		AuthCodeEntity entity = new AuthCodeEntity() {{
 			setApplication("myApp");
 			setClientId("1234");
-			setExpires(timeSvc.currentTimeSeconds() + refreshTokenLifetime);
+			setExpires(timeSvcStub.currentTimeSeconds() + refreshTokenLifetime);
 			setContextClasses(new HashMap<String, String>() {{
 				put(coreExt.getId(), CoreContext.class.getName());
 			}});
@@ -93,7 +93,7 @@ public class TestAuthCodeServiceImpl extends BaseTest {
 			setApplication("myApp");
 			setClientId("1234");
 			setRedirectUri("http://acme.com/myApp");
-			setExpires(timeSvc.currentTimeSeconds() + refreshTokenLifetime);
+			setExpires(timeSvcStub.currentTimeSeconds() + refreshTokenLifetime);
 			setContextClasses(new HashMap<String, String>() {{
 				put(coreExt.getId(), CoreContext.class.getName());
 			}});
@@ -113,7 +113,7 @@ public class TestAuthCodeServiceImpl extends BaseTest {
 		assertThat(authCode.getApplication(), equalTo("myApp"));
 		assertThat(authCode.getClientId(), equalTo("1234"));
 		assertThat(authCode.getRedirectUri(), equalTo("http://acme.com/myApp"));
-		assertThat(authCode.getExpires(), equalTo(timeSvc.currentTimeSeconds() + refreshTokenLifetime));
+		assertThat(authCode.getExpires(), equalTo(timeSvcStub.currentTimeSeconds() + refreshTokenLifetime));
 		
 		assertThat(authCode.getContextClasses(), hasEntry(this.coreExt.getId(), CoreContext.class.getName()));
 		assertThat(authCode.getContextClasses().size(), is(1));

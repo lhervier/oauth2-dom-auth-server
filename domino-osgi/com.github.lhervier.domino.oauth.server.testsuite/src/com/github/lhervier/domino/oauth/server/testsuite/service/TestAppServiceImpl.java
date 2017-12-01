@@ -19,7 +19,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -167,7 +166,6 @@ public class TestAppServiceImpl extends BaseTest {
 			setName("app1");
 			setReaders("*");
 			setRedirectUri("http://acme.com/app1");
-			setRedirectUris(new ArrayList<String>());
 		}});
 		
 		verify(appRepoMock, times(1)).save(any(ApplicationEntity.class));
@@ -196,7 +194,6 @@ public class TestAppServiceImpl extends BaseTest {
 			setName("myApp");
 			setReaders("*");
 			setRedirectUri("http://acme.com/app1");
-			setRedirectUris(new ArrayList<String>());
 		}});
 	}
 	
@@ -216,7 +213,6 @@ public class TestAppServiceImpl extends BaseTest {
 			setName("myApp");
 			setReaders("*");
 			setRedirectUri("http://acme.com/app1");
-			setRedirectUris(new ArrayList<String>());
 		}});
 	}
 	
@@ -232,7 +228,6 @@ public class TestAppServiceImpl extends BaseTest {
 			setName("myApp");
 			setReaders("*");
 			setRedirectUri("http://acme.com/app1?param=^invalid");		// ^ must be replaced with %5E
-			setRedirectUris(new ArrayList<String>());
 		}});
 	}
 	
@@ -262,7 +257,6 @@ public class TestAppServiceImpl extends BaseTest {
 			setName("myApp");
 			setReaders("XX");
 			setRedirectUri("http://acme.com/olduri");
-			setRedirectUris(new ArrayList<String>());
 		}};
 		when(appRepoMock.findOne(eq("1234"))).thenReturn(entity);
 		when(appRepoMock.findOneByName(eq("myApp"))).thenReturn(entity);
@@ -272,7 +266,6 @@ public class TestAppServiceImpl extends BaseTest {
 			setName("myApp");
 			setReaders("*");
 			setRedirectUri("http://acme.com/myapp");
-			setRedirectUris(new ArrayList<String>());
 			getRedirectUris().add("http://acme.com/myapp2");
 		}});
 		
@@ -291,7 +284,6 @@ public class TestAppServiceImpl extends BaseTest {
 			setName("myApp");
 			setReaders("*");
 			setRedirectUri("http://acme.com/myapp");
-			setRedirectUris(new ArrayList<String>());
 			getRedirectUris().add("http://acme.com/myapp2");
 		}});
 	}
@@ -306,7 +298,6 @@ public class TestAppServiceImpl extends BaseTest {
 			setName("myApp");
 			setReaders("XX");
 			setRedirectUri("http://acme.com/olduri");
-			setRedirectUris(new ArrayList<String>());
 		}});
 		
 		appSvc.updateApplication(new Application() {{
@@ -314,7 +305,6 @@ public class TestAppServiceImpl extends BaseTest {
 			setName("newAppName");
 			setReaders("*");
 			setRedirectUri("http://acme.com/myapp");
-			setRedirectUris(new ArrayList<String>());
 			getRedirectUris().add("http://acme.com/myapp2");
 		}});
 	}
@@ -329,7 +319,6 @@ public class TestAppServiceImpl extends BaseTest {
 			setName("myApp");
 			setReaders("XX");
 			setRedirectUri("http://acme.com/olduri");
-			setRedirectUris(new ArrayList<String>());
 		}};
 		when(appRepoMock.findOne(eq("1234"))).thenReturn(entity);
 		when(appRepoMock.findOneByName(eq("myApp"))).thenReturn(entity);
@@ -339,7 +328,6 @@ public class TestAppServiceImpl extends BaseTest {
 			setName("myApp");
 			setReaders("*");
 			setRedirectUri("acme.com/myapp");		// Non absolute URI
-			setRedirectUris(new ArrayList<String>());
 		}});
 	}
 	
@@ -353,7 +341,6 @@ public class TestAppServiceImpl extends BaseTest {
 			setName("myApp");
 			setReaders("XX");
 			setRedirectUri("http://acme.com/olduri");
-			setRedirectUris(new ArrayList<String>());
 		}};
 		when(appRepoMock.findOne(eq("1234"))).thenReturn(entity);
 		when(appRepoMock.findOneByName(eq("myApp"))).thenReturn(entity);
@@ -363,7 +350,6 @@ public class TestAppServiceImpl extends BaseTest {
 			setName("myApp");
 			setReaders("*");
 			setRedirectUri("http://acme.com/myapp#xxx");		// Fragment in URI => No Problem !
-			setRedirectUris(new ArrayList<String>());
 		}});
 	}
 	

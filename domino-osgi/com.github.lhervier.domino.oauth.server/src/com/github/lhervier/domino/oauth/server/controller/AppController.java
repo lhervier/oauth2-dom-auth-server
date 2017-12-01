@@ -1,5 +1,6 @@
 package com.github.lhervier.domino.oauth.server.controller;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +57,8 @@ public class AppController {
 	 */
 	@SuppressWarnings("unchecked")
 	private List<String> getSessionRedirectUris() {
+		if( this.session.getAttribute(ATTR_REDIRECT_URIS) == null )
+			return new ArrayList<String>();
 		return (List<String>) this.session.getAttribute(ATTR_REDIRECT_URIS);
 	}
 	

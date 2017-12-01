@@ -1,6 +1,5 @@
 package com.github.lhervier.domino.oauth.server.services.impl;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -57,9 +56,7 @@ public class AppServiceImpl implements AppService {
 		app.setName(entity.getName());
 		app.setReaders(entity.getReaders());
 		app.setRedirectUri(entity.getRedirectUri());
-		app.setRedirectUris(new ArrayList<String>());
-		if( entity.getRedirectUris() != null )
-			app.getRedirectUris().addAll(entity.getRedirectUris());
+		app.getRedirectUris().addAll(entity.getRedirectUris());
 		app.setFullName(entity.getFullName());
 		
 		return app;
@@ -83,14 +80,11 @@ public class AppServiceImpl implements AppService {
 			throw new DataIntegrityViolationException(error);
 		entity.setRedirectUri(app.getRedirectUri());
 
-		entity.setRedirectUris(new ArrayList<String>());
-		if( app.getRedirectUris() != null ) {
-			for( String uri : app.getRedirectUris() ) {
-				error = Utils.checkRedirectUri(uri);
-				if( error != null )
-					throw new DataIntegrityViolationException(error);
-				entity.getRedirectUris().add(uri);
-			}
+		for( String uri : app.getRedirectUris() ) {
+			error = Utils.checkRedirectUri(uri);
+			if( error != null )
+				throw new DataIntegrityViolationException(error);
+			entity.getRedirectUris().add(uri);
 		}
 		
 		return entity;
@@ -125,7 +119,6 @@ public class AppServiceImpl implements AppService {
 		ret.setName("");
 		ret.setClientId(UUID.randomUUID().toString());
 		ret.setRedirectUri("");
-		ret.setRedirectUris(new ArrayList<String>());
 		ret.setReaders("*");
 		return ret;
 	}

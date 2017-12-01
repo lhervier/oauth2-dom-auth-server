@@ -198,7 +198,6 @@ public class TestAuthorizeController extends BaseTest {
 			setClientId("1234");
 			setName("myApp");
 			setRedirectUri("http://acme.com/myApp");
-			setRedirectUris(new ArrayList<String>());
 		}});
 		MvcResult result = mockMvc
 		.perform(

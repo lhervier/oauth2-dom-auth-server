@@ -41,7 +41,6 @@ public class TestTokenController extends BaseTest {
 			setName(APP_NAME);
 			setFullName(APP_FULLNAME);
 			setRedirectUri(APP_REDIRECTURI);
-			setRedirectUris(new ArrayList<String>());
 		}});
 		
 		user.setAuthType(AuthType.NOTES);

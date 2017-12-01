@@ -1,5 +1,6 @@
 package com.github.lhervier.domino.oauth.server.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -31,7 +32,7 @@ public class Application {
 	/**
 	 * Ses autres URIs de redirection
 	 */
-	private List<String> redirectUris;
+	private List<String> redirectUris = new ArrayList<String>();
 	
 	/**
 	 * Les personnes autorisées à se logger sur cette application

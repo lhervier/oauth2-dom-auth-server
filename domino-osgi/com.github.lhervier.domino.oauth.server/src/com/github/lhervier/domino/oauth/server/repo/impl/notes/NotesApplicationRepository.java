@@ -180,10 +180,8 @@ public class NotesApplicationRepository implements ApplicationRepository {
 		// FIXME: URI validations must be made at the service level.
 		List<URI> uris = new ArrayList<URI>();
 		try {
-			if( app.getRedirectUris() != null ) {
-				for( String uri : app.getRedirectUris() )
-					uris.add(new URI(uri));
-			}
+			for( String uri : app.getRedirectUris() )
+				uris.add(new URI(uri));
 			uris.add(new URI(app.getRedirectUri()));
 		} catch (URISyntaxException e) {
 			throw new DataIntegrityViolationException("Invalid URI", e);

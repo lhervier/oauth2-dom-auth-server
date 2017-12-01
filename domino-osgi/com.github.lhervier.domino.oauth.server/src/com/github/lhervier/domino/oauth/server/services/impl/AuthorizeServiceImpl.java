@@ -27,6 +27,7 @@ import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.repo.SecretRepository;
 import com.github.lhervier.domino.oauth.server.services.AppService;
 import com.github.lhervier.domino.oauth.server.services.AuthorizeService;
+import com.github.lhervier.domino.oauth.server.services.ExtensionService;
 import com.github.lhervier.domino.oauth.server.services.TimeService;
 import com.github.lhervier.domino.oauth.server.utils.PropertyAdderImpl;
 import com.github.lhervier.domino.oauth.server.utils.Utils;
@@ -51,17 +52,16 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 	private TimeService timeSvc;
 	
 	/**
+	 * The extension service
+	 */
+	@Autowired
+	private ExtensionService extSvc;
+	
+	/**
 	 * The secret repository
 	 */
 	@Autowired
 	private SecretRepository secretRepo;
-	
-	/**
-	 * The extensions
-	 */
-	@SuppressWarnings({ "rawtypes" })
-	@Autowired
-	private List<IOAuthExtension> exts;
 	
 	/**
 	 * Authorization codes life time
@@ -191,7 +191,7 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private boolean checkResponseTypes(List<String> responseTypes) {
-		for( IOAuthExtension ext : this.exts ) {
+		for( IOAuthExtension ext : this.extSvc.getExtensions() ) {
 			if( ext.validateResponseTypes(responseTypes) )
 				return true;
 		}
@@ -210,7 +210,7 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 			AuthCodeEntity authCode, 
 			Application app) throws IOException {
 		final List<String> grantedScopes = new ArrayList<String>();
-		for( IOAuthExtension ext : this.exts ) {
+		for( IOAuthExtension ext : this.extSvc.getExtensions() ) {
 			Object context = ext.initContext(
 					user,
 					new IScopeGranter() {
@@ -236,7 +236,7 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private Map<String, Object> runGrants(AuthCodeEntity authCode, List<String> responseType) {
 		Map<String, Object> params = new HashMap<String, Object>();
-		for( IOAuthExtension ext : this.exts ) {
+		for( IOAuthExtension ext : this.extSvc.getExtensions() ) {
 			ext.authorize(
 					Utils.getContext(authCode, ext.getId()),
 					responseType, 

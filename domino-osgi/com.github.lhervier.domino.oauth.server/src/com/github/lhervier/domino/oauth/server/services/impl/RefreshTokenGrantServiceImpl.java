@@ -23,6 +23,7 @@ import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.repo.SecretRepository;
 import com.github.lhervier.domino.oauth.server.services.AuthCodeService;
+import com.github.lhervier.domino.oauth.server.services.ExtensionService;
 import com.github.lhervier.domino.oauth.server.services.GrantService;
 import com.github.lhervier.domino.oauth.server.services.TimeService;
 import com.github.lhervier.domino.oauth.server.utils.PropertyAdderImpl;
@@ -62,11 +63,10 @@ public class RefreshTokenGrantServiceImpl implements GrantService {
 	private TimeService timeSvc;
 	
 	/**
-	 * The extensions
+	 * The extension service
 	 */
-	@SuppressWarnings({ "rawtypes" })
 	@Autowired
-	private List<IOAuthExtension> exts;
+	private ExtensionService extSvc;
 	
 	/**
 	 * The request
@@ -146,7 +146,7 @@ public class RefreshTokenGrantServiceImpl implements GrantService {
 		Map<String, Object> resp = new HashMap<String, Object>();
 		
 		// Call for extensions
-		for( IOAuthExtension ext : this.exts ) {
+		for( IOAuthExtension ext : this.extSvc.getExtensions() ) {
 			Object context = Utils.getContext(authCode, ext.getId());
 			if( context == null )
 				continue;

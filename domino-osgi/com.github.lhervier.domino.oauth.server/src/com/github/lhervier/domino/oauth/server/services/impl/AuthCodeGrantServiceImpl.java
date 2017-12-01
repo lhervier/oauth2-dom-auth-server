@@ -1,7 +1,6 @@
 package com.github.lhervier.domino.oauth.server.services.impl;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -22,6 +21,7 @@ import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
 import com.github.lhervier.domino.oauth.server.repo.SecretRepository;
 import com.github.lhervier.domino.oauth.server.services.AuthCodeService;
+import com.github.lhervier.domino.oauth.server.services.ExtensionService;
 import com.github.lhervier.domino.oauth.server.services.GrantService;
 import com.github.lhervier.domino.oauth.server.services.TimeService;
 import com.github.lhervier.domino.oauth.server.utils.PropertyAdderImpl;
@@ -55,6 +55,12 @@ public class AuthCodeGrantServiceImpl implements GrantService {
 	private AuthCodeService authCodeSvc;
 	
 	/**
+	 * Extension service
+	 */
+	@Autowired
+	private ExtensionService extSvc;
+	
+	/**
 	 * Request
 	 */
 	@Autowired
@@ -65,13 +71,6 @@ public class AuthCodeGrantServiceImpl implements GrantService {
 	 */
 	@Value("${oauth2.server.refreshTokenLifetime}")
 	private long refreshTokenLifetime;
-	
-	/**
-	 * The extensions
-	 */
-	@SuppressWarnings({ "rawtypes" })
-	@Autowired
-	private List<IOAuthExtension> exts;
 	
 	/**
 	 * @see com.github.lhervier.domino.oauth.server.services.GrantService#createGrant(com.github.lhervier.domino.oauth.server.model.Application, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
@@ -121,7 +120,7 @@ public class AuthCodeGrantServiceImpl implements GrantService {
 			// Make each implementation add its own properties
 			// They can change their context.
 			Map<String, Object> resp = new HashMap<String, Object>();
-			for( IOAuthExtension ext : this.exts ) {
+			for( IOAuthExtension ext : this.extSvc.getExtensions() ) {
 				Object context = Utils.getContext(authCode, ext.getId());
 				if( context == null )
 					continue;

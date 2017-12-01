@@ -245,6 +245,7 @@ public class TestAuthorizeController extends BaseTest {
 	
 	/**
 	 * Invalid redirect_uri
+	 * https://tools.ietf.org/html/rfc6749#section-3.1.2.4
 	 */
 	@Test
 	public void invalidRedirectUri() throws Exception {
@@ -259,7 +260,7 @@ public class TestAuthorizeController extends BaseTest {
 				.param("client_id", "1234")
 				.param("redirect_uri", "http://acme.com/otherApp")
 		)
-		.andExpect(status().is(500))
+		.andExpect(status().is(500))		// MUST NOT redirect !
 		.andExpect(content().string(containsString("redirect_uri is invalid")));
 	}
 	

@@ -20,6 +20,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -133,6 +134,30 @@ public class TestAuthorizeController extends BaseTest {
 	}
 	
 	// ====================================================================================================
+	
+	/**
+	 * POST MAY be supported, and our implementation allows it.
+	 * https://tools.ietf.org/html/rfc6749#section-3.1
+	 */
+	@Test
+	public void postSupported() throws Exception {
+		when(this.appRepoMock.findOne(eq("1234"))).thenReturn(new ApplicationEntity() {{
+			setClientId("1234");
+			setName("myApp");
+			setFullName("CN=myApp/O=APP");
+			setRedirectUri("http://acme.com/myApp");
+		}});
+		when(authCodeRepoMock.save(any(AuthCodeEntity.class))).then(returnsFirstArg());
+		MvcResult result = mockMvc.perform(
+				post("/authorize")
+				.param("client_id", "1234")
+				.param("response_type", "code")
+		).andExpect(status().is(302)).andReturn();
+		String location = result.getResponse().getHeader("Location");
+		Map<String, String> params = urlParameters(location);
+		assertThat(params, hasKey("code"));
+		assertThat(params, not(hasKey("error")));
+	}
 	
 	/**
 	 * client_id is mandatory

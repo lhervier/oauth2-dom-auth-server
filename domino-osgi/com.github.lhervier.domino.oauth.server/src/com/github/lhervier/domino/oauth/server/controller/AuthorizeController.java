@@ -46,7 +46,7 @@ public class AuthorizeController {
 	 * Authorize endpoint.
 	 * Unable to inject user bean as a method argument...
 	 */
-	@RequestMapping(value = "/authorize", method = RequestMethod.GET)
+	@RequestMapping(value = "/authorize", method = {RequestMethod.GET, RequestMethod.POST})
 	public ModelAndView authorize(
     		@RequestParam(value = "response_type", required = false) String responseType,
     		@RequestParam(value = "client_id", required = false) String clientId,

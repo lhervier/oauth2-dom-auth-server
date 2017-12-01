@@ -190,6 +190,29 @@ public class TestAuthorizeController extends BaseTest {
 	}
 	
 	/**
+	 * No redirect uri, but app only have one
+	 */
+	@Test
+	public void noRedirectUriButAppOnlyHaveOne() throws Exception {
+		when(appRepoMock.findOne(eq("1234"))).thenReturn(new ApplicationEntity() {{
+			setClientId("1234");
+			setName("myApp");
+			setRedirectUri("http://acme.com/myApp");
+			setRedirectUris(new ArrayList<String>());
+		}});
+		MvcResult result = mockMvc
+		.perform(
+				get("/authorize")
+				.param("client_id", "1234")
+				.param("response_type", "token")
+		)
+		.andExpect(status().is(302))
+		.andReturn();
+		String location = result.getResponse().getHeader("Location");
+		assertThat(location, not(equalTo("error")));
+	}
+	
+	/**
 	 * Invalid redirect_uri
 	 */
 	@Test
@@ -231,6 +254,26 @@ public class TestAuthorizeController extends BaseTest {
 		.andReturn();
 		String location = result.getResponse().getHeader("Location");
 		assertThat(location, not(equalTo("error")));
+	}
+	
+	/**
+	 * No redirect uri, and app have multiple
+	 */
+	@Test
+	public void noRedirectUriAndAppHaveMultiple() throws Exception {
+		when(appRepoMock.findOne(Mockito.anyString())).thenReturn(new ApplicationEntity() {{
+			setClientId("1234");
+			setName("myApp");
+			setRedirectUri("http://acme.com/myApp");
+			setRedirectUris(Arrays.asList("http://acme.com/other"));
+		}});
+		mockMvc
+		.perform(
+				get("/authorize")
+				.param("client_id", "1234")
+		)
+		.andExpect(status().is(500))
+		.andExpect(content().string(containsString("redirect_uri is mandatory")));
 	}
 	
 	// ========================================================================

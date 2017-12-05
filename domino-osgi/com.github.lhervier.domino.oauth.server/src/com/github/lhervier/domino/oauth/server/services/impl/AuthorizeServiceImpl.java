@@ -159,7 +159,9 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 			for( String respType : responseTypes ) {
 				IOAuthAuthorizeExtension ext = this.extSvc.getExtension(respType);
 				for( String s : ext.getAuthorizedScopes() ) {
-					if( scopes.contains(s) && !authCode.getGrantedScopes().contains(s) )
+					if( !scopes.contains(s) )
+						continue;
+					if( !authCode.getGrantedScopes().contains(s) )
 						authCode.getGrantedScopes().add(s);
 				}
 			}

@@ -31,6 +31,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import com.github.lhervier.domino.oauth.server.entity.ApplicationEntity;
 import com.github.lhervier.domino.oauth.server.entity.PersonEntity;
 import com.github.lhervier.domino.oauth.server.model.Application;
+import com.github.lhervier.domino.oauth.server.model.ClientType;
 import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
 import com.github.lhervier.domino.oauth.server.repo.PersonRepository;
 import com.github.lhervier.domino.oauth.server.services.impl.AppServiceImpl;
@@ -78,6 +79,7 @@ public class TestAppServiceImpl extends BaseTest {
 		).thenReturn(new ApplicationEntity() {{
 			setClientId("1234");
 			setName("testApp");
+			setClientType("PUBLIC");
 			setFullName("CN=testApp/O=APPLICATION");		// Different from value configured in test.properties !
 			setRedirectUri("http://acme.com/testApp");
 			setRedirectUris(Arrays.asList("http://acm.com/testApp/login", "http://acm.com/testApp/login2"));
@@ -96,12 +98,61 @@ public class TestAppServiceImpl extends BaseTest {
 		assertThat(app.getFullName(), is(equalTo("CN=testApp/O=APPLICATION")));		// Must not change
 		assertThat(app.getClientId(), is(equalTo("1234")));
 		assertThat(app.getName(), is(equalTo("testApp")));
+		assertThat(app.getClientType(), is(equalTo(ClientType.PUBLIC)));
 		assertThat(app.getReaders(), is(equalTo("*")));
 		assertThat(app.getRedirectUri(), is(equalTo("http://acme.com/testApp")));
 		assertThat(app.getRedirectUris(), allOf(
 				notNullValue(), 
 				containsInAnyOrder("http://acm.com/testApp/login", "http://acm.com/testApp/login2"))
 		);
+	}
+	
+	/**
+	 * Default client type is publie
+	 */
+	@Test
+	public void defaultClientTypeIsPublic() throws Exception {
+		when(
+				appRepoMock
+				.findOneByName(eq("testApp"))
+		).thenReturn(new ApplicationEntity() {{
+			setClientId("1234");
+			setName("testApp");
+			setClientType(null);				// Unspecified client type
+			setFullName("CN=testApp/O=APPLICATION");		// Different from value configured in test.properties !
+			setRedirectUri("http://acme.com/testApp");
+			setRedirectUris(Arrays.asList("http://acm.com/testApp/login", "http://acm.com/testApp/login2"));
+			setReaders("*");
+			setAppReader("dummy value");
+		}});
+		
+		Application app = appSvc.getApplicationFromName("testApp");
+		
+		assertThat(app.getClientType(), is(equalTo(ClientType.PUBLIC)));
+	}
+	
+	/**
+	 * Confidential client type
+	 */
+	@Test
+	public void confidentialClientType() throws Exception {
+		when(
+				appRepoMock
+				.findOneByName(eq("testApp"))
+		).thenReturn(new ApplicationEntity() {{
+			setClientId("1234");
+			setName("testApp");
+			setClientType("CONFIDENTIAL");				// Confidential client type
+			setFullName("CN=testApp/O=APPLICATION");
+			setRedirectUri("http://acme.com/testApp");
+			setRedirectUris(Arrays.asList("http://acm.com/testApp/login", "http://acm.com/testApp/login2"));
+			setReaders("*");
+			setAppReader("dummy value");
+		}});
+		
+		Application app = appSvc.getApplicationFromName("testApp");
+		
+		assertThat(app.getClientType(), is(equalTo(ClientType.CONFIDENTIAL)));
 	}
 	
 	/**
@@ -177,6 +228,8 @@ public class TestAppServiceImpl extends BaseTest {
 		assertThat(added.size(), is(equalTo(1)));
 		assertThat(added.get(0).getFullNames(), containsInAnyOrder("CN=app1/OU=APPLICATION/O=WEB", "123456"));
 	}
+	
+	// ============================================================
 	
 	/**
 	 * We cannot save if another application exists with the same name
@@ -318,6 +371,86 @@ public class TestAppServiceImpl extends BaseTest {
 			getRedirectUris().add("http://acme.com/myApp#fragment=xxx");
 		}});
 	}
+	
+	/**
+	 * Save public client type
+	 */
+	@Test
+	public void savePublicApplication() throws Exception {
+		when(personRepoMock.save(any(PersonEntity.class))).then(returnsFirstArg());
+		when(appRepoMock.save(any(ApplicationEntity.class))).then(returnsFirstArg());
+		
+		appSvc.addApplication(new Application() {{
+			setClientId("123456");
+			setName("myApp");
+			setReaders("*");
+			setClientType(ClientType.PUBLIC);
+			setRedirectUri("http://acme.com/app1");
+			getRedirectUris().add("http://acme.com/myApp#fragment=xxx");
+		}});
+		
+		ArgumentCaptor<ApplicationEntity> captor = ArgumentCaptor.forClass(ApplicationEntity.class);
+		verify(appRepoMock, times(1)).save(captor.capture());
+		
+		List<ApplicationEntity> savedApps = captor.getAllValues();
+		assertThat(savedApps.size(), equalTo(1));
+		ApplicationEntity app = savedApps.get(0);
+		assertThat(app.getClientType(), equalTo("PUBLIC"));
+	}
+	
+	/**
+	 * Save public client type
+	 */
+	@Test
+	public void saveConfidentialApplication() throws Exception {
+		when(personRepoMock.save(any(PersonEntity.class))).then(returnsFirstArg());
+		when(appRepoMock.save(any(ApplicationEntity.class))).then(returnsFirstArg());
+		
+		appSvc.addApplication(new Application() {{
+			setClientId("123456");
+			setName("myApp");
+			setReaders("*");
+			setClientType(ClientType.CONFIDENTIAL);
+			setRedirectUri("http://acme.com/app1");
+			getRedirectUris().add("http://acme.com/myApp#fragment=xxx");
+		}});
+		
+		ArgumentCaptor<ApplicationEntity> captor = ArgumentCaptor.forClass(ApplicationEntity.class);
+		verify(appRepoMock, times(1)).save(captor.capture());
+		
+		List<ApplicationEntity> savedApps = captor.getAllValues();
+		assertThat(savedApps.size(), equalTo(1));
+		ApplicationEntity app = savedApps.get(0);
+		assertThat(app.getClientType(), equalTo("CONFIDENTIAL"));
+	}
+	
+	/**
+	 * Save unspecified client type
+	 */
+	@Test
+	public void saveUnspecifiedApplication() throws Exception {
+		when(personRepoMock.save(any(PersonEntity.class))).then(returnsFirstArg());
+		when(appRepoMock.save(any(ApplicationEntity.class))).then(returnsFirstArg());
+		
+		appSvc.addApplication(new Application() {{
+			setClientId("123456");
+			setName("myApp");
+			setReaders("*");
+			setClientType(null);		// Not specified
+			setRedirectUri("http://acme.com/app1");
+			getRedirectUris().add("http://acme.com/myApp#fragment=xxx");
+		}});
+		
+		ArgumentCaptor<ApplicationEntity> captor = ArgumentCaptor.forClass(ApplicationEntity.class);
+		verify(appRepoMock, times(1)).save(captor.capture());
+		
+		List<ApplicationEntity> savedApps = captor.getAllValues();
+		assertThat(savedApps.size(), equalTo(1));
+		ApplicationEntity app = savedApps.get(0);
+		assertThat(app.getClientType(), equalTo("PUBLIC"));
+	}
+	
+	// ===================================================================================
 	
 	/**
 	 * Updating an application

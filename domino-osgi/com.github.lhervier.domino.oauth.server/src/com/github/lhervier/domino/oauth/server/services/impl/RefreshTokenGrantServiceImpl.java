@@ -22,6 +22,7 @@ import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
 import com.github.lhervier.domino.oauth.server.ex.authorize.AuthServerErrorException;
 import com.github.lhervier.domino.oauth.server.ex.grant.GrantInvalidGrantException;
 import com.github.lhervier.domino.oauth.server.ex.grant.GrantInvalidScopeException;
+import com.github.lhervier.domino.oauth.server.ex.grant.GrantServerErrorException;
 import com.github.lhervier.domino.oauth.server.ext.IOAuthAuthorizeExtension;
 import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.services.AuthCodeService;
@@ -162,9 +163,9 @@ public class RefreshTokenGrantServiceImpl implements GrantService {
 					authCode.getGrantedScopes(),
 					this.authorizer
 			);
-			if( this.authorizer.isPropertiesConflict() )
-				throw new ServerErrorException("Extension conflicts on setting properties");
 		}
+		if( this.authorizer.isPropertiesConflict() )
+			throw new GrantServerErrorException("Extension conflicts on setting properties");
 		
 		// Add properties to response
 		resp.putAll(this.authorizer.getSignedProperties());

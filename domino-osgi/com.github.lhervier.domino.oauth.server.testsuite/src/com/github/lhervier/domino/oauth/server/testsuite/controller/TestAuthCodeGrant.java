@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.eq;
@@ -17,6 +18,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.junit.Before;
@@ -25,16 +29,24 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MvcResult;
 
+import com.github.lhervier.domino.oauth.server.NotesPrincipal;
 import com.github.lhervier.domino.oauth.server.NotesPrincipal.AuthType;
 import com.github.lhervier.domino.oauth.server.entity.ApplicationEntity;
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
+import com.github.lhervier.domino.oauth.server.ext.IAuthorizer;
+import com.github.lhervier.domino.oauth.server.ext.IOAuthAuthorizeExtension;
+import com.github.lhervier.domino.oauth.server.ext.IPropertyAdder;
+import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
 import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
 import com.github.lhervier.domino.oauth.server.services.AuthCodeService;
+import com.github.lhervier.domino.oauth.server.services.ExtensionService;
 import com.github.lhervier.domino.oauth.server.services.impl.AppServiceImpl;
 import com.github.lhervier.domino.oauth.server.testsuite.BaseTest;
+import com.github.lhervier.domino.oauth.server.testsuite.impl.DummyContext;
 import com.github.lhervier.domino.oauth.server.testsuite.impl.NotesPrincipalTestImpl;
 
+@SuppressWarnings("serial")
 public class TestAuthCodeGrant extends BaseTest {
 
 	/**
@@ -74,6 +86,12 @@ public class TestAuthCodeGrant extends BaseTest {
 	private AuthCodeService authCodeSvcMock;
 	
 	/**
+	 * Extension service mock
+	 */
+	@Autowired
+	private ExtensionService extSvcMock;
+	
+	/**
 	 * User principal
 	 */
 	@Autowired
@@ -110,6 +128,7 @@ public class TestAuthCodeGrant extends BaseTest {
 		reset(appRepoMock);
 		reset(authCodeRepoMock);
 		reset(authCodeSvcMock);
+		reset(extSvcMock);
 		
 		// Declare applications
 		this.normalApp = new ApplicationEntity() {{
@@ -447,5 +466,70 @@ public class TestAuthCodeGrant extends BaseTest {
 		assertThat(resp.getRefreshToken(), is(notNullValue()));			// Refresh token !
 		assertThat(resp.getScope(), nullValue());
 		assertThat(resp.getExpiresIn(), is(equalTo(36000L)));
+	}
+	
+	/**
+	 * Extensions in conflict
+	 */
+	@Test
+	public void extensionsInConflict() throws Exception {
+		when(this.authCodeRepoMock.findOne(eq("AZERTY"))).thenReturn(new AuthCodeEntity() {{
+			setId("AZERTY");
+			setApplication(APP_NAME);
+			setClientId(APP_CLIENT_ID);
+			setExpires(timeSvcStub.currentTimeSeconds() + 10L);
+			setRedirectUri("http://acme.com/myApp");
+			setContextClasses(new HashMap<String, String>() {{
+				put("dummy1", DummyContext.class.getName());
+				put("dummy2", DummyContext.class.getName());
+				// No context for dummy3
+			}});
+			setContextObjects(new HashMap<String, String>() {{
+				put("dummy1", mapper.writeValueAsString(new DummyContext() {{
+					setName("CN=Lionel/O=USER");
+				}}));
+				put("dummy2", mapper.writeValueAsString(new DummyContext() {{
+					setName("CN=François/O=USER");
+				}}));
+				// No context for dummy3
+			}});
+		}});
+		
+		when(extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy1", "dummy2", "dummy3"));
+		when(extSvcMock.getExtension(eq("dummy1"))).thenReturn(new IOAuthAuthorizeExtension() {
+			public List<String> getAuthorizedScopes() { return Arrays.asList(); }
+			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, IAuthorizer authorizer) { }
+			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) {
+				adder.addProperty("prop", "value");
+			}
+		});
+		when(extSvcMock.getExtension(eq("dummy2"))).thenReturn(new IOAuthAuthorizeExtension() {
+			public List<String> getAuthorizedScopes() { return Arrays.asList(); }
+			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, IAuthorizer authorizer) { }
+			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) {
+				adder.addProperty("prop", "value");
+			}
+		});
+		when(extSvcMock.getExtension(eq("dummy3"))).thenReturn(new IOAuthAuthorizeExtension() {
+			public List<String> getAuthorizedScopes() { return Arrays.asList(); }
+			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, IAuthorizer authorizer) { }
+			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) {
+				adder.addProperty("prop", "value");
+			}
+		});
+		
+		MvcResult result = this.mockMvc.perform(
+				post("/token")
+				.param("grant_type", "authorization_code")
+				.param("redirect_uri", APP_REDIRECT_URI)
+				.param("code", "AZERTY")
+		).andExpect(status().is(400))
+		.andExpect(content().contentType("application/json;charset=UTF-8"))
+		.andReturn();
+		
+		String json = result.getResponse().getContentAsString();
+		@SuppressWarnings("unchecked")
+		Map<String, String> response = this.mapper.readValue(json, Map.class);
+		assertThat(response, hasEntry("error", "server_error"));
 	}
 }

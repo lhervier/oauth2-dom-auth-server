@@ -702,7 +702,7 @@ public class TestAuthorizeController extends BaseTest {
 		}});
 		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy"));
 		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new IOAuthAuthorizeExtension() {
-			public List<String> getAuthorizedScopes() { return Arrays.asList("scope1", "scope2"); }
+			public List<String> getAuthorizedScopes() { return Arrays.asList("scope1", "scopeX"); }
 			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
 			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, IAuthorizer authorizer) {
 				authorizer.saveAuthCode(true);
@@ -716,7 +716,7 @@ public class TestAuthorizeController extends BaseTest {
 				get("/authorize")
 				.param("client_id", "1234")
 				.param("response_type", "dummy")
-				.param("scope", "scope1 scope2 scope3")
+				.param("scope", "scope1 scope2")
 		)
 		.andExpect(status().is(302));
 		
@@ -726,8 +726,8 @@ public class TestAuthorizeController extends BaseTest {
 		assertThat(added.size(), is(equalTo(1)));
 		AuthCodeEntity code = added.get(0);
 		
-		assertThat(code.getScopes(), containsInAnyOrder("scope1", "scope2", "scope3"));
-		assertThat(code.getGrantedScopes(), containsInAnyOrder("scope1", "scope2"));
+		assertThat(code.getScopes(), containsInAnyOrder("scope1", "scope2"));
+		assertThat(code.getGrantedScopes(), containsInAnyOrder("scope1"));
 	}
 	
 	/**

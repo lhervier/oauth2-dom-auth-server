@@ -19,7 +19,7 @@ import com.github.lhervier.domino.oauth.server.services.AppService;
 import com.github.lhervier.domino.oauth.server.utils.Utils;
 
 /**
- * Service to manipualte applications
+ * Service to manipulate applications
  * @author Lionel HERVIER
  */
 @Service
@@ -28,8 +28,8 @@ public class AppServiceImpl implements AppService {
 	/**
 	 * Client types
 	 */
-	public static final String CLIENTTYPE_CONFIDENTIAL = "confidential";
-	public static final String CLIENTTYPE_PUBLIC = "public";
+	public static final String CLIENTTYPE_CONFIDENTIAL = ClientType.CONFIDENTIAL.name();
+	public static final String CLIENTTYPE_PUBLIC = ClientType.PUBLIC.name();
 	
 	/**
 	 * The application root
@@ -88,7 +88,7 @@ public class AppServiceImpl implements AppService {
 		entity.setFullName("CN=" + app.getName() + this.applicationRoot);
 		entity.setReaders(app.getReaders());
 		if( ClientType.CONFIDENTIAL == app.getClientType() )
-			entity.setClientType("confidential");
+			entity.setClientType(CLIENTTYPE_CONFIDENTIAL);
 		else if( ClientType.PUBLIC == app.getClientType() )
 			entity.setClientType(CLIENTTYPE_PUBLIC);
 		else

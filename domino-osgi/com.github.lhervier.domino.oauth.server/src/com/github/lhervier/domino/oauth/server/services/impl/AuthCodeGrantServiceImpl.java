@@ -19,6 +19,7 @@ import com.github.lhervier.domino.oauth.server.ex.grant.GrantInvalidGrantExcepti
 import com.github.lhervier.domino.oauth.server.ex.grant.GrantInvalidRequestException;
 import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.server.model.Application;
+import com.github.lhervier.domino.oauth.server.model.ClientType;
 import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
 import com.github.lhervier.domino.oauth.server.repo.SecretRepository;
 import com.github.lhervier.domino.oauth.server.services.AuthCodeService;
@@ -143,10 +144,12 @@ public class AuthCodeGrantServiceImpl implements GrantService {
 				);
 			}
 			
-			// Generate the refresh token
-			authCode.setExpires(this.timeSvc.currentTimeSeconds() + this.refreshTokenLifetime);
-			String sRefreshToken = this.authCodeSvc.fromEntity(authCode);
-			resp.put("refresh_token", sRefreshToken);
+			// Generate the refresh token only for confidential clients
+			if( ClientType.CONFIDENTIAL == app.getClientType() ) {
+				authCode.setExpires(this.timeSvc.currentTimeSeconds() + this.refreshTokenLifetime);
+				String sRefreshToken = this.authCodeSvc.fromEntity(authCode);
+				resp.put("refresh_token", sRefreshToken);
+			}
 			
 			// expiration date
 			resp.put("expires_in", this.refreshTokenLifetime);

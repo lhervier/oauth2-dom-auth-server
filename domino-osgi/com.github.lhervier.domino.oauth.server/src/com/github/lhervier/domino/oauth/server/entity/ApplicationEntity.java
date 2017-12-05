@@ -25,6 +25,11 @@ public class ApplicationEntity {
 	private String clientId;
 	
 	/**
+	 * Client type
+	 */
+	private String clientType;
+	
+	/**
 	 * Son URI de redirection par défaut
 	 */
 	private String redirectUri;
@@ -140,5 +145,13 @@ public class ApplicationEntity {
 	 */
 	public void setFullName(String fullName) {
 		this.fullName = fullName;
+	}
+
+	public String getClientType() {
+		return clientType;
+	}
+
+	public void setClientType(String clientType) {
+		this.clientType = clientType;
 	}
 }

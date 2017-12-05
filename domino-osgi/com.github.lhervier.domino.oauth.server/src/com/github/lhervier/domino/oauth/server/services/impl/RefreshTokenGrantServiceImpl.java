@@ -151,7 +151,7 @@ public class RefreshTokenGrantServiceImpl implements GrantService {
 		
 		// Update scopes. Here, we have granted all the asked scopes (otherwise, we would have thrown).
 		authCode.setGrantedScopes(scopes);
-				
+		
 		// Call for extensions
 		Map<String, Object> resp = new HashMap<String, Object>();
 		for( String responseType : this.extSvc.getResponseTypes() ) {
@@ -171,6 +171,7 @@ public class RefreshTokenGrantServiceImpl implements GrantService {
 		}
 		
 		// Regenerate the refresh token (update expiration date)
+		// When using this grant, clientType is confidential.
 		authCode.setExpires(this.timeSvc.currentTimeSeconds() + this.refreshTokenLifetime);
 		String newRefreshToken = this.authCodeSvc.fromEntity(authCode);
 		resp.put("refresh_token", newRefreshToken);

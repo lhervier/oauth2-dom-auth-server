@@ -25,6 +25,11 @@ public class Application {
 	private String clientId;
 	
 	/**
+	 * Client type
+	 */
+	private ClientType clientType = ClientType.PUBLIC;
+	
+	/**
 	 * Son URI de redirection par défaut
 	 */
 	private String redirectUri;
@@ -121,5 +126,19 @@ public class Application {
 	 */
 	public void setFullName(String fullName) {
 		this.fullName = fullName;
+	}
+
+	/**
+	 * @return the clientType
+	 */
+	public ClientType getClientType() {
+		return clientType;
+	}
+
+	/**
+	 * @param clientType the clientType to set
+	 */
+	public void setClientType(ClientType clientType) {
+		this.clientType = clientType;
 	}
 }

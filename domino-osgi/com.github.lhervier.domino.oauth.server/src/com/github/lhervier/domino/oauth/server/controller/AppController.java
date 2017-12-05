@@ -24,6 +24,7 @@ import com.github.lhervier.domino.oauth.server.ex.NotAuthorizedException;
 import com.github.lhervier.domino.oauth.server.ex.WrongPathException;
 import com.github.lhervier.domino.oauth.server.form.ApplicationForm;
 import com.github.lhervier.domino.oauth.server.model.Application;
+import com.github.lhervier.domino.oauth.server.model.ClientType;
 import com.github.lhervier.domino.oauth.server.services.AppService;
 import com.github.lhervier.domino.oauth.server.utils.Utils;
 
@@ -79,6 +80,12 @@ public class AppController {
 		ret.setReaders(app.getReaders());
 		ret.setRedirectUri(app.getRedirectUri());
 		ret.setExistingRedirectUris(app.getRedirectUris());
+		if( app.getClientType() == ClientType.CONFIDENTIAL )
+			ret.setClientType("confidential");
+		else if( app.getClientType() == ClientType.PUBLIC )
+			ret.setClientType("public");
+		else
+			ret.setClientType("public");
 		return ret;
 	}
 	
@@ -168,6 +175,12 @@ public class AppController {
 		app.setName(form.getName());
 		app.setReaders(form.getReaders());
 		app.setRedirectUri(form.getRedirectUri());
+		if( "confidential".equals(form.getClientType()) )
+			app.setClientType(ClientType.CONFIDENTIAL);
+		else if( "public".equals(form.getClientType()) )
+			app.setClientType(ClientType.PUBLIC);
+		else
+			app.setClientType(ClientType.PUBLIC);
 		app.setRedirectUris(this.getSessionRedirectUris());
 		ApplicationForm newForm = fromApplication(app);
 		model.put("app", newForm);

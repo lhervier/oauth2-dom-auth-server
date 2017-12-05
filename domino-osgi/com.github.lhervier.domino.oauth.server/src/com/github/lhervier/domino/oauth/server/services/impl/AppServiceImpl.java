@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import com.github.lhervier.domino.oauth.server.entity.ApplicationEntity;
 import com.github.lhervier.domino.oauth.server.entity.PersonEntity;
 import com.github.lhervier.domino.oauth.server.model.Application;
+import com.github.lhervier.domino.oauth.server.model.ClientType;
 import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
 import com.github.lhervier.domino.oauth.server.repo.PersonRepository;
 import com.github.lhervier.domino.oauth.server.services.AppService;
@@ -23,6 +24,12 @@ import com.github.lhervier.domino.oauth.server.utils.Utils;
  */
 @Service
 public class AppServiceImpl implements AppService {
+	
+	/**
+	 * Client types
+	 */
+	public static final String CLIENTTYPE_CONFIDENTIAL = "confidential";
+	public static final String CLIENTTYPE_PUBLIC = "public";
 	
 	/**
 	 * The application root
@@ -54,6 +61,12 @@ public class AppServiceImpl implements AppService {
 		Application app = new Application();
 		app.setClientId(entity.getClientId());
 		app.setName(entity.getName());
+		if( CLIENTTYPE_CONFIDENTIAL.equals(entity.getClientType()) )
+			app.setClientType(ClientType.CONFIDENTIAL);
+		else if( CLIENTTYPE_PUBLIC.equals(entity.getClientType()) )
+			app.setClientType(ClientType.PUBLIC);
+		else
+			app.setClientType(ClientType.PUBLIC);
 		app.setReaders(entity.getReaders());
 		app.setRedirectUri(entity.getRedirectUri());
 		app.getRedirectUris().addAll(entity.getRedirectUris());
@@ -74,7 +87,13 @@ public class AppServiceImpl implements AppService {
 		entity.setName(app.getName());
 		entity.setFullName("CN=" + app.getName() + this.applicationRoot);
 		entity.setReaders(app.getReaders());
-	
+		if( ClientType.CONFIDENTIAL == app.getClientType() )
+			entity.setClientType("confidential");
+		else if( ClientType.PUBLIC == app.getClientType() )
+			entity.setClientType(CLIENTTYPE_PUBLIC);
+		else
+			entity.setClientType(CLIENTTYPE_PUBLIC);
+		
 		String error = Utils.checkRedirectUri(app.getRedirectUri());
 		if( error != null )
 			throw new DataIntegrityViolationException(error);

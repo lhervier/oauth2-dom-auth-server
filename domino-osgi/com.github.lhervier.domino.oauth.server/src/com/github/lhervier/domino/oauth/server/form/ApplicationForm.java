@@ -20,6 +20,11 @@ public class ApplicationForm {
 	private String clientId;
 	
 	/**
+	 * The application client type
+	 */
+	private String clientType;
+	
+	/**
 	 * The application secret
 	 */
 	private String secret;
@@ -218,6 +223,20 @@ public class ApplicationForm {
 	 */
 	public void setAction(String action) {
 		this.action = action;
+	}
+
+	/**
+	 * @return the clientType
+	 */
+	public String getClientType() {
+		return clientType;
+	}
+
+	/**
+	 * @param clientType the clientType to set
+	 */
+	public void setClientType(String clientType) {
+		this.clientType = clientType;
 	}
 	
 }

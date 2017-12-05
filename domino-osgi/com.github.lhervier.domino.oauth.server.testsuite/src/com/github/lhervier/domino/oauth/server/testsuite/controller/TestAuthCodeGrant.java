@@ -34,6 +34,7 @@ import com.github.lhervier.domino.oauth.server.ext.core.CoreContext;
 import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
 import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
 import com.github.lhervier.domino.oauth.server.services.AuthCodeService;
+import com.github.lhervier.domino.oauth.server.services.impl.AppServiceImpl;
 import com.github.lhervier.domino.oauth.server.testsuite.BaseTest;
 import com.github.lhervier.domino.oauth.server.testsuite.impl.NotesPrincipalTestImpl;
 import com.github.lhervier.domino.oauth.server.testsuite.impl.TimeServiceTestImpl;
@@ -325,10 +326,10 @@ public class TestAuthCodeGrant extends BaseTest {
 	}
 	
 	/**
-	 * Get tokens from auth code
+	 * Get tokens from auth code. Client is public.
 	 */
 	@Test
-	public void tokensFromAuthCode() throws Exception {
+	public void publicClientTokensFromAuthCode() throws Exception {
 		when(this.authCodeSvcMock.fromEntity(Mockito.any(AuthCodeEntity.class)))
 		.thenReturn("012345");
 		
@@ -344,7 +345,69 @@ public class TestAuthCodeGrant extends BaseTest {
 		String json = result.getResponse().getContentAsString();
 		
 		TokenResponse resp = this.mapper.readValue(json, TokenResponse.class);
-		assertThat(resp.getRefreshToken(), is(notNullValue()));
+		assertThat(resp.getRefreshToken(), is(nullValue()));			// No refresh token
+		assertThat(resp.getAccessToken(), is(notNullValue()));
+		assertThat(resp.getTokenType(), is("Bearer"));
+		assertThat(resp.getScope(), nullValue());
+		assertThat(resp.getExpiresIn(), is(equalTo(36000L)));
+		
+		assertThat(resp.getIdToken(), is(nullValue()));
+	}
+	
+	/**
+	 * Get tokens from auth code. Client type is not defined.
+	 */
+	@Test
+	public void undefinedClientTokensFromAuthCode() throws Exception {
+		normalApp.setClientType(null);
+		
+		when(this.authCodeSvcMock.fromEntity(Mockito.any(AuthCodeEntity.class)))
+		.thenReturn("012345");
+		
+		MvcResult result = this.mockMvc.perform(
+				post("/token")
+				.param("grant_type", "authorization_code")
+				.param("redirect_uri", APP_REDIRECT_URI)
+				.param("code", AUTH_CODE_ID)
+		).andExpect(status().is(200))
+		.andExpect(content().contentType("application/json;charset=UTF-8"))
+		.andReturn();
+		
+		String json = result.getResponse().getContentAsString();
+		
+		TokenResponse resp = this.mapper.readValue(json, TokenResponse.class);
+		assertThat(resp.getRefreshToken(), is(nullValue()));			// No refresh token
+		assertThat(resp.getAccessToken(), is(notNullValue()));
+		assertThat(resp.getTokenType(), is("Bearer"));
+		assertThat(resp.getScope(), nullValue());
+		assertThat(resp.getExpiresIn(), is(equalTo(36000L)));
+		
+		assertThat(resp.getIdToken(), is(nullValue()));
+	}
+	
+	/**
+	 * Get tokens from auth code. Client is confidential.
+	 */
+	@Test
+	public void confidentialClientTokensFromAuthCode() throws Exception {
+		normalApp.setClientType(AppServiceImpl.CLIENTTYPE_CONFIDENTIAL);
+		
+		when(this.authCodeSvcMock.fromEntity(Mockito.any(AuthCodeEntity.class)))
+		.thenReturn("012345");
+		
+		MvcResult result = this.mockMvc.perform(
+				post("/token")
+				.param("grant_type", "authorization_code")
+				.param("redirect_uri", APP_REDIRECT_URI)
+				.param("code", AUTH_CODE_ID)
+		).andExpect(status().is(200))
+		.andExpect(content().contentType("application/json;charset=UTF-8"))
+		.andReturn();
+		
+		String json = result.getResponse().getContentAsString();
+		
+		TokenResponse resp = this.mapper.readValue(json, TokenResponse.class);
+		assertThat(resp.getRefreshToken(), is(notNullValue()));			// Refresh token !
 		assertThat(resp.getAccessToken(), is(notNullValue()));
 		assertThat(resp.getTokenType(), is("Bearer"));
 		assertThat(resp.getScope(), nullValue());

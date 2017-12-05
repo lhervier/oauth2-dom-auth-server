@@ -7,15 +7,17 @@ The important thing is that, with OAUTH2, the *resource server* (the server that
 For this, the *client application* will get an *access token* from an *authorization server*, and will send this token 
 with every requests made to the *resource server*. A common way of sending the *access token* is to add it to the HTTP header named "Authorization", with the "Bearer" prefix.
 
-To validate the *access token*, the resource server will have to send it to a endpoint provided by the *authorization server*. [RFC 7662](https://tools.ietf.org/html/rfc7662) define such
-an endpoint. [OpenId Connect](http://openid.net/specs/openid-connect-core-1_0.html#UserInfo) defines another one.
+To validate the *access token*, the resource server will have to send it to a endpoint provided by the *authorization server* :
+
+- [RFC 7662](https://tools.ietf.org/html/rfc7662) define such an endpoint. 
+- [OpenId Connect](http://openid.net/specs/openid-connect-core-1_0.html#UserInfo) defines another one.
+- The authorization server (like Microsoft ADFS) can also document that the access tokens are JWTs, signed using a private key. The public key is then published on an open url.
 
 The goal of this project is to transform a standard IBM Domino v9.0.1 server into an OAUTH2 authorization server (also know as an OAUTH2 provider), with OpenID extensions. 
 Your server will generate access tokens that client applications will be able to use to access protected resources. 
-But note that nor the client applications, nor the protected resources have to be hosted on a Domino Server !
+Resource servers will be able to validate the token using a standard token introspection endpoint.
 
-In the last chapter of this README, I will explain how to test your server with a sample notes database that contains an angular application. 
-This application will get an access token from the authorization server, and use it to access the OpenId userInfo endpoint (hosted on the Domino authorization too).
+Please, note that nor the client applications, nor the protected resources have to be hosted on a Domino Server !
 
 # Deploy all the needed plugins
 
@@ -94,7 +96,7 @@ Zip the site.xml, plugins and features folders, and you are ready !
 
 ## Deploy the "Domino OAUTH2 Authorization Server" plugins
 
-### On an production environment
+### On an production environment (ie, dont want to play with the code)
 
 Get the update site (the zip file) from the github releases page, or generate it yourself by using the method described above, and unzip it somewhere.
 
@@ -106,7 +108,7 @@ Then, create another update site database using the same technique that we used 
 
 Note that it is not recommanded to import multiple update sites into one same database, because we don't have an option to remove only a set of features. All we can do is remove all the database content.
 
-### On a development environment
+### On a development environment (ie, want to play with the code)
 
 ### Install the "IBM Domino Debug Plugin"
 
@@ -150,7 +152,7 @@ If it answer somthing like this, you're good to go :
 
 I didn't want to take the risk of storing keys myself. Instead, I prefered using SSO Configurations which are natively stored by IBM in a secure manner.
 
-So, When Domino will generate OAUTH2 access tokens, it will use a secret stored in a SSO configuration document.
+So, when Domino will generate an OAUTH2 access tokens, it will use a secret stored in a SSO configuration document.
 
 You will have to generate three of them :
 
@@ -183,15 +185,15 @@ From the "package explorer", right click on the "oauth2-ondisk" project, and cho
 
 ### Check the ACL
 
-Users with the [AppManager] role will be allowed to register/edit/remove oauth2 client applications. Users with this role MUST also be able to add users in the Domino Directory. Yes, we will generate users on the fly !
+Users with the [AppManager] role will be allowed to register/edit/remove oauth2 client applications. Users with this role MUST also be able to add users in the Domino Directory (we will generate users on the fly)
 
-Users with the [AuthCodeManager] role will be able to access all the generated authorization code documents. They are sensible data, protected with a reader field. Nobody should have this role. 
+Users with the [AuthCodeManager] role will be able to access all the generated authorization code documents. These are sensible data, protected with a reader field. Nobody should have this role. 
 It is present for development puropose, and can be replaced by the "Full access Administrator" option of Domino Administrator.
 
-Every other users that should be able to log into one of the OAUTH2 client application should have reader access. So, by default, in the ACL :
+Every other users that should be able to log into one of the OAUTH2 client application should have reader access. So, by default, the ACL is :
 
-- Default is "reader"
-- Anonymous is "no access"
+- Default "reader", but you can set "Default" as "no access", and add "reader" access only to users allowed to log in via OAuth2.
+- Anonymous "no access": Not a good idea to change this value...
 
 ## Configure the oauth2 server environment
 
@@ -230,7 +232,7 @@ You can also declare the variables in a configuration document.
 
 Read the documentation of the Domino Spring project, or contact me (create an issue) if you want more details.
 
-This method allows you to inject values from the place you want. And of course, most of my clients wants to extract parameters from a common database.
+This method allows you to inject values from the place you want. And of course, most of my clients wants to extract parameters from a common NSF.
 
 ## Check that everything is working
 
@@ -248,7 +250,7 @@ Use your browser to access the following url :
 	
 You will have to login with a user with the [AppManager] role.
 
-Registering an application will add a user in the nab. The application secret is its http password (in reality, it is 'username:http_password' base64 encoded). 
+Registering an application will add a user in the nab. The application secret is its http password. 
 Don't forget to save this value. We won't be able to extract it again.
 
 # The OAuth2 and OpenID endpoints 

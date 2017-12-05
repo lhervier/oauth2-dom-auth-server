@@ -1,5 +1,7 @@
 package com.github.lhervier.domino.oauth.server.entity;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -32,7 +34,7 @@ public class AuthCodeEntity {
 	/**
 	 * User roles
 	 */
-	private List<String> roles;
+	private List<String> roles = new ArrayList<String>();
 	
 	/**
 	 * Database path
@@ -62,23 +64,23 @@ public class AuthCodeEntity {
 	/**
 	 * Le scopes demandé
 	 */
-	private List<String> scopes;
+	private List<String> scopes = new ArrayList<String>();
 	
 	/**
 	 * Le scopes autorisé
 	 */
-	private List<String> grantedScopes;
+	private List<String> grantedScopes = new ArrayList<String>();
 	
 	/**
 	 * The context classes for each extension
 	 */
-	private Map<String, String> contextClasses;
+	private Map<String, String> contextClasses = new HashMap<String, String>();
 	
 	/**
 	 * The context objets for each extension
 	 * (as a json String)
 	 */
-	private Map<String, String> contextObjects;
+	private Map<String, String> contextObjects = new HashMap<String, String>();
 	
 	/**
 	 * @return the application

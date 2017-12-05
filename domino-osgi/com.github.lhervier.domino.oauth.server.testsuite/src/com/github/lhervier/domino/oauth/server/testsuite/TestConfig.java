@@ -17,6 +17,7 @@ import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
 import com.github.lhervier.domino.oauth.server.repo.PersonRepository;
 import com.github.lhervier.domino.oauth.server.repo.SecretRepository;
 import com.github.lhervier.domino.oauth.server.services.AuthCodeService;
+import com.github.lhervier.domino.oauth.server.services.ExtensionService;
 import com.github.lhervier.domino.oauth.server.services.TimeService;
 import com.github.lhervier.domino.oauth.server.testsuite.impl.TimeServiceTestImpl;
 import com.github.lhervier.domino.spring.servlet.SpringServletConfig;
@@ -46,18 +47,6 @@ public class TestConfig {
 	
 	@Bean
 	@Primary
-	public TimeService timeService() {
-		return new TimeServiceTestImpl();
-	}
-	
-	@Bean
-	@Primary
-	public AuthCodeService AuthCodeService() {
-		return mock(AuthCodeService.class);
-	}
-	
-	@Bean
-	@Primary
 	public SecretRepository secretRepository() {
 		return new SecretRepository() {
 			@Override
@@ -78,5 +67,23 @@ public class TestConfig {
 				}
 			}
 		};
+	}
+	
+	@Bean
+	@Primary
+	public TimeService timeService() {
+		return new TimeServiceTestImpl();
+	}
+	
+	@Bean
+	@Primary
+	public AuthCodeService AuthCodeService() {
+		return mock(AuthCodeService.class);
+	}
+	
+	@Bean
+	@Primary
+	public ExtensionService extensionService() {
+		return mock(ExtensionService.class);
 	}
 }

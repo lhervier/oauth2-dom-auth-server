@@ -1,6 +1,5 @@
 package com.github.lhervier.domino.oauth.server.testsuite.controller;
 
-import static com.github.lhervier.domino.oauth.server.testsuite.impl.DummyExtWithGrant.DUMMY_SCOPE;
 import static com.github.lhervier.domino.oauth.server.testsuite.utils.TestUtils.urlParameters;
 import static com.github.lhervier.domino.oauth.server.testsuite.utils.TestUtils.urlRefs;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -37,14 +36,19 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MvcResult;
 
+import com.github.lhervier.domino.oauth.server.NotesPrincipal;
 import com.github.lhervier.domino.oauth.server.NotesPrincipal.AuthType;
 import com.github.lhervier.domino.oauth.server.entity.ApplicationEntity;
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
+import com.github.lhervier.domino.oauth.server.ext.IAuthorizer;
+import com.github.lhervier.domino.oauth.server.ext.IOAuthAuthorizeExtension;
+import com.github.lhervier.domino.oauth.server.ext.IPropertyAdder;
+import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
 import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
+import com.github.lhervier.domino.oauth.server.services.ExtensionService;
 import com.github.lhervier.domino.oauth.server.testsuite.BaseTest;
-import com.github.lhervier.domino.oauth.server.testsuite.impl.DummyExtWithGrant;
-import com.github.lhervier.domino.oauth.server.testsuite.impl.DummyExtWithGrantContext;
+import com.github.lhervier.domino.oauth.server.testsuite.impl.DummyContext;
 import com.github.lhervier.domino.oauth.server.testsuite.impl.NotesPrincipalTestImpl;
 import com.github.lhervier.domino.oauth.server.testsuite.impl.TimeServiceTestImpl;
 
@@ -57,12 +61,16 @@ public class TestAuthorizeController extends BaseTest {
 	private AuthCodeRepository authCodeRepoMock;
 	
 	@Autowired
+	protected ExtensionService extSvcMock;
+	
+	@Autowired
 	private NotesPrincipalTestImpl user;
 	
 	@Before
 	public void setUp() {
 		reset(appRepoMock);
 		reset(authCodeRepoMock);
+		reset(extSvcMock);
 		
 		user.setAuthType(AuthType.NOTES);
 		user.setName("CN=Lionel/O=USER");
@@ -140,6 +148,16 @@ public class TestAuthorizeController extends BaseTest {
 			setFullName("CN=myApp/O=APP");
 			setRedirectUri("http://acme.com/myApp");
 		}});
+		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy"));
+		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new IOAuthAuthorizeExtension() {
+			public List<String> getAuthorizedScopes() { return new ArrayList<String>(); }
+			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
+			@Override
+			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, IAuthorizer authorizer) {
+				authorizer.saveAuthCode(true);		// Will save the auth code
+				authorizer.addProperty("dummy_authorize_param", "authparamvalue");
+			}
+		});
 		when(authCodeRepoMock.save(any(AuthCodeEntity.class))).then(returnsFirstArg());
 		MvcResult result = mockMvc.perform(
 				post("/authorize")
@@ -225,6 +243,15 @@ public class TestAuthorizeController extends BaseTest {
 			setName("myApp");
 			setRedirectUri("http://acme.com/myApp");
 		}});
+		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy"));
+		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new IOAuthAuthorizeExtension() {
+			public List<String> getAuthorizedScopes() { return new ArrayList<String>(); }
+			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
+			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, IAuthorizer authorizer) {
+				authorizer.saveAuthCode(true);		// Will save the auth code
+				authorizer.addProperty("dummy_authorize_param", "authparamvalue");
+			}
+		});
 		MvcResult result = mockMvc
 		.perform(
 				get("/authorize")
@@ -270,6 +297,15 @@ public class TestAuthorizeController extends BaseTest {
 			setRedirectUri("http://acme.com/myApp");
 			setRedirectUris(Arrays.asList("http://acme.com/otherUri"));
 		}});
+		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy"));
+		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new IOAuthAuthorizeExtension() {
+			public List<String> getAuthorizedScopes() { return new ArrayList<String>(); }
+			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
+			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, IAuthorizer authorizer) {
+				authorizer.saveAuthCode(true);		// Will save the auth code
+				authorizer.addProperty("dummy_authorize_param", "authparamvalue");
+			}
+		});
 		MvcResult result = mockMvc
 		.perform(
 				get("/authorize")
@@ -374,6 +410,7 @@ public class TestAuthorizeController extends BaseTest {
 			setName("myApp");
 			setRedirectUri("http://acme.com/myApp");
 		}});
+		when(this.extSvcMock.getResponseTypes()).thenReturn(new ArrayList<String>());
 		MvcResult result = mockMvc
 		.perform(
 				get("/authorize")
@@ -393,20 +430,68 @@ public class TestAuthorizeController extends BaseTest {
 	}
 	
 	/**
-	 * Conflicting response types on auth code saving
+	 * NoOp response type
 	 */
 	@Test
-	public void testConflictingResponseTypesOnAuthCodeSaving() throws Exception {
+	public void noOpResponseType() throws Exception {
 		when(appRepoMock.findOne(Mockito.anyString())).thenReturn(new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");
 			setRedirectUri("http://acme.com/myApp");
 		}});
+		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("noop"));
+		when(this.extSvcMock.getExtension(eq("noop"))).thenReturn(new IOAuthAuthorizeExtension() {
+			public List<String> getAuthorizedScopes() { return new ArrayList<String>(); }
+			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
+			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, IAuthorizer authorizer) { }
+		});
 		MvcResult result = mockMvc
 		.perform(
 				get("/authorize")
 				.param("client_id", "1234")
-				.param("response_type", "code token")
+				.param("response_type", "noop")
+		)
+		.andExpect(status().is(302))
+		.andReturn();
+		
+		String location = result.getResponse().getHeader("Location");
+		assertThat(location, startsWith("http://acme.com/myApp"));
+		
+		Map<String, String> params = urlParameters(location);
+		assertThat(params, not(hasKey("error")));
+		assertThat(params, not(hasKey("code")));
+	}
+	
+	/**
+	 * Conflicting response types on auth code saving
+	 */
+	@Test
+	public void conflictingResponseTypesOnAuthCodeSaving() throws Exception {
+		when(appRepoMock.findOne(Mockito.anyString())).thenReturn(new ApplicationEntity() {{
+			setClientId("1234");
+			setName("myApp");
+			setRedirectUri("http://acme.com/myApp");
+		}});
+		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy1", "dummy2"));
+		when(this.extSvcMock.getExtension(eq("dummy1"))).thenReturn(new IOAuthAuthorizeExtension() {
+			public List<String> getAuthorizedScopes() { return new ArrayList<String>(); }
+			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
+			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, IAuthorizer authorizer) {
+				authorizer.saveAuthCode(true);		// Will save the auth code
+			}
+		});
+		when(this.extSvcMock.getExtension(eq("dummy2"))).thenReturn(new IOAuthAuthorizeExtension() {
+			public List<String> getAuthorizedScopes() { return new ArrayList<String>(); }
+			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
+			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, IAuthorizer authorizer) {
+				authorizer.saveAuthCode(false);		// Will NOT save the auth code
+			}
+		});
+		MvcResult result = mockMvc
+		.perform(
+				get("/authorize")
+				.param("client_id", "1234")
+				.param("response_type", "dummy1 dummy2")
 		)
 		.andExpect(status().is(302))
 		.andReturn();
@@ -421,17 +506,32 @@ public class TestAuthorizeController extends BaseTest {
 	 * Conflicting response types on properties
 	 */
 	@Test
-	public void testConflictingResponseTypeOnProps() throws Exception {
+	public void conflictingResponseTypeOnProps() throws Exception {
 		when(appRepoMock.findOne(Mockito.anyString())).thenReturn(new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");
 			setRedirectUri("http://acme.com/myApp");
 		}});
+		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy1", "dummy2"));
+		when(this.extSvcMock.getExtension(eq("dummy1"))).thenReturn(new IOAuthAuthorizeExtension() {
+			public List<String> getAuthorizedScopes() { return new ArrayList<String>(); }
+			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
+			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, IAuthorizer authorizer) {
+				authorizer.addProperty("prop", "value");		// Adding property
+			}
+		});
+		when(this.extSvcMock.getExtension(eq("dummy2"))).thenReturn(new IOAuthAuthorizeExtension() {
+			public List<String> getAuthorizedScopes() { return new ArrayList<String>(); }
+			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
+			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, IAuthorizer authorizer) {
+				authorizer.addProperty("prop", "othervalue");		// Adding SAME property
+			}
+		});
 		MvcResult result = mockMvc
 		.perform(
 				get("/authorize")
 				.param("client_id", "1234")
-				.param("response_type", "dummy conflict")
+				.param("response_type", "dummy1 dummy2")
 		)
 		.andExpect(status().is(302))
 		.andReturn();
@@ -457,6 +557,17 @@ public class TestAuthorizeController extends BaseTest {
 			setFullName("CN=myApp" + appRoot);
 			setRedirectUri("http://acme.com/myApp");
 		}});
+		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy"));
+		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new IOAuthAuthorizeExtension() {
+			public List<String> getAuthorizedScopes() { return new ArrayList<String>(); }
+			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
+			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, IAuthorizer authorizer) {
+				authorizer.setContext(new DummyContext() {{
+					setName("CN=Lionel/O=USER");
+				}});
+				authorizer.saveAuthCode(true);
+			}
+		});
 		
 		when(authCodeRepoMock.save(any(AuthCodeEntity.class))).then(returnsFirstArg());
 		
@@ -486,6 +597,8 @@ public class TestAuthorizeController extends BaseTest {
 		
 		assertThat(code.getId(), equalTo(params.get("code")));
 		
+		assertThat(code.getFullName(), equalTo(user.getName()));
+		assertThat(code.getCommonName(), equalTo(user.getCommon()));
 		assertThat(code.getRedirectUri(), equalTo("http://acme.com/myApp"));
 		assertThat(code.getClientId(), equalTo("1234"));
 		assertThat(code.getExpires(), equalTo(TimeServiceTestImpl.CURRENT_TIME + authCodeLifetime));
@@ -494,11 +607,11 @@ public class TestAuthorizeController extends BaseTest {
 		assertThat(code.getGrantedScopes(), emptyIterable());
 		
 		assertThat(code.getContextClasses().size(), is(equalTo(1)));
-		assertThat(code.getContextClasses(), hasKey(DummyExtWithGrant.DUMMY_RESPONSE_TYPE));
+		assertThat(code.getContextClasses(), hasKey("dummy"));
 		
-		String jsonCtx = code.getContextObjects().get(DummyExtWithGrant.DUMMY_RESPONSE_TYPE);
+		String jsonCtx = code.getContextObjects().get("dummy");
 		ObjectMapper mapper = new ObjectMapper();
-		DummyExtWithGrantContext ctx = mapper.readValue(jsonCtx, DummyExtWithGrantContext.class);
+		DummyContext ctx = mapper.readValue(jsonCtx, DummyContext.class);
 		
 		assertThat(ctx.getName(), equalTo("CN=Lionel/O=USER"));
 	}
@@ -515,6 +628,15 @@ public class TestAuthorizeController extends BaseTest {
 			setFullName("CN=myApp" + appRoot);
 			setRedirectUri("http://acme.com/myApp?param1=xxx");			// Existing parameters in uri
 		}});
+		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy"));
+		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new IOAuthAuthorizeExtension() {
+			public List<String> getAuthorizedScopes() { return new ArrayList<String>(); }
+			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
+			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, IAuthorizer authorizer) {
+				authorizer.addProperty("dummy_authorize_param", "authparamvalue");
+				authorizer.saveAuthCode(true);
+			}
+		});
 		
 		when(authCodeRepoMock.save(any(AuthCodeEntity.class))).then(returnsFirstArg());
 		
@@ -548,6 +670,15 @@ public class TestAuthorizeController extends BaseTest {
 			setFullName("CN=myApp" + appRoot);
 			setRedirectUri("http://acme.com/myApp#param1=xxx");			// Fragment in uri
 		}});
+		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy"));
+		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new IOAuthAuthorizeExtension() {
+			public List<String> getAuthorizedScopes() { return new ArrayList<String>(); }
+			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
+			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, IAuthorizer authorizer) {
+				authorizer.saveAuthCode(true);
+			}
+		});
+		
 		mockMvc
 		.perform(
 				get("/authorize")
@@ -569,6 +700,14 @@ public class TestAuthorizeController extends BaseTest {
 			setFullName("CN=myApp" + appRoot);
 			setRedirectUri("http://acme.com/myApp");
 		}});
+		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy"));
+		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new IOAuthAuthorizeExtension() {
+			public List<String> getAuthorizedScopes() { return Arrays.asList("scope1", "scope2"); }
+			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
+			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, IAuthorizer authorizer) {
+				authorizer.saveAuthCode(true);
+			}
+		});
 		
 		when(authCodeRepoMock.save(any(AuthCodeEntity.class))).then(returnsFirstArg());
 		
@@ -576,8 +715,8 @@ public class TestAuthorizeController extends BaseTest {
 		.perform(
 				get("/authorize")
 				.param("client_id", "1234")
-				.param("response_type", "dummy")		// Using dummy extension
-				.param("scope", DUMMY_SCOPE + " non_existing_scope")
+				.param("response_type", "dummy")
+				.param("scope", "scope1 scope2 scope3")
 		)
 		.andExpect(status().is(302));
 		
@@ -587,8 +726,55 @@ public class TestAuthorizeController extends BaseTest {
 		assertThat(added.size(), is(equalTo(1)));
 		AuthCodeEntity code = added.get(0);
 		
-		assertThat(code.getScopes(), containsInAnyOrder(DUMMY_SCOPE, "non_existing_scope"));
-		assertThat(code.getGrantedScopes(), containsInAnyOrder(DUMMY_SCOPE));
+		assertThat(code.getScopes(), containsInAnyOrder("scope1", "scope2", "scope3"));
+		assertThat(code.getGrantedScopes(), containsInAnyOrder("scope1", "scope2"));
+	}
+	
+	/**
+	 * Same scope granted by two extensions
+	 */
+	@Test
+	public void sameScopeGrantedByTwoExtensions() throws Exception {
+		when(appRepoMock.findOne(anyString())).thenReturn(new ApplicationEntity() {{
+			setClientId("1234");
+			setName("myApp");
+			setFullName("CN=myApp" + appRoot);
+			setRedirectUri("http://acme.com/myApp");
+		}});
+		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy1", "dummy2"));
+		when(this.extSvcMock.getExtension(eq("dummy1"))).thenReturn(new IOAuthAuthorizeExtension() {
+			public List<String> getAuthorizedScopes() { return Arrays.asList("scope1", "scope2"); }
+			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
+			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, IAuthorizer authorizer) {
+				authorizer.saveAuthCode(true);
+			}
+		});
+		when(this.extSvcMock.getExtension(eq("dummy2"))).thenReturn(new IOAuthAuthorizeExtension() {
+			public List<String> getAuthorizedScopes() { return Arrays.asList("scope1"); }
+			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
+			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, IAuthorizer authorizer) {
+			}
+		});
+		when(authCodeRepoMock.save(any(AuthCodeEntity.class))).then(returnsFirstArg());
+		
+		mockMvc
+		.perform(
+				get("/authorize")
+				.param("client_id", "1234")
+				.param("response_type", "dummy1 dummy2")		// Using dummy extension
+				.param("scope", "scope1 scope2 scope3")
+		)
+		.andExpect(status().is(302));
+		
+		ArgumentCaptor<AuthCodeEntity> authCodeCaptor = ArgumentCaptor.forClass(AuthCodeEntity.class);
+		Mockito.verify(authCodeRepoMock, Mockito.times(1)).save(authCodeCaptor.capture());
+		List<AuthCodeEntity> added = authCodeCaptor.getAllValues();
+		assertThat(added.size(), is(equalTo(1)));
+		AuthCodeEntity code = added.get(0);
+		
+		assertThat(code.getScopes(), containsInAnyOrder("scope1", "scope2", "scope3"));
+		assertThat(code.getGrantedScopes().size(), equalTo(2));
+		assertThat(code.getGrantedScopes(), containsInAnyOrder("scope1", "scope2"));
 	}
 	
 	// ======================================================================================
@@ -604,6 +790,14 @@ public class TestAuthorizeController extends BaseTest {
 			setFullName("CN=myApp" + appRoot);
 			setRedirectUri("http://acme.com/myApp");
 		}});
+		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy"));
+		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new IOAuthAuthorizeExtension() {
+			public List<String> getAuthorizedScopes() { return Arrays.asList(); }
+			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
+			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, IAuthorizer authorizer) {
+				authorizer.saveAuthCode(false);
+			}
+		});
 		
 		when(authCodeRepoMock.save(any(AuthCodeEntity.class))).then(returnsFirstArg());
 				
@@ -611,7 +805,7 @@ public class TestAuthorizeController extends BaseTest {
 		.perform(
 				get("/authorize")
 				.param("client_id", "1234")
-				.param("response_type", "dummy_nogrant")
+				.param("response_type", "dummy")
 				.param("state", "myState")
 		)
 		.andExpect(status().is(302))
@@ -621,9 +815,8 @@ public class TestAuthorizeController extends BaseTest {
 		assertThat(location, startsWith("http://acme.com/myApp"));
 		
 		Map<String, String> params = urlRefs(location);
-		assertThat(params, hasKey("dummy_authorize_param"));
 		assertThat(params, hasEntry("state", "myState"));
-		assertThat(params, not(hasKey("refresh_token")));
+		assertThat(params, not(hasKey("code")));
 	}
 	
 	/**
@@ -640,6 +833,14 @@ public class TestAuthorizeController extends BaseTest {
 			setFullName("CN=myApp" + appRoot);
 			setRedirectUri("http://acme.com/myApp#param1=xxx");			// Existing parameters in uri
 		}});
+		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy"));
+		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new IOAuthAuthorizeExtension() {
+			public List<String> getAuthorizedScopes() { return Arrays.asList(); }
+			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
+			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, IAuthorizer authorizer) {
+				authorizer.saveAuthCode(false);
+			}
+		});
 		
 		when(authCodeRepoMock.save(any(AuthCodeEntity.class))).then(returnsFirstArg());
 		
@@ -647,7 +848,7 @@ public class TestAuthorizeController extends BaseTest {
 		.perform(
 				get("/authorize")
 				.param("client_id", "1234")
-				.param("response_type", "dummy_nogrant")
+				.param("response_type", "dummy")
 		)
 		.andExpect(status().is(302))
 		.andReturn();
@@ -656,7 +857,7 @@ public class TestAuthorizeController extends BaseTest {
 		assertThat(location, startsWith("http://acme.com/myApp"));
 		
 		Map<String, String> params = urlRefs(location);
-		assertThat(params, hasKey("dummy_authorize_param"));
 		assertThat(params, hasEntry("param1", "xxx"));
+		assertThat(params, not(hasKey("code")));
 	}
 }

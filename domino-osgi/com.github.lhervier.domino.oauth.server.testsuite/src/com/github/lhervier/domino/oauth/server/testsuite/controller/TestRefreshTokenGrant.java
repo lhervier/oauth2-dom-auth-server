@@ -13,7 +13,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -28,11 +27,8 @@ import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
 import com.github.lhervier.domino.oauth.server.services.AuthCodeService;
 import com.github.lhervier.domino.oauth.server.testsuite.BaseTest;
 import com.github.lhervier.domino.oauth.server.testsuite.controller.TestAuthCodeGrant.TokenResponse;
-import com.github.lhervier.domino.oauth.server.testsuite.impl.DummyExtWithGrant;
-import com.github.lhervier.domino.oauth.server.testsuite.impl.DummyExtWithGrantContext;
 import com.github.lhervier.domino.oauth.server.testsuite.impl.NotesPrincipalTestImpl;
 
-@SuppressWarnings("serial")
 public class TestRefreshTokenGrant extends BaseTest {
 
 	/**
@@ -122,14 +118,6 @@ public class TestRefreshTokenGrant extends BaseTest {
 			setExpires(timeSvcStub.currentTimeSeconds() - 10L);		// Expired 10s ago
 			setScopes(new ArrayList<String>());
 			setGrantedScopes(new ArrayList<String>());
-			setContextClasses(new HashMap<String, String>() {{
-				put(DummyExtWithGrant.DUMMY_RESPONSE_TYPE, DummyExtWithGrantContext.class.getName());
-			}});
-			setContextObjects(new HashMap<String, String>() {{
-				put(DummyExtWithGrant.DUMMY_RESPONSE_TYPE, mapper.writeValueAsString(new DummyExtWithGrantContext() {{
-					setName("CN=Lionel/O=USER");
-				}}));
-			}});
 		}});
 		
 		this.mockMvc.perform(
@@ -151,14 +139,6 @@ public class TestRefreshTokenGrant extends BaseTest {
 			setExpires(timeSvcStub.currentTimeSeconds() + 10L);
 			setScopes(Arrays.asList("scope1", "scope2", "scope3"));
 			setGrantedScopes(Arrays.asList("scope1", "scope2"));
-			setContextClasses(new HashMap<String, String>() {{
-				put(DummyExtWithGrant.DUMMY_RESPONSE_TYPE, DummyExtWithGrantContext.class.getName());
-			}});
-			setContextObjects(new HashMap<String, String>() {{
-				put(DummyExtWithGrant.DUMMY_RESPONSE_TYPE, mapper.writeValueAsString(new DummyExtWithGrantContext() {{
-					setName("CN=Lionel/O=USER");
-				}}));
-			}});
 		}};
 		when(authCodeSvcMock.toEntity(Mockito.eq("AZERTY"))).thenReturn(code);
 		
@@ -195,14 +175,6 @@ public class TestRefreshTokenGrant extends BaseTest {
 			setExpires(timeSvcStub.currentTimeSeconds() + 10L);
 			setScopes(Arrays.asList("scope1", "scope2"));
 			setGrantedScopes(Arrays.asList("scope1"));
-			setContextClasses(new HashMap<String, String>() {{
-				put(DummyExtWithGrant.DUMMY_RESPONSE_TYPE, DummyExtWithGrantContext.class.getName());
-			}});
-			setContextObjects(new HashMap<String, String>() {{
-				put(DummyExtWithGrant.DUMMY_RESPONSE_TYPE, mapper.writeValueAsString(new DummyExtWithGrantContext() {{
-					setName("CN=Lionel/O=USER");
-				}}));
-			}});
 		}});
 		
 		when(authCodeSvcMock.fromEntity(Mockito.any(AuthCodeEntity.class))).thenReturn("QSDFGH");
@@ -231,14 +203,6 @@ public class TestRefreshTokenGrant extends BaseTest {
 			setExpires(timeSvcStub.currentTimeSeconds() + 10L);
 			setScopes(new ArrayList<String>());
 			setGrantedScopes(new ArrayList<String>());
-			setContextClasses(new HashMap<String, String>() {{
-				put(DummyExtWithGrant.DUMMY_RESPONSE_TYPE, DummyExtWithGrantContext.class.getName());
-			}});
-			setContextObjects(new HashMap<String, String>() {{
-				put(DummyExtWithGrant.DUMMY_RESPONSE_TYPE, mapper.writeValueAsString(new DummyExtWithGrantContext() {{
-					setName("CN=Lionel/O=USER");
-				}}));
-			}});
 		}});
 		
 		this.mockMvc.perform(

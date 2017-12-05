@@ -17,7 +17,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.junit.Before;
@@ -34,12 +33,8 @@ import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
 import com.github.lhervier.domino.oauth.server.services.AuthCodeService;
 import com.github.lhervier.domino.oauth.server.services.impl.AppServiceImpl;
 import com.github.lhervier.domino.oauth.server.testsuite.BaseTest;
-import com.github.lhervier.domino.oauth.server.testsuite.impl.DummyExtWithGrant;
-import com.github.lhervier.domino.oauth.server.testsuite.impl.DummyExtWithGrantContext;
 import com.github.lhervier.domino.oauth.server.testsuite.impl.NotesPrincipalTestImpl;
-import com.github.lhervier.domino.oauth.server.testsuite.impl.TimeServiceTestImpl;
 
-@SuppressWarnings("serial")
 public class TestAuthCodeGrant extends BaseTest {
 
 	/**
@@ -59,12 +54,6 @@ public class TestAuthCodeGrant extends BaseTest {
 	private static final String HACKY_APP_CLIENT_ID = "3456";
 	private static final String HACKY_APP_REDIRECT_URI = "http://acme.com/myApp";
 	private ApplicationEntity hackyApp;
-	
-	/**
-	 * Authorization codes
-	 */
-	private static final String AUTH_CODE_ID = "012345";			// for normal app, as Lionel
-	private AuthCodeEntity code;
 	
 	/**
 	 * App repo mock
@@ -142,30 +131,31 @@ public class TestAuthCodeGrant extends BaseTest {
 		when(this.appRepoMock.findOneByName(eq(HACKY_APP_NAME))).thenReturn(hackyApp);
 		
 		// Declare authorization codes
-		this.code = new AuthCodeEntity() {{
-			this.setId(AUTH_CODE_ID);
-			this.setApplication(APP_NAME);
-			this.setClientId(APP_CLIENT_ID);
-			this.setExpires(TimeServiceTestImpl.CURRENT_TIME + authCodeLifetime);
-			this.setScopes(Arrays.asList("scope1", "scope2"));
-			this.setGrantedScopes(Arrays.asList("scope1", "scope2"));
-			this.setRedirectUri(APP_REDIRECT_URI);
-			this.setContextClasses(new HashMap<String, String>() {{
-				put(
-						DummyExtWithGrant.DUMMY_RESPONSE_TYPE, 
-						DummyExtWithGrantContext.class.getName()
-				);
-			}});
-			this.setContextObjects(new HashMap<String, String>() {{
-				put(
-						DummyExtWithGrant.DUMMY_RESPONSE_TYPE,
-						mapper.writeValueAsString(new DummyExtWithGrantContext() {{
-							setName("CN=Lionel/O=USER");
-						}})
-				);
-			}});
-		}};
-		when(this.authCodeRepoMock.findOne(eq(AUTH_CODE_ID))).thenReturn(code);
+//		AuthCodeEntity code = new AuthCodeEntity() {{
+//			this.setId(AUTH_CODE_ID);
+//			this.setApplication(APP_NAME);
+//			this.setClientId(APP_CLIENT_ID);
+//			this.setExpires(TimeServiceTestImpl.CURRENT_TIME + authCodeLifetime);
+//			this.setScopes(Arrays.asList("scope1", "scope2"));
+//			this.setGrantedScopes(Arrays.asList("scope1", "scope2"));
+//			this.setRedirectUri(APP_REDIRECT_URI);
+//			this.setContextClasses(new HashMap<String, String>() {{
+//				put(
+//						"dummy", 
+//						DummyContext.class.getName()
+//				);
+//			}});
+//			this.setContextObjects(new HashMap<String, String>() {{
+//				put(
+//						"dummy",
+//						mapper.writeValueAsString(new DummyContext() {{
+//							setName("CN=Lionel/O=USER");
+//						}})
+//				);
+//			}});
+//		}};
+		// when(this.authCodeRepoMock.findOne(eq(AUTH_CODE_ID))).thenReturn(code);
+		// this.code = code;
 		
 		// Login as normal application.
 		user.setAuthType(AuthType.NOTES);
@@ -184,11 +174,8 @@ public class TestAuthCodeGrant extends BaseTest {
 	 */
 	@Test
 	public void postMandatory() throws Exception {
-		this.mockMvc.perform(
-				get("/token")
-				.param("grant_type", "authorization_code")
-				.param("code", AUTH_CODE_ID)
-		).andExpect(status().is(500))		// RFC is not specifying that we must return a 400 error here. 500 is spring default behaviour and we don't want to change it...
+		this.mockMvc.perform(get("/token"))
+		.andExpect(status().is(500))		// RFC is not specifying that we must return a 400 error here. 500 is spring default behaviour and we don't want to change it...
 		.andExpect(content().string(containsString("Request method 'GET' not supported")));
 	}
 	
@@ -210,10 +197,18 @@ public class TestAuthCodeGrant extends BaseTest {
 	 */
 	@Test
 	public void wrongRedirectUri() throws Exception {
+		when(this.authCodeRepoMock.findOne(eq("AZERTY"))).thenReturn(new AuthCodeEntity() {{
+			setId("AZERTY");
+			setApplication(APP_NAME);
+			setClientId(APP_CLIENT_ID);
+			setExpires(timeSvcStub.currentTimeSeconds() + 10L);
+			setRedirectUri("http://acme.com/myApp");
+		}});
+		
 		this.mockMvc.perform(
 				post("/token")
 				.param("grant_type", "authorization_code")
-				.param("code", AUTH_CODE_ID)
+				.param("code", "AZERTY")
 				.param("redirect_uri", "http://wrong.redirect/uri")
 		).andExpect(status().is(400))
 		.andExpect(content().string(containsString("invalid redirect_uri")));
@@ -228,7 +223,7 @@ public class TestAuthCodeGrant extends BaseTest {
 		this.mockMvc.perform(
 				post("/token")
 				.param("grant_type", "authorization_code")
-				.param("code", AUTH_CODE_ID)
+				.param("code", "AZERTY")
 		).andExpect(status().is(400))
 		.andExpect(content().string(containsString("redirect_uri is mandatory")));
 	}
@@ -252,12 +247,18 @@ public class TestAuthCodeGrant extends BaseTest {
 	 */
 	@Test
 	public void expiredAuthCode() throws Exception {
-		TimeServiceTestImpl.CURRENT_TIME += this.authCodeLifetime + 10L;
+		when(this.authCodeRepoMock.findOne(eq("AZERTY"))).thenReturn(new AuthCodeEntity() {{
+			setId("AZERTY");
+			setApplication(APP_NAME);
+			setClientId(APP_CLIENT_ID);
+			setExpires(timeSvcStub.currentTimeSeconds() - 10L);
+			setRedirectUri("http://acme.com/myApp");
+		}});
 		
 		this.mockMvc.perform(
 				post("/token")
 				.param("grant_type", "authorization_code")
-				.param("code", AUTH_CODE_ID)
+				.param("code", "AZERTY")
 				.param("redirect_uri", APP_REDIRECT_URI)
 		).andExpect(status().is(400))
 		.andExpect(content().string(containsString("code has expired")));
@@ -273,11 +274,19 @@ public class TestAuthCodeGrant extends BaseTest {
 		user.setName(HACKY_APP_FULL_NAME);
 		user.setCommon(HACKY_APP_NAME);
 		
+		when(this.authCodeRepoMock.findOne(eq("AZERTY"))).thenReturn(new AuthCodeEntity() {{
+			setId("AZERTY");
+			setApplication(APP_NAME);
+			setClientId(APP_CLIENT_ID);
+			setExpires(timeSvcStub.currentTimeSeconds() + 10L);
+			setRedirectUri("http://acme.com/myApp");
+		}});
+		
 		// Try to exchange the auth code from normal app
 		this.mockMvc.perform(
 				post("/token")
 				.param("grant_type", "authorization_code")
-				.param("code", AUTH_CODE_ID)
+				.param("code", "AZERTY")
 				.param("redirect_uri", APP_REDIRECT_URI)
 		).andExpect(status().is(400))
 		.andExpect(content().string(containsString("code generated for another app")));
@@ -288,11 +297,22 @@ public class TestAuthCodeGrant extends BaseTest {
 	 */
 	@Test
 	public void scopePresentIfGrantedDifferentFromAsked() throws Exception {
+		// Same scopes
+		when(this.authCodeRepoMock.findOne(eq("AZERTY"))).thenReturn(new AuthCodeEntity() {{
+			setId("AZERTY");
+			setApplication(APP_NAME);
+			setClientId(APP_CLIENT_ID);
+			setExpires(timeSvcStub.currentTimeSeconds() + 10L);
+			setRedirectUri("http://acme.com/myApp");
+			setGrantedScopes(Arrays.asList("scope1", "scope2", "scope3"));
+			setScopes(Arrays.asList("scope1", "scope2", "scope3"));
+		}});
+		
 		// Granted scopes = Asked scopes => No scope attribute in response
 		MvcResult result = this.mockMvc.perform(
 				post("/token")
 				.param("grant_type", "authorization_code")
-				.param("code", AUTH_CODE_ID)
+				.param("code", "AZERTY")
 				.param("redirect_uri", APP_REDIRECT_URI)
 		).andExpect(status().is(200))
 		.andReturn();
@@ -302,21 +322,28 @@ public class TestAuthCodeGrant extends BaseTest {
 		assertThat(response.getScope(), nullValue());
 		
 		// Remove one scope from the granted set
-		this.code.setScopes(Arrays.asList("scope1", "scope2", "scope3"));
-		this.code.setGrantedScopes(Arrays.asList("scope1", "scope2"));
+		when(this.authCodeRepoMock.findOne(eq("AZERTY"))).thenReturn(new AuthCodeEntity() {{
+			setId("AZERTY");
+			setApplication(APP_NAME);
+			setClientId(APP_CLIENT_ID);
+			setExpires(timeSvcStub.currentTimeSeconds() + 10L);
+			setRedirectUri("http://acme.com/myApp");
+			setGrantedScopes(Arrays.asList("scope1", "scope3"));
+			setScopes(Arrays.asList("scope1", "scope2", "scope3"));
+		}});
 		
 		// Granted scopes < Asked Scopes => Scope attribute in response
 		result = this.mockMvc.perform(
 				post("/token")
 				.param("grant_type", "authorization_code")
-				.param("code", AUTH_CODE_ID)
+				.param("code", "AZERTY")
 				.param("redirect_uri", APP_REDIRECT_URI)
 		).andExpect(status().is(200))
 		.andReturn();
 		
 		json = result.getResponse().getContentAsString();
 		response = this.mapper.readValue(json, TokenResponse.class);
-		assertThat(response.getScope(), equalTo("scope1 scope2"));
+		assertThat(response.getScope(), equalTo("scope1 scope3"));
 	}
 	
 	/**
@@ -324,6 +351,14 @@ public class TestAuthCodeGrant extends BaseTest {
 	 */
 	@Test
 	public void publicClientTokensFromAuthCode() throws Exception {
+		when(this.authCodeRepoMock.findOne(eq("AZERTY"))).thenReturn(new AuthCodeEntity() {{
+			setId("AZERTY");
+			setApplication(APP_NAME);
+			setClientId(APP_CLIENT_ID);
+			setExpires(timeSvcStub.currentTimeSeconds() + 10L);
+			setRedirectUri("http://acme.com/myApp");
+		}});
+		
 		when(this.authCodeSvcMock.fromEntity(Mockito.any(AuthCodeEntity.class)))
 		.thenReturn("012345");
 		
@@ -331,7 +366,7 @@ public class TestAuthCodeGrant extends BaseTest {
 				post("/token")
 				.param("grant_type", "authorization_code")
 				.param("redirect_uri", APP_REDIRECT_URI)
-				.param("code", AUTH_CODE_ID)
+				.param("code", "AZERTY")
 		).andExpect(status().is(200))
 		.andExpect(content().contentType("application/json;charset=UTF-8"))
 		.andReturn();
@@ -340,7 +375,6 @@ public class TestAuthCodeGrant extends BaseTest {
 		
 		TokenResponse resp = this.mapper.readValue(json, TokenResponse.class);
 		assertThat(resp.getRefreshToken(), is(nullValue()));			// No refresh token
-		assertThat(resp.getDummyUser(), is(notNullValue()));
 		assertThat(resp.getScope(), nullValue());
 		assertThat(resp.getExpiresIn(), is(equalTo(36000L)));
 	}
@@ -352,6 +386,14 @@ public class TestAuthCodeGrant extends BaseTest {
 	public void undefinedClientTokensFromAuthCode() throws Exception {
 		normalApp.setClientType(null);
 		
+		when(this.authCodeRepoMock.findOne(eq("AZERTY"))).thenReturn(new AuthCodeEntity() {{
+			setId("AZERTY");
+			setApplication(APP_NAME);
+			setClientId(APP_CLIENT_ID);
+			setExpires(timeSvcStub.currentTimeSeconds() + 10L);
+			setRedirectUri("http://acme.com/myApp");
+		}});
+		
 		when(this.authCodeSvcMock.fromEntity(Mockito.any(AuthCodeEntity.class)))
 		.thenReturn("012345");
 		
@@ -359,7 +401,7 @@ public class TestAuthCodeGrant extends BaseTest {
 				post("/token")
 				.param("grant_type", "authorization_code")
 				.param("redirect_uri", APP_REDIRECT_URI)
-				.param("code", AUTH_CODE_ID)
+				.param("code", "AZERTY")
 		).andExpect(status().is(200))
 		.andExpect(content().contentType("application/json;charset=UTF-8"))
 		.andReturn();
@@ -368,7 +410,6 @@ public class TestAuthCodeGrant extends BaseTest {
 		
 		TokenResponse resp = this.mapper.readValue(json, TokenResponse.class);
 		assertThat(resp.getRefreshToken(), is(nullValue()));			// No refresh token
-		assertThat(resp.getDummyUser(), is(notNullValue()));
 		assertThat(resp.getScope(), nullValue());
 		assertThat(resp.getExpiresIn(), is(equalTo(36000L)));
 	}
@@ -380,6 +421,14 @@ public class TestAuthCodeGrant extends BaseTest {
 	public void confidentialClientTokensFromAuthCode() throws Exception {
 		normalApp.setClientType(AppServiceImpl.CLIENTTYPE_CONFIDENTIAL);
 		
+		when(this.authCodeRepoMock.findOne(eq("AZERTY"))).thenReturn(new AuthCodeEntity() {{
+			setId("AZERTY");
+			setApplication(APP_NAME);
+			setClientId(APP_CLIENT_ID);
+			setExpires(timeSvcStub.currentTimeSeconds() + 10L);
+			setRedirectUri("http://acme.com/myApp");
+		}});
+		
 		when(this.authCodeSvcMock.fromEntity(Mockito.any(AuthCodeEntity.class)))
 		.thenReturn("012345");
 		
@@ -387,7 +436,7 @@ public class TestAuthCodeGrant extends BaseTest {
 				post("/token")
 				.param("grant_type", "authorization_code")
 				.param("redirect_uri", APP_REDIRECT_URI)
-				.param("code", AUTH_CODE_ID)
+				.param("code", "AZERTY")
 		).andExpect(status().is(200))
 		.andExpect(content().contentType("application/json;charset=UTF-8"))
 		.andReturn();
@@ -396,7 +445,6 @@ public class TestAuthCodeGrant extends BaseTest {
 		
 		TokenResponse resp = this.mapper.readValue(json, TokenResponse.class);
 		assertThat(resp.getRefreshToken(), is(notNullValue()));			// Refresh token !
-		assertThat(resp.getDummyUser(), is(notNullValue()));
 		assertThat(resp.getScope(), nullValue());
 		assertThat(resp.getExpiresIn(), is(equalTo(36000L)));
 	}

@@ -1,6 +1,6 @@
 package com.github.lhervier.domino.oauth.server.testsuite.impl;
 
-public class ConflictExtContext {
+public class DummyContext {
 
 	private String name;
 

@@ -15,6 +15,31 @@ public class AuthCodeEntity {
 	private String id;
 	
 	/**
+	 * Name of the user
+	 */
+	private String fullName;
+	
+	/**
+	 * Common name of the user
+	 */
+	private String commonName;
+	
+	/**
+	 * Authentication type
+	 */
+	private String authType;
+	
+	/**
+	 * User roles
+	 */
+	private List<String> roles;
+	
+	/**
+	 * Database path
+	 */
+	private String databasePath;
+	
+	/**
 	 * Le champ lecteur qui contient le nom de l'application
 	 */
 	private String application;
@@ -179,5 +204,45 @@ public class AuthCodeEntity {
 	 */
 	public void setContextObjects(Map<String, String> contextObjects) {
 		this.contextObjects = contextObjects;
+	}
+
+	public String getFullName() {
+		return fullName;
+	}
+
+	public void setFullName(String fullName) {
+		this.fullName = fullName;
+	}
+
+	public String getCommonName() {
+		return commonName;
+	}
+
+	public void setCommonName(String commonName) {
+		this.commonName = commonName;
+	}
+
+	public String getAuthType() {
+		return authType;
+	}
+
+	public void setAuthType(String authType) {
+		this.authType = authType;
+	}
+
+	public List<String> getRoles() {
+		return roles;
+	}
+
+	public void setRoles(List<String> roles) {
+		this.roles = roles;
+	}
+
+	public String getDatabasePath() {
+		return databasePath;
+	}
+
+	public void setDatabasePath(String databasePath) {
+		this.databasePath = databasePath;
 	}
 }

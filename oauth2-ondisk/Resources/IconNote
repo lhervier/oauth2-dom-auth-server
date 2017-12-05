@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='utf-8'?>
 <note default='true' class='icon' xmlns='http://www.lotus.com/dxl' version='9.0'
- maintenanceversion='1.8' replicaid='C125811C003E1A7C'>
-<noteinfo noteid='11a' unid='4FF2DE50B9AE561BC125811C003E1A7F' sequence='3'>
+ maintenanceversion='1.8' replicaid='C125812300595872'>
+<noteinfo noteid='122' unid='4FF2DE50B9AE561BC125811C003E1A7F' sequence='29'>
 <created><datetime dst='true'>20170510T131820,15+02</datetime></created>
-<modified><datetime dst='true'>20170510T131820,22+02</datetime></modified>
-<revised><datetime dst='true'>20170510T131820,21+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20170510T131820,22+02</datetime></lastaccessed>
-<addedtofile><datetime dst='true'>20170510T131820,18+02</datetime></addedtofile></noteinfo>
+<modified><datetime>20171205T144239,09+01</datetime></modified>
+<revised><datetime>20171205T144239,08+01</datetime></revised>
+<lastaccessed><datetime>20171205T144239,09+01</datetime></lastaccessed>
+<addedtofile><datetime dst='true'>20170517T181553,56+02</datetime></addedtofile></noteinfo>
 <updatedby><name>CN=admin admin/O=AFER</name></updatedby>
 <item name='IconBitmap' summary='true'>
 <rawitemdata type='6'>
@@ -23,8 +23,9 @@ d30fAAAAAPHXd33Xd3d913d9HwAAAADx13d913d3fdd3fR8AAAAA8R3d0dd3d30d3dEfAAAAAA8R
 EREdd3fRERER8AAAAAAA////Ed3dEf///wAAAAAAAAAAAPERER8AAAAAAAAAAAAAAAAP///wAAAA
 AAAAAAACICABAAD/////+A4DgA==
 </rawitemdata></item>
-<item name='$Flags'><text>J</text></item>
 <item name='$Daos'><text>0</text></item>
 <item name='$LargeSummary'><text>0</text></item>
-<item name='$TITLE'><text>oauth2</text></item></note>
+<item name='$TITLE'><text>oauth2</text></item>
+<item name='$Flags'><text>J</text></item>
+<item name='$FlagsNoRefresh'><text>rv</text></item></note>
 

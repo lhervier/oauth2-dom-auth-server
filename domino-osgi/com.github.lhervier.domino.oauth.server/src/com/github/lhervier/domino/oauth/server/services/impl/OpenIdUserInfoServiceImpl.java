@@ -5,10 +5,10 @@ import org.springframework.stereotype.Service;
 
 import com.github.lhervier.domino.oauth.server.NotesPrincipal;
 import com.github.lhervier.domino.oauth.server.ex.NotAuthorizedException;
-import com.github.lhervier.domino.oauth.server.ext.IScopeGranter;
-import com.github.lhervier.domino.oauth.server.ext.openid.IdToken;
 import com.github.lhervier.domino.oauth.server.ext.openid.OpenIDExt;
-import com.github.lhervier.domino.oauth.server.ext.openid.OpenIdContext;
+import com.github.lhervier.domino.oauth.server.ext.openid.IdToken;
+import com.github.lhervier.domino.oauth.server.model.Application;
+import com.github.lhervier.domino.oauth.server.services.AppService;
 import com.github.lhervier.domino.oauth.server.services.OpenIdUserInfoService;
 
 /**
@@ -19,6 +19,12 @@ import com.github.lhervier.domino.oauth.server.services.OpenIdUserInfoService;
 public class OpenIdUserInfoServiceImpl implements OpenIdUserInfoService {
 
 	/**
+	 * The app repository
+	 */
+	@Autowired
+	private AppService appSvc;
+	
+	/**
 	 * The OpenId extension
 	 */
 	@Autowired
@@ -28,19 +34,7 @@ public class OpenIdUserInfoServiceImpl implements OpenIdUserInfoService {
 	 * @see com.github.lhervier.domino.oauth.server.services.OpenIdUserInfoService#userInfo(com.github.lhervier.domino.oauth.server.NotesPrincipal)
 	 */
 	public IdToken userInfo(NotesPrincipal user) throws NotAuthorizedException {
-		// Run through authorize to get the context
-		OpenIdContext ctx = this.openIdExt.initContext(
-				user, 
-				new IScopeGranter() {
-					@Override
-					public void grant(String scope) {
-					}
-				}, 
-				user.getClientId(),
-				user.getScopes()
-		);
-		
-		// Now, generate the token
-		return this.openIdExt.createIdToken(ctx, user.getScopes());
+		Application app = this.appSvc.getApplicationFromClientId(user.getClientId());
+		return this.openIdExt.createIdToken(user, app, user.getScopes());
 	}
 }

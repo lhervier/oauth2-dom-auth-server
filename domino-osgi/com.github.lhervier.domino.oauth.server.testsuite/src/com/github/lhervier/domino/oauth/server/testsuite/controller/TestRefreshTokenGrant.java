@@ -24,12 +24,12 @@ import org.springframework.test.web.servlet.MvcResult;
 import com.github.lhervier.domino.oauth.server.NotesPrincipal.AuthType;
 import com.github.lhervier.domino.oauth.server.entity.ApplicationEntity;
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
-import com.github.lhervier.domino.oauth.server.ext.core.CodeExt;
-import com.github.lhervier.domino.oauth.server.ext.core.CoreContext;
 import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
 import com.github.lhervier.domino.oauth.server.services.AuthCodeService;
 import com.github.lhervier.domino.oauth.server.testsuite.BaseTest;
 import com.github.lhervier.domino.oauth.server.testsuite.controller.TestAuthCodeGrant.TokenResponse;
+import com.github.lhervier.domino.oauth.server.testsuite.impl.DummyExtWithGrant;
+import com.github.lhervier.domino.oauth.server.testsuite.impl.DummyExtWithGrantContext;
 import com.github.lhervier.domino.oauth.server.testsuite.impl.NotesPrincipalTestImpl;
 
 @SuppressWarnings("serial")
@@ -119,19 +119,15 @@ public class TestRefreshTokenGrant extends BaseTest {
 	public void expiredRefreshToken() throws Exception {
 		when(authCodeSvcMock.toEntity(Mockito.eq("AZERTY"))).thenReturn(new AuthCodeEntity() {{
 			setId("012345");
-			setApplication(APP_NAME);
-			setClientId(APP_CLIENT_ID);
 			setExpires(timeSvcStub.currentTimeSeconds() - 10L);		// Expired 10s ago
 			setScopes(new ArrayList<String>());
 			setGrantedScopes(new ArrayList<String>());
 			setContextClasses(new HashMap<String, String>() {{
-				put(CodeExt.RESPONSE_TYPE, CoreContext.class.getName());
+				put(DummyExtWithGrant.DUMMY_RESPONSE_TYPE, DummyExtWithGrantContext.class.getName());
 			}});
 			setContextObjects(new HashMap<String, String>() {{
-				put(CodeExt.RESPONSE_TYPE, mapper.writeValueAsString(new CoreContext() {{
-					setAud(APP_CLIENT_ID);
-					setSub("CN=Lionel/O=USER");
-					setIss(coreIss);
+				put(DummyExtWithGrant.DUMMY_RESPONSE_TYPE, mapper.writeValueAsString(new DummyExtWithGrantContext() {{
+					setName("CN=Lionel/O=USER");
 				}}));
 			}});
 		}});
@@ -151,19 +147,16 @@ public class TestRefreshTokenGrant extends BaseTest {
 	public void onlyAllowSubsetOfGrantedScopes() throws Exception {
 		AuthCodeEntity code = new AuthCodeEntity() {{
 			setId("012345");
-			setApplication(APP_NAME);
-			setClientId(APP_CLIENT_ID);
+			setClientId("1234");
 			setExpires(timeSvcStub.currentTimeSeconds() + 10L);
 			setScopes(Arrays.asList("scope1", "scope2", "scope3"));
 			setGrantedScopes(Arrays.asList("scope1", "scope2"));
 			setContextClasses(new HashMap<String, String>() {{
-				put(CodeExt.RESPONSE_TYPE, CoreContext.class.getName());
+				put(DummyExtWithGrant.DUMMY_RESPONSE_TYPE, DummyExtWithGrantContext.class.getName());
 			}});
 			setContextObjects(new HashMap<String, String>() {{
-				put(CodeExt.RESPONSE_TYPE, mapper.writeValueAsString(new CoreContext() {{
-					setAud(APP_CLIENT_ID);
-					setSub("CN=Lionel/O=USER");
-					setIss(coreIss);
+				put(DummyExtWithGrant.DUMMY_RESPONSE_TYPE, mapper.writeValueAsString(new DummyExtWithGrantContext() {{
+					setName("CN=Lionel/O=USER");
 				}}));
 			}});
 		}};
@@ -203,13 +196,11 @@ public class TestRefreshTokenGrant extends BaseTest {
 			setScopes(Arrays.asList("scope1", "scope2"));
 			setGrantedScopes(Arrays.asList("scope1"));
 			setContextClasses(new HashMap<String, String>() {{
-				put(CodeExt.RESPONSE_TYPE, CoreContext.class.getName());
+				put(DummyExtWithGrant.DUMMY_RESPONSE_TYPE, DummyExtWithGrantContext.class.getName());
 			}});
 			setContextObjects(new HashMap<String, String>() {{
-				put(CodeExt.RESPONSE_TYPE, mapper.writeValueAsString(new CoreContext() {{
-					setAud(APP_CLIENT_ID);
-					setSub("CN=Lionel/O=USER");
-					setIss(coreIss);
+				put(DummyExtWithGrant.DUMMY_RESPONSE_TYPE, mapper.writeValueAsString(new DummyExtWithGrantContext() {{
+					setName("CN=Lionel/O=USER");
 				}}));
 			}});
 		}});
@@ -241,13 +232,11 @@ public class TestRefreshTokenGrant extends BaseTest {
 			setScopes(new ArrayList<String>());
 			setGrantedScopes(new ArrayList<String>());
 			setContextClasses(new HashMap<String, String>() {{
-				put(CodeExt.RESPONSE_TYPE, CoreContext.class.getName());
+				put(DummyExtWithGrant.DUMMY_RESPONSE_TYPE, DummyExtWithGrantContext.class.getName());
 			}});
 			setContextObjects(new HashMap<String, String>() {{
-				put(CodeExt.RESPONSE_TYPE, mapper.writeValueAsString(new CoreContext() {{
-					setAud("5678");
-					setSub("CN=Lionel/O=USER");
-					setIss(coreIss);
+				put(DummyExtWithGrant.DUMMY_RESPONSE_TYPE, mapper.writeValueAsString(new DummyExtWithGrantContext() {{
+					setName("CN=Lionel/O=USER");
 				}}));
 			}});
 		}});

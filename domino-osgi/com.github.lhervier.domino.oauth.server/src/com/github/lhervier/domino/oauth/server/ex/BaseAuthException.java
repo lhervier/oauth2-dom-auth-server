@@ -32,6 +32,7 @@ public abstract class BaseAuthException extends Exception {
 		super(message);
 		this.redirectUri = redirectUri;
 		this.error = error;
+		this.error.setErrorDescription(message);
 	}
 	
 	/**

@@ -6,27 +6,27 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.github.lhervier.domino.oauth.server.AuthCodeNotesPrincipal;
+import com.github.lhervier.domino.oauth.server.AuthorizerImpl;
+import com.github.lhervier.domino.oauth.server.NotesPrincipal;
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
 import com.github.lhervier.domino.oauth.server.ex.BaseGrantException;
 import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
 import com.github.lhervier.domino.oauth.server.ex.grant.GrantInvalidClientException;
 import com.github.lhervier.domino.oauth.server.ex.grant.GrantInvalidGrantException;
 import com.github.lhervier.domino.oauth.server.ex.grant.GrantInvalidRequestException;
-import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
+import com.github.lhervier.domino.oauth.server.ext.IOAuthAuthorizeExtension;
 import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.model.ClientType;
 import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
-import com.github.lhervier.domino.oauth.server.repo.SecretRepository;
 import com.github.lhervier.domino.oauth.server.services.AuthCodeService;
 import com.github.lhervier.domino.oauth.server.services.ExtensionService;
 import com.github.lhervier.domino.oauth.server.services.GrantService;
 import com.github.lhervier.domino.oauth.server.services.TimeService;
-import com.github.lhervier.domino.oauth.server.utils.PropertyAdderImpl;
 import com.github.lhervier.domino.oauth.server.utils.Utils;
 
 @Service("authorization_code")
@@ -37,12 +37,6 @@ public class AuthCodeGrantServiceImpl implements GrantService {
 	 */
 	@Autowired
 	private AuthCodeRepository authCodeRepo;
-	
-	/**
-	 * Secret repository
-	 */
-	@Autowired
-	private SecretRepository secretRespo;
 	
 	/**
 	 * Time service
@@ -63,16 +57,16 @@ public class AuthCodeGrantServiceImpl implements GrantService {
 	private ExtensionService extSvc;
 	
 	/**
-	 * Jackson object mapper
-	 */
-	@Autowired
-	private ObjectMapper mapper;
-	
-	/**
 	 * Request
 	 */
 	@Autowired
 	private HttpServletRequest request;
+	
+	/**
+	 * The authorizer
+	 */
+	@Autowired
+	private AuthorizerImpl authorizer;
 	
 	/**
 	 * The refresh token life time
@@ -91,7 +85,6 @@ public class AuthCodeGrantServiceImpl implements GrantService {
 				this.request.getParameter("code")
 		);
 	}
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Map<String, Object> createGrant(Application app, String redirectUri, String code) throws BaseGrantException, ServerErrorException {
 		// Get URI from app if it only have one
 		if( StringUtils.isEmpty(redirectUri) )
@@ -109,7 +102,7 @@ public class AuthCodeGrantServiceImpl implements GrantService {
 		// Process authorization code
 		try {
 			// Get the authorization code
-			AuthCodeEntity authCode = this.authCodeRepo.findOne(code);
+			final AuthCodeEntity authCode = this.authCodeRepo.findOne(code);
 			if( authCode == null )
 				throw new GrantInvalidGrantException("invalid auth code");
 			
@@ -125,24 +118,32 @@ public class AuthCodeGrantServiceImpl implements GrantService {
 			if( !redirectUri.equals(authCode.getRedirectUri()) )
 				throw new GrantInvalidGrantException("invalid redirect_uri : It is not the same as the one stored in the authorization code");
 			
+			// Extract the user from the auth code
+			NotesPrincipal user = new AuthCodeNotesPrincipal(authCode);
+			
 			// Make each implementation add its own properties
 			// They can change their context.
 			Map<String, Object> resp = new HashMap<String, Object>();
 			for( String responseType : this.extSvc.getResponseTypes() ) {
-				IOAuthExtension ext = this.extSvc.getExtension(responseType);
+				IOAuthAuthorizeExtension ext = this.extSvc.getExtension(responseType);
 				Object context = Utils.getContext(authCode, responseType);
 				if( context == null )
 					continue;
+				
 				ext.token(
+						user,
+						app,
 						context, 
-						new PropertyAdderImpl(
-								resp, 
-								this.secretRespo,
-								this.mapper
-						),
-						authCode
+						authCode.getGrantedScopes(),
+						this.authorizer
 				);
+				if( this.authorizer.isPropertiesConflict() )
+					throw new ServerErrorException("Extension conflicts on setting properties");
 			}
+			
+			// Add properties to response
+			resp.putAll(this.authorizer.getSignedProperties());
+			resp.putAll(this.authorizer.getProperties());
 			
 			// Generate the refresh token only for confidential clients
 			if( ClientType.CONFIDENTIAL == app.getClientType() ) {
@@ -153,9 +154,6 @@ public class AuthCodeGrantServiceImpl implements GrantService {
 			
 			// expiration date
 			resp.put("expires_in", this.refreshTokenLifetime);
-			
-			// token type
-			resp.put("token_type", "Bearer");
 			
 			// scopes only if they are different from the one asked when calling authorize end point
 			if( !authCode.getGrantedScopes().containsAll(authCode.getScopes()) )

@@ -1,5 +1,6 @@
 package com.github.lhervier.domino.oauth.server.ext.openid;
 
+import java.util.Arrays;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -9,23 +10,22 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.github.lhervier.domino.oauth.server.NotesPrincipal;
-import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
 import com.github.lhervier.domino.oauth.server.entity.PersonEntity;
-import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
+import com.github.lhervier.domino.oauth.server.ext.IAuthorizer;
+import com.github.lhervier.domino.oauth.server.ext.IOAuthAuthorizeExtension;
 import com.github.lhervier.domino.oauth.server.ext.IPropertyAdder;
-import com.github.lhervier.domino.oauth.server.ext.IScopeGranter;
+import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.repo.PersonRepository;
 import com.github.lhervier.domino.oauth.server.services.TimeService;
-import com.github.lhervier.domino.oauth.server.utils.ReflectionUtils;
 
 /**
  * Implémentation de OpenID par dessus OAUth2
  * @author Lionel HERVIER
  */
 @Component(OpenIDExt.RESPONSE_TYPE)
-public class OpenIDExt implements IOAuthExtension<OpenIdContext> {
+public class OpenIDExt implements IOAuthAuthorizeExtension {
 
-	public static final String RESPONSE_TYPE = "openid";
+	public static final String RESPONSE_TYPE = "id_token";
 	
 	public final static String PARAM_NONCE = "nonce";
 	
@@ -68,32 +68,29 @@ public class OpenIDExt implements IOAuthExtension<OpenIdContext> {
 	private TimeService timeSvc;
 	
 	/**
-	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#getContextClass()
+	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthAuthorizeExtension#getAuthorizedScopes()
 	 */
 	@Override
-	public Class<OpenIdContext> getContextClass() {
-		return OpenIdContext.class;
+	public List<String> getAuthorizedScopes() {
+		return Arrays.asList(SCOPE_ADDRESS, SCOPE_EMAIL, SCOPE_OPENID, SCOPE_PHONE, SCOPE_PROFILE);
 	}
 
 	/**
-	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#initContext(NotesPrincipal, IScopeGranter, String, List)
+	 * Create an Id token
 	 */
-	@Override
-	public OpenIdContext initContext(
-			NotesPrincipal user,
-			IScopeGranter granter, 
-			String clientId, 
+	public IdToken createIdToken(
+			NotesPrincipal user, 
+			Application app,
 			List<String> scopes) {
-		// On ne réagit que si on nous demande le scope "openid"
-		if( !scopes.contains(SCOPE_OPENID) )
-			return null;
-		granter.grant(SCOPE_OPENID);
+		PersonEntity person = this.personRepo.findOne(user.getName());
+		if( person == null )
+			throw new RuntimeException("OpenID: User '" + user.getName() + "' not found in person repo. Unable to authorize.");
 		
-		// Les attributs par défaut
-		OpenIdContext ctx = new OpenIdContext();
+		IdToken ctx = new IdToken();
+		ctx.setIat(this.timeSvc.currentTimeSeconds());
 		ctx.setIss(this.iss);
 		ctx.setSub(user.getName());
-		ctx.setAud(clientId);
+		ctx.setAud(app.getClientId());
 		ctx.setAcr(null);				// TODO: acr non généré
 		ctx.setAmr(null);				// TODO: amr non généré
 		ctx.setAzp(null);				// TODO: azp non généré
@@ -103,11 +100,7 @@ public class OpenIDExt implements IOAuthExtension<OpenIdContext> {
 		else
 			ctx.setNonce(null);
 		
-		PersonEntity person = this.personRepo.findOne(user.getName());
-		
 		if( scopes.contains(SCOPE_PROFILE) ) {
-			granter.grant(SCOPE_PROFILE);
-			
 			ctx.setName(person.getFullNames().get(0));
 			ctx.setGivenName(person.getFirstName());
 			ctx.setFamilyName(person.getLastName());
@@ -127,109 +120,52 @@ public class OpenIDExt implements IOAuthExtension<OpenIdContext> {
 		}
 		
 		if( scopes.contains(SCOPE_EMAIL) ) {
-			granter.grant(SCOPE_EMAIL);
 			ctx.setEmail(person.getInternetAddress());
 			ctx.setEmailVerified(null);
 		}
 		
 		if( scopes.contains(SCOPE_ADDRESS) ) {
-			granter.grant(SCOPE_ADDRESS);
 			// FIXME: Extract street address.
 			ctx.setAddress(null);
 		}
 		
 		if( scopes.contains(SCOPE_PHONE) ) {
-			granter.grant(SCOPE_PHONE);
 			ctx.setPhoneNumber(person.getOfficePhoneNumber());
 			ctx.setPhoneNumberVerified(null);
 		}
 		
 		return ctx;
 	}
-
+	
 	/**
-	 * Returns an Id token
+	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthAuthorizeExtension#authorize(com.github.lhervier.domino.oauth.server.NotesPrincipal, com.github.lhervier.domino.oauth.server.model.Application, java.util.List, com.github.lhervier.domino.oauth.server.ext.IAuthorizer)
 	 */
-	public IdToken createIdToken(OpenIdContext context, List<String> scopes) {
-		if( !scopes.contains(SCOPE_OPENID) )
-			return null;
-		
-		IdToken idToken = new IdToken();
-		idToken.setIat(this.timeSvc.currentTimeSeconds());
-		
-		// Main properties
-		ReflectionUtils.copyProperties(
-				context, 
-				idToken, 
-				new String[] {"iss", "sub", "aud", "exp", "acr", "amr", "azp", "authTime", "nonce"}
-		);
-		
-		// Profile properties
-		if( scopes.contains(SCOPE_PROFILE) ) {
-			ReflectionUtils.copyProperties(
-					context, 
-					idToken, 
-					new String[] {"name", "familyName", "givenName", "middleName", "nickname", "preferedUsername", "profile", "picture", "website", "gender", "birthdate", "zoneinfo", "locale", "updatedAt"}
-			);
+	public void authorize(
+			NotesPrincipal user,
+			Application app,
+			List<String> askedScopes,
+			IAuthorizer authorizer) {
+		if( askedScopes.contains(SCOPE_OPENID) ) {
+			IdToken idToken = this.createIdToken(user, app, askedScopes);
+			authorizer.addSignedProperty(TOKEN_RESPONSE_ATTR, idToken, this.signKey);
+			authorizer.setContext(idToken);
+			
+			// authorizer.saveAuthCode(We don't care)		Let other extensions decide if the auth code must be saved
 		}
-		
-		// Email properties
-		if( scopes.contains(SCOPE_EMAIL) ) {
-			ReflectionUtils.copyProperties(
-					context, 
-					idToken, 
-					new String[] {"email", "emailVerified"}
-			);
-		}
-		
-		// Address properties
-		if( scopes.contains(SCOPE_ADDRESS) ) {
-			ReflectionUtils.copyProperties(
-					context, 
-					idToken, 
-					new String[] {"address"}
-			);
-		}
-		
-		// Phone properties
-		if( scopes.contains(SCOPE_PHONE) ) {
-			ReflectionUtils.copyProperties(
-					context, 
-					idToken, 
-					new String[] {"phoneNumber", "phoneNumberVerified"}
-			);
-		}
-		
-		return idToken;
 	}
 	
 	/**
-	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#authorize(Object, AuthCodeEntity, IPropertyAdder)
-	 */
-	@Override
-	public void authorize(
-			OpenIdContext ctx,  
-			AuthCodeEntity authCode, 
-			IPropertyAdder adder) {
-		this.token(
-				ctx, 
-				adder, 
-				authCode
-		);
-	}
-
-	/**
-	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#token(Object, IPropertyAdder, List)
+	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthTokenExtension#token(Object, Application, List, IPropertyAdder)
 	 */
 	@Override
 	public void token(
-			OpenIdContext context, 
-			IPropertyAdder adder,
-			AuthCodeEntity authCode) {
-		IdToken idToken = this.createIdToken(context, authCode.getGrantedScopes());
-		if( idToken == null )
-			return;
-		
-		adder.addSignedProperty(TOKEN_RESPONSE_ATTR, idToken, this.signKey);
+			NotesPrincipal user,
+			Application app,
+			Object context, 
+			List<String> askedScopes,
+			IPropertyAdder adder) {
+		IdToken idToken = this.createIdToken(user, app, askedScopes);
+		if( idToken != null )
+			adder.addSignedProperty(TOKEN_RESPONSE_ATTR, idToken, this.signKey);
 	}
 }

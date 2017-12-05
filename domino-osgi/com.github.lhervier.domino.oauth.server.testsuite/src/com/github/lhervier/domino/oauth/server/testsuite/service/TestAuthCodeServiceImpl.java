@@ -14,10 +14,10 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
-import com.github.lhervier.domino.oauth.server.ext.core.CodeExt;
-import com.github.lhervier.domino.oauth.server.ext.core.CoreContext;
 import com.github.lhervier.domino.oauth.server.services.impl.AuthCodeServiceImpl;
 import com.github.lhervier.domino.oauth.server.testsuite.BaseTest;
+import com.github.lhervier.domino.oauth.server.testsuite.impl.DummyExtWithGrant;
+import com.github.lhervier.domino.oauth.server.testsuite.impl.DummyExtWithGrantContext;
 import com.github.lhervier.domino.oauth.server.testsuite.impl.TimeServiceTestImpl;
 
 @SuppressWarnings("serial")
@@ -56,13 +56,11 @@ public class TestAuthCodeServiceImpl extends BaseTest {
 			setClientId("1234");
 			setExpires(timeSvcStub.currentTimeSeconds() + refreshTokenLifetime);
 			setContextClasses(new HashMap<String, String>() {{
-				put(CodeExt.RESPONSE_TYPE, CoreContext.class.getName());
+				put(DummyExtWithGrant.DUMMY_RESPONSE_TYPE, DummyExtWithGrantContext.class.getName());
 			}});
 			setContextObjects(new HashMap<String, String>() {{
-				put(CodeExt.RESPONSE_TYPE, mapper.writeValueAsString(new CoreContext() {{
-					setAud("1234");
-					setIss(coreIss);
-					setSub("CN=Lionel/O=USER");
+				put(DummyExtWithGrant.DUMMY_RESPONSE_TYPE, mapper.writeValueAsString(new DummyExtWithGrantContext() {{
+					setName("CN=Lionel/O=USER");
 				}}));
 			}});
 		}};
@@ -89,13 +87,11 @@ public class TestAuthCodeServiceImpl extends BaseTest {
 			setRedirectUri("http://acme.com/myApp");
 			setExpires(timeSvcStub.currentTimeSeconds() + refreshTokenLifetime);
 			setContextClasses(new HashMap<String, String>() {{
-				put(CodeExt.RESPONSE_TYPE, CoreContext.class.getName());
+				put(DummyExtWithGrant.DUMMY_RESPONSE_TYPE, DummyExtWithGrantContext.class.getName());
 			}});
 			setContextObjects(new HashMap<String, String>() {{
-				put(CodeExt.RESPONSE_TYPE, mapper.writeValueAsString(new CoreContext() {{
-					setAud("1234");
-					setIss(coreIss);
-					setSub("CN=Lionel/O=USER");
+				put(DummyExtWithGrant.DUMMY_RESPONSE_TYPE, mapper.writeValueAsString(new DummyExtWithGrantContext() {{
+					setName("CN=Lionel/O=USER");
 				}}));
 			}});
 		}};
@@ -109,17 +105,15 @@ public class TestAuthCodeServiceImpl extends BaseTest {
 		assertThat(authCode.getRedirectUri(), equalTo("http://acme.com/myApp"));
 		assertThat(authCode.getExpires(), equalTo(timeSvcStub.currentTimeSeconds() + refreshTokenLifetime));
 		
-		assertThat(authCode.getContextClasses(), hasEntry(CodeExt.RESPONSE_TYPE, CoreContext.class.getName()));
+		assertThat(authCode.getContextClasses(), hasEntry(DummyExtWithGrant.DUMMY_RESPONSE_TYPE, DummyExtWithGrantContext.class.getName()));
 		assertThat(authCode.getContextClasses().size(), is(1));
 		
 		assertThat(authCode.getContextObjects().size(), is(1));
-		assertThat(authCode.getContextObjects(), IsMapContaining.hasKey(CodeExt.RESPONSE_TYPE));
+		assertThat(authCode.getContextObjects(), IsMapContaining.hasKey(DummyExtWithGrant.DUMMY_RESPONSE_TYPE));
 		
-		String json = authCode.getContextObjects().get(CodeExt.RESPONSE_TYPE);
-		CoreContext ctx = this.mapper.readValue(json, CoreContext.class);
+		String json = authCode.getContextObjects().get(DummyExtWithGrant.DUMMY_RESPONSE_TYPE);
+		DummyExtWithGrantContext ctx = this.mapper.readValue(json, DummyExtWithGrantContext.class);
 		
-		assertThat(ctx.getAud(), equalTo("1234"));
-		assertThat(ctx.getSub(), equalTo("CN=Lionel/O=USER"));
-		assertThat(ctx.getIss(), equalTo(this.coreIss));
+		assertThat(ctx.getName(), equalTo("CN=Lionel/O=USER"));
 	}
 }

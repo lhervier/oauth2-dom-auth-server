@@ -8,29 +8,27 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.lang.StringUtils;
-import org.codehaus.jackson.JsonGenerationException;
-import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.github.lhervier.domino.oauth.server.AuthorizerImpl;
 import com.github.lhervier.domino.oauth.server.NotesPrincipal;
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
 import com.github.lhervier.domino.oauth.server.ex.BaseAuthException;
 import com.github.lhervier.domino.oauth.server.ex.InvalidUriException;
 import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
 import com.github.lhervier.domino.oauth.server.ex.authorize.AuthInvalidRequestException;
+import com.github.lhervier.domino.oauth.server.ex.authorize.AuthServerErrorException;
 import com.github.lhervier.domino.oauth.server.ex.authorize.AuthUnsupportedResponseTypeException;
-import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
-import com.github.lhervier.domino.oauth.server.ext.IScopeGranter;
+import com.github.lhervier.domino.oauth.server.ext.IOAuthAuthorizeExtension;
 import com.github.lhervier.domino.oauth.server.model.Application;
-import com.github.lhervier.domino.oauth.server.repo.SecretRepository;
+import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
 import com.github.lhervier.domino.oauth.server.services.AppService;
 import com.github.lhervier.domino.oauth.server.services.AuthorizeService;
 import com.github.lhervier.domino.oauth.server.services.ExtensionService;
 import com.github.lhervier.domino.oauth.server.services.TimeService;
-import com.github.lhervier.domino.oauth.server.utils.PropertyAdderImpl;
 import com.github.lhervier.domino.oauth.server.utils.Utils;
 
 /**
@@ -40,6 +38,12 @@ import com.github.lhervier.domino.oauth.server.utils.Utils;
 @Service
 public class AuthorizeServiceImpl implements AuthorizeService {
 
+	/**
+	 * Auth code repository
+	 */
+	@Autowired
+	private AuthCodeRepository authCodeRepo;
+	
 	/**
 	 * To access applications
 	 */
@@ -59,12 +63,6 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 	private ExtensionService extSvc;
 	
 	/**
-	 * The secret repository
-	 */
-	@Autowired
-	private SecretRepository secretRepo;
-	
-	/**
 	 * Authorization codes life time
 	 */
 	@Value("${oauth2.server.authCodeLifetime}")
@@ -75,6 +73,12 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 	 */
 	@Autowired
 	private ObjectMapper mapper;
+	
+	/**
+	 * The authorizer
+	 */
+	@Autowired
+	private AuthorizerImpl authorizer;
 	
 	// ========================================================================================================
 	
@@ -117,10 +121,6 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 		if( !this.extSvc.getResponseTypes().containsAll(responseTypes) )
 			throw new AuthUnsupportedResponseTypeException("response_type is invalid", redirectUri);
 		
-		// Fragment not allowed in redirect uri if code response type
-		if( responseTypes.contains("code") && redirectUri.indexOf('#') != -1 )
-			throw new InvalidUriException("invalid redirect_uri : Auth code flow not allowed when a fragment is present in URI");
-		
 		// Extract the scopes
 		List<String> scopes = new ArrayList<String>();
 		if( !StringUtils.isEmpty(scope) ) {
@@ -136,9 +136,17 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 			
 			authCode = new AuthCodeEntity();
 			authCode.setId(id);
+			
+			authCode.setFullName(user.getName());
+			authCode.setCommonName(user.getCommon());
+			authCode.setRoles(user.getRoles());
+			authCode.setAuthType(user.getAuthType().toString());
+			authCode.setDatabasePath(user.getCurrentDatabasePath());
+			
 			authCode.setApplication(app.getFullName());
 			authCode.setClientId(app.getClientId());
 			authCode.setRedirectUri(redirectUri);
+			
 			authCode.setExpires(this.timeSvc.currentTimeSeconds() + this.authCodeLifeTime);
 			authCode.setContextClasses(new HashMap<String, String>());
 			authCode.setContextObjects(new HashMap<String, String>());
@@ -146,20 +154,71 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 			// Define scopes
 			authCode.setScopes(scopes);
 			
-			// Update authorized scopes and initialize contexts
-			this.initializeContexts(user, authCode, app, responseTypes);
+			// Get granted scopes
+			authCode.setGrantedScopes(new ArrayList<String>());
+			for( String respType : responseTypes ) {
+				IOAuthAuthorizeExtension ext = this.extSvc.getExtension(respType);
+				for( String s : ext.getAuthorizedScopes() ) {
+					if( scopes.contains(s) && !authCode.getGrantedScopes().contains(s) )
+						authCode.getGrantedScopes().add(s);
+				}
+			}
 			
-			// Run the grants
-			Map<String, Object> params = this.runGrants(authCode, responseTypes);
+			// Run extensions
+			for( String respType : responseTypes ) {
+				IOAuthAuthorizeExtension ext = this.extSvc.getExtension(respType);
+				
+				this.authorizer.setContext(null);
+				ext.authorize(
+						user, 
+						app, 
+						authCode.getGrantedScopes(), 
+						this.authorizer
+				);
+				if( this.authorizer.getContext() == null )
+					continue;
+				
+				authCode.getContextClasses().put(respType, this.authorizer.getContext().getClass().getName());
+				authCode.getContextObjects().put(respType, this.mapper.writeValueAsString(this.authorizer.getContext()));
+			}
 			
-			// Add the state
+			// Should we save the authorization code ?
+			boolean saveAuthCode;
+			if( this.authorizer.isSaveAuthCode() == null )
+				saveAuthCode = false;
+			else if( this.authorizer.isSaveAuthCode() )
+				saveAuthCode = true;
+			else
+				saveAuthCode = false;
+			
+			// Fragment not allowed in redirect uri if auth code is to be propagated (access to token end point needed)
+			if( saveAuthCode && redirectUri.indexOf('#') != -1 )
+				throw new InvalidUriException("invalid redirect_uri : Auth code flow not allowed when a fragment is present in URI");
+			
+			// Check if we have a property conflict between extensions
+			if( this.authorizer.isSaveAuthConflict() )
+				throw new AuthServerErrorException("response_type conflict on grant_type: Extension conflicts on saving the authorization code", redirectUri);
+			if( this.authorizer.isPropertiesConflict() )
+				throw new AuthServerErrorException("response_type conflict on properties: Extension conflicts on setting properties", redirectUri);
+			
+			// Add the properties
+			Map<String, String> params = new HashMap<String, String>();
+			params.putAll(this.authorizer.getSignedProperties());
+			for( Entry<String, Object> entry : this.authorizer.getProperties().entrySet() )
+				params.put(entry.getKey(), entry.getValue().toString());
 			params.put("state", state);		// May be null
+			
+			// Save auth Code if needed
+			if( saveAuthCode ) {
+				this.authCodeRepo.save(authCode);
+				params.put("code", authCode.getId());
+			}
 			
 			// Compute the query string
 			StringBuffer sbRedirect = new StringBuffer();
 			sbRedirect.append(redirectUri);
 			char sep;
-			if( responseTypes.contains("code") ) {
+			if( saveAuthCode ) {
 				if( redirectUri.indexOf('?') == -1 )
 					sep = '?';
 				else
@@ -170,11 +229,11 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 				else
 					sep = '&';
 			}
-			for( Entry<String, Object> entry : params.entrySet() ) {
+			for( Entry<String, String> entry : params.entrySet() ) {
 				if( entry.getValue() == null )
 					continue;
 				String key = Utils.urlEncode(entry.getKey());
-				String value = Utils.urlEncode(entry.getValue().toString());
+				String value = Utils.urlEncode(entry.getValue());
 				sbRedirect.append(sep).append(key).append('=').append(value);
 				sep = '&';
 			}
@@ -184,62 +243,5 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 		} catch (IOException e) {
 			throw new RuntimeException(e);			// May not happen
 		}
-	}
-	
-	/**
-	 * Initialize the context
-	 * @throws IOException 
-	 * @throws JsonMappingException 
-	 * @throws JsonGenerationException 
-	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private void initializeContexts(
-			NotesPrincipal user,
-			AuthCodeEntity authCode, 
-			Application app,
-			List<String> responseTypes) throws IOException {
-		final List<String> grantedScopes = new ArrayList<String>();
-		for( String responseType : responseTypes ) {
-			IOAuthExtension ext = this.extSvc.getExtension(responseType);
-			Object context = ext.initContext(
-					user,
-					new IScopeGranter() {
-						@Override
-						public void grant(String scope) {
-							grantedScopes.add(scope);
-						}
-					}, 
-					app.getClientId(), 
-					authCode.getScopes()
-			);
-			if( context != null ) {
-				authCode.getContextObjects().put(responseType, this.mapper.writeValueAsString(context));
-				authCode.getContextClasses().put(responseType, ext.getContextClass().getName());
-			}
-		}
-		authCode.setGrantedScopes(grantedScopes);
-	}
-	
-	/**
-	 * Run the grants
-	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private Map<String, Object> runGrants(
-			AuthCodeEntity authCode, 
-			List<String> responseTypes) {
-		Map<String, Object> params = new HashMap<String, Object>();
-		for( String responseType : responseTypes ) {
-			IOAuthExtension ext = this.extSvc.getExtension(responseType);
-			ext.authorize(
-					Utils.getContext(authCode, responseType),
-					authCode,
-					new PropertyAdderImpl(
-							params,
-							this.secretRepo,
-							this.mapper
-					)
-			);
-		}
-		return params;
 	}
 }

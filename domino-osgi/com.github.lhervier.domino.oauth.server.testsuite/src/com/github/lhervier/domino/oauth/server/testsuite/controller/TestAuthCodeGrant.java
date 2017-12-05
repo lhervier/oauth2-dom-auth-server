@@ -29,13 +29,13 @@ import org.springframework.test.web.servlet.MvcResult;
 import com.github.lhervier.domino.oauth.server.NotesPrincipal.AuthType;
 import com.github.lhervier.domino.oauth.server.entity.ApplicationEntity;
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
-import com.github.lhervier.domino.oauth.server.ext.core.CodeExt;
-import com.github.lhervier.domino.oauth.server.ext.core.CoreContext;
 import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
 import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
 import com.github.lhervier.domino.oauth.server.services.AuthCodeService;
 import com.github.lhervier.domino.oauth.server.services.impl.AppServiceImpl;
 import com.github.lhervier.domino.oauth.server.testsuite.BaseTest;
+import com.github.lhervier.domino.oauth.server.testsuite.impl.DummyExtWithGrant;
+import com.github.lhervier.domino.oauth.server.testsuite.impl.DummyExtWithGrantContext;
 import com.github.lhervier.domino.oauth.server.testsuite.impl.NotesPrincipalTestImpl;
 import com.github.lhervier.domino.oauth.server.testsuite.impl.TimeServiceTestImpl;
 
@@ -93,27 +93,23 @@ public class TestAuthCodeGrant extends BaseTest {
 	public static class TokenResponse {
 		@JsonProperty("refresh_token")
 		private String refreshToken;
-		@JsonProperty("access_token")
-		private String accessToken;
-		@JsonProperty("id_token")
-		private String idToken;
 		@JsonProperty("expires_in")
 		private long expiresIn;
-		@JsonProperty("token_type")
-		private String tokenType;
 		private String scope;
+		@JsonProperty("dummy_user")
+		private String dummyUser;
+		@JsonProperty("dummy_token_param")
+		private String dummyTokenParam;
 		public String getRefreshToken() { return refreshToken; }
 		public void setRefreshToken(String refreshToken) { this.refreshToken = refreshToken; }
-		public String getAccessToken() { return accessToken; }
-		public void setAccessToken(String accessToken) { this.accessToken = accessToken; }
-		public String getIdToken() { return idToken; }
-		public void setIdToken(String idToken) { this.idToken = idToken; }
 		public long getExpiresIn() { return expiresIn; }
 		public void setExpiresIn(long expiresIn) { this.expiresIn = expiresIn; }
-		public String getTokenType() { return tokenType; }
-		public void setTokenType(String tokenType) { this.tokenType = tokenType; }
 		public String getScope() { return scope; }
 		public void setScope(String scope) { this.scope = scope; }
+		public String getDummyUser() { return dummyUser; }
+		public void setDummyUser(String dummyUser) { this.dummyUser = dummyUser; }
+		public String getDummyTokenParam() { return dummyTokenParam; }
+		public void setDummyTokenParam(String dummyTokenParam) { this.dummyTokenParam = dummyTokenParam; }
 	};
 	
 	/**
@@ -156,17 +152,15 @@ public class TestAuthCodeGrant extends BaseTest {
 			this.setRedirectUri(APP_REDIRECT_URI);
 			this.setContextClasses(new HashMap<String, String>() {{
 				put(
-						CodeExt.RESPONSE_TYPE, 
-						CoreContext.class.getName()
+						DummyExtWithGrant.DUMMY_RESPONSE_TYPE, 
+						DummyExtWithGrantContext.class.getName()
 				);
 			}});
 			this.setContextObjects(new HashMap<String, String>() {{
 				put(
-						CodeExt.RESPONSE_TYPE,
-						mapper.writeValueAsString(new CoreContext() {{
-							setAud(APP_CLIENT_ID);
-							setSub("CN=Lionel/O=USER");
-							setIss(coreIss);
+						DummyExtWithGrant.DUMMY_RESPONSE_TYPE,
+						mapper.writeValueAsString(new DummyExtWithGrantContext() {{
+							setName("CN=Lionel/O=USER");
 						}})
 				);
 			}});
@@ -346,12 +340,9 @@ public class TestAuthCodeGrant extends BaseTest {
 		
 		TokenResponse resp = this.mapper.readValue(json, TokenResponse.class);
 		assertThat(resp.getRefreshToken(), is(nullValue()));			// No refresh token
-		assertThat(resp.getAccessToken(), is(notNullValue()));
-		assertThat(resp.getTokenType(), is("Bearer"));
+		assertThat(resp.getDummyUser(), is(notNullValue()));
 		assertThat(resp.getScope(), nullValue());
 		assertThat(resp.getExpiresIn(), is(equalTo(36000L)));
-		
-		assertThat(resp.getIdToken(), is(nullValue()));
 	}
 	
 	/**
@@ -377,12 +368,9 @@ public class TestAuthCodeGrant extends BaseTest {
 		
 		TokenResponse resp = this.mapper.readValue(json, TokenResponse.class);
 		assertThat(resp.getRefreshToken(), is(nullValue()));			// No refresh token
-		assertThat(resp.getAccessToken(), is(notNullValue()));
-		assertThat(resp.getTokenType(), is("Bearer"));
+		assertThat(resp.getDummyUser(), is(notNullValue()));
 		assertThat(resp.getScope(), nullValue());
 		assertThat(resp.getExpiresIn(), is(equalTo(36000L)));
-		
-		assertThat(resp.getIdToken(), is(nullValue()));
 	}
 	
 	/**
@@ -408,11 +396,8 @@ public class TestAuthCodeGrant extends BaseTest {
 		
 		TokenResponse resp = this.mapper.readValue(json, TokenResponse.class);
 		assertThat(resp.getRefreshToken(), is(notNullValue()));			// Refresh token !
-		assertThat(resp.getAccessToken(), is(notNullValue()));
-		assertThat(resp.getTokenType(), is("Bearer"));
+		assertThat(resp.getDummyUser(), is(notNullValue()));
 		assertThat(resp.getScope(), nullValue());
 		assertThat(resp.getExpiresIn(), is(equalTo(36000L)));
-		
-		assertThat(resp.getIdToken(), is(nullValue()));
 	}
 }

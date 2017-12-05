@@ -1,6 +1,6 @@
 package com.github.lhervier.domino.oauth.server.testsuite.controller;
 
-import static com.github.lhervier.domino.oauth.server.testsuite.impl.DummyExt.DUMMY_SCOPE;
+import static com.github.lhervier.domino.oauth.server.testsuite.impl.DummyExtWithGrant.DUMMY_SCOPE;
 import static com.github.lhervier.domino.oauth.server.testsuite.utils.TestUtils.urlParameters;
 import static com.github.lhervier.domino.oauth.server.testsuite.utils.TestUtils.urlRefs;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -40,11 +40,11 @@ import org.springframework.test.web.servlet.MvcResult;
 import com.github.lhervier.domino.oauth.server.NotesPrincipal.AuthType;
 import com.github.lhervier.domino.oauth.server.entity.ApplicationEntity;
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
-import com.github.lhervier.domino.oauth.server.ext.core.CodeExt;
-import com.github.lhervier.domino.oauth.server.ext.core.CoreContext;
 import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
 import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
 import com.github.lhervier.domino.oauth.server.testsuite.BaseTest;
+import com.github.lhervier.domino.oauth.server.testsuite.impl.DummyExtWithGrant;
+import com.github.lhervier.domino.oauth.server.testsuite.impl.DummyExtWithGrantContext;
 import com.github.lhervier.domino.oauth.server.testsuite.impl.NotesPrincipalTestImpl;
 import com.github.lhervier.domino.oauth.server.testsuite.impl.TimeServiceTestImpl;
 
@@ -144,11 +144,12 @@ public class TestAuthorizeController extends BaseTest {
 		MvcResult result = mockMvc.perform(
 				post("/authorize")
 				.param("client_id", "1234")
-				.param("response_type", "code")
+				.param("response_type", "dummy")
 		).andExpect(status().is(302)).andReturn();
 		String location = result.getResponse().getHeader("Location");
 		Map<String, String> params = urlParameters(location);
 		assertThat(params, hasKey("code"));
+		assertThat(params, hasEntry("dummy_authorize_param", "authparamvalue"));
 		assertThat(params, not(hasKey("error")));
 	}
 	
@@ -228,7 +229,7 @@ public class TestAuthorizeController extends BaseTest {
 		.perform(
 				get("/authorize")
 				.param("client_id", "1234")
-				.param("response_type", "token")
+				.param("response_type", "dummy")
 		)
 		.andExpect(status().is(302))
 		.andReturn();
@@ -274,7 +275,7 @@ public class TestAuthorizeController extends BaseTest {
 				get("/authorize")
 				.param("client_id", "1234")
 				.param("redirect_uri", "http://acme.com/otherUri")
-				.param("response_type", "token")
+				.param("response_type", "dummy")
 		)
 		.andExpect(status().is(302))
 		.andReturn();
@@ -377,7 +378,7 @@ public class TestAuthorizeController extends BaseTest {
 		.perform(
 				get("/authorize")
 				.param("client_id", "1234")
-				.param("response_type", "azerty")
+				.param("response_type", "non_existing_response_type")
 		)
 		.andExpect(status().is(302))
 		.andReturn();
@@ -391,6 +392,56 @@ public class TestAuthorizeController extends BaseTest {
 		assertThat(params, hasKey("error_description"));
 	}
 	
+	/**
+	 * Conflicting response types on auth code saving
+	 */
+	@Test
+	public void testConflictingResponseTypesOnAuthCodeSaving() throws Exception {
+		when(appRepoMock.findOne(Mockito.anyString())).thenReturn(new ApplicationEntity() {{
+			setClientId("1234");
+			setName("myApp");
+			setRedirectUri("http://acme.com/myApp");
+		}});
+		MvcResult result = mockMvc
+		.perform(
+				get("/authorize")
+				.param("client_id", "1234")
+				.param("response_type", "code token")
+		)
+		.andExpect(status().is(302))
+		.andReturn();
+		
+		String location = result.getResponse().getHeader("Location");
+		Map<String, String> params = urlParameters(location);
+		assertThat(params, hasEntry("error", "server_error"));
+		assertThat(params, hasEntry(equalTo("error_description"), containsString("response_type conflict on grant_type")));
+	}
+	
+	/**
+	 * Conflicting response types on properties
+	 */
+	@Test
+	public void testConflictingResponseTypeOnProps() throws Exception {
+		when(appRepoMock.findOne(Mockito.anyString())).thenReturn(new ApplicationEntity() {{
+			setClientId("1234");
+			setName("myApp");
+			setRedirectUri("http://acme.com/myApp");
+		}});
+		MvcResult result = mockMvc
+		.perform(
+				get("/authorize")
+				.param("client_id", "1234")
+				.param("response_type", "dummy conflict")
+		)
+		.andExpect(status().is(302))
+		.andReturn();
+		
+		String location = result.getResponse().getHeader("Location");
+		Map<String, String> params = urlParameters(location);
+		assertThat(params, hasEntry("error", "server_error"));
+		assertThat(params, hasEntry(equalTo("error_description"), containsString("response_type conflict on properties")));
+	}
+	
 	// =======================================================================
 	
 	/**
@@ -399,7 +450,7 @@ public class TestAuthorizeController extends BaseTest {
 	 * https://tools.ietf.org/html/rfc6749#section-3.1
 	 */
 	@Test
-	public void authCodeFlowNoRedirectUri() throws Exception {
+	public void authCodeNoRedirectUri() throws Exception {
 		when(appRepoMock.findOne(anyString())).thenReturn(new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");
@@ -413,7 +464,7 @@ public class TestAuthorizeController extends BaseTest {
 		.perform(
 				get("/authorize")
 				.param("client_id", "1234")
-				.param("response_type", "code")
+				.param("response_type", "dummy")
 				.param("state", "myState")
 				.param("scope", "azerty uiop")
 		)
@@ -443,15 +494,13 @@ public class TestAuthorizeController extends BaseTest {
 		assertThat(code.getGrantedScopes(), emptyIterable());
 		
 		assertThat(code.getContextClasses().size(), is(equalTo(1)));
-		assertThat(code.getContextClasses(), hasKey(CodeExt.RESPONSE_TYPE));
+		assertThat(code.getContextClasses(), hasKey(DummyExtWithGrant.DUMMY_RESPONSE_TYPE));
 		
-		String jsonCtx = code.getContextObjects().get(CodeExt.RESPONSE_TYPE);
+		String jsonCtx = code.getContextObjects().get(DummyExtWithGrant.DUMMY_RESPONSE_TYPE);
 		ObjectMapper mapper = new ObjectMapper();
-		CoreContext ctx = mapper.readValue(jsonCtx, CoreContext.class);
+		DummyExtWithGrantContext ctx = mapper.readValue(jsonCtx, DummyExtWithGrantContext.class);
 		
-		assertThat(ctx.getAud(), equalTo("1234"));
-		assertThat(ctx.getIss(), equalTo(coreIss));
-		assertThat(ctx.getSub(), equalTo("CN=Lionel/O=USER"));
+		assertThat(ctx.getName(), equalTo("CN=Lionel/O=USER"));
 	}
 	
 	/**
@@ -473,7 +522,7 @@ public class TestAuthorizeController extends BaseTest {
 		.perform(
 				get("/authorize")
 				.param("client_id", "1234")
-				.param("response_type", "code")
+				.param("response_type", "dummy")
 		)
 		.andExpect(status().is(302))
 		.andReturn();
@@ -484,6 +533,7 @@ public class TestAuthorizeController extends BaseTest {
 		Map<String, String> params = urlParameters(location);
 		assertThat(params, hasKey("code"));
 		assertThat(params, hasEntry("param1", "xxx"));
+		assertThat(params, hasEntry("dummy_authorize_param", "authparamvalue"));
 	}
 	
 	/**
@@ -502,7 +552,7 @@ public class TestAuthorizeController extends BaseTest {
 		.perform(
 				get("/authorize")
 				.param("client_id", "1234")
-				.param("response_type", "code")
+				.param("response_type", "dummy")
 		)
 		.andExpect(status().is(500))
 		.andExpect(content().string(containsString("invalid redirect_uri")));
@@ -544,10 +594,10 @@ public class TestAuthorizeController extends BaseTest {
 	// ======================================================================================
 	
 	/**
-	 * Get an access token
+	 * Flow without grant (not saving auth code)
 	 */
 	@Test
-	public void tokenFlow() throws Exception {
+	public void noGrantFlow() throws Exception {
 		when(appRepoMock.findOne(anyString())).thenReturn(new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");
@@ -561,7 +611,7 @@ public class TestAuthorizeController extends BaseTest {
 		.perform(
 				get("/authorize")
 				.param("client_id", "1234")
-				.param("response_type", "token")
+				.param("response_type", "dummy_nogrant")
 				.param("state", "myState")
 		)
 		.andExpect(status().is(302))
@@ -571,7 +621,7 @@ public class TestAuthorizeController extends BaseTest {
 		assertThat(location, startsWith("http://acme.com/myApp"));
 		
 		Map<String, String> params = urlRefs(location);
-		assertThat(params, hasKey("access_token"));
+		assertThat(params, hasKey("dummy_authorize_param"));
 		assertThat(params, hasEntry("state", "myState"));
 		assertThat(params, not(hasKey("refresh_token")));
 	}
@@ -583,7 +633,7 @@ public class TestAuthorizeController extends BaseTest {
 	 * https://tools.ietf.org/html/rfc6749#section-3.1
 	 */
 	@Test
-	public void fragmentInTokenResponseType() throws Exception {
+	public void fragmentInNoGrantResponseType() throws Exception {
 		when(appRepoMock.findOne(anyString())).thenReturn(new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");
@@ -597,7 +647,7 @@ public class TestAuthorizeController extends BaseTest {
 		.perform(
 				get("/authorize")
 				.param("client_id", "1234")
-				.param("response_type", "token")
+				.param("response_type", "dummy_nogrant")
 		)
 		.andExpect(status().is(302))
 		.andReturn();
@@ -606,7 +656,7 @@ public class TestAuthorizeController extends BaseTest {
 		assertThat(location, startsWith("http://acme.com/myApp"));
 		
 		Map<String, String> params = urlRefs(location);
-		assertThat(params, hasKey("access_token"));
+		assertThat(params, hasKey("dummy_authorize_param"));
 		assertThat(params, hasEntry("param1", "xxx"));
 	}
 }

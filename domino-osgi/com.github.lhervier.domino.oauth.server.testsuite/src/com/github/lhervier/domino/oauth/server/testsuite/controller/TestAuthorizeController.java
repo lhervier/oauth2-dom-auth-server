@@ -694,7 +694,7 @@ public class TestAuthorizeController extends BaseTest {
 		AuthCodeEntity code = added.get(0);
 		
 		assertThat(code.getScopes(), containsInAnyOrder("scope1", "scope2"));
-		assertThat(code.getGrantedScopes(), containsInAnyOrder("scope1"));
+		assertThat(code.getGrantedScopes(), containsInAnyOrder("scope1", "scopeX"));
 	}
 	
 	/**
@@ -832,6 +832,91 @@ public class TestAuthorizeController extends BaseTest {
 		Map<String, String> params = urlRefs(location);
 		assertThat(params, hasEntry("param1", "xxx"));
 		assertThat(params, hasEntry("test", "testvalue"));
+		assertThat(params, not(hasKey("code")));
+	}
+	
+	/**
+	 * When scope granted different from asked scopes, and not auth code flow,
+	 * then scopes in response
+	 */
+	@Test
+	public void whenScopesGrantedAreDifferentFromAskedInAuthCodeRequest_thenGrantedScopesInResponse() throws Exception {
+		when(appRepoMock.findOne(anyString())).thenReturn(new ApplicationEntity() {{
+			setClientId("1234");
+			setName("myApp");
+			setFullName("CN=myApp" + appRoot);
+			setRedirectUri("http://acme.com/myApp");
+		}});
+		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy"));
+		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new OAuthExtension() {
+			public List<String> getAuthorizedScopes(List<String> scopes) { return Arrays.asList("scope1"); }
+			public TokenResponse token(NotesPrincipal user, Application app, Object context, List<String> askedScopes) { return null; }
+			public AuthorizeResponse authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes) {
+				return AuthorizeResponseBuilder.newBuilder()
+						.addAuthCode()
+						.build();
+			}
+		});
+		
+		when(authCodeRepoMock.save(any(AuthCodeEntity.class))).then(returnsFirstArg());
+		
+		MvcResult result = mockMvc
+		.perform(
+				get("/authorize")
+				.param("client_id", "1234")
+				.param("response_type", "dummy")
+				.param("scope", "scope1 scope2")		// Ask for two scopes. Only scope1 will be granted
+		)
+		.andExpect(status().is(302))
+		.andReturn();
+		
+		String location = result.getResponse().getHeader("Location");
+		assertThat(location, startsWith("http://acme.com/myApp?"));
+		
+		Map<String, String> params = urlParameters(location);
+		assertThat(params, not(hasKey("scope")));
+		assertThat(params, hasKey("code"));
+	}
+	
+	/**
+	 * When scope granted different from asked scopes, and auth code flow,
+	 * then no scopes in response
+	 */
+	@Test
+	public void whenScopesGrantedAreDifferentFromAskedInTokenRequest_thenGrantedScopesInResponse() throws Exception {
+		when(appRepoMock.findOne(anyString())).thenReturn(new ApplicationEntity() {{
+			setClientId("1234");
+			setName("myApp");
+			setFullName("CN=myApp" + appRoot);
+			setRedirectUri("http://acme.com/myApp");
+		}});
+		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy"));
+		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new OAuthExtension() {
+			public List<String> getAuthorizedScopes(List<String> scopes) { return Arrays.asList("scope1"); }
+			public TokenResponse token(NotesPrincipal user, Application app, Object context, List<String> askedScopes) { return null; }
+			public AuthorizeResponse authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes) {
+				return AuthorizeResponseBuilder.newBuilder()
+						.build();
+			}
+		});
+		
+		when(authCodeRepoMock.save(any(AuthCodeEntity.class))).then(returnsFirstArg());
+		
+		MvcResult result = mockMvc
+		.perform(
+				get("/authorize")
+				.param("client_id", "1234")
+				.param("response_type", "dummy")
+				.param("scope", "scope1 scope2")		// Ask for two scopes. Only scope1 will be granted
+		)
+		.andExpect(status().is(302))
+		.andReturn();
+		
+		String location = result.getResponse().getHeader("Location");
+		assertThat(location, startsWith("http://acme.com/myApp#"));
+		
+		Map<String, String> params = urlRefs(location);
+		assertThat(params, hasEntry("scope", "scope1"));
 		assertThat(params, not(hasKey("code")));
 	}
 }

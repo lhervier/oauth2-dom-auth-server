@@ -161,8 +161,6 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 				if( ext.getAuthorizedScopes(scopes) == null )
 					continue;
 				for( String s : ext.getAuthorizedScopes(scopes) ) {
-					if( !scopes.contains(s) )
-						continue;
 					if( !authCode.getGrantedScopes().contains(s) )
 						authCode.getGrantedScopes().add(s);
 				}
@@ -218,6 +216,12 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 			// Save auth Code if needed
 			if( params.containsKey("code") )
 				this.authCodeRepo.save(authCode);
+			
+			// If granted scopes are different from asked scopes, then add scope parameter
+			if( !params.containsKey("code") ) {
+				if( !authCode.getGrantedScopes().containsAll(scopes) )
+					params.put("scope", StringUtils.join(authCode.getGrantedScopes().iterator(), ' '));
+			}
 			
 			// Compute the query string
 			StringBuffer sbRedirect = new StringBuffer();

@@ -2,7 +2,7 @@
 <feature
       id="com.github.lhervier.domino.oauth.server.feature"
       label="Domino OAUTH2 Server Feature"
-      version="1.0.0.qualifier"
+      version="1.1.0"
       provider-name="GITHUB">
 
    <description url="http://www.example.com/description">

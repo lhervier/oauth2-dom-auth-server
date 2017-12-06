@@ -13,7 +13,7 @@ import com.github.lhervier.domino.oauth.server.ext.OAuthProperty;
 import com.github.lhervier.domino.oauth.server.ext.TokenResponse;
 import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.services.ExtensionService;
-import com.github.lhervier.domino.oauth.server.services.SecretService;
+import com.github.lhervier.domino.oauth.server.services.JWTService;
 import com.github.lhervier.domino.oauth.server.utils.Utils;
 
 /**
@@ -32,7 +32,7 @@ public class BaseGrantService {
 	 * Secret service
 	 */
 	@Autowired
-	private SecretService secretSvc;
+	private JWTService secretSvc;
 	
 	public Map<String, Object> extractProperties(
 			NotesPrincipal user,

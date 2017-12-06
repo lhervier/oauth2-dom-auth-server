@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.github.lhervier.domino.oauth.server.repo.SecretRepository;
-import com.github.lhervier.domino.oauth.server.services.SecretService;
+import com.github.lhervier.domino.oauth.server.services.JWTService;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
@@ -17,7 +17,7 @@ import com.nimbusds.jose.Payload;
 import com.nimbusds.jose.crypto.MACSigner;
 
 @Service
-public class SecretServiceImpl implements SecretService {
+public class JWTServiceImpl implements JWTService {
 
 	@Autowired
 	private SecretRepository secretRepo;

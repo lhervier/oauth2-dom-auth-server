@@ -29,7 +29,7 @@ import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
 import com.github.lhervier.domino.oauth.server.services.AppService;
 import com.github.lhervier.domino.oauth.server.services.AuthorizeService;
 import com.github.lhervier.domino.oauth.server.services.ExtensionService;
-import com.github.lhervier.domino.oauth.server.services.SecretService;
+import com.github.lhervier.domino.oauth.server.services.JWTService;
 import com.github.lhervier.domino.oauth.server.services.TimeService;
 import com.github.lhervier.domino.oauth.server.utils.Utils;
 
@@ -68,7 +68,7 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 	 * The secret service
 	 */
 	@Autowired
-	private SecretService secretSvc;
+	private JWTService secretSvc;
 	
 	/**
 	 * Authorization codes life time

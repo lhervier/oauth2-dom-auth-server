@@ -17,22 +17,4 @@ public class GrantInvalidClientException extends BaseGrantException {
 	public GrantInvalidClientException(String message) {
 		super(message, new InvalidClientError());
 	}
-
-	/**
-	 * Constructeur
-	 * @param message
-	 * @param cause
-	 */
-	public GrantInvalidClientException(String message, Throwable cause) {
-		super(message, cause, new InvalidClientError());
-	}
-
-	/**
-	 * Constructeur
-	 * @param cause
-	 */
-	public GrantInvalidClientException(Throwable cause) {
-		super(cause, new InvalidClientError());
-	}
-
 }

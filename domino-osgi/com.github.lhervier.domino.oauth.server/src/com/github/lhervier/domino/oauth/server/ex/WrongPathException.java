@@ -8,25 +8,9 @@ package com.github.lhervier.domino.oauth.server.ex;
  */
 public class WrongPathException extends Exception {
 
-	/**
-	 * Serial UID
-	 */
 	private static final long serialVersionUID = 1L;
 
-	public WrongPathException() {
-		super();
+	public WrongPathException(String message) {
+		super(message);
 	}
-
-	public WrongPathException(String arg0) {
-		super(arg0);
-	}
-
-	public WrongPathException(String arg0, Throwable arg1) {
-		super(arg0, arg1);
-	}
-
-	public WrongPathException(Throwable arg0) {
-		super(arg0);
-	}
-
 }

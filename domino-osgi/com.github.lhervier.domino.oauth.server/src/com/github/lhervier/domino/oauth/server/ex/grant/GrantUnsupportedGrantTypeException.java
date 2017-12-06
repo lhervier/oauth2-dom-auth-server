@@ -17,22 +17,4 @@ public class GrantUnsupportedGrantTypeException extends BaseGrantException {
 	public GrantUnsupportedGrantTypeException(String message) {
 		super(message, new UnsupportedGrantTypeError());
 	}
-
-	/**
-	 * Constructeur
-	 * @param message
-	 * @param cause
-	 */
-	public GrantUnsupportedGrantTypeException(String message, Throwable cause) {
-		super(message, cause, new UnsupportedGrantTypeError());
-	}
-
-	/**
-	 * Constructeur
-	 * @param cause
-	 */
-	public GrantUnsupportedGrantTypeException(Throwable cause) {
-		super(cause, new UnsupportedGrantTypeError());
-	}
-
 }

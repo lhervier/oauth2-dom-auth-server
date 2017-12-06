@@ -16,15 +16,6 @@ public class BaseGrantException extends Exception {
 	
 	/**
 	 * Constructeur
-	 * @param error l'erreur
-	 */
-	public BaseGrantException(GrantError error) {
-		super();
-		this.error = error;
-	}
-
-	/**
-	 * Constructeur
 	 * @param message
 	 * @param error l'erreur
 	 */
@@ -35,38 +26,9 @@ public class BaseGrantException extends Exception {
 	}
 
 	/**
-	 * Constructeur
-	 * @param message
-	 * @param cause
-	 * @param error l'erreur
-	 */
-	public BaseGrantException(String message, Throwable cause, GrantError error) {
-		super(message, cause);
-		this.error = error;
-	}
-
-	/**
-	 * Constructeur
-	 * @param cause
-	 * @param error l'erreur
-	 */
-	public BaseGrantException(Throwable cause, GrantError error) {
-		super(cause);
-		this.error = error;
-	}
-
-	/**
 	 * @return the error
 	 */
 	public GrantError getError() {
 		return error;
 	}
-
-	/**
-	 * @param error the error to set
-	 */
-	public void setError(GrantError error) {
-		this.error = error;
-	}
-
 }

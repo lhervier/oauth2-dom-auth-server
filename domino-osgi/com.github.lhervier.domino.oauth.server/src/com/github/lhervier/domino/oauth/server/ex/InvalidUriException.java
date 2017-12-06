@@ -10,13 +10,6 @@ public class InvalidUriException extends Exception {
 	 * Serial UID
 	 */
 	private static final long serialVersionUID = -4667171054867544585L;
-	
-	/**
-	 * Constructeur
-	 */
-	public InvalidUriException() {
-		super();
-	}
 
 	/**
 	 * Constructeur
@@ -25,22 +18,4 @@ public class InvalidUriException extends Exception {
 	public InvalidUriException(String message) {
 		super(message);
 	}
-
-	/**
-	 * Constructeur
-	 * @param message
-	 * @param cause
-	 */
-	public InvalidUriException(String message, Throwable cause) {
-		super(message, cause);
-	}
-
-	/**
-	 * Constructeur
-	 * @param cause
-	 */
-	public InvalidUriException(Throwable cause) {
-		super(cause);
-	}
-
 }

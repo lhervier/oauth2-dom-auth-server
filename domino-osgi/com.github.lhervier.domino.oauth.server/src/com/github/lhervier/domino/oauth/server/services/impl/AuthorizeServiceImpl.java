@@ -65,10 +65,10 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 	private ExtensionService extSvc;
 	
 	/**
-	 * The secret service
+	 * The JWT service
 	 */
 	@Autowired
-	private JWTService secretSvc;
+	private JWTService jwtSvc;
 	
 	/**
 	 * Authorization codes life time
@@ -204,7 +204,7 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 					} else if( prop.getSignKey() == null ) {
 						params.put(prop.getName(), prop.getValue().toString());
 					} else {
-						params.put(prop.getName(), this.secretSvc.createJws(prop.getValue(), prop.getSignKey()));
+						params.put(prop.getName(), this.jwtSvc.createJws(prop.getValue(), prop.getSignKey()));
 					}
 				}
 			}

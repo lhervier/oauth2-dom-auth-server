@@ -29,10 +29,10 @@ public class BaseGrantService {
 	private ExtensionService extSvc;
 	
 	/**
-	 * Secret service
+	 * JWT service
 	 */
 	@Autowired
-	private JWTService secretSvc;
+	private JWTService jwtSvc;
 	
 	public Map<String, Object> extractProperties(
 			NotesPrincipal user,
@@ -58,7 +58,7 @@ public class BaseGrantService {
 				} else if( prop.getSignKey() == null ) {
 					resp.put(prop.getName(), prop.getValue().toString());
 				} else {
-					resp.put(prop.getName(), this.secretSvc.createJws(prop.getValue(), prop.getSignKey()));
+					resp.put(prop.getName(), this.jwtSvc.createJws(prop.getValue(), prop.getSignKey()));
 				}
 			}
 		}

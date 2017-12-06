@@ -2,7 +2,6 @@ package com.github.lhervier.domino.oauth.server.services.impl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -14,25 +13,20 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.github.lhervier.domino.oauth.server.AuthCodeNotesPrincipal;
-import com.github.lhervier.domino.oauth.server.AuthorizerImpl;
 import com.github.lhervier.domino.oauth.server.NotesPrincipal;
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
 import com.github.lhervier.domino.oauth.server.ex.BaseGrantException;
 import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
-import com.github.lhervier.domino.oauth.server.ex.authorize.AuthServerErrorException;
 import com.github.lhervier.domino.oauth.server.ex.grant.GrantInvalidGrantException;
 import com.github.lhervier.domino.oauth.server.ex.grant.GrantInvalidScopeException;
-import com.github.lhervier.domino.oauth.server.ex.grant.GrantServerErrorException;
-import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.services.AuthCodeService;
-import com.github.lhervier.domino.oauth.server.services.ExtensionService;
 import com.github.lhervier.domino.oauth.server.services.GrantService;
 import com.github.lhervier.domino.oauth.server.services.TimeService;
 import com.github.lhervier.domino.oauth.server.utils.Utils;
 
 @Service("refresh_token")
-public class RefreshTokenGrantServiceImpl implements GrantService {
+public class RefreshTokenGrantServiceImpl extends BaseGrantService implements GrantService {
 
 	/**
 	 * The refresh token life time
@@ -59,22 +53,10 @@ public class RefreshTokenGrantServiceImpl implements GrantService {
 	private TimeService timeSvc;
 	
 	/**
-	 * The extension service
-	 */
-	@Autowired
-	private ExtensionService extSvc;
-	
-	/**
 	 * The request
 	 */
 	@Autowired
 	private HttpServletRequest request;
-	
-	/**
-	 * The authorizer
-	 */
-	@Autowired
-	private AuthorizerImpl authorizer;
 	
 	/**
 	 * @see com.github.lhervier.domino.oauth.server.services.GrantService#createGrant(com.github.lhervier.domino.oauth.server.model.Application, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
@@ -87,37 +69,7 @@ public class RefreshTokenGrantServiceImpl implements GrantService {
 				this.request.getParameter("refresh_token")
 		);
 	}
-	public Map<String, Object> createGrant(
-			Application app,
-			String scope,
-			String refreshToken) throws BaseGrantException, ServerErrorException {
-		// Extract scopes
-		List<String> scopes;
-		if( StringUtils.isEmpty(scope) )
-			scopes = new ArrayList<String>();
-		else
-			scopes = Arrays.asList(StringUtils.split(scope, " "));
-		
-		// Refresh the token
-		return this.refreshToken(
-				app,
-				refreshToken,
-				scopes
-		);
-	}
-
-	/**
-	 * Refresh a token
-	 * @param app the currently logged in user (application)
-	 * @param refreshToken le refresh token
-	 * @param scopes d'éventuels nouveaux scopes.
-	 * @throws BaseGrantException 
-	 * @throws AuthServerErrorException
-	 */
-	private Map<String, Object> refreshToken(
-			Application app,
-			String refreshToken, 
-			List<String> scopes) throws BaseGrantException, ServerErrorException {
+	public Map<String, Object> createGrant(Application app, String scope, String refreshToken) throws BaseGrantException, ServerErrorException {
 		// Sanity check
 		if( refreshToken == null )
 			throw new GrantInvalidGrantException("refresh_token is mandatory");
@@ -130,6 +82,13 @@ public class RefreshTokenGrantServiceImpl implements GrantService {
 		// Check that token has not expired
 		if( authCode.getExpires() < this.timeSvc.currentTimeSeconds() )
 			throw new GrantInvalidGrantException("invalid refresh_token");
+		
+		// Extract scopes
+		List<String> scopes;
+		if( StringUtils.isEmpty(scope) )
+			scopes = new ArrayList<String>();
+		else
+			scopes = Arrays.asList(StringUtils.split(scope, " "));
 		
 		// Check that scopes are already in the initial scopes
 		if( !authCode.getGrantedScopes().containsAll(scopes) )
@@ -150,24 +109,7 @@ public class RefreshTokenGrantServiceImpl implements GrantService {
 		NotesPrincipal user = new AuthCodeNotesPrincipal(authCode);
 		
 		// Call for extensions
-		Map<String, Object> resp = new HashMap<String, Object>();
-		for( String responseType : this.extSvc.getResponseTypes() ) {
-			IOAuthExtension ext = this.extSvc.getExtension(responseType);
-			Object context = Utils.getContext(authCode, responseType);		// May be null
-			ext.token(
-					user,
-					app,
-					context, 
-					authCode.getGrantedScopes(),
-					this.authorizer
-			);
-		}
-		if( this.authorizer.isPropertiesConflict() )
-			throw new GrantServerErrorException("Extension conflicts on setting properties");
-		
-		// Add properties to response
-		resp.putAll(this.authorizer.getSignedProperties());
-		resp.putAll(this.authorizer.getProperties());
+		Map<String, Object> resp = this.extractProperties(user, app, authCode);
 		
 		// Regenerate the refresh token (update expiration date)
 		// When using this grant, clientType is confidential.
@@ -180,6 +122,5 @@ public class RefreshTokenGrantServiceImpl implements GrantService {
 		
 		return resp;
 	}
-	
 	
 }

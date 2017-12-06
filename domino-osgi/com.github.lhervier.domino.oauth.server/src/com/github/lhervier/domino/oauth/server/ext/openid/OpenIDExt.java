@@ -11,9 +11,11 @@ import org.springframework.stereotype.Component;
 
 import com.github.lhervier.domino.oauth.server.NotesPrincipal;
 import com.github.lhervier.domino.oauth.server.entity.PersonEntity;
+import com.github.lhervier.domino.oauth.server.ext.AuthorizeResponseBuilder;
 import com.github.lhervier.domino.oauth.server.ext.AuthorizeResponse;
-import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
-import com.github.lhervier.domino.oauth.server.ext.IPropertyAdder;
+import com.github.lhervier.domino.oauth.server.ext.OAuthExtension;
+import com.github.lhervier.domino.oauth.server.ext.TokenResponse;
+import com.github.lhervier.domino.oauth.server.ext.TokenResponseBuilder;
 import com.github.lhervier.domino.oauth.server.ext.core.OpenIDContext;
 import com.github.lhervier.domino.oauth.server.ext.core.TokenExt;
 import com.github.lhervier.domino.oauth.server.model.Application;
@@ -25,7 +27,7 @@ import com.github.lhervier.domino.oauth.server.services.TimeService;
  * @author Lionel HERVIER
  */
 @Component(OpenIDExt.RESPONSE_TYPE)
-public class OpenIDExt implements IOAuthExtension {
+public class OpenIDExt implements OAuthExtension {
 
 	public static final String RESPONSE_TYPE = "id_token";
 	
@@ -70,7 +72,7 @@ public class OpenIDExt implements IOAuthExtension {
 	private TimeService timeSvc;
 	
 	/**
-	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#getAuthorizedScopes()
+	 * @see com.github.lhervier.domino.oauth.server.ext.OAuthExtension#getAuthorizedScopes()
 	 */
 	@Override
 	public List<String> getAuthorizedScopes() {
@@ -140,7 +142,7 @@ public class OpenIDExt implements IOAuthExtension {
 	}
 	
 	/**
-	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#authorize(NotesPrincipal, Application, String, List, List)
+	 * @see com.github.lhervier.domino.oauth.server.ext.OAuthExtension#authorize(NotesPrincipal, Application, List, List)
 	 */
 	public AuthorizeResponse authorize(
 			NotesPrincipal user,
@@ -153,7 +155,7 @@ public class OpenIDExt implements IOAuthExtension {
 			return null;
 		
 		IdToken idToken = this.createIdToken(user, app, askedScopes);
-		return AuthorizeResponse.init()
+		return AuthorizeResponseBuilder.newBuilder()
 				.addProperty()
 					.withName(TOKEN_RESPONSE_ATTR)
 					.withValue(idToken)
@@ -165,18 +167,23 @@ public class OpenIDExt implements IOAuthExtension {
 	}
 	
 	/**
-	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthTokenExtension#token(Object, Application, List, IPropertyAdder)
+	 * @see com.github.lhervier.domino.oauth.server.ext.OAuthExtension#token(NotesPrincipal, Application, Object, List)
 	 */
 	@Override
-	public void token(
+	public TokenResponse token(
 			NotesPrincipal user,
 			Application app,
 			Object context, 
-			List<String> askedScopes,
-			IPropertyAdder adder) {
+			List<String> askedScopes) {
 		OpenIDContext oidCtx = (OpenIDContext) context;
 		IdToken idToken = this.createIdToken(user, app, askedScopes);
 		idToken.setIat(oidCtx.getIat());
-		adder.addSignedProperty(TOKEN_RESPONSE_ATTR, idToken, this.signKey);
+		
+		return TokenResponseBuilder.newBuilder()
+				.addProperty()
+					.withName(TOKEN_RESPONSE_ATTR)
+					.withValue(idToken)
+					.signedWith(this.signKey)
+				.build();
 	}
 }

@@ -22,8 +22,8 @@ import com.github.lhervier.domino.oauth.server.ex.authorize.AuthInvalidRequestEx
 import com.github.lhervier.domino.oauth.server.ex.authorize.AuthServerErrorException;
 import com.github.lhervier.domino.oauth.server.ex.authorize.AuthUnsupportedResponseTypeException;
 import com.github.lhervier.domino.oauth.server.ext.AuthorizeResponse;
-import com.github.lhervier.domino.oauth.server.ext.AuthorizeResponse.OAuthProperty;
-import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
+import com.github.lhervier.domino.oauth.server.ext.OAuthExtension;
+import com.github.lhervier.domino.oauth.server.ext.OAuthProperty;
 import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
 import com.github.lhervier.domino.oauth.server.services.AppService;
@@ -157,7 +157,7 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 			// Get granted scopes
 			authCode.setGrantedScopes(new ArrayList<String>());
 			for( String respType : responseTypes ) {
-				IOAuthExtension ext = this.extSvc.getExtension(respType);
+				OAuthExtension ext = this.extSvc.getExtension(respType);
 				for( String s : ext.getAuthorizedScopes() ) {
 					if( !scopes.contains(s) )
 						continue;
@@ -169,7 +169,7 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 			// Run extensions
 			Map<String, String> params = new HashMap<String, String>();
 			for( String respType : responseTypes ) {
-				IOAuthExtension ext = this.extSvc.getExtension(respType);
+				OAuthExtension ext = this.extSvc.getExtension(respType);
 				
 				AuthorizeResponse response = ext.authorize(
 						user, 
@@ -193,7 +193,7 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 				}
 				
 				// Save properties, detecting conflicts
-				for( OAuthProperty prop : response.getProperties() ) {
+				for( OAuthProperty prop : response.getProperties().values() ) {
 					if( Utils.equals("code", prop.getName()) ) {
 						params.put("code", authCode.getId());		// May be multiple times...
 					} else if( params.containsKey(prop.getName()) ) {

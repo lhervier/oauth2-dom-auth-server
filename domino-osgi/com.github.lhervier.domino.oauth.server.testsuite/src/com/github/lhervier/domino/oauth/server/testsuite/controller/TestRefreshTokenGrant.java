@@ -31,7 +31,7 @@ import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
 import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
 import com.github.lhervier.domino.oauth.server.services.AuthCodeService;
 import com.github.lhervier.domino.oauth.server.testsuite.BaseTest;
-import com.github.lhervier.domino.oauth.server.testsuite.controller.TestAuthCodeGrant.TokenResponse;
+import com.github.lhervier.domino.oauth.server.testsuite.controller.TestAuthCodeGrant.TkResp;
 import com.github.lhervier.domino.oauth.server.testsuite.impl.NotesPrincipalTestImpl;
 
 public class TestRefreshTokenGrant extends BaseTest {
@@ -156,7 +156,7 @@ public class TestRefreshTokenGrant extends BaseTest {
 		.andReturn();
 		
 		String json = result.getResponse().getContentAsString();
-		TokenResponse response = this.mapper.readValue(json, TokenResponse.class);
+		TkResp response = this.mapper.readValue(json, TkResp.class);
 		assertThat(response.getScope(), nullValue());
 	}
 	
@@ -207,7 +207,7 @@ public class TestRefreshTokenGrant extends BaseTest {
 		.andReturn();
 		
 		String json = result.getResponse().getContentAsString();
-		TokenResponse response = this.mapper.readValue(json, TokenResponse.class);
+		TkResp response = this.mapper.readValue(json, TkResp.class);
 		assertThat(response.getRefreshToken(), equalTo("QSDFGH"));
 		
 		ArgumentCaptor<AuthCodeEntity> captor = ArgumentCaptor.forClass(AuthCodeEntity.class);

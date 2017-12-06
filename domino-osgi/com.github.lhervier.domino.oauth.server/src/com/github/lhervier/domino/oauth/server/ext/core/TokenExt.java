@@ -6,8 +6,9 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 
 import com.github.lhervier.domino.oauth.server.NotesPrincipal;
+import com.github.lhervier.domino.oauth.server.ext.AuthorizeResponseBuilder;
 import com.github.lhervier.domino.oauth.server.ext.AuthorizeResponse;
-import com.github.lhervier.domino.oauth.server.ext.IPropertyAdder;
+import com.github.lhervier.domino.oauth.server.ext.TokenResponse;
 import com.github.lhervier.domino.oauth.server.model.Application;
 
 /**
@@ -20,7 +21,7 @@ public class TokenExt extends BaseCoreExt {
 	public static final String TOKEN_RESPONSE_TYPE = "token";
 	
 	/**
-	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#getAuthorizedScopes()
+	 * @see com.github.lhervier.domino.oauth.server.ext.OAuthExtension#getAuthorizedScopes()
 	 */
 	@Override
 	public List<String> getAuthorizedScopes() {
@@ -28,7 +29,7 @@ public class TokenExt extends BaseCoreExt {
 	}
 	
 	/**
-	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#authorize(com.github.lhervier.domino.oauth.server.NotesPrincipal, com.github.lhervier.domino.oauth.server.model.Application, java.util.List, com.github.lhervier.domino.oauth.server.ext.IAuthorizer)
+	 * @see com.github.lhervier.domino.oauth.server.ext.OAuthExtension#authorize(com.github.lhervier.domino.oauth.server.NotesPrincipal, com.github.lhervier.domino.oauth.server.model.Application, java.util.List, com.github.lhervier.domino.oauth.server.ext.IAuthorizer)
 	 */
 	@Override
 	public AuthorizeResponse authorize(
@@ -36,7 +37,7 @@ public class TokenExt extends BaseCoreExt {
 			Application app,
 			List<String> askedScopes,
 			List<String> responseTypes) {
-		return AuthorizeResponse.init()
+		return AuthorizeResponseBuilder.newBuilder()
 				.addProperty()
 					.withName("access_token")
 					.withValue(this.createAccessToken(app, user))
@@ -49,15 +50,14 @@ public class TokenExt extends BaseCoreExt {
 	}
 
 	/**
-	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#token(com.github.lhervier.domino.oauth.server.NotesPrincipal, com.github.lhervier.domino.oauth.server.model.Application, java.lang.Object, java.util.List, com.github.lhervier.domino.oauth.server.ext.IPropertyAdder)
+	 * @see com.github.lhervier.domino.oauth.server.ext.OAuthExtension#token(NotesPrincipal, Application, Object, List)
 	 */
 	@Override
-	public void token(
+	public TokenResponse token(
 			NotesPrincipal user, 
 			Application app, 
 			Object context, 
-			List<String> askedScopes,
-			IPropertyAdder adder) {
+			List<String> askedScopes) {
 		throw new RuntimeException("TokenExt: Token endpoint not available");
 	}
 }

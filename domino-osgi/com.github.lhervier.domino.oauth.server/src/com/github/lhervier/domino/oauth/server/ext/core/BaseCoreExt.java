@@ -4,11 +4,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import com.github.lhervier.domino.oauth.server.NotesPrincipal;
-import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
+import com.github.lhervier.domino.oauth.server.ext.OAuthExtension;
 import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.services.TimeService;
 
-public abstract class BaseCoreExt implements IOAuthExtension {
+public abstract class BaseCoreExt implements OAuthExtension {
 
 	/**
 	 * The time service

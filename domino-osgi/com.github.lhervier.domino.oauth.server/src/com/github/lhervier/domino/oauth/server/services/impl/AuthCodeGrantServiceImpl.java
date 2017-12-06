@@ -1,6 +1,5 @@
 package com.github.lhervier.domino.oauth.server.services.impl;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -11,7 +10,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.github.lhervier.domino.oauth.server.AuthCodeNotesPrincipal;
-import com.github.lhervier.domino.oauth.server.AuthorizerImpl;
 import com.github.lhervier.domino.oauth.server.NotesPrincipal;
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
 import com.github.lhervier.domino.oauth.server.ex.BaseGrantException;
@@ -19,19 +17,16 @@ import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
 import com.github.lhervier.domino.oauth.server.ex.grant.GrantInvalidClientException;
 import com.github.lhervier.domino.oauth.server.ex.grant.GrantInvalidGrantException;
 import com.github.lhervier.domino.oauth.server.ex.grant.GrantInvalidRequestException;
-import com.github.lhervier.domino.oauth.server.ex.grant.GrantServerErrorException;
-import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.model.ClientType;
 import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
 import com.github.lhervier.domino.oauth.server.services.AuthCodeService;
-import com.github.lhervier.domino.oauth.server.services.ExtensionService;
 import com.github.lhervier.domino.oauth.server.services.GrantService;
 import com.github.lhervier.domino.oauth.server.services.TimeService;
 import com.github.lhervier.domino.oauth.server.utils.Utils;
 
 @Service("authorization_code")
-public class AuthCodeGrantServiceImpl implements GrantService {
+public class AuthCodeGrantServiceImpl extends BaseGrantService implements GrantService {
 
 	/**
 	 * Authorization code repository
@@ -52,22 +47,10 @@ public class AuthCodeGrantServiceImpl implements GrantService {
 	private AuthCodeService authCodeSvc;
 	
 	/**
-	 * Extension service
-	 */
-	@Autowired
-	private ExtensionService extSvc;
-	
-	/**
 	 * Request
 	 */
 	@Autowired
 	private HttpServletRequest request;
-	
-	/**
-	 * The authorizer
-	 */
-	@Autowired
-	private AuthorizerImpl authorizer;
 	
 	/**
 	 * The refresh token life time
@@ -124,24 +107,7 @@ public class AuthCodeGrantServiceImpl implements GrantService {
 			
 			// Make each implementation add its own properties
 			// They can change their context.
-			Map<String, Object> resp = new HashMap<String, Object>();
-			for( String responseType : this.extSvc.getResponseTypes() ) {
-				IOAuthExtension ext = this.extSvc.getExtension(responseType);
-				Object context = Utils.getContext(authCode, responseType);		// May be null
-				ext.token(
-						user,
-						app,
-						context, 
-						authCode.getGrantedScopes(),
-						this.authorizer
-				);
-			}
-			if( this.authorizer.isPropertiesConflict() )
-				throw new GrantServerErrorException("Extension conflicts on setting properties");
-			
-			// Add properties to response
-			resp.putAll(this.authorizer.getSignedProperties());
-			resp.putAll(this.authorizer.getProperties());
+			Map<String, Object> resp = this.extractProperties(user, app, authCode);
 			
 			// Generate the refresh token only for confidential clients
 			if( ClientType.CONFIDENTIAL == app.getClientType() ) {

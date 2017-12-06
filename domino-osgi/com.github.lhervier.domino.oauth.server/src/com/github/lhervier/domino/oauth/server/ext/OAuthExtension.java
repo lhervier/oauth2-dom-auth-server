@@ -9,7 +9,7 @@ import com.github.lhervier.domino.oauth.server.model.Application;
  * Extension that will only implement the authorize end point
  * @author Lionel HERVIER
  */
-public interface IOAuthExtension {
+public interface OAuthExtension {
 
 	/**
 	 * Return the list of authorized scopes.
@@ -35,12 +35,10 @@ public interface IOAuthExtension {
 	 * @param app
 	 * @param context
 	 * @param askedScopes
-	 * @param adder
 	 */
-	public void token(
+	public TokenResponse token(
 			NotesPrincipal user,
 			Application app,
 			Object context, 
-			List<String> askedScopes,
-			IPropertyAdder adder);
+			List<String> askedScopes);
 }

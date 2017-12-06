@@ -36,8 +36,9 @@ import com.github.lhervier.domino.oauth.server.NotesPrincipal.AuthType;
 import com.github.lhervier.domino.oauth.server.entity.ApplicationEntity;
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
 import com.github.lhervier.domino.oauth.server.ext.AuthorizeResponse;
-import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
-import com.github.lhervier.domino.oauth.server.ext.IPropertyAdder;
+import com.github.lhervier.domino.oauth.server.ext.OAuthExtension;
+import com.github.lhervier.domino.oauth.server.ext.TokenResponse;
+import com.github.lhervier.domino.oauth.server.ext.TokenResponseBuilder;
 import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
 import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
@@ -99,7 +100,7 @@ public class TestAuthCodeGrant extends BaseTest {
 	@Autowired
 	protected NotesPrincipalTestImpl user;
 	
-	public static class TokenResponse {
+	public static class TkResp {
 		@JsonProperty("refresh_token")
 		private String refreshToken;
 		@JsonProperty("expires_in")
@@ -312,7 +313,7 @@ public class TestAuthCodeGrant extends BaseTest {
 		.andReturn();
 		
 		String json = result.getResponse().getContentAsString();
-		TokenResponse response = this.mapper.readValue(json, TokenResponse.class);
+		TkResp response = this.mapper.readValue(json, TkResp.class);
 		assertThat(response.getScope(), nullValue());
 		
 		// Remove one scope from the granted set
@@ -336,7 +337,7 @@ public class TestAuthCodeGrant extends BaseTest {
 		.andReturn();
 		
 		json = result.getResponse().getContentAsString();
-		response = this.mapper.readValue(json, TokenResponse.class);
+		response = this.mapper.readValue(json, TkResp.class);
 		assertThat(response.getScope(), equalTo("scope1 scope3"));
 	}
 	
@@ -367,7 +368,7 @@ public class TestAuthCodeGrant extends BaseTest {
 		
 		String json = result.getResponse().getContentAsString();
 		
-		TokenResponse resp = this.mapper.readValue(json, TokenResponse.class);
+		TkResp resp = this.mapper.readValue(json, TkResp.class);
 		assertThat(resp.getRefreshToken(), is(nullValue()));			// No refresh token
 		assertThat(resp.getScope(), nullValue());
 		assertThat(resp.getExpiresIn(), is(equalTo(36000L)));
@@ -402,7 +403,7 @@ public class TestAuthCodeGrant extends BaseTest {
 		
 		String json = result.getResponse().getContentAsString();
 		
-		TokenResponse resp = this.mapper.readValue(json, TokenResponse.class);
+		TkResp resp = this.mapper.readValue(json, TkResp.class);
 		assertThat(resp.getRefreshToken(), is(nullValue()));			// No refresh token
 		assertThat(resp.getScope(), nullValue());
 		assertThat(resp.getExpiresIn(), is(equalTo(36000L)));
@@ -437,7 +438,7 @@ public class TestAuthCodeGrant extends BaseTest {
 		
 		String json = result.getResponse().getContentAsString();
 		
-		TokenResponse resp = this.mapper.readValue(json, TokenResponse.class);
+		TkResp resp = this.mapper.readValue(json, TkResp.class);
 		assertThat(resp.getRefreshToken(), is(notNullValue()));			// Refresh token !
 		assertThat(resp.getScope(), nullValue());
 		assertThat(resp.getExpiresIn(), is(equalTo(36000L)));
@@ -471,25 +472,37 @@ public class TestAuthCodeGrant extends BaseTest {
 		}});
 		
 		when(extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy1", "dummy2", "dummy3"));
-		when(extSvcMock.getExtension(eq("dummy1"))).thenReturn(new IOAuthExtension() {
+		when(extSvcMock.getExtension(eq("dummy1"))).thenReturn(new OAuthExtension() {
 			public List<String> getAuthorizedScopes() { return Arrays.asList(); }
 			public AuthorizeResponse authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes) { return null; }
-			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) {
-				adder.addProperty("prop", "value");
+			public TokenResponse token(NotesPrincipal user, Application app, Object context, List<String> askedScopes) {
+				return TokenResponseBuilder.newBuilder()
+						.addProperty()
+							.withName("prop")
+							.withValue("value")
+						.build();
 			}
 		});
-		when(extSvcMock.getExtension(eq("dummy2"))).thenReturn(new IOAuthExtension() {
+		when(extSvcMock.getExtension(eq("dummy2"))).thenReturn(new OAuthExtension() {
 			public List<String> getAuthorizedScopes() { return Arrays.asList(); }
 			public AuthorizeResponse authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes) { return null; }
-			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) {
-				adder.addProperty("prop", "value");
+			public TokenResponse token(NotesPrincipal user, Application app, Object context, List<String> askedScopes) {
+				return TokenResponseBuilder.newBuilder()
+						.addProperty()
+							.withName("prop")
+							.withValue("value")
+						.build();
 			}
 		});
-		when(extSvcMock.getExtension(eq("dummy3"))).thenReturn(new IOAuthExtension() {
+		when(extSvcMock.getExtension(eq("dummy3"))).thenReturn(new OAuthExtension() {
 			public List<String> getAuthorizedScopes() { return Arrays.asList(); }
 			public AuthorizeResponse authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes) { return null; }
-			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) {
-				adder.addProperty("prop", "value");
+			public TokenResponse token(NotesPrincipal user, Application app, Object context, List<String> askedScopes) {
+				return TokenResponseBuilder.newBuilder()
+						.addProperty()
+							.withName("prop")
+							.withValue("value")
+						.build();
 			}
 		});
 		

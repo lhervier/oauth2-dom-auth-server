@@ -6,8 +6,10 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 
 import com.github.lhervier.domino.oauth.server.NotesPrincipal;
+import com.github.lhervier.domino.oauth.server.ext.AuthorizeResponseBuilder;
 import com.github.lhervier.domino.oauth.server.ext.AuthorizeResponse;
-import com.github.lhervier.domino.oauth.server.ext.IPropertyAdder;
+import com.github.lhervier.domino.oauth.server.ext.TokenResponse;
+import com.github.lhervier.domino.oauth.server.ext.TokenResponseBuilder;
 import com.github.lhervier.domino.oauth.server.model.Application;
 
 /**
@@ -20,7 +22,7 @@ public class CodeExt extends BaseCoreExt {
 	public static final String CODE_RESPONSE_TYPE = "code";
 
 	/**
-	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#getAuthorizedScopes()
+	 * @see com.github.lhervier.domino.oauth.server.ext.OAuthExtension#getAuthorizedScopes()
 	 */
 	@Override
 	public List<String> getAuthorizedScopes() {
@@ -28,7 +30,7 @@ public class CodeExt extends BaseCoreExt {
 	}
 	
 	/**
-	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#authorize(NotesPrincipal, Application, String, List, List)
+	 * @see com.github.lhervier.domino.oauth.server.ext.OAuthExtension#authorize(NotesPrincipal, Application, List, List)
 	 */
 	@Override
 	public AuthorizeResponse authorize(
@@ -36,22 +38,28 @@ public class CodeExt extends BaseCoreExt {
 			Application app,
 			List<String> askedScopes,
 			List<String> responseTypes) {
-		return AuthorizeResponse.init()
+		return AuthorizeResponseBuilder.newBuilder()
 				.addAuthCode()
 				.build();
 	}
 	
 	/**
-	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthTokenExtension#token(java.lang.Object, com.github.lhervier.domino.oauth.server.ext.IPropertyAdder, com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity)
+	 * @see com.github.lhervier.domino.oauth.server.ext.OAuthExtension#token(NotesPrincipal, Application, Object, List)
 	 */
-	public void token(
+	public TokenResponse token(
 			NotesPrincipal user,
 			Application app,
 			Object context,
-			List<String> askedScopes,
-			IPropertyAdder adder) {
+			List<String> askedScopes) {
 		AccessToken accessToken = this.createAccessToken(app, user);
-		adder.addSignedProperty("access_token", accessToken, this.signKey);
-		adder.addProperty("token_type", "bearer");
+		return TokenResponseBuilder.newBuilder()
+				.addProperty()
+					.withName("access_token")
+					.withValue(accessToken)
+					.signedWith(this.signKey)
+				.addProperty()
+					.withName("token_type")
+					.withValue("bearer")
+				.build();
 	}
 }

@@ -2,8 +2,8 @@ package com.github.lhervier.domino.oauth.server.services;
 
 import java.io.IOException;
 
-import com.github.lhervier.domino.oauth.server.NotesPrincipal;
 import com.github.lhervier.domino.oauth.server.ex.NotAuthorizedException;
+import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.model.TokenContent;
 
 /**
@@ -14,13 +14,13 @@ public interface CheckTokenService {
 
 	/**
 	 * Check if the token is OK
-	 * @param user the current logged in user
+	 * @param userApp the current logged in user
 	 * @param token the token to check
 	 * @return the token
 	 * @throws IOException
 	 * @throws NotAuthorizedException
 	 */
 	public TokenContent checkToken(
-			NotesPrincipal user, 
+			Application userApp, 
 			String token) throws NotAuthorizedException;
 }

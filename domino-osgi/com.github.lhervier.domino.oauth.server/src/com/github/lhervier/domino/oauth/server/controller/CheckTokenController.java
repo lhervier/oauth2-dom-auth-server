@@ -15,7 +15,9 @@ import com.github.lhervier.domino.oauth.server.aop.ann.security.AppAuth;
 import com.github.lhervier.domino.oauth.server.ex.ForbiddenException;
 import com.github.lhervier.domino.oauth.server.ex.NotAuthorizedException;
 import com.github.lhervier.domino.oauth.server.ex.WrongPathException;
+import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.model.TokenContent;
+import com.github.lhervier.domino.oauth.server.services.AppService;
 import com.github.lhervier.domino.oauth.server.services.CheckTokenService;
 
 /**
@@ -35,6 +37,12 @@ public class CheckTokenController {
 	private CheckTokenService checkTokenSvc;
 	
 	/**
+	 * App service
+	 */
+	@Autowired
+	private AppService appSvc;
+	
+	/**
 	 * We are unable to inject this bean as a method parameter
 	 */
 	@Autowired
@@ -50,6 +58,7 @@ public class CheckTokenController {
 			@RequestParam("token") String token,
 			HttpServletResponse response) throws NotAuthorizedException, ForbiddenException, WrongPathException {
 		response.addHeader("Access-Control-Allow-Origin", "*");
-		return this.checkTokenSvc.checkToken(this.checkTokenUser, token);
+		Application userApp = this.appSvc.getApplicationFromName(this.checkTokenUser.getCommon());		// Cannot be null because of @AppAuth on controller
+		return this.checkTokenSvc.checkToken(userApp, token);
 	}
 }

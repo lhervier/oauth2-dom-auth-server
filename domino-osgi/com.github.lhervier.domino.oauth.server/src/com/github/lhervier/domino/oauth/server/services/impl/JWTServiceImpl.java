@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.github.lhervier.domino.oauth.server.IExpirable;
-import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
 import com.github.lhervier.domino.oauth.server.repo.SecretRepository;
 import com.github.lhervier.domino.oauth.server.services.JWTService;
 import com.github.lhervier.domino.oauth.server.services.TimeService;
@@ -150,7 +149,7 @@ public class JWTServiceImpl implements JWTService {
 	 * @see com.github.lhervier.domino.oauth.server.services.JWTService#fromJwe(java.lang.String, java.lang.String, java.lang.Class)
 	 */
 	@Override
-	public <T> T fromJwe(String jwe, String cryptConfig, Class<T> cl) throws ServerErrorException {
+	public <T> T fromJwe(String jwe, String cryptConfig, Class<T> cl) {
 		try {
 			JWEObject jweObject = JWEObject.parse(jwe);
 			jweObject.decrypt(
@@ -168,18 +167,18 @@ public class JWTServiceImpl implements JWTService {
 			}
 			
 			return obj;
-		} catch (JsonParseException e) {
-			throw new RuntimeException(e);				// Invalid json in JWE. May not happen (we generated the JWE)
 		} catch (ParseException e) {
 			return null;								// Invalid JWE
+		} catch (JsonParseException e) {
+			throw new RuntimeException(e);				// Invalid json in JWE. May not happen (we generated the JWE)
 		} catch (JsonMappingException e) {
-			throw new ServerErrorException(e);
+			throw new RuntimeException(e);
 		} catch (IOException e) {
-			throw new ServerErrorException(e);
+			throw new RuntimeException(e);
 		} catch (KeyLengthException e) {
-			throw new ServerErrorException(e);
+			throw new RuntimeException(e);
 		} catch (JOSEException e) {
-			throw new ServerErrorException(e);
+			throw new RuntimeException(e);
 		}
 	}
 

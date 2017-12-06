@@ -12,7 +12,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 
-import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
 import com.github.lhervier.domino.oauth.server.ext.core.AccessToken;
 import com.github.lhervier.domino.oauth.server.services.JWTService;
 import com.ibm.domino.napi.NException;
@@ -107,8 +106,6 @@ public class BearerContext {
 		} catch (NotesException e) {
 			throw new RuntimeException(e);
 		} catch (NException e) {
-			throw new RuntimeException(e);
-		} catch (ServerErrorException e) {
 			throw new RuntimeException(e);
 		}
 	}

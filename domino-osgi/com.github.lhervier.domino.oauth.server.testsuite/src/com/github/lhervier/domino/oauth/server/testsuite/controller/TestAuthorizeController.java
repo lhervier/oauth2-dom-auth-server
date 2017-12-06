@@ -85,7 +85,7 @@ public class TestAuthorizeController extends BaseTest {
 	 * User must not be authenticated using bearer tokens
 	 */
 	@Test
-	public void notUsingBearerAuth() throws Exception {
+	public void whenUsingBearerAuth_then401() throws Exception {
 		user.setAuthType(AuthType.BEARER);
 		
 		mockMvc
@@ -97,7 +97,7 @@ public class TestAuthorizeController extends BaseTest {
 	 * User cannot be logged in as an application
 	 */
 	@Test
-	public void notLoggedAsAnApplication() throws Exception {
+	public void whenNotLoggedAsAnApplication_then403() throws Exception {
 		when(appRepoMock.findOneByName(eq("Lionel"))).thenReturn(new ApplicationEntity() {{
 			setClientId("567890");
 			setName("Lionel");
@@ -114,7 +114,7 @@ public class TestAuthorizeController extends BaseTest {
 	 * Controller must be called on oauth2 db path
 	 */
 	@Test
-	public void notOnOauth2Db() throws Exception {
+	public void whenNotOnOauth2Db_then404() throws Exception {
 		user.setCurrentDatabasePath("otherdb.nsf");		// Other database
 		
 		mockMvc
@@ -126,7 +126,7 @@ public class TestAuthorizeController extends BaseTest {
 	 * Controller must not be called on the server root
 	 */
 	@Test
-	public void onServerRoot() throws Exception {
+	public void whenOnServerRoot_then404() throws Exception {
 		user.setCurrentDatabasePath(null);
 		
 		mockMvc
@@ -141,7 +141,7 @@ public class TestAuthorizeController extends BaseTest {
 	 * https://tools.ietf.org/html/rfc6749#section-3.1
 	 */
 	@Test
-	public void postSupported() throws Exception {
+	public void whenUsingPost_thenOK() throws Exception {
 		when(this.appRepoMock.findOne(eq("1234"))).thenReturn(new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");
@@ -175,7 +175,7 @@ public class TestAuthorizeController extends BaseTest {
 	 * client_id is mandatory
 	 */
 	@Test
-	public void noClientId() throws Exception {
+	public void whenNoClientId_then500() throws Exception {
 		mockMvc
 		.perform(get("/authorize"))
 		.andExpect(status().is(500))
@@ -186,7 +186,7 @@ public class TestAuthorizeController extends BaseTest {
 	 * client_id is mandatory
 	 */
 	@Test
-	public void emptyClientId() throws Exception {
+	public void whenEmptyClientId_then500() throws Exception {
 		mockMvc
 		.perform(
 				get("/authorize")
@@ -200,7 +200,7 @@ public class TestAuthorizeController extends BaseTest {
 	 * client_id must match with an existing app
 	 */
 	@Test
-	public void invalidClientId() throws Exception {
+	public void whenInvalidClientId_then500() throws Exception {
 		mockMvc
 		.perform(
 				get("/authorize")
@@ -217,7 +217,7 @@ public class TestAuthorizeController extends BaseTest {
 	 * https://tools.ietf.org/html/rfc6749#section-3.1.2.3
 	 */
 	@Test
-	public void noRedirectUriEvenInApp() throws Exception {
+	public void whenNoRedirectUriEvenInApp_then500() throws Exception {
 		when(appRepoMock.findOne(anyString())).thenReturn(new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");
@@ -237,7 +237,7 @@ public class TestAuthorizeController extends BaseTest {
 	 * https://tools.ietf.org/html/rfc6749#section-3.1.2.3
 	 */
 	@Test
-	public void noRedirectUriButAppOnlyHaveOne() throws Exception {
+	public void whenNoRedirectUriButAppOnlyHaveOne_thenOK() throws Exception {
 		when(appRepoMock.findOne(eq("1234"))).thenReturn(new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");
@@ -269,7 +269,7 @@ public class TestAuthorizeController extends BaseTest {
 	 * https://tools.ietf.org/html/rfc6749#section-3.1.2.4
 	 */
 	@Test
-	public void invalidRedirectUri() throws Exception {
+	public void whenInvalidRedirectUri_then500() throws Exception {
 		when(appRepoMock.findOne(Mockito.anyString())).thenReturn(new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");
@@ -290,7 +290,7 @@ public class TestAuthorizeController extends BaseTest {
 	 * https://tools.ietf.org/html/rfc6749#section-3.1.2.3
 	 */
 	@Test
-	public void usingAdditionalRedirectUri() throws Exception {
+	public void whenRedirectUriIsOneOfAdditionalRedirectUri_thenOK() throws Exception {
 		when(appRepoMock.findOne(eq("1234"))).thenReturn(new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");
@@ -324,7 +324,7 @@ public class TestAuthorizeController extends BaseTest {
 	 * https://tools.ietf.org/html/rfc6749#section-3.1.2.3
 	 */
 	@Test
-	public void noRedirectUriAndAppHaveMultiple() throws Exception {
+	public void whenNoRedirectUriAndAppHaveMultiple_thenError() throws Exception {
 		when(appRepoMock.findOne(Mockito.anyString())).thenReturn(new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");
@@ -347,7 +347,7 @@ public class TestAuthorizeController extends BaseTest {
 	 * https://tools.ietf.org/html/rfc6749#section-4.1.2.1
 	 */
 	@Test
-	public void noResponseType() throws Exception {
+	public void whenNoResponseType_thenError() throws Exception {
 		when(appRepoMock.findOne(Mockito.anyString())).thenReturn(new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");
@@ -375,7 +375,7 @@ public class TestAuthorizeController extends BaseTest {
 	 * https://tools.ietf.org/html/rfc6749#section-4.1.2.1
 	 */
 	@Test
-	public void emptyResponseType() throws Exception {
+	public void whenEmptyResponseType_thenError() throws Exception {
 		when(appRepoMock.findOne(Mockito.anyString())).thenReturn(new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");
@@ -404,7 +404,7 @@ public class TestAuthorizeController extends BaseTest {
 	 * https://tools.ietf.org/html/rfc6749#section-4.1.2.1
 	 */
 	@Test
-	public void invalidResponseType() throws Exception {
+	public void whenInvalidResponseType_thenError() throws Exception {
 		when(appRepoMock.findOne(Mockito.anyString())).thenReturn(new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");
@@ -433,7 +433,7 @@ public class TestAuthorizeController extends BaseTest {
 	 * NoOp response type
 	 */
 	@Test
-	public void noOpResponseType() throws Exception {
+	public void whenNoOpResponseType_thenNoCodeAndNoError() throws Exception {
 		when(appRepoMock.findOne(Mockito.anyString())).thenReturn(new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");
@@ -466,7 +466,7 @@ public class TestAuthorizeController extends BaseTest {
 	 * Conflicting response types on auth code saving
 	 */
 	@Test
-	public void conflictingResponseTypesOnAuthCodeSaving() throws Exception {
+	public void whenConflictingResponseTypesOnAuthCodeSaving_thenError() throws Exception {
 		when(appRepoMock.findOne(Mockito.anyString())).thenReturn(new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");
@@ -506,7 +506,7 @@ public class TestAuthorizeController extends BaseTest {
 	 * Conflicting response types on properties
 	 */
 	@Test
-	public void conflictingResponseTypeOnProps() throws Exception {
+	public void whenConflictingResponseTypeOnProps_thenError() throws Exception {
 		when(appRepoMock.findOne(Mockito.anyString())).thenReturn(new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");
@@ -550,7 +550,7 @@ public class TestAuthorizeController extends BaseTest {
 	 * https://tools.ietf.org/html/rfc6749#section-3.1
 	 */
 	@Test
-	public void authCodeNoRedirectUri() throws Exception {
+	public void whenExtensionSavesAuthCode_thenSavedAuthCodeOK() throws Exception {
 		when(appRepoMock.findOne(anyString())).thenReturn(new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");
@@ -621,7 +621,7 @@ public class TestAuthorizeController extends BaseTest {
 	 * https://tools.ietf.org/html/rfc6749#section-3.1
 	 */
 	@Test
-	public void existingParamsInRedirectUri() throws Exception {
+	public void whenExistingParamsInRedirectUri_thenParamStillInRedirection() throws Exception {
 		when(appRepoMock.findOne(anyString())).thenReturn(new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");
@@ -663,7 +663,7 @@ public class TestAuthorizeController extends BaseTest {
 	 * https://tools.ietf.org/html/rfc6749#section-3.1
 	 */
 	@Test
-	public void fragmentInCodeResponseType() throws Exception {
+	public void whenFragmentInRedirectUriAndSaveAuthCode_then500() throws Exception {
 		when(appRepoMock.findOne(eq("1234"))).thenReturn(new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");
@@ -693,7 +693,7 @@ public class TestAuthorizeController extends BaseTest {
 	 * Not all scopes grantes
 	 */
 	@Test
-	public void dontGrantAllScopes() throws Exception {
+	public void whenAllScopesNotGranted_thenGrantedScopesInAuthCode() throws Exception {
 		when(appRepoMock.findOne(anyString())).thenReturn(new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");
@@ -734,7 +734,7 @@ public class TestAuthorizeController extends BaseTest {
 	 * Same scope granted by two extensions
 	 */
 	@Test
-	public void sameScopeGrantedByTwoExtensions() throws Exception {
+	public void whenSameScopeGrantedByTwoExtensions_thenScopesNotDoubled() throws Exception {
 		when(appRepoMock.findOne(anyString())).thenReturn(new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");
@@ -783,7 +783,7 @@ public class TestAuthorizeController extends BaseTest {
 	 * Flow without grant (not saving auth code)
 	 */
 	@Test
-	public void noGrantFlow() throws Exception {
+	public void whenAuthCodeNotSaved_thenNoCodeInRedirection() throws Exception {
 		when(appRepoMock.findOne(anyString())).thenReturn(new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");
@@ -826,7 +826,7 @@ public class TestAuthorizeController extends BaseTest {
 	 * https://tools.ietf.org/html/rfc6749#section-3.1
 	 */
 	@Test
-	public void fragmentInNoGrantResponseType() throws Exception {
+	public void whenFragmentInRedirectUriAndAuthCodeNotSaved_thenOK() throws Exception {
 		when(appRepoMock.findOne(anyString())).thenReturn(new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");
@@ -838,6 +838,7 @@ public class TestAuthorizeController extends BaseTest {
 			public List<String> getAuthorizedScopes() { return Arrays.asList(); }
 			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
 			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, IAuthorizer authorizer) {
+				authorizer.addProperty("test", "testvalue");
 				authorizer.saveAuthCode(false);
 			}
 		});
@@ -858,6 +859,7 @@ public class TestAuthorizeController extends BaseTest {
 		
 		Map<String, String> params = urlRefs(location);
 		assertThat(params, hasEntry("param1", "xxx"));
+		assertThat(params, hasEntry("test", "testvalue"));
 		assertThat(params, not(hasKey("code")));
 	}
 }

@@ -41,7 +41,7 @@ public class TestAppController extends BaseTest {
 	}
 	
 	@Test
-	public void userIsOk() throws Exception {
+	public void whenAppsManager_thenOK() throws Exception {
 		mockMvc
 		.perform(get("/html/listApplications"))
 		.andExpect(status().is(200));
@@ -51,7 +51,7 @@ public class TestAppController extends BaseTest {
 	 * User must have the [AppsManager] role
 	 */
 	@Test
-	public void dontHaveAppsManagerRole() throws Exception {
+	public void whenNotAppsManager_then403() throws Exception {
 		user.setRoles(new ArrayList<String>());		// No roles
 		
 		mockMvc
@@ -63,7 +63,7 @@ public class TestAppController extends BaseTest {
 	 * User must not be authenticated using bearer tokens
 	 */
 	@Test
-	public void usingBearerAuth() throws Exception {
+	public void whenBearerAuth_then401() throws Exception {
 		user.setAuthType(AuthType.BEARER);
 		
 		mockMvc
@@ -75,7 +75,7 @@ public class TestAppController extends BaseTest {
 	 * User cannot be logged in as an application
 	 */
 	@Test
-	public void loggedAsAnApplication() throws Exception {
+	public void whenLoggedAsAnApplication_then403() throws Exception {
 		when(appRepoMock.findOneByName(eq("Lionel"))).thenReturn(new ApplicationEntity() {{
 			setClientId("567890");
 			setName("Lionel");
@@ -92,7 +92,7 @@ public class TestAppController extends BaseTest {
 	 * Controller must be called on oauth2 db path
 	 */
 	@Test
-	public void notUsingOauth2Db() throws Exception {
+	public void whenNotUsingOauth2Db_then404() throws Exception {
 		user.setCurrentDatabasePath("otherdb.nsf");		// Other database
 		
 		mockMvc
@@ -104,7 +104,7 @@ public class TestAppController extends BaseTest {
 	 * Controller must not be called on the server root
 	 */
 	@Test
-	public void usingServerRoot() throws Exception {
+	public void whenUsingServerRoot_then404() throws Exception {
 		user.setCurrentDatabasePath(null);
 		
 		mockMvc

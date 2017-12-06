@@ -56,7 +56,7 @@ public class TestTokenController extends BaseTest {
 	 * User must not be authenticated using bearer tokens
 	 */
 	@Test
-	public void notUsingBearerAuth() throws Exception {
+	public void whenUsingBearerAuth_then401() throws Exception {
 		user.setAuthType(AuthType.BEARER);
 		
 		mockMvc
@@ -68,7 +68,7 @@ public class TestTokenController extends BaseTest {
 	 * User must be logged in as an application
 	 */
 	@Test
-	public void notLoggedInAsApp() throws Exception {
+	public void whenLoggedInAsApp_then403() throws Exception {
 		user.setName("CN=Lionel/O=USER");
 		user.setCommon("Lionel");
 		
@@ -81,7 +81,7 @@ public class TestTokenController extends BaseTest {
 	 * User must be logged at the root of the oauth2 application
 	 */
 	@Test
-	public void usingDbRoot() throws Exception {
+	public void whenUsingDbRoot_then404() throws Exception {
 		user.setCurrentDatabasePath(null);
 		this.mockMvc
 		.perform(post("/token"))
@@ -92,7 +92,7 @@ public class TestTokenController extends BaseTest {
 	 * Controller must be called on oauth2 db path
 	 */
 	@Test
-	public void notOnOauth2Db() throws Exception {
+	public void whenNotOnOauth2Db_then404() throws Exception {
 		user.setCurrentDatabasePath("otherdb.nsf");		// Other database
 		
 		mockMvc
@@ -104,7 +104,7 @@ public class TestTokenController extends BaseTest {
 	 * client_id (if passed) must be coherent with the logged in app
 	 */
 	@Test
-	public void incoherentClientId() throws Exception {
+	public void whenIncoherentClientId_then400() throws Exception {
 		this.mockMvc
 		.perform(
 				post("/token")
@@ -117,7 +117,7 @@ public class TestTokenController extends BaseTest {
 	 * grant_type is mandatory
 	 */
 	@Test
-	public void noGrantType() throws Exception {
+	public void whenNoGrantType_then400() throws Exception {
 		this.mockMvc
 		.perform(post("/token"))		// logged in as application 1234
 		.andExpect(status().is(400))
@@ -128,7 +128,7 @@ public class TestTokenController extends BaseTest {
 	 * Unknown grant type
 	 */
 	@Test
-	public void unknownGrantType() throws Exception {
+	public void whenUnknownGrantType_then400() throws Exception {
 		this.mockMvc
 		.perform(
 				post("/token")
@@ -141,7 +141,7 @@ public class TestTokenController extends BaseTest {
 	 * Run dummy grant
 	 */
 	@Test
-	public void dummyGrant() throws Exception {
+	public void whenExistingGrant_thenOK() throws Exception {
 		this.mockMvc
 		.perform(
 				post("/token")

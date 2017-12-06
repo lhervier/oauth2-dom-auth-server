@@ -58,7 +58,7 @@ public class TestAppServiceImpl extends BaseTest {
 	 * List aplications
 	 */
 	@Test
-	public void listApplications() throws Exception {
+	public void whenAskForApplicationsNames_thenOK() throws Exception {
 		when(appRepoMock.listNames()).thenReturn(Arrays.asList("app1", "app2"));
 		
 		assertThat(
@@ -71,7 +71,7 @@ public class TestAppServiceImpl extends BaseTest {
 	 * Extract application from name
 	 */
 	@Test
-	public void getApplicationFromName() throws Exception {
+	public void whenAskForExistingApplication_thenOK() throws Exception {
 		// Expected behavior of repository
 		when(
 				appRepoMock
@@ -94,7 +94,7 @@ public class TestAppServiceImpl extends BaseTest {
 		verify(appRepoMock, times(1)).findOneByName("testApp");
 		verifyNoMoreInteractions(appRepoMock);
 		
-		// Check result is correst
+		// Check result is correct
 		assertThat(app.getFullName(), is(equalTo("CN=testApp/O=APPLICATION")));		// Must not change
 		assertThat(app.getClientId(), is(equalTo("1234")));
 		assertThat(app.getName(), is(equalTo("testApp")));
@@ -103,15 +103,15 @@ public class TestAppServiceImpl extends BaseTest {
 		assertThat(app.getRedirectUri(), is(equalTo("http://acme.com/testApp")));
 		assertThat(app.getRedirectUris(), allOf(
 				notNullValue(), 
-				containsInAnyOrder("http://acm.com/testApp/login", "http://acm.com/testApp/login2"))
-		);
+				containsInAnyOrder("http://acm.com/testApp/login", "http://acm.com/testApp/login2")
+		));
 	}
 	
 	/**
 	 * Default client type is publie
 	 */
 	@Test
-	public void defaultClientTypeIsPublic() throws Exception {
+	public void whenApplicationHasNoClientType_thenClientTypeIsPublic() throws Exception {
 		when(
 				appRepoMock
 				.findOneByName(eq("testApp"))
@@ -135,7 +135,7 @@ public class TestAppServiceImpl extends BaseTest {
 	 * Confidential client type
 	 */
 	@Test
-	public void confidentialClientType() throws Exception {
+	public void whenAskForConfidentialApplication_thenOK() throws Exception {
 		when(
 				appRepoMock
 				.findOneByName(eq("testApp"))
@@ -159,7 +159,7 @@ public class TestAppServiceImpl extends BaseTest {
 	 * Extract application from clientId
 	 */
 	@Test
-	public void getApplicationFromClientId() throws Exception {
+	public void whenAskForApplicationFromClientId_thenOK() throws Exception {
 		when(
 				appRepoMock
 				.findOne(eq("1234"))
@@ -193,7 +193,7 @@ public class TestAppServiceImpl extends BaseTest {
 	 * Check that different client ids are generated
 	 */
 	@Test
-	public void differentIdsGenerated() throws Exception {
+	public void whenPreparingMultipleApplication_thenIdIsdifferent() throws Exception {
 		Application app1 = appSvc.prepareApplication();
 		verifyNoMoreInteractions(appRepoMock);
 		
@@ -207,7 +207,7 @@ public class TestAppServiceImpl extends BaseTest {
 	 * Check that the fullname is computed on save
 	 */
 	@Test
-	public void computeFullNameOnSave() throws Exception {
+	public void whenSaveApplication_thenFullNameIsComputed() throws Exception {
 		when(personRepoMock.save(any(PersonEntity.class))).thenReturn(new PersonEntity() {{
 			setHttpPassword("password");
 		}});
@@ -235,7 +235,7 @@ public class TestAppServiceImpl extends BaseTest {
 	 * We cannot save if another application exists with the same name
 	 */
 	@Test(expected = DataIntegrityViolationException.class)
-	public void saveWithExistingName() throws Exception {
+	public void whenSavingAppAndAnotherExistsWithSaveName_thenError() throws Exception {
 		when(appRepoMock.findOneByName(eq("myApp"))).thenReturn(new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");
@@ -254,7 +254,7 @@ public class TestAppServiceImpl extends BaseTest {
 	 * We cannot save if an application with the same client id already exists
 	 */
 	@Test(expected = DataIntegrityViolationException.class)
-	public void saveWithExistingClientId() throws Exception {
+	public void whenSaveAppAndAnotherExistsWithSameClientId_thenError() throws Exception {
 		when(appRepoMock.findOne(eq("123456"))).thenReturn(new ApplicationEntity() {{
 			setClientId("123456");
 			setName("myOtherExistingApp");
@@ -274,7 +274,7 @@ public class TestAppServiceImpl extends BaseTest {
 	 * https://tools.ietf.org/html/rfc6749#section-3.1.2
 	 */
 	@Test(expected = DataIntegrityViolationException.class)
-	public void saveWithInvalidUri() throws Exception {
+	public void whenSavingAppWithInvalidUri_thenError() throws Exception {
 		when(personRepoMock.save(any(PersonEntity.class))).then(returnsFirstArg());
 		
 		appSvc.addApplication(new Application() {{
@@ -290,7 +290,7 @@ public class TestAppServiceImpl extends BaseTest {
 	 * https://tools.ietf.org/html/rfc6749#section-3.1.2
 	 */
 	@Test(expected = DataIntegrityViolationException.class)
-	public void saveWithNonAbsoluteUri() throws Exception {
+	public void whenSavingAppWithNonAbsoluteRedirectUri_thenError() throws Exception {
 		when(personRepoMock.save(any(PersonEntity.class))).then(returnsFirstArg());
 		
 		appSvc.addApplication(new Application() {{
@@ -308,7 +308,7 @@ public class TestAppServiceImpl extends BaseTest {
 	 * https://tools.ietf.org/html/rfc6749#section-3.1.2
 	 */
 	@Test
-	public void saveWithFragmentInUri() throws Exception {
+	public void whenSavingAppWithFragmentInUri_thenOK() throws Exception {
 		when(personRepoMock.save(any(PersonEntity.class))).then(returnsFirstArg());
 		
 		appSvc.addApplication(new Application() {{
@@ -324,7 +324,7 @@ public class TestAppServiceImpl extends BaseTest {
 	 * https://tools.ietf.org/html/rfc6749#section-3.1.2
 	 */
 	@Test(expected = DataIntegrityViolationException.class)
-	public void saveWithInvalidAdditionalUri() throws Exception {
+	public void whenSavingAppWithInvalidAdditionalUri_thenError() throws Exception {
 		when(personRepoMock.save(any(PersonEntity.class))).then(returnsFirstArg());
 		
 		appSvc.addApplication(new Application() {{
@@ -341,7 +341,7 @@ public class TestAppServiceImpl extends BaseTest {
 	 * https://tools.ietf.org/html/rfc6749#section-3.1.2
 	 */
 	@Test(expected = DataIntegrityViolationException.class)
-	public void saveWithNonAbsoluteAdditionalUri() throws Exception {
+	public void whenSavingAppWithNonAbsoluteAdditionalUri_thenError() throws Exception {
 		when(personRepoMock.save(any(PersonEntity.class))).then(returnsFirstArg());
 		
 		appSvc.addApplication(new Application() {{
@@ -360,7 +360,7 @@ public class TestAppServiceImpl extends BaseTest {
 	 * https://tools.ietf.org/html/rfc6749#section-3.1.2
 	 */
 	@Test
-	public void saveWithFragmentInAdditionalUri() throws Exception {
+	public void whenSavingAppWithFragmentInAdditionalUri_thenOK() throws Exception {
 		when(personRepoMock.save(any(PersonEntity.class))).then(returnsFirstArg());
 		
 		appSvc.addApplication(new Application() {{
@@ -376,7 +376,7 @@ public class TestAppServiceImpl extends BaseTest {
 	 * Save public client type
 	 */
 	@Test
-	public void savePublicApplication() throws Exception {
+	public void whenSavingPublicApplication_thenOKInRepo() throws Exception {
 		when(personRepoMock.save(any(PersonEntity.class))).then(returnsFirstArg());
 		when(appRepoMock.save(any(ApplicationEntity.class))).then(returnsFirstArg());
 		
@@ -402,7 +402,7 @@ public class TestAppServiceImpl extends BaseTest {
 	 * Save public client type
 	 */
 	@Test
-	public void saveConfidentialApplication() throws Exception {
+	public void whenSavingConfidentialApplication_thenOKInRepo() throws Exception {
 		when(personRepoMock.save(any(PersonEntity.class))).then(returnsFirstArg());
 		when(appRepoMock.save(any(ApplicationEntity.class))).then(returnsFirstArg());
 		
@@ -428,7 +428,7 @@ public class TestAppServiceImpl extends BaseTest {
 	 * Save unspecified client type
 	 */
 	@Test
-	public void saveUnspecifiedApplication() throws Exception {
+	public void whenSavingUnspecifiedApplication_thenPublicInRepo() throws Exception {
 		when(personRepoMock.save(any(PersonEntity.class))).then(returnsFirstArg());
 		when(appRepoMock.save(any(ApplicationEntity.class))).then(returnsFirstArg());
 		
@@ -456,7 +456,7 @@ public class TestAppServiceImpl extends BaseTest {
 	 * Updating an application
 	 */
 	@Test
-	public void updateApplication() throws Exception {
+	public void whenUpdateApplication_thenOKInRepo() throws Exception {
 		ApplicationEntity entity = new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");
@@ -483,7 +483,7 @@ public class TestAppServiceImpl extends BaseTest {
 	 * Update a non existing application
 	 */
 	@Test(expected = DataIntegrityViolationException.class)
-	public void updateNonExisting() throws Exception {
+	public void whenUpdatingNonExistingApp_thenError() throws Exception {
 		appSvc.updateApplication(new Application() {{
 			setClientId("1234");
 			setName("myApp");
@@ -497,7 +497,7 @@ public class TestAppServiceImpl extends BaseTest {
 	 * Try to change the name of an application
 	 */
 	@Test(expected = DataIntegrityViolationException.class)
-	public void changeName() throws Exception {
+	public void whenChangingAppName_thenError() throws Exception {
 		when(appRepoMock.findOne(eq("1234"))).thenReturn(new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");
@@ -518,7 +518,7 @@ public class TestAppServiceImpl extends BaseTest {
 	 * Update with invalid redirect uri
 	 */
 	@Test(expected = DataIntegrityViolationException.class)
-	public void updateWithInvalidRedirectUri() throws Exception {
+	public void whenUpdatingAppWithInvalidRedirectUri_thenError() throws Exception {
 		ApplicationEntity entity = new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");
@@ -540,7 +540,7 @@ public class TestAppServiceImpl extends BaseTest {
 	 * Update with invalid redirect uri
 	 */
 	@Test(expected = DataIntegrityViolationException.class)
-	public void updateWithInvalidAditionnalRedirectUri() throws Exception {
+	public void whenUpdatingAppWithInvalidAditionnalRedirectUri_thenError() throws Exception {
 		ApplicationEntity entity = new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");
@@ -564,7 +564,7 @@ public class TestAppServiceImpl extends BaseTest {
 	 * https://tools.ietf.org/html/rfc6749#section-3.1.2
 	 */
 	@Test(expected = DataIntegrityViolationException.class)
-	public void updateWithNonAbsoluteRedirectUri() throws Exception {
+	public void whenUpdatingAppWithNonAbsoluteRedirectUri_thenError() throws Exception {
 		ApplicationEntity entity = new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");
@@ -587,7 +587,7 @@ public class TestAppServiceImpl extends BaseTest {
 	 * https://tools.ietf.org/html/rfc6749#section-3.1.2
 	 */
 	@Test(expected = DataIntegrityViolationException.class)
-	public void updateWithNonAbsoluteAdditionalRedirectUri() throws Exception {
+	public void whenUpdatingAppWithNonAbsoluteAdditionalRedirectUri_thenError() throws Exception {
 		ApplicationEntity entity = new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");
@@ -613,7 +613,7 @@ public class TestAppServiceImpl extends BaseTest {
 	 * https://tools.ietf.org/html/rfc6749#section-3.1
 	 */
 	@Test
-	public void updateWithFragmentInRedirectUri() throws Exception {
+	public void whenUpdatingAppWithFragmentInRedirectUri_thenOK() throws Exception {
 		ApplicationEntity entity = new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");
@@ -638,7 +638,7 @@ public class TestAppServiceImpl extends BaseTest {
 	 * https://tools.ietf.org/html/rfc6749#section-3.1
 	 */
 	@Test
-	public void updateWithFragmentInAdditionalRedirectUri() throws Exception {
+	public void whenUpdatingAppWithFragmentInAdditionalRedirectUri_thenOK() throws Exception {
 		ApplicationEntity entity = new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");
@@ -661,7 +661,7 @@ public class TestAppServiceImpl extends BaseTest {
 	 * Remove a non existing app
 	 */
 	@Test
-	public void removeNonExisting() throws Exception {
+	public void whenRemovingNonExistingApp_thenOK() throws Exception {
 		doThrow(RuntimeException.class).when(appRepoMock).deleteByName(anyString());
 		doThrow(RuntimeException.class).when(personRepoMock).delete(anyString());
 		appSvc.removeApplication("non_existing");		// Should just do nothing
@@ -671,7 +671,7 @@ public class TestAppServiceImpl extends BaseTest {
 	 * Remove an existing app
 	 */
 	@Test
-	public void removeExisting() throws Exception {
+	public void whenRemovingExistingApp_thenOK() throws Exception {
 		when(appRepoMock.findOneByName(eq("myApp"))).thenReturn(new ApplicationEntity() {{
 			setName("myApp");
 			setFullName("CN=myApp/O=APP");

@@ -3,9 +3,12 @@ package com.github.lhervier.domino.oauth.server.testsuite.controller;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -13,9 +16,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MvcResult;
@@ -85,7 +90,7 @@ public class TestRefreshTokenGrant extends BaseTest {
 	 * refresh_token is mandatory
 	 */
 	@Test
-	public void noRefreshToken() throws Exception {
+	public void whenNoRefreshToken_then400() throws Exception {
 		this.mockMvc.perform(
 				post("/token")
 				.param("grant_type", "refresh_token")
@@ -97,7 +102,7 @@ public class TestRefreshTokenGrant extends BaseTest {
 	 * Invalid refresh_token
 	 */
 	@Test
-	public void invalidRefreshToken() throws Exception {
+	public void whenInvalidRefreshToken_then400() throws Exception {
 		when(authCodeSvcMock.toEntity(Mockito.eq("AZERTY"))).thenReturn(null);
 		
 		this.mockMvc.perform(
@@ -112,7 +117,7 @@ public class TestRefreshTokenGrant extends BaseTest {
 	 * expired refresh token
 	 */
 	@Test
-	public void expiredRefreshToken() throws Exception {
+	public void whenExpiredRefreshToken_then400() throws Exception {
 		when(authCodeSvcMock.toEntity(Mockito.eq("AZERTY"))).thenReturn(new AuthCodeEntity() {{
 			setId("012345");
 			setExpires(timeSvcStub.currentTimeSeconds() - 10L);		// Expired 10s ago
@@ -132,7 +137,34 @@ public class TestRefreshTokenGrant extends BaseTest {
 	 * Only allow subset of already granted scopes 
 	 */
 	@Test
-	public void onlyAllowSubsetOfGrantedScopes() throws Exception {
+	public void whenAskedForSubsetOfGrantedScopes_thenOK() throws Exception {
+		AuthCodeEntity code = new AuthCodeEntity() {{
+			setId("012345");
+			setClientId("1234");
+			setExpires(timeSvcStub.currentTimeSeconds() + 10L);
+			setScopes(Arrays.asList("scope1", "scope2", "scope3"));
+			setGrantedScopes(Arrays.asList("scope1", "scope2"));
+		}};
+		when(authCodeSvcMock.toEntity(Mockito.eq("AZERTY"))).thenReturn(code);
+		
+		MvcResult result = this.mockMvc.perform(
+				post("/token")
+				.param("grant_type", "refresh_token")
+				.param("refresh_token", "AZERTY")
+				.param("scope", "scope1")
+		).andExpect(status().is(200))
+		.andReturn();
+		
+		String json = result.getResponse().getContentAsString();
+		TokenResponse response = this.mapper.readValue(json, TokenResponse.class);
+		assertThat(response.getScope(), nullValue());
+	}
+	
+	/**
+	 * Only allow subset of already granted scopes 
+	 */
+	@Test
+	public void whenNotAskedForSubsetOfGrantedScopes_then400() throws Exception {
 		AuthCodeEntity code = new AuthCodeEntity() {{
 			setId("012345");
 			setClientId("1234");
@@ -149,25 +181,13 @@ public class TestRefreshTokenGrant extends BaseTest {
 				.param("scope", "scope1 scope2 scope3")
 		).andExpect(status().is(400))
 		.andExpect(content().string(containsString("invalid scope")));
-		
-		MvcResult result = this.mockMvc.perform(
-				post("/token")
-				.param("grant_type", "refresh_token")
-				.param("refresh_token", "AZERTY")
-				.param("scope", "scope1")
-		).andExpect(status().is(200))
-		.andReturn();
-		
-		String json = result.getResponse().getContentAsString();
-		TokenResponse response = this.mapper.readValue(json, TokenResponse.class);
-		assertThat(response.getScope(), nullValue());
 	}
 	
 	/**
 	 * No scope => grant previously granted scopes
 	 */
 	@Test
-	public void scopesDefaultsToGrantedScopes() throws Exception {
+	public void whenNoScope_thenGrantedScopesRemainsTheSame() throws Exception {
 		when(authCodeSvcMock.toEntity(Mockito.eq("AZERTY"))).thenReturn(new AuthCodeEntity() {{
 			setId("012345");
 			setApplication(APP_NAME);
@@ -189,13 +209,20 @@ public class TestRefreshTokenGrant extends BaseTest {
 		String json = result.getResponse().getContentAsString();
 		TokenResponse response = this.mapper.readValue(json, TokenResponse.class);
 		assertThat(response.getRefreshToken(), equalTo("QSDFGH"));
+		
+		ArgumentCaptor<AuthCodeEntity> captor = ArgumentCaptor.forClass(AuthCodeEntity.class);
+		verify(authCodeSvcMock, times(1)).fromEntity(captor.capture());
+		List<AuthCodeEntity> values = captor.getAllValues();
+		assertThat(values.size(), equalTo(1));
+		AuthCodeEntity code = values.get(0);
+		assertThat(code.getGrantedScopes(), containsInAnyOrder("scope1"));
 	}
 	
 	/**
 	 * Refresh token generated for another app
 	 */
 	@Test
-	public void generatedForAnotherApp() throws Exception {
+	public void whenRefreshTokenGeneratedForAnotherApp_then400() throws Exception {
 		when(authCodeSvcMock.toEntity(Mockito.eq("AZERTY"))).thenReturn(new AuthCodeEntity() {{
 			setId("012345");
 			setApplication("otherApp");

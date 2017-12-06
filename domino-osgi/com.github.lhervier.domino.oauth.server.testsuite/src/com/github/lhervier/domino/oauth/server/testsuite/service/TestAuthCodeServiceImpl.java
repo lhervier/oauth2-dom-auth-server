@@ -48,7 +48,7 @@ public class TestAuthCodeServiceImpl extends BaseTest {
 	 * Expired JWE
 	 */
 	@Test
-	public void expiredJwe() throws Exception {
+	public void whenExpiredAuthCode_thenNull() throws Exception {
 		// Create an entity
 		AuthCodeEntity entity = new AuthCodeEntity() {{
 			setApplication("myApp");
@@ -77,7 +77,7 @@ public class TestAuthCodeServiceImpl extends BaseTest {
 	 * Normal jwe
 	 */
 	@Test
-	public void normalJwe() throws Exception {
+	public void whenNormalAuthCode_thenOK() throws Exception {
 		// Create an entity
 		AuthCodeEntity entity = new AuthCodeEntity() {{
 			setId("0123456789");

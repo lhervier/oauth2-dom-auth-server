@@ -149,33 +149,6 @@ public class TestAuthCodeGrant extends BaseTest {
 		when(this.appRepoMock.findOne(eq(HACKY_APP_CLIENT_ID))).thenReturn(hackyApp);
 		when(this.appRepoMock.findOneByName(eq(HACKY_APP_NAME))).thenReturn(hackyApp);
 		
-		// Declare authorization codes
-//		AuthCodeEntity code = new AuthCodeEntity() {{
-//			this.setId(AUTH_CODE_ID);
-//			this.setApplication(APP_NAME);
-//			this.setClientId(APP_CLIENT_ID);
-//			this.setExpires(TimeServiceTestImpl.CURRENT_TIME + authCodeLifetime);
-//			this.setScopes(Arrays.asList("scope1", "scope2"));
-//			this.setGrantedScopes(Arrays.asList("scope1", "scope2"));
-//			this.setRedirectUri(APP_REDIRECT_URI);
-//			this.setContextClasses(new HashMap<String, String>() {{
-//				put(
-//						"dummy", 
-//						DummyContext.class.getName()
-//				);
-//			}});
-//			this.setContextObjects(new HashMap<String, String>() {{
-//				put(
-//						"dummy",
-//						mapper.writeValueAsString(new DummyContext() {{
-//							setName("CN=Lionel/O=USER");
-//						}})
-//				);
-//			}});
-//		}};
-		// when(this.authCodeRepoMock.findOne(eq(AUTH_CODE_ID))).thenReturn(code);
-		// this.code = code;
-		
 		// Login as normal application.
 		user.setAuthType(AuthType.NOTES);
 		user.setName(APP_FULL_NAME);
@@ -192,7 +165,7 @@ public class TestAuthCodeGrant extends BaseTest {
 	 * Get tokens from auth code using GET is forbidden
 	 */
 	@Test
-	public void postMandatory() throws Exception {
+	public void whenNotUsingPost_then500() throws Exception {
 		this.mockMvc.perform(get("/token"))
 		.andExpect(status().is(500))		// RFC is not specifying that we must return a 400 error here. 500 is spring default behaviour and we don't want to change it...
 		.andExpect(content().string(containsString("Request method 'GET' not supported")));
@@ -202,7 +175,7 @@ public class TestAuthCodeGrant extends BaseTest {
 	 * Code is mandatory
 	 */
 	@Test
-	public void codeMandatory() throws Exception {
+	public void whenEmptyCode_then400() throws Exception {
 		this.mockMvc.perform(
 				post("/token")
 				.param("grant_type", "authorization_code")
@@ -215,7 +188,7 @@ public class TestAuthCodeGrant extends BaseTest {
 	 * Redirect uri must be the same as the one asked in authorize request
 	 */
 	@Test
-	public void wrongRedirectUri() throws Exception {
+	public void whenWrongRedirectUri_then400() throws Exception {
 		when(this.authCodeRepoMock.findOne(eq("AZERTY"))).thenReturn(new AuthCodeEntity() {{
 			setId("AZERTY");
 			setApplication(APP_NAME);
@@ -237,7 +210,7 @@ public class TestAuthCodeGrant extends BaseTest {
 	 * No redirect uri in URI, and additional uris in app
 	 */
 	@Test
-	public void noRedirectUriEvenInApp() throws Exception {
+	public void whenNoRedirectUriEvenInApp_then400() throws Exception {
 		this.normalApp.setRedirectUris(Arrays.asList("http://acme.com/aditionnal"));
 		this.mockMvc.perform(
 				post("/token")
@@ -251,7 +224,7 @@ public class TestAuthCodeGrant extends BaseTest {
 	 * Invalid auth code
 	 */
 	@Test
-	public void invalidAuthCode() throws Exception {
+	public void whenInvalidAuthCode_then400() throws Exception {
 		this.mockMvc.perform(
 				post("/token")
 				.param("grant_type", "authorization_code")
@@ -265,7 +238,7 @@ public class TestAuthCodeGrant extends BaseTest {
 	 * Expires auth code
 	 */
 	@Test
-	public void expiredAuthCode() throws Exception {
+	public void whenExpiredAuthCode_then400() throws Exception {
 		when(this.authCodeRepoMock.findOne(eq("AZERTY"))).thenReturn(new AuthCodeEntity() {{
 			setId("AZERTY");
 			setApplication(APP_NAME);
@@ -288,7 +261,7 @@ public class TestAuthCodeGrant extends BaseTest {
 	 * currently authenticated app
 	 */
 	@Test
-	public void wrongClientId() throws Exception {
+	public void whenWrongClientId_then400() throws Exception {
 		// Login as hacky app
 		user.setName(HACKY_APP_FULL_NAME);
 		user.setCommon(HACKY_APP_NAME);
@@ -315,7 +288,7 @@ public class TestAuthCodeGrant extends BaseTest {
 	 * Scopes must be present in response if granted scopes are different from asked scope (in authorize request)
 	 */
 	@Test
-	public void scopePresentIfGrantedDifferentFromAsked() throws Exception {
+	public void whenScopesGrantedDifferentFromScopesAsked_thenScopePresentInResponse() throws Exception {
 		// Same scopes
 		when(this.authCodeRepoMock.findOne(eq("AZERTY"))).thenReturn(new AuthCodeEntity() {{
 			setId("AZERTY");
@@ -369,7 +342,7 @@ public class TestAuthCodeGrant extends BaseTest {
 	 * Get tokens from auth code. Client is public.
 	 */
 	@Test
-	public void publicClientTokensFromAuthCode() throws Exception {
+	public void whenPublicClient_thenNoRefreshToken() throws Exception {
 		when(this.authCodeRepoMock.findOne(eq("AZERTY"))).thenReturn(new AuthCodeEntity() {{
 			setId("AZERTY");
 			setApplication(APP_NAME);
@@ -402,7 +375,7 @@ public class TestAuthCodeGrant extends BaseTest {
 	 * Get tokens from auth code. Client type is not defined.
 	 */
 	@Test
-	public void undefinedClientTokensFromAuthCode() throws Exception {
+	public void whenUndefinedClient_thenNoRefreshToken() throws Exception {
 		normalApp.setClientType(null);
 		
 		when(this.authCodeRepoMock.findOne(eq("AZERTY"))).thenReturn(new AuthCodeEntity() {{
@@ -437,7 +410,7 @@ public class TestAuthCodeGrant extends BaseTest {
 	 * Get tokens from auth code. Client is confidential.
 	 */
 	@Test
-	public void confidentialClientTokensFromAuthCode() throws Exception {
+	public void whenConfidentialClient_thenRefreshToken() throws Exception {
 		normalApp.setClientType(AppServiceImpl.CLIENTTYPE_CONFIDENTIAL);
 		
 		when(this.authCodeRepoMock.findOne(eq("AZERTY"))).thenReturn(new AuthCodeEntity() {{
@@ -472,7 +445,7 @@ public class TestAuthCodeGrant extends BaseTest {
 	 * Extensions in conflict
 	 */
 	@Test
-	public void extensionsInConflict() throws Exception {
+	public void whenExtensionsInConflict_then400() throws Exception {
 		when(this.authCodeRepoMock.findOne(eq("AZERTY"))).thenReturn(new AuthCodeEntity() {{
 			setId("AZERTY");
 			setApplication(APP_NAME);

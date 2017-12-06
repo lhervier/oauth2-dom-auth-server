@@ -23,7 +23,7 @@ import com.github.lhervier.domino.oauth.server.ex.authorize.AuthServerErrorExcep
 import com.github.lhervier.domino.oauth.server.ex.grant.GrantInvalidGrantException;
 import com.github.lhervier.domino.oauth.server.ex.grant.GrantInvalidScopeException;
 import com.github.lhervier.domino.oauth.server.ex.grant.GrantServerErrorException;
-import com.github.lhervier.domino.oauth.server.ext.IOAuthAuthorizeExtension;
+import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.services.AuthCodeService;
 import com.github.lhervier.domino.oauth.server.services.ExtensionService;
@@ -152,7 +152,7 @@ public class RefreshTokenGrantServiceImpl implements GrantService {
 		// Call for extensions
 		Map<String, Object> resp = new HashMap<String, Object>();
 		for( String responseType : this.extSvc.getResponseTypes() ) {
-			IOAuthAuthorizeExtension ext = this.extSvc.getExtension(responseType);
+			IOAuthExtension ext = this.extSvc.getExtension(responseType);
 			Object context = Utils.getContext(authCode, responseType);
 			if( context == null )
 				continue;

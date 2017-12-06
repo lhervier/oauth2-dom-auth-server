@@ -36,7 +36,7 @@ import com.github.lhervier.domino.oauth.server.NotesPrincipal.AuthType;
 import com.github.lhervier.domino.oauth.server.entity.ApplicationEntity;
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
 import com.github.lhervier.domino.oauth.server.ext.IAuthorizer;
-import com.github.lhervier.domino.oauth.server.ext.IOAuthAuthorizeExtension;
+import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.server.ext.IPropertyAdder;
 import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
@@ -471,21 +471,21 @@ public class TestAuthCodeGrant extends BaseTest {
 		}});
 		
 		when(extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy1", "dummy2", "dummy3"));
-		when(extSvcMock.getExtension(eq("dummy1"))).thenReturn(new IOAuthAuthorizeExtension() {
+		when(extSvcMock.getExtension(eq("dummy1"))).thenReturn(new IOAuthExtension() {
 			public List<String> getAuthorizedScopes() { return Arrays.asList(); }
 			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, IAuthorizer authorizer) { }
 			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) {
 				adder.addProperty("prop", "value");
 			}
 		});
-		when(extSvcMock.getExtension(eq("dummy2"))).thenReturn(new IOAuthAuthorizeExtension() {
+		when(extSvcMock.getExtension(eq("dummy2"))).thenReturn(new IOAuthExtension() {
 			public List<String> getAuthorizedScopes() { return Arrays.asList(); }
 			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, IAuthorizer authorizer) { }
 			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) {
 				adder.addProperty("prop", "value");
 			}
 		});
-		when(extSvcMock.getExtension(eq("dummy3"))).thenReturn(new IOAuthAuthorizeExtension() {
+		when(extSvcMock.getExtension(eq("dummy3"))).thenReturn(new IOAuthExtension() {
 			public List<String> getAuthorizedScopes() { return Arrays.asList(); }
 			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, IAuthorizer authorizer) { }
 			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) {

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 import com.github.lhervier.domino.oauth.server.NotesPrincipal;
 import com.github.lhervier.domino.oauth.server.ext.IAuthorizer;
-import com.github.lhervier.domino.oauth.server.ext.IOAuthAuthorizeExtension;
+import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.server.ext.IPropertyAdder;
 import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.services.TimeService;
@@ -19,7 +19,7 @@ import com.github.lhervier.domino.oauth.server.services.TimeService;
  * @author Lionel HERVIER
  */
 @Component(TokenExt.TOKEN_RESPONSE_TYPE)
-public class TokenExt implements IOAuthAuthorizeExtension {
+public class TokenExt implements IOAuthExtension {
 
 	public static final String TOKEN_RESPONSE_TYPE = "token";
 	
@@ -48,7 +48,7 @@ public class TokenExt implements IOAuthAuthorizeExtension {
 	protected String signKey;
 	
 	/**
-	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthAuthorizeExtension#getAuthorizedScopes()
+	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#getAuthorizedScopes()
 	 */
 	@Override
 	public List<String> getAuthorizedScopes() {
@@ -56,7 +56,7 @@ public class TokenExt implements IOAuthAuthorizeExtension {
 	}
 	
 	/**
-	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthAuthorizeExtension#authorize(com.github.lhervier.domino.oauth.server.NotesPrincipal, com.github.lhervier.domino.oauth.server.model.Application, java.util.List, com.github.lhervier.domino.oauth.server.ext.IAuthorizer)
+	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#authorize(com.github.lhervier.domino.oauth.server.NotesPrincipal, com.github.lhervier.domino.oauth.server.model.Application, java.util.List, com.github.lhervier.domino.oauth.server.ext.IAuthorizer)
 	 */
 	@Override
 	public void authorize(
@@ -77,7 +77,7 @@ public class TokenExt implements IOAuthAuthorizeExtension {
 	}
 
 	/**
-	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthAuthorizeExtension#token(com.github.lhervier.domino.oauth.server.NotesPrincipal, com.github.lhervier.domino.oauth.server.model.Application, java.lang.Object, java.util.List, com.github.lhervier.domino.oauth.server.ext.IPropertyAdder)
+	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#token(com.github.lhervier.domino.oauth.server.NotesPrincipal, com.github.lhervier.domino.oauth.server.model.Application, java.lang.Object, java.util.List, com.github.lhervier.domino.oauth.server.ext.IPropertyAdder)
 	 */
 	@Override
 	public void token(

@@ -7,7 +7,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.github.lhervier.domino.oauth.server.ext.IOAuthAuthorizeExtension;
+import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.server.services.ExtensionService;
 
 @Service
@@ -17,7 +17,7 @@ public class ExtensionServiceImpl implements ExtensionService {
 	 * The extensions
 	 */
 	@Autowired
-	private Map<String, IOAuthAuthorizeExtension> exts;
+	private Map<String, IOAuthExtension> exts;
 	
 	/**
 	 * @see com.github.lhervier.domino.oauth.server.services.ExtensionService#getResponseTypes()
@@ -33,7 +33,7 @@ public class ExtensionServiceImpl implements ExtensionService {
 	 * @see com.github.lhervier.domino.oauth.server.services.ExtensionService#getExtension(java.lang.String)
 	 */
 	@Override
-	public IOAuthAuthorizeExtension getExtension(String responseType) {
+	public IOAuthExtension getExtension(String responseType) {
 		return this.exts.get(responseType);
 	}
 }

@@ -41,7 +41,7 @@ import com.github.lhervier.domino.oauth.server.NotesPrincipal.AuthType;
 import com.github.lhervier.domino.oauth.server.entity.ApplicationEntity;
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
 import com.github.lhervier.domino.oauth.server.ext.IAuthorizer;
-import com.github.lhervier.domino.oauth.server.ext.IOAuthAuthorizeExtension;
+import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.server.ext.IPropertyAdder;
 import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
@@ -149,7 +149,7 @@ public class TestAuthorizeController extends BaseTest {
 			setRedirectUri("http://acme.com/myApp");
 		}});
 		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy"));
-		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new IOAuthAuthorizeExtension() {
+		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new IOAuthExtension() {
 			public List<String> getAuthorizedScopes() { return new ArrayList<String>(); }
 			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
 			@Override
@@ -244,7 +244,7 @@ public class TestAuthorizeController extends BaseTest {
 			setRedirectUri("http://acme.com/myApp");
 		}});
 		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy"));
-		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new IOAuthAuthorizeExtension() {
+		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new IOAuthExtension() {
 			public List<String> getAuthorizedScopes() { return new ArrayList<String>(); }
 			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
 			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, IAuthorizer authorizer) {
@@ -298,7 +298,7 @@ public class TestAuthorizeController extends BaseTest {
 			setRedirectUris(Arrays.asList("http://acme.com/otherUri"));
 		}});
 		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy"));
-		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new IOAuthAuthorizeExtension() {
+		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new IOAuthExtension() {
 			public List<String> getAuthorizedScopes() { return new ArrayList<String>(); }
 			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
 			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, IAuthorizer authorizer) {
@@ -440,7 +440,7 @@ public class TestAuthorizeController extends BaseTest {
 			setRedirectUri("http://acme.com/myApp");
 		}});
 		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("noop"));
-		when(this.extSvcMock.getExtension(eq("noop"))).thenReturn(new IOAuthAuthorizeExtension() {
+		when(this.extSvcMock.getExtension(eq("noop"))).thenReturn(new IOAuthExtension() {
 			public List<String> getAuthorizedScopes() { return new ArrayList<String>(); }
 			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
 			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, IAuthorizer authorizer) { }
@@ -473,14 +473,14 @@ public class TestAuthorizeController extends BaseTest {
 			setRedirectUri("http://acme.com/myApp");
 		}});
 		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy1", "dummy2"));
-		when(this.extSvcMock.getExtension(eq("dummy1"))).thenReturn(new IOAuthAuthorizeExtension() {
+		when(this.extSvcMock.getExtension(eq("dummy1"))).thenReturn(new IOAuthExtension() {
 			public List<String> getAuthorizedScopes() { return new ArrayList<String>(); }
 			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
 			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, IAuthorizer authorizer) {
 				authorizer.saveAuthCode(true);		// Will save the auth code
 			}
 		});
-		when(this.extSvcMock.getExtension(eq("dummy2"))).thenReturn(new IOAuthAuthorizeExtension() {
+		when(this.extSvcMock.getExtension(eq("dummy2"))).thenReturn(new IOAuthExtension() {
 			public List<String> getAuthorizedScopes() { return new ArrayList<String>(); }
 			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
 			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, IAuthorizer authorizer) {
@@ -513,14 +513,14 @@ public class TestAuthorizeController extends BaseTest {
 			setRedirectUri("http://acme.com/myApp");
 		}});
 		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy1", "dummy2"));
-		when(this.extSvcMock.getExtension(eq("dummy1"))).thenReturn(new IOAuthAuthorizeExtension() {
+		when(this.extSvcMock.getExtension(eq("dummy1"))).thenReturn(new IOAuthExtension() {
 			public List<String> getAuthorizedScopes() { return new ArrayList<String>(); }
 			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
 			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, IAuthorizer authorizer) {
 				authorizer.addProperty("prop", "value");		// Adding property
 			}
 		});
-		when(this.extSvcMock.getExtension(eq("dummy2"))).thenReturn(new IOAuthAuthorizeExtension() {
+		when(this.extSvcMock.getExtension(eq("dummy2"))).thenReturn(new IOAuthExtension() {
 			public List<String> getAuthorizedScopes() { return new ArrayList<String>(); }
 			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
 			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, IAuthorizer authorizer) {
@@ -558,7 +558,7 @@ public class TestAuthorizeController extends BaseTest {
 			setRedirectUri("http://acme.com/myApp");
 		}});
 		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy"));
-		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new IOAuthAuthorizeExtension() {
+		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new IOAuthExtension() {
 			public List<String> getAuthorizedScopes() { return new ArrayList<String>(); }
 			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
 			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, IAuthorizer authorizer) {
@@ -629,7 +629,7 @@ public class TestAuthorizeController extends BaseTest {
 			setRedirectUri("http://acme.com/myApp?param1=xxx");			// Existing parameters in uri
 		}});
 		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy"));
-		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new IOAuthAuthorizeExtension() {
+		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new IOAuthExtension() {
 			public List<String> getAuthorizedScopes() { return new ArrayList<String>(); }
 			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
 			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, IAuthorizer authorizer) {
@@ -671,7 +671,7 @@ public class TestAuthorizeController extends BaseTest {
 			setRedirectUri("http://acme.com/myApp#param1=xxx");			// Fragment in uri
 		}});
 		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy"));
-		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new IOAuthAuthorizeExtension() {
+		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new IOAuthExtension() {
 			public List<String> getAuthorizedScopes() { return new ArrayList<String>(); }
 			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
 			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, IAuthorizer authorizer) {
@@ -701,7 +701,7 @@ public class TestAuthorizeController extends BaseTest {
 			setRedirectUri("http://acme.com/myApp");
 		}});
 		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy"));
-		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new IOAuthAuthorizeExtension() {
+		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new IOAuthExtension() {
 			public List<String> getAuthorizedScopes() { return Arrays.asList("scope1", "scopeX"); }
 			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
 			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, IAuthorizer authorizer) {
@@ -742,14 +742,14 @@ public class TestAuthorizeController extends BaseTest {
 			setRedirectUri("http://acme.com/myApp");
 		}});
 		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy1", "dummy2"));
-		when(this.extSvcMock.getExtension(eq("dummy1"))).thenReturn(new IOAuthAuthorizeExtension() {
+		when(this.extSvcMock.getExtension(eq("dummy1"))).thenReturn(new IOAuthExtension() {
 			public List<String> getAuthorizedScopes() { return Arrays.asList("scope1", "scope2"); }
 			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
 			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, IAuthorizer authorizer) {
 				authorizer.saveAuthCode(true);
 			}
 		});
-		when(this.extSvcMock.getExtension(eq("dummy2"))).thenReturn(new IOAuthAuthorizeExtension() {
+		when(this.extSvcMock.getExtension(eq("dummy2"))).thenReturn(new IOAuthExtension() {
 			public List<String> getAuthorizedScopes() { return Arrays.asList("scope1"); }
 			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
 			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, IAuthorizer authorizer) {
@@ -791,7 +791,7 @@ public class TestAuthorizeController extends BaseTest {
 			setRedirectUri("http://acme.com/myApp");
 		}});
 		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy"));
-		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new IOAuthAuthorizeExtension() {
+		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new IOAuthExtension() {
 			public List<String> getAuthorizedScopes() { return Arrays.asList(); }
 			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
 			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, IAuthorizer authorizer) {
@@ -834,7 +834,7 @@ public class TestAuthorizeController extends BaseTest {
 			setRedirectUri("http://acme.com/myApp#param1=xxx");			// Existing parameters in uri
 		}});
 		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy"));
-		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new IOAuthAuthorizeExtension() {
+		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new IOAuthExtension() {
 			public List<String> getAuthorizedScopes() { return Arrays.asList(); }
 			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
 			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, IAuthorizer authorizer) {

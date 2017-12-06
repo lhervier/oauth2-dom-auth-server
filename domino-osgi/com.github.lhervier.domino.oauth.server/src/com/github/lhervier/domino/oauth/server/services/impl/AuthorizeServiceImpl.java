@@ -22,7 +22,7 @@ import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
 import com.github.lhervier.domino.oauth.server.ex.authorize.AuthInvalidRequestException;
 import com.github.lhervier.domino.oauth.server.ex.authorize.AuthServerErrorException;
 import com.github.lhervier.domino.oauth.server.ex.authorize.AuthUnsupportedResponseTypeException;
-import com.github.lhervier.domino.oauth.server.ext.IOAuthAuthorizeExtension;
+import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
 import com.github.lhervier.domino.oauth.server.services.AppService;
@@ -157,7 +157,7 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 			// Get granted scopes
 			authCode.setGrantedScopes(new ArrayList<String>());
 			for( String respType : responseTypes ) {
-				IOAuthAuthorizeExtension ext = this.extSvc.getExtension(respType);
+				IOAuthExtension ext = this.extSvc.getExtension(respType);
 				for( String s : ext.getAuthorizedScopes() ) {
 					if( !scopes.contains(s) )
 						continue;
@@ -168,7 +168,7 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 			
 			// Run extensions
 			for( String respType : responseTypes ) {
-				IOAuthAuthorizeExtension ext = this.extSvc.getExtension(respType);
+				IOAuthExtension ext = this.extSvc.getExtension(respType);
 				
 				this.authorizer.setContext(null);
 				ext.authorize(

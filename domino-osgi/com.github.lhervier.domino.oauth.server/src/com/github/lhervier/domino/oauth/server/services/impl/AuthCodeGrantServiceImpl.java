@@ -20,7 +20,7 @@ import com.github.lhervier.domino.oauth.server.ex.grant.GrantInvalidClientExcept
 import com.github.lhervier.domino.oauth.server.ex.grant.GrantInvalidGrantException;
 import com.github.lhervier.domino.oauth.server.ex.grant.GrantInvalidRequestException;
 import com.github.lhervier.domino.oauth.server.ex.grant.GrantServerErrorException;
-import com.github.lhervier.domino.oauth.server.ext.IOAuthAuthorizeExtension;
+import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.model.ClientType;
 import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
@@ -126,7 +126,7 @@ public class AuthCodeGrantServiceImpl implements GrantService {
 			// They can change their context.
 			Map<String, Object> resp = new HashMap<String, Object>();
 			for( String responseType : this.extSvc.getResponseTypes() ) {
-				IOAuthAuthorizeExtension ext = this.extSvc.getExtension(responseType);
+				IOAuthExtension ext = this.extSvc.getExtension(responseType);
 				Object context = Utils.getContext(authCode, responseType);
 				if( context == null )
 					continue;

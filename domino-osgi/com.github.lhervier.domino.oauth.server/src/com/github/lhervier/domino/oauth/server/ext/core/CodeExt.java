@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 import com.github.lhervier.domino.oauth.server.NotesPrincipal;
 import com.github.lhervier.domino.oauth.server.ext.IAuthorizer;
-import com.github.lhervier.domino.oauth.server.ext.IOAuthAuthorizeExtension;
+import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.server.ext.IPropertyAdder;
 import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.services.TimeService;
@@ -19,7 +19,7 @@ import com.github.lhervier.domino.oauth.server.services.TimeService;
  * @author Lionel HERVIER
  */
 @Component(CodeExt.CODE_RESPONSE_TYPE)
-public class CodeExt implements IOAuthAuthorizeExtension {
+public class CodeExt implements IOAuthExtension {
 
 	public static final String CODE_RESPONSE_TYPE = "code";
 
@@ -48,7 +48,7 @@ public class CodeExt implements IOAuthAuthorizeExtension {
 	protected String signKey;
 	
 	/**
-	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthAuthorizeExtension#getAuthorizedScopes()
+	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#getAuthorizedScopes()
 	 */
 	@Override
 	public List<String> getAuthorizedScopes() {
@@ -56,7 +56,7 @@ public class CodeExt implements IOAuthAuthorizeExtension {
 	}
 	
 	/**
-	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthAuthorizeExtension#authorize(com.github.lhervier.domino.oauth.server.NotesPrincipal, com.github.lhervier.domino.oauth.server.model.Application, java.util.List, com.github.lhervier.domino.oauth.server.ext.IAuthorizer)
+	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#authorize(com.github.lhervier.domino.oauth.server.NotesPrincipal, com.github.lhervier.domino.oauth.server.model.Application, java.util.List, com.github.lhervier.domino.oauth.server.ext.IAuthorizer)
 	 */
 	@Override
 	public void authorize(

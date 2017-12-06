@@ -2,7 +2,7 @@ package com.github.lhervier.domino.oauth.server.services;
 
 import java.util.List;
 
-import com.github.lhervier.domino.oauth.server.ext.IOAuthAuthorizeExtension;
+import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 
 /**
  * Service to manage extensions (like openid)
@@ -18,5 +18,5 @@ public interface ExtensionService {
 	/**
 	 * Return the extension for the given response type
 	 */
-	public IOAuthAuthorizeExtension getExtension(String responseType);
+	public IOAuthExtension getExtension(String responseType);
 }

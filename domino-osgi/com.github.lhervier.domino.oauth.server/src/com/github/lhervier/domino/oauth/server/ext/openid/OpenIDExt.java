@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 import com.github.lhervier.domino.oauth.server.NotesPrincipal;
 import com.github.lhervier.domino.oauth.server.entity.PersonEntity;
 import com.github.lhervier.domino.oauth.server.ext.IAuthorizer;
-import com.github.lhervier.domino.oauth.server.ext.IOAuthAuthorizeExtension;
+import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.server.ext.IPropertyAdder;
 import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.repo.PersonRepository;
@@ -23,7 +23,7 @@ import com.github.lhervier.domino.oauth.server.services.TimeService;
  * @author Lionel HERVIER
  */
 @Component(OpenIDExt.RESPONSE_TYPE)
-public class OpenIDExt implements IOAuthAuthorizeExtension {
+public class OpenIDExt implements IOAuthExtension {
 
 	public static final String RESPONSE_TYPE = "id_token";
 	
@@ -68,7 +68,7 @@ public class OpenIDExt implements IOAuthAuthorizeExtension {
 	private TimeService timeSvc;
 	
 	/**
-	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthAuthorizeExtension#getAuthorizedScopes()
+	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#getAuthorizedScopes()
 	 */
 	@Override
 	public List<String> getAuthorizedScopes() {
@@ -138,7 +138,7 @@ public class OpenIDExt implements IOAuthAuthorizeExtension {
 	}
 	
 	/**
-	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthAuthorizeExtension#authorize(com.github.lhervier.domino.oauth.server.NotesPrincipal, com.github.lhervier.domino.oauth.server.model.Application, java.util.List, com.github.lhervier.domino.oauth.server.ext.IAuthorizer)
+	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#authorize(com.github.lhervier.domino.oauth.server.NotesPrincipal, com.github.lhervier.domino.oauth.server.model.Application, java.util.List, com.github.lhervier.domino.oauth.server.ext.IAuthorizer)
 	 */
 	public void authorize(
 			NotesPrincipal user,

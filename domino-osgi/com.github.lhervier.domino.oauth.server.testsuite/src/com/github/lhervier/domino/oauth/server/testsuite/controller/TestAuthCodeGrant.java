@@ -9,6 +9,8 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -504,5 +506,28 @@ public class TestAuthCodeGrant extends BaseTest {
 		@SuppressWarnings("unchecked")
 		Map<String, String> response = this.mapper.readValue(json, Map.class);
 		assertThat(response, hasEntry("error", "server_error"));
+	}
+	
+
+	/**
+	 * AuthCode is removed after grant
+	 */
+	@Test
+	public void whenGrant_thenAuthCodeRemoved() throws Exception {
+		when(this.authCodeRepoMock.findOne(eq("12345"))).thenReturn(new AuthCodeEntity() {{
+			setExpires(timeSvcStub.currentTimeSeconds() + 10L);
+			setClientId(APP_CLIENT_ID);
+			setApplication(APP_NAME);
+			setRedirectUri(APP_REDIRECT_URI);
+		}});
+		this.mockMvc
+		.perform(
+				post("/token")
+				.param("grant_type", "authorization_code")
+				.param("code", "12345")
+				.param("redirect_uri", APP_REDIRECT_URI)
+		).andExpect(status().is(200));
+		
+		verify(this.authCodeRepoMock, times(1)).delete(eq("12345"));
 	}
 }

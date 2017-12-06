@@ -4,8 +4,10 @@ import org.codehaus.jackson.annotate.JsonProperty;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
 
+import com.github.lhervier.domino.oauth.server.IExpirable;
+
 @JsonSerialize(include=Inclusion.NON_NULL)
-public class IdToken {
+public class IdToken implements IExpirable {
 
 	/**
 	 * The issuer
@@ -16,6 +18,12 @@ public class IdToken {
 	 * The subject
 	 */
 	private String sub;
+	
+	/**
+	 * Expiration
+	 */
+	@JsonProperty("exp")
+	private long expires;
 	
 	/**
 	 * the audiance
@@ -555,6 +563,20 @@ public class IdToken {
 	 */
 	public void setIat(long iat) {
 		this.iat = iat;
+	}
+
+	/**
+	 * @return the exp
+	 */
+	public long getExpires() {
+		return expires;
+	}
+
+	/**
+	 * @param exp the exp to set
+	 */
+	public void setExpires(long exp) {
+		this.expires = exp;
 	}
 	
 }

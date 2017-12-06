@@ -35,6 +35,6 @@ public class OpenIdUserInfoServiceImpl implements OpenIdUserInfoService {
 	 */
 	public IdToken userInfo(NotesPrincipal user) throws NotAuthorizedException {
 		Application app = this.appSvc.getApplicationFromClientId(user.getClientId());
-		return this.openIdExt.createIdToken(user, app, user.getScopes());
+		return this.openIdExt.createIdToken(user, app, user.getScopes(), null);
 	}
 }

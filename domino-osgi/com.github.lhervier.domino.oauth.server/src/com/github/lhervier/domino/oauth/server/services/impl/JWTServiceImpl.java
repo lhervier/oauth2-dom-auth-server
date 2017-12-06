@@ -103,7 +103,7 @@ public class JWTServiceImpl implements JWTService {
 	 * @see com.github.lhervier.domino.oauth.server.services.JWTService#fromJws(java.lang.String, java.lang.String, java.lang.Class)
 	 */
 	@Override
-	public <T extends IExpirable> T fromJws(String jws, String signConfig, Class<T> cl) {
+	public <T> T fromJws(String jws, String signConfig, Class<T> cl) {
 		try {
 			JWSObject jwsObj = JWSObject.parse(jws);
 			
@@ -128,9 +128,12 @@ public class JWTServiceImpl implements JWTService {
 			
 			T obj = this.mapper.readValue(jwsObj.getPayload().toString(), cl);
 			
-			if( obj.getExpires() < this.timeSvc.currentTimeSeconds() ) {
-				LOG.error("Bearer token expired");
-				return null;
+			if( obj instanceof IExpirable ) {
+				IExpirable exp = (IExpirable) obj;
+				if( exp.getExpires() < this.timeSvc.currentTimeSeconds() ) {
+					LOG.error("Bearer token expired");
+					return null;
+				}
 			}
 			
 			return obj;
@@ -147,7 +150,7 @@ public class JWTServiceImpl implements JWTService {
 	 * @see com.github.lhervier.domino.oauth.server.services.JWTService#fromJwe(java.lang.String, java.lang.String, java.lang.Class)
 	 */
 	@Override
-	public <T extends IExpirable> T fromJwe(String jwe, String cryptConfig, Class<T> cl) throws ServerErrorException {
+	public <T> T fromJwe(String jwe, String cryptConfig, Class<T> cl) throws ServerErrorException {
 		try {
 			JWEObject jweObject = JWEObject.parse(jwe);
 			jweObject.decrypt(
@@ -158,8 +161,11 @@ public class JWTServiceImpl implements JWTService {
 			String json = jweObject.getPayload().toString();
 			T obj = this.mapper.readValue(json, cl);
 			
-			if( obj.getExpires() < this.timeSvc.currentTimeSeconds() )
-				return null;
+			if( obj instanceof IExpirable ) {
+				IExpirable exp = (IExpirable) obj;
+				if( exp.getExpires() < this.timeSvc.currentTimeSeconds() )
+					return null;
+			}
 			
 			return obj;
 		} catch (JsonParseException e) {

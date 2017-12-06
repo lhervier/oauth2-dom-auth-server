@@ -1,13 +1,12 @@
 package com.github.lhervier.domino.oauth.server.ext.core;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Component;
 
 import com.github.lhervier.domino.oauth.server.NotesPrincipal;
-import com.github.lhervier.domino.oauth.server.ext.AuthorizeResponseBuilder;
 import com.github.lhervier.domino.oauth.server.ext.AuthorizeResponse;
+import com.github.lhervier.domino.oauth.server.ext.AuthorizeResponseBuilder;
 import com.github.lhervier.domino.oauth.server.ext.TokenResponse;
 import com.github.lhervier.domino.oauth.server.model.Application;
 
@@ -21,11 +20,11 @@ public class TokenExt extends BaseCoreExt {
 	public static final String TOKEN_RESPONSE_TYPE = "token";
 	
 	/**
-	 * @see com.github.lhervier.domino.oauth.server.ext.OAuthExtension#getAuthorizedScopes()
+	 * @see com.github.lhervier.domino.oauth.server.ext.OAuthExtension#getAuthorizedScopes(List)
 	 */
 	@Override
-	public List<String> getAuthorizedScopes() {
-		return new ArrayList<String>();
+	public List<String> getAuthorizedScopes(List<String> scopes) {
+		return null;
 	}
 	
 	/**

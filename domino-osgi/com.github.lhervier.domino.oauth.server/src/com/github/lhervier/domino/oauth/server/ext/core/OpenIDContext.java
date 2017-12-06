@@ -3,21 +3,40 @@ package com.github.lhervier.domino.oauth.server.ext.core;
 public class OpenIDContext {
 
 	/**
-	 * ID Token issued date
+	 * Authenticated time
 	 */
-	private long iat;
+	private long authTime;
 
 	/**
-	 * @return the iat
+	 * Nonce
 	 */
-	public long getIat() {
-		return iat;
+	private String nonce;
+	
+	/**
+	 * @return the authTime
+	 */
+	public long getAuthTime() {
+		return authTime;
 	}
 
 	/**
-	 * @param iat the iat to set
+	 * @param authTime the authTime to set
 	 */
-	public void setIat(long iat) {
-		this.iat = iat;
+	public void setAuthTime(long authTime) {
+		this.authTime = authTime;
+	}
+
+	/**
+	 * @return the nonce
+	 */
+	public String getNonce() {
+		return nonce;
+	}
+
+	/**
+	 * @param nonce the nonce to set
+	 */
+	public void setNonce(String nonce) {
+		this.nonce = nonce;
 	}
 }

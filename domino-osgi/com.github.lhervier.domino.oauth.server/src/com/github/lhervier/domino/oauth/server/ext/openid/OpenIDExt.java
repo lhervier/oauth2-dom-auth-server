@@ -1,6 +1,6 @@
 package com.github.lhervier.domino.oauth.server.ext.openid;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -11,8 +11,8 @@ import org.springframework.stereotype.Component;
 
 import com.github.lhervier.domino.oauth.server.NotesPrincipal;
 import com.github.lhervier.domino.oauth.server.entity.PersonEntity;
-import com.github.lhervier.domino.oauth.server.ext.AuthorizeResponseBuilder;
 import com.github.lhervier.domino.oauth.server.ext.AuthorizeResponse;
+import com.github.lhervier.domino.oauth.server.ext.AuthorizeResponseBuilder;
 import com.github.lhervier.domino.oauth.server.ext.OAuthExtension;
 import com.github.lhervier.domino.oauth.server.ext.TokenResponse;
 import com.github.lhervier.domino.oauth.server.ext.TokenResponseBuilder;
@@ -54,6 +54,12 @@ public class OpenIDExt implements OAuthExtension {
 	private String signKey;
 	
 	/**
+	 * Expiration of the id_token
+	 */
+	@Value("${oauth2.server.openid.expiresIn}")
+	private long expiresIn;
+	
+	/**
 	 * The http servlet request
 	 */
 	@Autowired
@@ -72,11 +78,20 @@ public class OpenIDExt implements OAuthExtension {
 	private TimeService timeSvc;
 	
 	/**
-	 * @see com.github.lhervier.domino.oauth.server.ext.OAuthExtension#getAuthorizedScopes()
+	 * @see com.github.lhervier.domino.oauth.server.ext.OAuthExtension#getAuthorizedScopes(List)
 	 */
 	@Override
-	public List<String> getAuthorizedScopes() {
-		return Arrays.asList(SCOPE_ADDRESS, SCOPE_EMAIL, SCOPE_OPENID, SCOPE_PHONE, SCOPE_PROFILE);
+	public List<String> getAuthorizedScopes(List<String> scopes) {
+		if( !scopes.contains(SCOPE_OPENID) )
+			return null;
+		
+		List<String> ret = new ArrayList<String>();
+		ret.add(SCOPE_OPENID);
+		if( scopes.contains(SCOPE_ADDRESS) ) ret.add(SCOPE_ADDRESS);
+		if( scopes.contains(SCOPE_EMAIL) ) ret.add(SCOPE_EMAIL);
+		if( scopes.contains(SCOPE_PHONE) ) ret.add(SCOPE_PHONE);
+		if( scopes.contains(SCOPE_PROFILE) ) ret.add(SCOPE_PROFILE);
+		return ret;
 	}
 
 	/**
@@ -85,12 +100,14 @@ public class OpenIDExt implements OAuthExtension {
 	public IdToken createIdToken(
 			NotesPrincipal user, 
 			Application app,
-			List<String> scopes) {
+			List<String> scopes,
+			String nonce) {
 		PersonEntity person = this.personRepo.findOne(user.getName());
 		if( person == null )
 			throw new RuntimeException("OpenID: User '" + user.getName() + "' not found in person repo. Unable to authorize.");
 		
 		IdToken ctx = new IdToken();
+		ctx.setExpires(this.timeSvc.currentTimeSeconds() + this.expiresIn);
 		ctx.setIat(this.timeSvc.currentTimeSeconds());
 		ctx.setIss(this.iss);
 		ctx.setSub(user.getName());
@@ -99,10 +116,7 @@ public class OpenIDExt implements OAuthExtension {
 		ctx.setAmr(null);				// TODO: amr non généré
 		ctx.setAzp(null);				// TODO: azp non généré
 		ctx.setAuthTime(this.timeSvc.currentTimeSeconds());
-		if( this.request.getParameter(PARAM_NONCE) != null )
-			ctx.setNonce(this.request.getParameter(PARAM_NONCE));
-		else
-			ctx.setNonce(null);
+		ctx.setNonce(nonce);
 		
 		if( scopes.contains(SCOPE_PROFILE) ) {
 			ctx.setName(person.getFullNames().get(0));
@@ -151,19 +165,24 @@ public class OpenIDExt implements OAuthExtension {
 			List<String> responseTypes) {
 		if( !askedScopes.contains(SCOPE_OPENID) )
 			return null;
-		if( !responseTypes.contains(TokenExt.TOKEN_RESPONSE_TYPE) )
-			return null;
 		
-		IdToken idToken = this.createIdToken(user, app, askedScopes);
-		return AuthorizeResponseBuilder.newBuilder()
-				.addProperty()
-					.withName(TOKEN_RESPONSE_ATTR)
-					.withValue(idToken)
-					.signedWith(this.signKey)
-				.setContext(new OpenIDContext() {{
-					setIat(timeSvc.currentTimeSeconds());
-				}})
-				.build();
+		OpenIDContext ctx = new OpenIDContext();
+		ctx.setAuthTime(timeSvc.currentTimeSeconds());
+		ctx.setNonce(this.request.getParameter(PARAM_NONCE));
+		
+		AuthorizeResponseBuilder builder = AuthorizeResponseBuilder.newBuilder().setContext(ctx);
+		if( responseTypes.contains(TokenExt.TOKEN_RESPONSE_TYPE) ) {
+			builder.addProperty()
+				.withName(TOKEN_RESPONSE_ATTR)
+					.withValue(this.createIdToken(
+							user, 
+							app, 
+							askedScopes, 
+							this.request.getParameter(PARAM_NONCE)
+					))
+					.signedWith(this.signKey);
+		}
+		return builder.build();
 	}
 	
 	/**
@@ -178,8 +197,9 @@ public class OpenIDExt implements OAuthExtension {
 		if( context == null )
 			return null;
 		OpenIDContext oidCtx = (OpenIDContext) context;
-		IdToken idToken = this.createIdToken(user, app, askedScopes);
-		idToken.setIat(oidCtx.getIat());
+		
+		IdToken idToken = this.createIdToken(user, app, askedScopes, oidCtx.getNonce());
+		idToken.setAuthTime(oidCtx.getAuthTime());
 		
 		return TokenResponseBuilder.newBuilder()
 				.addProperty()

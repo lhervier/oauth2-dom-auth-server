@@ -134,7 +134,7 @@ public class TestAuthorizeController extends BaseTest {
 		}});
 		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy"));
 		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new OAuthExtension() {
-			public List<String> getAuthorizedScopes() { return new ArrayList<String>(); }
+			public List<String> getAuthorizedScopes(List<String> scopes) { return null; }
 			public TokenResponse token(NotesPrincipal user, Application app, Object context, List<String> askedScopes) { return null; }
 			@Override
 			public AuthorizeResponse authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes) {
@@ -236,7 +236,7 @@ public class TestAuthorizeController extends BaseTest {
 		}});
 		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy"));
 		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new OAuthExtension() {
-			public List<String> getAuthorizedScopes() { return new ArrayList<String>(); }
+			public List<String> getAuthorizedScopes(List<String> scopes) { return null; }
 			public TokenResponse token(NotesPrincipal user, Application app, Object context, List<String> askedScopes) { return null; }
 			public AuthorizeResponse authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes) {
 				return AuthorizeResponseBuilder.newBuilder()
@@ -292,7 +292,7 @@ public class TestAuthorizeController extends BaseTest {
 		}});
 		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy"));
 		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new OAuthExtension() {
-			public List<String> getAuthorizedScopes() { return new ArrayList<String>(); }
+			public List<String> getAuthorizedScopes(List<String> scopes) { return null; }
 			public TokenResponse token(NotesPrincipal user, Application app, Object context, List<String> askedScopes) { return null; }
 			public AuthorizeResponse authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes) {
 				return AuthorizeResponseBuilder.newBuilder()
@@ -436,7 +436,7 @@ public class TestAuthorizeController extends BaseTest {
 		}});
 		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("noop"));
 		when(this.extSvcMock.getExtension(eq("noop"))).thenReturn(new OAuthExtension() {
-			public List<String> getAuthorizedScopes() { return new ArrayList<String>(); }
+			public List<String> getAuthorizedScopes(List<String> scopes) { return new ArrayList<String>(); }
 			public TokenResponse token(NotesPrincipal user, Application app, Object context, List<String> askedScopes) { return null; }
 			public AuthorizeResponse authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes) { return null; }
 		});
@@ -469,7 +469,7 @@ public class TestAuthorizeController extends BaseTest {
 		}});
 		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy1", "dummy2"));
 		when(this.extSvcMock.getExtension(eq("dummy1"))).thenReturn(new OAuthExtension() {
-			public List<String> getAuthorizedScopes() { return new ArrayList<String>(); }
+			public List<String> getAuthorizedScopes(List<String> scopes) { return new ArrayList<String>(); }
 			public TokenResponse token(NotesPrincipal user, Application app, Object context, List<String> askedScopes) { return null; }
 			public AuthorizeResponse authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes) {
 				return AuthorizeResponseBuilder.newBuilder()
@@ -478,7 +478,7 @@ public class TestAuthorizeController extends BaseTest {
 			}
 		});
 		when(this.extSvcMock.getExtension(eq("dummy2"))).thenReturn(new OAuthExtension() {
-			public List<String> getAuthorizedScopes() { return new ArrayList<String>(); }
+			public List<String> getAuthorizedScopes(List<String> scopes) { return new ArrayList<String>(); }
 			public TokenResponse token(NotesPrincipal user, Application app, Object context, List<String> askedScopes) { return null; }
 			public AuthorizeResponse authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes) {
 				return AuthorizeResponseBuilder.newBuilder()
@@ -518,7 +518,7 @@ public class TestAuthorizeController extends BaseTest {
 		}});
 		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy"));
 		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new OAuthExtension() {
-			public List<String> getAuthorizedScopes() { return new ArrayList<String>(); }
+			public List<String> getAuthorizedScopes(List<String> scopes) { return new ArrayList<String>(); }
 			public TokenResponse token(NotesPrincipal user, Application app, Object context, List<String> askedScopes) { return null; }
 			public AuthorizeResponse authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes) {
 				return AuthorizeResponseBuilder.newBuilder()
@@ -591,7 +591,7 @@ public class TestAuthorizeController extends BaseTest {
 		}});
 		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy"));
 		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new OAuthExtension() {
-			public List<String> getAuthorizedScopes() { return new ArrayList<String>(); }
+			public List<String> getAuthorizedScopes(List<String> scopes) { return new ArrayList<String>(); }
 			public TokenResponse token(NotesPrincipal user, Application app, Object context, List<String> askedScopes) { return null; }
 			public AuthorizeResponse authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes) {
 				return AuthorizeResponseBuilder.newBuilder()
@@ -635,7 +635,7 @@ public class TestAuthorizeController extends BaseTest {
 		}});
 		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy"));
 		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new OAuthExtension() {
-			public List<String> getAuthorizedScopes() { return new ArrayList<String>(); }
+			public List<String> getAuthorizedScopes(List<String> scopes) { return new ArrayList<String>(); }
 			public TokenResponse token(NotesPrincipal user, Application app, Object context, List<String> askedScopes) { return null; }
 			public AuthorizeResponse authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes) {
 				return AuthorizeResponseBuilder.newBuilder()
@@ -667,7 +667,7 @@ public class TestAuthorizeController extends BaseTest {
 		}});
 		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy"));
 		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new OAuthExtension() {
-			public List<String> getAuthorizedScopes() { return Arrays.asList("scope1", "scopeX"); }
+			public List<String> getAuthorizedScopes(List<String> scopes) { return Arrays.asList("scope1", "scopeX"); }
 			public TokenResponse token(NotesPrincipal user, Application app, Object context, List<String> askedScopes) { return null; }
 			public AuthorizeResponse authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes) {
 				return AuthorizeResponseBuilder.newBuilder()
@@ -710,7 +710,7 @@ public class TestAuthorizeController extends BaseTest {
 		}});
 		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy1", "dummy2"));
 		when(this.extSvcMock.getExtension(eq("dummy1"))).thenReturn(new OAuthExtension() {
-			public List<String> getAuthorizedScopes() { return Arrays.asList("scope1", "scope2"); }
+			public List<String> getAuthorizedScopes(List<String> scopes) { return Arrays.asList("scope1", "scope2"); }
 			public TokenResponse token(NotesPrincipal user, Application app, Object context, List<String> askedScopes) { return null; }
 			public AuthorizeResponse authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes) {
 				return AuthorizeResponseBuilder.newBuilder()
@@ -719,7 +719,7 @@ public class TestAuthorizeController extends BaseTest {
 			}
 		});
 		when(this.extSvcMock.getExtension(eq("dummy2"))).thenReturn(new OAuthExtension() {
-			public List<String> getAuthorizedScopes() { return Arrays.asList("scope1"); }
+			public List<String> getAuthorizedScopes(List<String> scopes) { return Arrays.asList("scope1"); }
 			public TokenResponse token(NotesPrincipal user, Application app, Object context, List<String> askedScopes) { return null; }
 			public AuthorizeResponse authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes) {
 				return null;
@@ -762,7 +762,7 @@ public class TestAuthorizeController extends BaseTest {
 		}});
 		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy"));
 		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new OAuthExtension() {
-			public List<String> getAuthorizedScopes() { return Arrays.asList(); }
+			public List<String> getAuthorizedScopes(List<String> scopes) { return Arrays.asList(); }
 			public TokenResponse token(NotesPrincipal user, Application app, Object context, List<String> askedScopes) { return null; }
 			public AuthorizeResponse authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes) {
 				return AuthorizeResponseBuilder.newBuilder()
@@ -806,7 +806,7 @@ public class TestAuthorizeController extends BaseTest {
 		}});
 		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy"));
 		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new OAuthExtension() {
-			public List<String> getAuthorizedScopes() { return Arrays.asList(); }
+			public List<String> getAuthorizedScopes(List<String> scopes) { return Arrays.asList(); }
 			public TokenResponse token(NotesPrincipal user, Application app, Object context, List<String> askedScopes) { return null; }
 			public AuthorizeResponse authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes) {
 				return AuthorizeResponseBuilder.newBuilder()

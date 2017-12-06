@@ -158,7 +158,9 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 			authCode.setGrantedScopes(new ArrayList<String>());
 			for( String respType : responseTypes ) {
 				OAuthExtension ext = this.extSvc.getExtension(respType);
-				for( String s : ext.getAuthorizedScopes() ) {
+				if( ext.getAuthorizedScopes(scopes) == null )
+					continue;
+				for( String s : ext.getAuthorizedScopes(scopes) ) {
 					if( !scopes.contains(s) )
 						continue;
 					if( !authCode.getGrantedScopes().contains(s) )

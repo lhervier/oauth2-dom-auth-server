@@ -13,8 +13,9 @@ public interface OAuthExtension {
 
 	/**
 	 * Return the list of authorized scopes.
+	 * @param scopes the asked scopes
 	 */
-	public List<String> getAuthorizedScopes();
+	public List<String> getAuthorizedScopes(List<String> scopes);
 	
 	/**
 	 * Authorize end point

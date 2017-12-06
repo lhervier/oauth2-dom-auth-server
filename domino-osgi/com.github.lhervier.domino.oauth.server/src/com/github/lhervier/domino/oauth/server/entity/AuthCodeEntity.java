@@ -5,11 +5,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.github.lhervier.domino.oauth.server.IExpirable;
+
 /**
  * Un code autorisation.
  * @author Lionel HERVIER
  */
-public class AuthCodeEntity {
+public class AuthCodeEntity implements IExpirable {
 
 	/**
 	 * L'identifiant

@@ -2,11 +2,15 @@ package com.github.lhervier.domino.oauth.server.ext.core;
 
 import java.util.List;
 
+import org.codehaus.jackson.annotate.JsonProperty;
+
+import com.github.lhervier.domino.oauth.server.IExpirable;
+
 /**
  * Representation of the access token
  * @author Lionel HERVIER
  */
-public class AccessToken {
+public class AccessToken implements IExpirable {
 
 	/**
 	 * The issuer
@@ -26,7 +30,8 @@ public class AccessToken {
 	/**
 	 * Expiration
 	 */
-	private long exp;
+	@JsonProperty("exp")
+	private long expires;
 	
 	/**
 	 * The scopes
@@ -41,12 +46,12 @@ public class AccessToken {
 		this.scopes = scopes;
 	}
 
-	public long getExp() {
-		return exp;
+	public long getExpires() {
+		return expires;
 	}
 
-	public void setExp(long exp) {
-		this.exp = exp;
+	public void setExpires(long exp) {
+		this.expires = exp;
 	}
 
 	public String getIss() {

@@ -1,48 +1,33 @@
 package com.github.lhervier.domino.oauth.server.notes;
 
-import java.io.IOException;
-import java.text.ParseException;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.servlet.http.HttpServletRequest;
 
-import lotus.domino.NotesException;
-import lotus.domino.Session;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 
+import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
 import com.github.lhervier.domino.oauth.server.ext.core.AccessToken;
-import com.github.lhervier.domino.oauth.server.repo.SecretRepository;
-import com.github.lhervier.domino.oauth.server.services.TimeService;
-import com.github.lhervier.domino.oauth.server.utils.Utils;
+import com.github.lhervier.domino.oauth.server.services.JWTService;
 import com.ibm.domino.napi.NException;
 import com.ibm.domino.napi.c.NotesUtil;
 import com.ibm.domino.napi.c.Os;
 import com.ibm.domino.napi.c.xsp.XSPNative;
 import com.ibm.domino.osgi.core.context.ContextInfo;
-import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.JWSObject;
-import com.nimbusds.jose.JWSVerifier;
-import com.nimbusds.jose.crypto.MACVerifier;
+
+import lotus.domino.NotesException;
+import lotus.domino.Session;
 
 @Component
 @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class BearerContext {
 
-	/**
-	 * Logger
-	 */
-	private static final Log LOG = LogFactory.getLog(BearerContext.class);
-	
 	/**
 	 * The http request
 	 */
@@ -50,28 +35,16 @@ public class BearerContext {
 	private HttpServletRequest request;
 	
 	/**
-	 * Repo to get the secrets
+	 * JWT service
 	 */
 	@Autowired
-	private SecretRepository secretRepo;
-	
-	/**
-	 * Time service
-	 */
-	@Autowired
-	private TimeService timeSvc;
+	private JWTService jwtSvc;
 	
 	/**
 	 * The sign key
 	 */
 	@Value("${oauth2.server.core.signKey}")
 	private String signKey;
-	
-	/**
-	 * Object mapper
-	 */
-	@Autowired
-	private ObjectMapper mapper;
 	
 	/**
 	 * Delegated
@@ -118,39 +91,10 @@ public class BearerContext {
 			String sJws = auth.substring("Bearer ".length());
 			this.headerSent = true;
 			
-			// Parse the JWT
-			JWSObject jwsObj = JWSObject.parse(sJws);
-			
-			// Check sign key
-			String kid = jwsObj.getHeader().getKeyID();
-			if( !Utils.equals(this.signKey, kid) ) {
-				LOG.error("kid incorrect in Bearer token");
+			// Get the access token
+			AccessToken accessToken = this.jwtSvc.fromJws(sJws, signKey, AccessToken.class);
+			if( accessToken == null )
 				return;
-			}
-			
-			// Check algorithm
-			String alg = jwsObj.getHeader().getAlgorithm().getName();
-			if( !Utils.equals("HS256", alg) ) {
-				LOG.error("alg incorrect in Bearer token");
-				return;
-			}
-			
-			// Check signature
-			byte[] secret = this.secretRepo.findSignSecret(kid);
-			JWSVerifier verifier = new MACVerifier(secret);
-			if( !jwsObj.verify(verifier) ) {
-				LOG.error("Bearer token verification failed");
-				return;
-			}
-			
-			// Deserialize token
-			AccessToken accessToken = this.mapper.readValue(jwsObj.getPayload().toString(), AccessToken.class);
-			
-			// Check token is not expired
-			if( accessToken.getExp() < this.timeSvc.currentTimeSeconds() ) {
-				LOG.error("Bearer token expired");
-				return;
-			}
 			
 			// Extract token information
 			this.clientId = accessToken.getAud();
@@ -164,12 +108,8 @@ public class BearerContext {
 			throw new RuntimeException(e);
 		} catch (NException e) {
 			throw new RuntimeException(e);
-		} catch (IOException e) {
+		} catch (ServerErrorException e) {
 			throw new RuntimeException(e);
-		} catch (JOSEException e) {
-			throw new RuntimeException(e);
-		} catch (ParseException e) {
-			return;
 		}
 	}
 	

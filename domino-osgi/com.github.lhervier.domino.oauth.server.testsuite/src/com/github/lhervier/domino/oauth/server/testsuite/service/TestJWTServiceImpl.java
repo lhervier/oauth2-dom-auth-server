@@ -14,19 +14,19 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
-import com.github.lhervier.domino.oauth.server.services.impl.AuthCodeServiceImpl;
+import com.github.lhervier.domino.oauth.server.services.impl.JWTServiceImpl;
 import com.github.lhervier.domino.oauth.server.testsuite.BaseTest;
 import com.github.lhervier.domino.oauth.server.testsuite.impl.DummyContext;
 import com.github.lhervier.domino.oauth.server.testsuite.impl.TimeServiceTestImpl;
 
 @SuppressWarnings("serial")
-public class TestAuthCodeServiceImpl extends BaseTest {
+public class TestJWTServiceImpl extends BaseTest {
 
 	/**
-	 * The auth code service
+	 * The jwt service
 	 */
 	@Autowired
-	private AuthCodeServiceImpl authCodeSvc;
+	private JWTServiceImpl jwtSvc;
 	
 	/**
 	 * Before execution of each test
@@ -41,7 +41,7 @@ public class TestAuthCodeServiceImpl extends BaseTest {
 	 */
 	@Test
 	public void invalidJwe() throws Exception {
-		assertThat(this.authCodeSvc.toEntity("invalid_refresh_token"), is(nullValue()));
+		assertThat(this.jwtSvc.fromJwe("invalid_refresh_token", "xx", AuthCodeEntity.class), is(nullValue()));
 	}
 	
 	/**
@@ -63,13 +63,13 @@ public class TestAuthCodeServiceImpl extends BaseTest {
 				}}));
 			}});
 		}};
-		String refreshToken = this.authCodeSvc.fromEntity(entity);
+		String refreshToken = this.jwtSvc.createJwe(entity, "xx");
 		
 		// Time pass...
 		TimeServiceTestImpl.CURRENT_TIME += this.refreshTokenLifetime + 10L;
 		
 		// refresh token no longer valid
-		AuthCodeEntity authCode = this.authCodeSvc.toEntity(refreshToken);
+		AuthCodeEntity authCode = this.jwtSvc.fromJwe(refreshToken, "xx", AuthCodeEntity.class);
 		assertThat(authCode, is(nullValue()));
 	}
 	
@@ -94,10 +94,10 @@ public class TestAuthCodeServiceImpl extends BaseTest {
 				}}));
 			}});
 		}};
-		String refreshToken = this.authCodeSvc.fromEntity(entity);
+		String refreshToken = this.jwtSvc.createJwe(entity, "xx");
 		
 		// Read the token back again
-		AuthCodeEntity authCode = this.authCodeSvc.toEntity(refreshToken);
+		AuthCodeEntity authCode = this.jwtSvc.fromJwe(refreshToken, "xx", AuthCodeEntity.class);
 		assertThat(authCode.getId(), equalTo("0123456789"));
 		assertThat(authCode.getApplication(), equalTo("myApp"));
 		assertThat(authCode.getClientId(), equalTo("1234"));

@@ -27,7 +27,6 @@ import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -42,7 +41,6 @@ import com.github.lhervier.domino.oauth.server.ext.TokenResponseBuilder;
 import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
 import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
-import com.github.lhervier.domino.oauth.server.services.AuthCodeService;
 import com.github.lhervier.domino.oauth.server.services.ExtensionService;
 import com.github.lhervier.domino.oauth.server.services.impl.AppServiceImpl;
 import com.github.lhervier.domino.oauth.server.testsuite.BaseTest;
@@ -83,12 +81,6 @@ public class TestAuthCodeGrant extends BaseTest {
 	private AuthCodeRepository authCodeRepoMock;
 	
 	/**
-	 * Auth code service
-	 */
-	@Autowired
-	private AuthCodeService authCodeSvcMock;
-	
-	/**
 	 * Extension service mock
 	 */
 	@Autowired
@@ -108,7 +100,6 @@ public class TestAuthCodeGrant extends BaseTest {
 		// Reset repositories
 		reset(appRepoMock);
 		reset(authCodeRepoMock);
-		reset(authCodeSvcMock);
 		reset(extSvcMock);
 		
 		// Declare applications
@@ -332,9 +323,6 @@ public class TestAuthCodeGrant extends BaseTest {
 			setRedirectUri("http://acme.com/myApp");
 		}});
 		
-		when(this.authCodeSvcMock.fromEntity(Mockito.any(AuthCodeEntity.class)))
-		.thenReturn("012345");
-		
 		MvcResult result = this.mockMvc.perform(
 				post("/token")
 				.param("grant_type", "authorization_code")
@@ -367,9 +355,6 @@ public class TestAuthCodeGrant extends BaseTest {
 			setRedirectUri("http://acme.com/myApp");
 		}});
 		
-		when(this.authCodeSvcMock.fromEntity(Mockito.any(AuthCodeEntity.class)))
-		.thenReturn("012345");
-		
 		MvcResult result = this.mockMvc.perform(
 				post("/token")
 				.param("grant_type", "authorization_code")
@@ -401,9 +386,6 @@ public class TestAuthCodeGrant extends BaseTest {
 			setExpires(timeSvcStub.currentTimeSeconds() + 10L);
 			setRedirectUri("http://acme.com/myApp");
 		}});
-		
-		when(this.authCodeSvcMock.fromEntity(Mockito.any(AuthCodeEntity.class)))
-		.thenReturn("012345");
 		
 		MvcResult result = this.mockMvc.perform(
 				post("/token")

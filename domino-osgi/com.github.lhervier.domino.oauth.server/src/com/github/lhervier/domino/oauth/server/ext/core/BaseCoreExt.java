@@ -42,7 +42,7 @@ public abstract class BaseCoreExt implements OAuthExtension {
 		accessToken.setAud(app.getClientId());
 		accessToken.setIss(this.iss);
 		accessToken.setSub(user.getName());
-		accessToken.setExp(this.timeSvc.currentTimeSeconds() + this.expiresIn);
+		accessToken.setExpires(this.timeSvc.currentTimeSeconds() + this.expiresIn);
 		return accessToken;
 	}
 }

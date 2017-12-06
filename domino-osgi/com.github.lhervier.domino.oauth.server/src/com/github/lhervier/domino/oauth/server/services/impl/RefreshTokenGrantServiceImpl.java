@@ -20,8 +20,8 @@ import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
 import com.github.lhervier.domino.oauth.server.ex.grant.GrantInvalidGrantException;
 import com.github.lhervier.domino.oauth.server.ex.grant.GrantInvalidScopeException;
 import com.github.lhervier.domino.oauth.server.model.Application;
-import com.github.lhervier.domino.oauth.server.services.AuthCodeService;
 import com.github.lhervier.domino.oauth.server.services.GrantService;
+import com.github.lhervier.domino.oauth.server.services.JWTService;
 import com.github.lhervier.domino.oauth.server.services.TimeService;
 import com.github.lhervier.domino.oauth.server.utils.Utils;
 
@@ -41,10 +41,10 @@ public class RefreshTokenGrantServiceImpl extends BaseGrantService implements Gr
 	private String refreshTokenConfig;
 	
 	/**
-	 * The auth code service
+	 * The JWT service
 	 */
 	@Autowired
-	private AuthCodeService authCodeSvc;
+	private JWTService jwtSvc;
 	
 	/**
 	 * The time service
@@ -75,7 +75,7 @@ public class RefreshTokenGrantServiceImpl extends BaseGrantService implements Gr
 			throw new GrantInvalidGrantException("refresh_token is mandatory");
 		
 		// Decrypt refresh token
-		final AuthCodeEntity authCode = this.authCodeSvc.toEntity(refreshToken);
+		final AuthCodeEntity authCode = this.jwtSvc.fromJwe(refreshToken, this.refreshTokenConfig, AuthCodeEntity.class);
 		if( authCode == null )
 			throw new GrantInvalidGrantException("invalid refresh_token");
 		
@@ -114,7 +114,7 @@ public class RefreshTokenGrantServiceImpl extends BaseGrantService implements Gr
 		// Regenerate the refresh token (update expiration date)
 		// When using this grant, clientType is confidential.
 		authCode.setExpires(this.timeSvc.currentTimeSeconds() + this.refreshTokenLifetime);
-		String newRefreshToken = this.authCodeSvc.fromEntity(authCode);
+		String newRefreshToken = this.jwtSvc.createJwe(authCode, this.refreshTokenConfig);
 		resp.put("refresh_token", newRefreshToken);
 		
 		// Other information

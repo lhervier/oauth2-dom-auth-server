@@ -1,14 +1,11 @@
 package com.github.lhervier.domino.oauth.server.testsuite.controller;
 
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -16,13 +13,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -30,7 +25,7 @@ import com.github.lhervier.domino.oauth.server.NotesPrincipal.AuthType;
 import com.github.lhervier.domino.oauth.server.entity.ApplicationEntity;
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
 import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
-import com.github.lhervier.domino.oauth.server.services.AuthCodeService;
+import com.github.lhervier.domino.oauth.server.services.JWTService;
 import com.github.lhervier.domino.oauth.server.testsuite.BaseTest;
 import com.github.lhervier.domino.oauth.server.testsuite.impl.NotesPrincipalTestImpl;
 
@@ -52,10 +47,10 @@ public class TestRefreshTokenGrant extends BaseTest {
 	private ApplicationRepository appRepoMock;
 	
 	/**
-	 * The auth code service
+	 * JWT Service
 	 */
 	@Autowired
-	private AuthCodeService authCodeSvcMock;
+	private JWTService jwtSvc;
 	
 	/**
 	 * User principal
@@ -66,7 +61,6 @@ public class TestRefreshTokenGrant extends BaseTest {
 	@Before
 	public void before() throws Exception {
 		reset(appRepoMock);
-		reset(authCodeSvcMock);
 		
 		this.normalApp = new ApplicationEntity() {{
 			this.setClientId(APP_CLIENT_ID);
@@ -103,8 +97,6 @@ public class TestRefreshTokenGrant extends BaseTest {
 	 */
 	@Test
 	public void whenInvalidRefreshToken_then400() throws Exception {
-		when(authCodeSvcMock.toEntity(Mockito.eq("AZERTY"))).thenReturn(null);
-		
 		this.mockMvc.perform(
 				post("/token")
 				.param("grant_type", "refresh_token")
@@ -118,17 +110,18 @@ public class TestRefreshTokenGrant extends BaseTest {
 	 */
 	@Test
 	public void whenExpiredRefreshToken_then400() throws Exception {
-		when(authCodeSvcMock.toEntity(Mockito.eq("AZERTY"))).thenReturn(new AuthCodeEntity() {{
+		AuthCodeEntity entity = new AuthCodeEntity() {{
 			setId("012345");
 			setExpires(timeSvcStub.currentTimeSeconds() - 10L);		// Expired 10s ago
 			setScopes(new ArrayList<String>());
 			setGrantedScopes(new ArrayList<String>());
-		}});
+		}};
+		String refreshToken = this.jwtSvc.createJwe(entity, "xx");
 		
 		this.mockMvc.perform(
 				post("/token")
 				.param("grant_type", "refresh_token")
-				.param("refresh_token", "AZERTY")
+				.param("refresh_token", refreshToken)
 		).andExpect(status().is(400))
 		.andExpect(content().string(containsString("invalid refresh_token")));
 	}
@@ -145,12 +138,12 @@ public class TestRefreshTokenGrant extends BaseTest {
 			setScopes(Arrays.asList("scope1", "scope2", "scope3"));
 			setGrantedScopes(Arrays.asList("scope1", "scope2"));
 		}};
-		when(authCodeSvcMock.toEntity(Mockito.eq("AZERTY"))).thenReturn(code);
+		String refreshToken = this.jwtSvc.createJwe(code, "xx");
 		
 		MvcResult result = this.mockMvc.perform(
 				post("/token")
 				.param("grant_type", "refresh_token")
-				.param("refresh_token", "AZERTY")
+				.param("refresh_token", refreshToken)
 				.param("scope", "scope1")
 		).andExpect(status().is(200))
 		.andReturn();
@@ -172,12 +165,12 @@ public class TestRefreshTokenGrant extends BaseTest {
 			setScopes(Arrays.asList("scope1", "scope2", "scope3"));
 			setGrantedScopes(Arrays.asList("scope1", "scope2"));
 		}};
-		when(authCodeSvcMock.toEntity(Mockito.eq("AZERTY"))).thenReturn(code);
+		String refreshToken = this.jwtSvc.createJwe(code, "xx");
 		
 		this.mockMvc.perform(
 				post("/token")
 				.param("grant_type", "refresh_token")
-				.param("refresh_token", "AZERTY")
+				.param("refresh_token", refreshToken)
 				.param("scope", "scope1 scope2 scope3")
 		).andExpect(status().is(400))
 		.andExpect(content().string(containsString("invalid scope")));
@@ -188,34 +181,29 @@ public class TestRefreshTokenGrant extends BaseTest {
 	 */
 	@Test
 	public void whenNoScope_thenGrantedScopesRemainsTheSame() throws Exception {
-		when(authCodeSvcMock.toEntity(Mockito.eq("AZERTY"))).thenReturn(new AuthCodeEntity() {{
+		AuthCodeEntity code = new AuthCodeEntity() {{
 			setId("012345");
 			setApplication(APP_NAME);
 			setClientId(APP_CLIENT_ID);
 			setExpires(timeSvcStub.currentTimeSeconds() + 10L);
 			setScopes(Arrays.asList("scope1", "scope2"));
 			setGrantedScopes(Arrays.asList("scope1"));
-		}});
-		
-		when(authCodeSvcMock.fromEntity(Mockito.any(AuthCodeEntity.class))).thenReturn("QSDFGH");
+		}};
+		String refreshToken = this.jwtSvc.createJwe(code, "xx");
 		
 		MvcResult result = this.mockMvc.perform(
 				post("/token")
 				.param("grant_type", "refresh_token")
-				.param("refresh_token", "AZERTY")
+				.param("refresh_token", refreshToken)
 		).andExpect(status().is(200))
 		.andReturn();
 		
 		String json = result.getResponse().getContentAsString();
 		Map<String, Object> response = this.fromJson(json);
-		assertThat(response.get("refresh_token").toString(), equalTo("QSDFGH"));
+		assertThat(response.get("refresh_token"), CoreMatchers.notNullValue());
 		
-		ArgumentCaptor<AuthCodeEntity> captor = ArgumentCaptor.forClass(AuthCodeEntity.class);
-		verify(authCodeSvcMock, times(1)).fromEntity(captor.capture());
-		List<AuthCodeEntity> values = captor.getAllValues();
-		assertThat(values.size(), equalTo(1));
-		AuthCodeEntity code = values.get(0);
-		assertThat(code.getGrantedScopes(), containsInAnyOrder("scope1"));
+		AuthCodeEntity newCode = this.jwtSvc.fromJwe(response.get("refresh_token").toString(), "xx", AuthCodeEntity.class);
+		assertThat(newCode.getGrantedScopes(), containsInAnyOrder("scope1"));
 	}
 	
 	/**
@@ -223,19 +211,20 @@ public class TestRefreshTokenGrant extends BaseTest {
 	 */
 	@Test
 	public void whenRefreshTokenGeneratedForAnotherApp_then400() throws Exception {
-		when(authCodeSvcMock.toEntity(Mockito.eq("AZERTY"))).thenReturn(new AuthCodeEntity() {{
+		AuthCodeEntity code = new AuthCodeEntity() {{
 			setId("012345");
 			setApplication("otherApp");
 			setClientId("5678");
 			setExpires(timeSvcStub.currentTimeSeconds() + 10L);
 			setScopes(new ArrayList<String>());
 			setGrantedScopes(new ArrayList<String>());
-		}});
+		}};
+		String refreshToken = this.jwtSvc.createJwe(code, "xx");
 		
 		this.mockMvc.perform(
 				post("/token")
 				.param("grant_type", "refresh_token")
-				.param("refresh_token", "AZERTY")
+				.param("refresh_token", refreshToken)
 		).andExpect(status().is(400))
 		.andExpect(content().string(containsString("invalid client_id")));
 	}

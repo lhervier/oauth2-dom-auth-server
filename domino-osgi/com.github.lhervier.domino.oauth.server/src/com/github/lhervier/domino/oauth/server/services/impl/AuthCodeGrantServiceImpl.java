@@ -20,8 +20,8 @@ import com.github.lhervier.domino.oauth.server.ex.grant.GrantInvalidRequestExcep
 import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.model.ClientType;
 import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
-import com.github.lhervier.domino.oauth.server.services.AuthCodeService;
 import com.github.lhervier.domino.oauth.server.services.GrantService;
+import com.github.lhervier.domino.oauth.server.services.JWTService;
 import com.github.lhervier.domino.oauth.server.services.TimeService;
 import com.github.lhervier.domino.oauth.server.utils.Utils;
 
@@ -41,10 +41,10 @@ public class AuthCodeGrantServiceImpl extends BaseGrantService implements GrantS
 	private TimeService timeSvc;
 	
 	/**
-	 * Auth code service
+	 * JWT service
 	 */
 	@Autowired
-	private AuthCodeService authCodeSvc;
+	private JWTService jwtSvc;
 	
 	/**
 	 * Request
@@ -57,6 +57,12 @@ public class AuthCodeGrantServiceImpl extends BaseGrantService implements GrantS
 	 */
 	@Value("${oauth2.server.refreshTokenLifetime}")
 	private long refreshTokenLifetime;
+	
+	/**
+	 * Name of the LTPA config used to encrypt refresh tokens
+	 */
+	@Value("${oauth2.server.refreshTokenConfig}")
+	private String refreshTokenConfig;
 	
 	/**
 	 * @see com.github.lhervier.domino.oauth.server.services.GrantService#createGrant(com.github.lhervier.domino.oauth.server.model.Application, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
@@ -112,7 +118,7 @@ public class AuthCodeGrantServiceImpl extends BaseGrantService implements GrantS
 			// Generate the refresh token only for confidential clients
 			if( ClientType.CONFIDENTIAL == app.getClientType() ) {
 				authCode.setExpires(this.timeSvc.currentTimeSeconds() + this.refreshTokenLifetime);
-				String sRefreshToken = this.authCodeSvc.fromEntity(authCode);
+				String sRefreshToken = this.jwtSvc.createJwe(authCode, this.refreshTokenConfig);
 				resp.put("refresh_token", sRefreshToken);
 			}
 			

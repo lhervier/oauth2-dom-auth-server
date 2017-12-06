@@ -40,7 +40,7 @@ import com.github.lhervier.domino.oauth.server.NotesPrincipal;
 import com.github.lhervier.domino.oauth.server.NotesPrincipal.AuthType;
 import com.github.lhervier.domino.oauth.server.entity.ApplicationEntity;
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
-import com.github.lhervier.domino.oauth.server.ext.IAuthorizer;
+import com.github.lhervier.domino.oauth.server.ext.AuthorizeResponse;
 import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.server.ext.IPropertyAdder;
 import com.github.lhervier.domino.oauth.server.model.Application;
@@ -153,9 +153,11 @@ public class TestAuthorizeController extends BaseTest {
 			public List<String> getAuthorizedScopes() { return new ArrayList<String>(); }
 			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
 			@Override
-			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes, IAuthorizer authorizer) {
-				authorizer.addCodeToResponse(true);		// Will save the auth code
-				authorizer.addProperty("dummy_authorize_param", "authparamvalue");
+			public AuthorizeResponse authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes) {
+				return AuthorizeResponse.init()
+						.addAuthCode()	// Will save the auth code
+						.addProperty().withName("dummy_authorize_param").withValue("authparamvalue")
+						.build();
 			}
 		});
 		when(authCodeRepoMock.save(any(AuthCodeEntity.class))).then(returnsFirstArg());
@@ -247,9 +249,11 @@ public class TestAuthorizeController extends BaseTest {
 		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new IOAuthExtension() {
 			public List<String> getAuthorizedScopes() { return new ArrayList<String>(); }
 			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
-			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes, IAuthorizer authorizer) {
-				authorizer.addCodeToResponse(true);		// Will save the auth code
-				authorizer.addProperty("dummy_authorize_param", "authparamvalue");
+			public AuthorizeResponse authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes) {
+				return AuthorizeResponse.init()
+						.addAuthCode()	// Will save the auth code
+						.addProperty().withName("dummy_authorize_param").withValue("authparamvalue")
+						.build();
 			}
 		});
 		MvcResult result = mockMvc
@@ -301,9 +305,11 @@ public class TestAuthorizeController extends BaseTest {
 		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new IOAuthExtension() {
 			public List<String> getAuthorizedScopes() { return new ArrayList<String>(); }
 			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
-			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes, IAuthorizer authorizer) {
-				authorizer.addCodeToResponse(true);		// Will save the auth code
-				authorizer.addProperty("dummy_authorize_param", "authparamvalue");
+			public AuthorizeResponse authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes) {
+				return AuthorizeResponse.init()
+						.addAuthCode()	// Will save the auth code
+						.addProperty().withName("dummy_authorize_param").withValue("authparamvalue")
+						.build();
 			}
 		});
 		MvcResult result = mockMvc
@@ -443,7 +449,7 @@ public class TestAuthorizeController extends BaseTest {
 		when(this.extSvcMock.getExtension(eq("noop"))).thenReturn(new IOAuthExtension() {
 			public List<String> getAuthorizedScopes() { return new ArrayList<String>(); }
 			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
-			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes, IAuthorizer authorizer) { }
+			public AuthorizeResponse authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes) { return null; }
 		});
 		MvcResult result = mockMvc
 		.perform(
@@ -463,46 +469,6 @@ public class TestAuthorizeController extends BaseTest {
 	}
 	
 	/**
-	 * Conflicting response types on auth code saving
-	 */
-	@Test
-	public void whenConflictingResponseTypesOnAuthCodeSaving_thenError() throws Exception {
-		when(appRepoMock.findOne(Mockito.anyString())).thenReturn(new ApplicationEntity() {{
-			setClientId("1234");
-			setName("myApp");
-			setRedirectUri("http://acme.com/myApp");
-		}});
-		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy1", "dummy2"));
-		when(this.extSvcMock.getExtension(eq("dummy1"))).thenReturn(new IOAuthExtension() {
-			public List<String> getAuthorizedScopes() { return new ArrayList<String>(); }
-			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
-			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes, IAuthorizer authorizer) {
-				authorizer.addCodeToResponse(true);		// Will save the auth code
-			}
-		});
-		when(this.extSvcMock.getExtension(eq("dummy2"))).thenReturn(new IOAuthExtension() {
-			public List<String> getAuthorizedScopes() { return new ArrayList<String>(); }
-			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
-			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes, IAuthorizer authorizer) {
-				authorizer.addCodeToResponse(false);		// Will NOT save the auth code
-			}
-		});
-		MvcResult result = mockMvc
-		.perform(
-				get("/authorize")
-				.param("client_id", "1234")
-				.param("response_type", "dummy1 dummy2")
-		)
-		.andExpect(status().is(302))
-		.andReturn();
-		
-		String location = result.getResponse().getHeader("Location");
-		Map<String, String> params = urlParameters(location);
-		assertThat(params, hasEntry("error", "server_error"));
-		assertThat(params, hasEntry(equalTo("error_description"), containsString("response_type conflict on grant_type")));
-	}
-	
-	/**
 	 * Conflicting response types on properties
 	 */
 	@Test
@@ -516,15 +482,19 @@ public class TestAuthorizeController extends BaseTest {
 		when(this.extSvcMock.getExtension(eq("dummy1"))).thenReturn(new IOAuthExtension() {
 			public List<String> getAuthorizedScopes() { return new ArrayList<String>(); }
 			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
-			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes, IAuthorizer authorizer) {
-				authorizer.addProperty("prop", "value");		// Adding property
+			public AuthorizeResponse authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes) {
+				return AuthorizeResponse.init()
+						.addProperty().withName("prop").withValue("value")
+						.build();
 			}
 		});
 		when(this.extSvcMock.getExtension(eq("dummy2"))).thenReturn(new IOAuthExtension() {
 			public List<String> getAuthorizedScopes() { return new ArrayList<String>(); }
 			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
-			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes, IAuthorizer authorizer) {
-				authorizer.addProperty("prop", "othervalue");		// Adding SAME property
+			public AuthorizeResponse authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes) {
+				return AuthorizeResponse.init()
+						.addProperty().withName("prop").withValue("othervalue")	// Adding SAME property
+						.build();
 			}
 		});
 		MvcResult result = mockMvc
@@ -550,7 +520,7 @@ public class TestAuthorizeController extends BaseTest {
 	 * https://tools.ietf.org/html/rfc6749#section-3.1
 	 */
 	@Test
-	public void whenExtensionSavesAuthCode_thenSavedAuthCodeOK() throws Exception {
+	public void whenExtensionAddAuthCode_thenSavedAuthCodeOK() throws Exception {
 		when(appRepoMock.findOne(anyString())).thenReturn(new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");
@@ -561,11 +531,13 @@ public class TestAuthorizeController extends BaseTest {
 		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new IOAuthExtension() {
 			public List<String> getAuthorizedScopes() { return new ArrayList<String>(); }
 			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
-			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes, IAuthorizer authorizer) {
-				authorizer.setContext(new DummyContext() {{
-					setName("CN=Lionel/O=USER");
-				}});
-				authorizer.addCodeToResponse(true);
+			public AuthorizeResponse authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes) {
+				return AuthorizeResponse.init()
+						.addAuthCode()
+						.setContext(new DummyContext() {{
+							setName("CN=Lionel/O=USER");
+						}})
+						.build();
 			}
 		});
 		
@@ -632,9 +604,11 @@ public class TestAuthorizeController extends BaseTest {
 		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new IOAuthExtension() {
 			public List<String> getAuthorizedScopes() { return new ArrayList<String>(); }
 			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
-			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes, IAuthorizer authorizer) {
-				authorizer.addProperty("dummy_authorize_param", "authparamvalue");
-				authorizer.addCodeToResponse(true);
+			public AuthorizeResponse authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes) {
+				return AuthorizeResponse.init()
+						.addProperty().withName("dummy_authorize_param").withValue("authparamvalue")
+						.addAuthCode()
+						.build();
 			}
 		});
 		
@@ -663,7 +637,7 @@ public class TestAuthorizeController extends BaseTest {
 	 * https://tools.ietf.org/html/rfc6749#section-3.1
 	 */
 	@Test
-	public void whenFragmentInRedirectUriAndSaveAuthCode_then500() throws Exception {
+	public void whenFragmentInRedirectUriAndAddAuthCode_then500() throws Exception {
 		when(appRepoMock.findOne(eq("1234"))).thenReturn(new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");
@@ -674,8 +648,10 @@ public class TestAuthorizeController extends BaseTest {
 		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new IOAuthExtension() {
 			public List<String> getAuthorizedScopes() { return new ArrayList<String>(); }
 			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
-			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes, IAuthorizer authorizer) {
-				authorizer.addCodeToResponse(true);
+			public AuthorizeResponse authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes) {
+				return AuthorizeResponse.init()
+						.addAuthCode()
+						.build();
 			}
 		});
 		
@@ -704,8 +680,10 @@ public class TestAuthorizeController extends BaseTest {
 		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new IOAuthExtension() {
 			public List<String> getAuthorizedScopes() { return Arrays.asList("scope1", "scopeX"); }
 			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
-			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes, IAuthorizer authorizer) {
-				authorizer.addCodeToResponse(true);
+			public AuthorizeResponse authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes) {
+				return AuthorizeResponse.init()
+						.addAuthCode()
+						.build();
 			}
 		});
 		
@@ -745,14 +723,17 @@ public class TestAuthorizeController extends BaseTest {
 		when(this.extSvcMock.getExtension(eq("dummy1"))).thenReturn(new IOAuthExtension() {
 			public List<String> getAuthorizedScopes() { return Arrays.asList("scope1", "scope2"); }
 			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
-			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes, IAuthorizer authorizer) {
-				authorizer.addCodeToResponse(true);
+			public AuthorizeResponse authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes) {
+				return AuthorizeResponse.init()
+						.addAuthCode()
+						.build();
 			}
 		});
 		when(this.extSvcMock.getExtension(eq("dummy2"))).thenReturn(new IOAuthExtension() {
 			public List<String> getAuthorizedScopes() { return Arrays.asList("scope1"); }
 			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
-			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes, IAuthorizer authorizer) {
+			public AuthorizeResponse authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes) {
+				return null;
 			}
 		});
 		when(authCodeRepoMock.save(any(AuthCodeEntity.class))).then(returnsFirstArg());
@@ -794,8 +775,9 @@ public class TestAuthorizeController extends BaseTest {
 		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new IOAuthExtension() {
 			public List<String> getAuthorizedScopes() { return Arrays.asList(); }
 			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
-			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes, IAuthorizer authorizer) {
-				authorizer.addCodeToResponse(false);
+			public AuthorizeResponse authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes) {
+				return AuthorizeResponse.init()
+						.build();
 			}
 		});
 		
@@ -826,7 +808,7 @@ public class TestAuthorizeController extends BaseTest {
 	 * https://tools.ietf.org/html/rfc6749#section-3.1
 	 */
 	@Test
-	public void whenFragmentInRedirectUriAndAuthCodeNotSaved_thenOK() throws Exception {
+	public void whenFragmentInRedirectUriAndAuthCodeNotAdded_thenOK() throws Exception {
 		when(appRepoMock.findOne(anyString())).thenReturn(new ApplicationEntity() {{
 			setClientId("1234");
 			setName("myApp");
@@ -837,9 +819,10 @@ public class TestAuthorizeController extends BaseTest {
 		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new IOAuthExtension() {
 			public List<String> getAuthorizedScopes() { return Arrays.asList(); }
 			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) { }
-			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes, IAuthorizer authorizer) {
-				authorizer.addProperty("test", "testvalue");
-				authorizer.addCodeToResponse(false);
+			public AuthorizeResponse authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes) {
+				return AuthorizeResponse.init()
+						.addProperty().withName("test").withValue("testvalue")
+						.build();
 			}
 		});
 		

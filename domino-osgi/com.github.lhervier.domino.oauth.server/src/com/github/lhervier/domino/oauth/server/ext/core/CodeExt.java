@@ -6,7 +6,7 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 
 import com.github.lhervier.domino.oauth.server.NotesPrincipal;
-import com.github.lhervier.domino.oauth.server.ext.IAuthorizer;
+import com.github.lhervier.domino.oauth.server.ext.AuthorizeResponse;
 import com.github.lhervier.domino.oauth.server.ext.IPropertyAdder;
 import com.github.lhervier.domino.oauth.server.model.Application;
 
@@ -28,16 +28,17 @@ public class CodeExt extends BaseCoreExt {
 	}
 	
 	/**
-	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#authorize(com.github.lhervier.domino.oauth.server.NotesPrincipal, com.github.lhervier.domino.oauth.server.model.Application, java.util.List, com.github.lhervier.domino.oauth.server.ext.IAuthorizer)
+	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#authorize(NotesPrincipal, Application, String, List, List)
 	 */
 	@Override
-	public void authorize(
+	public AuthorizeResponse authorize(
 			NotesPrincipal user,
 			Application app,
 			List<String> askedScopes,
-			List<String> responseTypes,
-			IAuthorizer authorizer) {
-		authorizer.addCodeToResponse(true);			// Explicitly ask to save the auth code
+			List<String> responseTypes) {
+		return AuthorizeResponse.init()
+				.addAuthCode()
+				.build();
 	}
 	
 	/**

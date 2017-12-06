@@ -6,7 +6,7 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 
 import com.github.lhervier.domino.oauth.server.NotesPrincipal;
-import com.github.lhervier.domino.oauth.server.ext.IAuthorizer;
+import com.github.lhervier.domino.oauth.server.ext.AuthorizeResponse;
 import com.github.lhervier.domino.oauth.server.ext.IPropertyAdder;
 import com.github.lhervier.domino.oauth.server.model.Application;
 
@@ -31,17 +31,21 @@ public class TokenExt extends BaseCoreExt {
 	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#authorize(com.github.lhervier.domino.oauth.server.NotesPrincipal, com.github.lhervier.domino.oauth.server.model.Application, java.util.List, com.github.lhervier.domino.oauth.server.ext.IAuthorizer)
 	 */
 	@Override
-	public void authorize(
+	public AuthorizeResponse authorize(
 			NotesPrincipal user,
 			Application app,
 			List<String> askedScopes,
-			List<String> responseTypes,
-			IAuthorizer authorizer) {
-		AccessToken accessToken = this.createAccessToken(app, user);
-		authorizer.addSignedProperty("access_token", accessToken, this.signKey);
-		authorizer.addProperty("token_type", "bearer");
-		
-		authorizer.addCodeToResponse(false);
+			List<String> responseTypes) {
+		return AuthorizeResponse.init()
+				.addProperty()
+					.withName("access_token")
+					.withValue(this.createAccessToken(app, user))
+					.signedWith(this.signKey)
+				.addProperty()
+					.withName("token_type")
+					.withValue("bearer")
+				.addAuthCode()
+				.build();
 	}
 
 	/**

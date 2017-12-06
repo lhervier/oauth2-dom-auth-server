@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 import com.github.lhervier.domino.oauth.server.NotesPrincipal;
 import com.github.lhervier.domino.oauth.server.entity.PersonEntity;
-import com.github.lhervier.domino.oauth.server.ext.IAuthorizer;
+import com.github.lhervier.domino.oauth.server.ext.AuthorizeResponse;
 import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.server.ext.IPropertyAdder;
 import com.github.lhervier.domino.oauth.server.ext.core.OpenIDContext;
@@ -140,27 +140,28 @@ public class OpenIDExt implements IOAuthExtension {
 	}
 	
 	/**
-	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#authorize(com.github.lhervier.domino.oauth.server.NotesPrincipal, com.github.lhervier.domino.oauth.server.model.Application, java.util.List, com.github.lhervier.domino.oauth.server.ext.IAuthorizer)
+	 * @see com.github.lhervier.domino.oauth.server.ext.IOAuthExtension#authorize(NotesPrincipal, Application, String, List, List)
 	 */
-	public void authorize(
+	public AuthorizeResponse authorize(
 			NotesPrincipal user,
 			Application app,
 			List<String> askedScopes,
-			List<String> responseTypes,
-			IAuthorizer authorizer) {
+			List<String> responseTypes) {
 		if( !askedScopes.contains(SCOPE_OPENID) )
-			return;
+			return null;
 		if( !responseTypes.contains(TokenExt.TOKEN_RESPONSE_TYPE) )
-			return;
+			return null;
 		
 		IdToken idToken = this.createIdToken(user, app, askedScopes);
-		authorizer.addSignedProperty(TOKEN_RESPONSE_ATTR, idToken, this.signKey);
-		
-		authorizer.setContext(new OpenIDContext() {{
-			setIat(timeSvc.currentTimeSeconds());
-		}});
-		
-		// authorizer.saveAuthCode(We don't care)		Let other extensions decide if the auth code must be saved
+		return AuthorizeResponse.init()
+				.addProperty()
+					.withName(TOKEN_RESPONSE_ATTR)
+					.withValue(idToken)
+					.signedWith(this.signKey)
+				.setContext(new OpenIDContext() {{
+					setIat(timeSvc.currentTimeSeconds());
+				}})
+				.build();
 	}
 	
 	/**

@@ -22,14 +22,12 @@ public interface IOAuthExtension {
 	 * @param app the app the user is authenticating to
 	 * @param askedScopes scopes asked by the user
 	 * @param responseTypes the response types
-	 * @param authorizer object to authorize the request
 	 */
-	public void authorize(
+	public AuthorizeResponse authorize(
 			NotesPrincipal user,
 			Application app,
 			List<String> askedScopes,
-			List<String> responseTypes,
-			IAuthorizer authorizer);
+			List<String> responseTypes);
 	
 	/**
 	 * Grant end point

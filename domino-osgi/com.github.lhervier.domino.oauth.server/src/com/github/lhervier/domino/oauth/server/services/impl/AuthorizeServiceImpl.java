@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.github.lhervier.domino.oauth.server.AuthorizerImpl;
 import com.github.lhervier.domino.oauth.server.NotesPrincipal;
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
 import com.github.lhervier.domino.oauth.server.ex.BaseAuthException;
@@ -22,12 +21,15 @@ import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
 import com.github.lhervier.domino.oauth.server.ex.authorize.AuthInvalidRequestException;
 import com.github.lhervier.domino.oauth.server.ex.authorize.AuthServerErrorException;
 import com.github.lhervier.domino.oauth.server.ex.authorize.AuthUnsupportedResponseTypeException;
+import com.github.lhervier.domino.oauth.server.ext.AuthorizeResponse;
+import com.github.lhervier.domino.oauth.server.ext.AuthorizeResponse.OAuthProperty;
 import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
 import com.github.lhervier.domino.oauth.server.services.AppService;
 import com.github.lhervier.domino.oauth.server.services.AuthorizeService;
 import com.github.lhervier.domino.oauth.server.services.ExtensionService;
+import com.github.lhervier.domino.oauth.server.services.SecretService;
 import com.github.lhervier.domino.oauth.server.services.TimeService;
 import com.github.lhervier.domino.oauth.server.utils.Utils;
 
@@ -63,6 +65,12 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 	private ExtensionService extSvc;
 	
 	/**
+	 * The secret service
+	 */
+	@Autowired
+	private SecretService secretSvc;
+	
+	/**
 	 * Authorization codes life time
 	 */
 	@Value("${oauth2.server.authCodeLifetime}")
@@ -73,12 +81,6 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 	 */
 	@Autowired
 	private ObjectMapper mapper;
-	
-	/**
-	 * The authorizer
-	 */
-	@Autowired
-	private AuthorizerImpl authorizer;
 	
 	// ========================================================================================================
 	
@@ -148,8 +150,6 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 			authCode.setRedirectUri(redirectUri);
 			
 			authCode.setExpires(this.timeSvc.currentTimeSeconds() + this.authCodeLifeTime);
-			authCode.setContextClasses(new HashMap<String, String>());
-			authCode.setContextObjects(new HashMap<String, String>());
 			
 			// Define scopes
 			authCode.setScopes(scopes);
@@ -167,66 +167,64 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 			}
 			
 			// Run extensions
+			Map<String, String> params = new HashMap<String, String>();
 			for( String respType : responseTypes ) {
 				IOAuthExtension ext = this.extSvc.getExtension(respType);
 				
-				this.authorizer.setContext(null);
-				ext.authorize(
+				AuthorizeResponse response = ext.authorize(
 						user, 
 						app, 
 						authCode.getGrantedScopes(), 
-						responseTypes,
-						this.authorizer
+						responseTypes
 				);
-				if( this.authorizer.getContext() != null ) {
+				if( response == null )
+					continue;
+				
+				// Persist an eventual context
+				if( response.getContext() != null ) {
 					authCode.getContextClasses().put(
 							respType, 
-							this.authorizer.getContext().getClass().getName()
+							response.getContext().getClass().getName()
 					);
 					authCode.getContextObjects().put(
 							respType, 
-							this.mapper.writeValueAsString(this.authorizer.getContext())
+							this.mapper.writeValueAsString(response.getContext())
 					);
+				}
+				
+				// Save properties, detecting conflicts
+				for( OAuthProperty prop : response.getProperties() ) {
+					if( Utils.equals("code", prop.getName()) ) {
+						params.put("code", authCode.getId());		// May be multiple times...
+					} else if( params.containsKey(prop.getName()) ) {
+						if( Utils.equals("code", prop.getName()) )
+							throw new AuthServerErrorException("response_type conflict on grant_type: Extension conflicts on saving the authorization code", redirectUri);
+						else
+							throw new AuthServerErrorException("response_type conflict on properties: Extension conflicts on setting properties", redirectUri);
+					} else if( prop.getSignKey() == null ) {
+						params.put(prop.getName(), prop.getValue().toString());
+					} else {
+						params.put(prop.getName(), this.secretSvc.createJws(prop.getValue(), prop.getSignKey()));
+					}
 				}
 			}
 			
-			// Should we save the authorization code ?
-			boolean saveAuthCode;
-			if( this.authorizer.isSaveAuthCode() == null )
-				saveAuthCode = false;
-			else if( this.authorizer.isSaveAuthCode() )
-				saveAuthCode = true;
-			else
-				saveAuthCode = false;
-			
-			// Fragment not allowed in redirect uri if auth code is to be propagated (access to token end point needed)
-			if( saveAuthCode && redirectUri.indexOf('#') != -1 )
+			// Not sending code into URL with fragment
+			if( params.containsKey("code") && redirectUri.contains("#") )
 				throw new InvalidUriException("invalid redirect_uri : Auth code flow not allowed when a fragment is present in URI");
 			
-			// Check if we have a property conflict between extensions
-			if( this.authorizer.isSaveAuthConflict() )
-				throw new AuthServerErrorException("response_type conflict on grant_type: Extension conflicts on saving the authorization code", redirectUri);
-			if( this.authorizer.isPropertiesConflict() )
-				throw new AuthServerErrorException("response_type conflict on properties: Extension conflicts on setting properties", redirectUri);
-			
-			// Add the properties
-			Map<String, String> params = new HashMap<String, String>();
-			params.putAll(this.authorizer.getSignedProperties());
-			for( Entry<String, Object> entry : this.authorizer.getProperties().entrySet() )
-				params.put(entry.getKey(), entry.getValue().toString());
+			// Don't forget the state
 			params.put("state", state);		// May be null
 			
 			// Save auth Code if needed
-			if( saveAuthCode ) {
+			if( params.containsKey("code") )
 				this.authCodeRepo.save(authCode);
-				params.put("code", authCode.getId());
-			}
 			
 			// Compute the query string
 			StringBuffer sbRedirect = new StringBuffer();
 			sbRedirect.append(redirectUri);
 			char sep;
-			if( saveAuthCode ) {
+			if( params.containsKey("code") ) {
 				if( redirectUri.indexOf('?') == -1 )
 					sep = '?';
 				else

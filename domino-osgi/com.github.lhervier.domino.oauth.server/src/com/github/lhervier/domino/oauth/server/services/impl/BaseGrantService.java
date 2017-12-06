@@ -39,7 +39,7 @@ public class BaseGrantService {
 			Application app,
 			AuthCodeEntity authCode) throws GrantServerErrorException {
 		Map<String, Object> resp = new HashMap<String, Object>();
-		for( String responseType : this.extSvc.getResponseTypes() ) {
+		for( String responseType : authCode.getResponseTypes() ) {
 			OAuthExtension ext = this.extSvc.getExtension(responseType);
 			Object context = Utils.getContext(authCode, responseType);		// May be null
 			TokenResponse response = ext.token(

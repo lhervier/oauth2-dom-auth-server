@@ -74,6 +74,11 @@ public class AuthCodeEntity implements IExpirable {
 	private List<String> grantedScopes = new ArrayList<String>();
 	
 	/**
+	 * The response types
+	 */
+	private List<String> responseTypes = new ArrayList<String>();
+	
+	/**
 	 * The context classes for each extension
 	 */
 	private Map<String, String> contextClasses = new HashMap<String, String>();
@@ -248,5 +253,13 @@ public class AuthCodeEntity implements IExpirable {
 
 	public void setDatabasePath(String databasePath) {
 		this.databasePath = databasePath;
+	}
+
+	public List<String> getResponseTypes() {
+		return responseTypes;
+	}
+
+	public void setResponseTypes(List<String> responseTypes) {
+		this.responseTypes = responseTypes;
 	}
 }

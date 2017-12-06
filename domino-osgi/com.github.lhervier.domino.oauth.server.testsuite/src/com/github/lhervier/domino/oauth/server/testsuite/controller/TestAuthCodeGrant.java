@@ -390,6 +390,7 @@ public class TestAuthCodeGrant extends BaseTest {
 			setClientId(APP_CLIENT_ID);
 			setExpires(timeSvc.currentTimeSeconds() + 10L);
 			setRedirectUri("http://acme.com/myApp");
+			setResponseTypes(Arrays.asList("dummy1", "dummy2", "dummy3"));
 			setContextClasses(new HashMap<String, String>() {{
 				put("dummy1", DummyContext.class.getName());
 				put("dummy2", DummyContext.class.getName());
@@ -533,6 +534,7 @@ public class TestAuthCodeGrant extends BaseTest {
 			setRedirectUri(APP_REDIRECT_URI);
 			setScopes(Arrays.asList("dummy"));
 			setGrantedScopes(Arrays.asList("dummy"));
+			setResponseTypes(Arrays.asList("dummy"));
 		}});
 		
 		MvcResult result = mockMvc

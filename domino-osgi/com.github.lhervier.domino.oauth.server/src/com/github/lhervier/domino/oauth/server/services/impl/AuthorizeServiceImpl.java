@@ -154,6 +154,9 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 			// Define scopes
 			authCode.setScopes(scopes);
 			
+			// Keep response types in auth code
+			authCode.setResponseTypes(responseTypes);
+			
 			// Get granted scopes
 			authCode.setGrantedScopes(new ArrayList<String>());
 			for( String respType : responseTypes ) {

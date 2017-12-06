@@ -60,13 +60,19 @@ Do this only if you plan to play with the Domino OAUTH2 Authorization Server cod
 Once Domino Designer has restarted, you can check that the plugins have been installed by going to Help / About Domino Designer. Click the "Plugin details" button, and
 check that you can see the "com.github.lhervier.domino.spring.*" plugins (sorting by plugin id make it easier to find).
 
+### In your local maven repository
+
+Do this only if you want to compile the update site with Maven.
+
+Just follow the instructions on the dom-spring github project page.
+
 ## Get this project's update site
 
 ### Download from github
 
 This is the simplest solution. If you don't plan to play with the code, you can just download the update site from the github release page. 
 
-### Compile it yourself
+### Compile it yourself with IBM Domino
 
 If you want to generate the update site yourself from the source code, follow the next steps.
 
@@ -94,6 +100,20 @@ Then, package the update site
 
 Zip the site.xml, plugins and features folders, and you are ready !
 
+### Compile it yourself with maven
+
+You must have already deployed the dom-spring plugins in your local repository. To do so you will already have to download and unzip the "IBM Domino Update Site for Build Management". Let's suppose it's unzipped in 
+
+	C:\UpdateSite
+	
+CD into the "domino-osgi" folder, just type :
+
+	mvn install -Dnotes-platform=file:///c:/UpdateSite
+
+The update site will be generated in 
+
+	/domino-osgi/com.github.lhervier.domino.oauth.update/target/com.github.lhervier.domino.oauth.server.update-<version>.zip
+	
 ## Deploy the "Domino OAUTH2 Authorization Server" plugins
 
 ### On an production environment (ie, dont want to play with the code)

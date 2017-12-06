@@ -192,7 +192,7 @@
 		<module>com.github.lhervier.domino.oauth.server.external.commons_io</module>
 		<module>com.github.lhervier.domino.oauth.server.external.nimbus_jose_jwt</module>
 		<module>com.github.lhervier.domino.oauth.server</module>
-		<module>com.github.lhervier.domino.oauth.server.testsuite</module>
+		<!--<module>com.github.lhervier.domino.oauth.server.testsuite</module>-->
 		<module>com.github.lhervier.domino.oauth.server.feature</module>
 		<module>com.github.lhervier.domino.oauth.update</module>
 	</modules>

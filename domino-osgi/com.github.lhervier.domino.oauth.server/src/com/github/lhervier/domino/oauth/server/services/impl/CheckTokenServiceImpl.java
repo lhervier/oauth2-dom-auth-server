@@ -22,6 +22,7 @@ import com.github.lhervier.domino.oauth.server.repo.SecretRepository;
 import com.github.lhervier.domino.oauth.server.services.AppService;
 import com.github.lhervier.domino.oauth.server.services.CheckTokenService;
 import com.github.lhervier.domino.oauth.server.services.TimeService;
+import com.github.lhervier.domino.oauth.server.utils.Utils;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSObject;
 import com.nimbusds.jose.JWSVerifier;
@@ -92,14 +93,14 @@ public class CheckTokenServiceImpl implements CheckTokenService {
 		
 		// Check sign key
 		String kid = jwsObj.getHeader().getKeyID();
-		if( !this.signKey.equals(kid) ) {
+		if( !Utils.equals(this.signKey, kid) ) {
 			LOG.error("kid incorrect in Bearer token");
 			throw new NotAuthorizedException();
 		}
 		
 		// Check algorithm
 		String alg = jwsObj.getHeader().getAlgorithm().getName();
-		if( !"HS256".equals(alg) ) {
+		if( !Utils.equals("HS256", alg) ) {
 			LOG.error("alg incorrect in Bearer token");
 			throw new NotAuthorizedException();
 		}

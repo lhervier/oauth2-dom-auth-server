@@ -23,6 +23,7 @@ import org.springframework.stereotype.Component;
 import com.github.lhervier.domino.oauth.server.ext.core.AccessToken;
 import com.github.lhervier.domino.oauth.server.repo.SecretRepository;
 import com.github.lhervier.domino.oauth.server.services.TimeService;
+import com.github.lhervier.domino.oauth.server.utils.Utils;
 import com.ibm.domino.napi.NException;
 import com.ibm.domino.napi.c.NotesUtil;
 import com.ibm.domino.napi.c.Os;
@@ -122,14 +123,14 @@ public class BearerContext {
 			
 			// Check sign key
 			String kid = jwsObj.getHeader().getKeyID();
-			if( !this.signKey.equals(kid) ) {
+			if( !Utils.equals(this.signKey, kid) ) {
 				LOG.error("kid incorrect in Bearer token");
 				return;
 			}
 			
 			// Check algorithm
 			String alg = jwsObj.getHeader().getAlgorithm().getName();
-			if( !"HS256".equals(alg) ) {
+			if( !Utils.equals("HS256", alg) ) {
 				LOG.error("alg incorrect in Bearer token");
 				return;
 			}

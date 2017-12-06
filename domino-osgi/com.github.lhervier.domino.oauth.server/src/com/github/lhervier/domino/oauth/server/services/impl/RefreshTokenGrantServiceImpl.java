@@ -140,7 +140,7 @@ public class RefreshTokenGrantServiceImpl implements GrantService {
 			scopes = authCode.getGrantedScopes();
 		
 		// Check that the token has been generated for the current application
-		if( !app.getClientId().equals(authCode.getClientId()) )
+		if( !Utils.equals(app.getClientId(), authCode.getClientId()) )
 			throw new GrantInvalidGrantException("invalid client_id");
 		
 		// Update scopes. Here, we have granted all the asked scopes (otherwise, we would have thrown).

@@ -24,6 +24,7 @@ import com.github.lhervier.domino.oauth.server.ex.grant.GrantUnsupportedGrantTyp
 import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.services.AppService;
 import com.github.lhervier.domino.oauth.server.services.GrantService;
+import com.github.lhervier.domino.oauth.server.utils.Utils;
 
 /**
  * Bean pour le endpoint "token"
@@ -76,7 +77,7 @@ public class TokenController {
 		// As the application is authenticated, the clientId is not mandatory.
 		if( StringUtils.isEmpty(clientId) )
 			clientId = app.getClientId();
-		if( !app.getClientId().equals(clientId) )
+		if( !Utils.equals(app.getClientId(), clientId) )
 			throw new GrantInvalidClientException("invalid client_id : It does not correspond to the currently logged in application");
 		
 		// grant_type is mandatory

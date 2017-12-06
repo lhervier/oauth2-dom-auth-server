@@ -31,6 +31,7 @@ import com.github.lhervier.domino.oauth.server.ex.NotAuthorizedException;
 import com.github.lhervier.domino.oauth.server.ex.WrongPathException;
 import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.services.AppService;
+import com.github.lhervier.domino.oauth.server.utils.Utils;
 
 /**
  * Check that the controller's methods are called 
@@ -109,7 +110,7 @@ public class AccessCheckAspect {
 		// Check method is executed in the context of the oauth2 database
 		Oauth2DbContext o2Ctx = findAnnotation(method, Oauth2DbContext.class);
 		if( o2Ctx != null ) {
-			if( !this.oauth2Db.equals(this.user.getCurrentDatabasePath()) )
+			if( !Utils.equals(this.oauth2Db, this.user.getCurrentDatabasePath()) )
 				throw new WrongPathException("oauth2 server endpoints must be called on the database declared in the oauth2.server.db property.");
 		}
 		

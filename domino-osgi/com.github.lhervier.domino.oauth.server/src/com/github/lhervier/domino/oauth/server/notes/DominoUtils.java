@@ -19,6 +19,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
+import com.github.lhervier.domino.oauth.server.utils.Utils;
+
 import lotus.domino.Base;
 import lotus.domino.Database;
 import lotus.domino.DateTime;
@@ -280,7 +282,7 @@ public class DominoUtils {
 				PropertyDescriptor descriptor = descriptors[i];
 				
 				// On ne tient pas compte de "class"
-				if( "class".equals(descriptor.getName()) )
+				if( Utils.equals("class", descriptor.getName()) )
 					continue;
 				
 				// On vérifie que le document ait un champ correspondant
@@ -323,7 +325,7 @@ public class DominoUtils {
 				
 				// Boolean: On regarde la valeur "1"
 				else if( paramClass.isAssignableFrom(Boolean.class) )
-					setter.invoke(o, new Object[] {"1".equals(doc.getItemValueString(name))});
+					setter.invoke(o, new Object[] {Utils.equals("1", doc.getItemValueString(name))});
 				
 				// Un champ multi valué => Attention aux DateTime qu'on converti en dates java 
 				else if( paramClass.isAssignableFrom(List.class) ) {
@@ -463,7 +465,7 @@ public class DominoUtils {
 				String name = descriptor.getName();
 				
 				// On ne tient pas compte de "class"
-				if( "class".equals(name) )
+				if( Utils.equals("class", name) )
 					continue;
 				
 				// Récupère le getter et son type de retour
@@ -537,7 +539,7 @@ public class DominoUtils {
 				// Stock la valeur dans le champ.
 				boolean inRichText = false;
 				if( convertedValues.size() == 1 )
-					if( convertedValues.get(0).getClass().equals(String.class) )
+					if( Utils.equals(convertedValues.get(0).getClass(), String.class) )
 						if( sRtFields.contains(name) )
 							inRichText = true;
 				

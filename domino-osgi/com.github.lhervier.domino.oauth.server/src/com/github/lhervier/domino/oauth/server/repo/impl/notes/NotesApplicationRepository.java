@@ -23,6 +23,7 @@ import com.github.lhervier.domino.oauth.server.notes.AuthContext;
 import com.github.lhervier.domino.oauth.server.notes.DominoUtils;
 import com.github.lhervier.domino.oauth.server.notes.ViewIterator;
 import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
+import com.github.lhervier.domino.oauth.server.utils.Utils;
 
 /**
  * Repository to access applications
@@ -212,7 +213,7 @@ public class NotesApplicationRepository implements ApplicationRepository {
 			} else {
 				// Check that the user is not trying to change the application client id
 				// FIXME: Nothing to do in the repository
-				if( !existing.getClientId().equals(app.getClientId()) )
+				if( !Utils.equals(existing.getClientId(), app.getClientId()) )
 					throw new DataIntegrityViolationException("You cannot change an application client id");
 				
 				// Get application backend document

@@ -175,9 +175,9 @@ public class AppController {
 		app.setName(form.getName());
 		app.setReaders(form.getReaders());
 		app.setRedirectUri(form.getRedirectUri());
-		if( "confidential".equals(form.getClientType()) )
+		if( Utils.equals("confidential", form.getClientType()) )
 			app.setClientType(ClientType.CONFIDENTIAL);
-		else if( "public".equals(form.getClientType()) )
+		else if( Utils.equals("public", form.getClientType()) )
 			app.setClientType(ClientType.PUBLIC);
 		else
 			app.setClientType(ClientType.PUBLIC);
@@ -186,7 +186,7 @@ public class AppController {
 		model.put("app", newForm);
 		
 		// Just want to add a redirectUri
-		if( "addRedirectUri".equals(form.getAction()) ) {
+		if( Utils.equals("addRedirectUri", form.getAction()) ) {
 			
 			newForm.setNewRedirectUriError(Utils.checkRedirectUri(form.getNewRedirectUri()));
 			if( newForm.getNewRedirectUriError() == null ) {

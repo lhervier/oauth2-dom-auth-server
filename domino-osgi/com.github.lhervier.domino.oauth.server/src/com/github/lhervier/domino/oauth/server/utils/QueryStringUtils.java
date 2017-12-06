@@ -45,7 +45,7 @@ public class QueryStringUtils {
 				String name = desc.getName();
 				
 				// On filtre la propriété "class"
-				if( "class".equals(name) )
+				if( Utils.equals("class", name) )
 					continue;
 				
 				// On doit avoir une méthode pour lire la valeur
@@ -58,7 +58,7 @@ public class QueryStringUtils {
 				String prop = ann == null ? name: ann.value();
 				
 				// Le nom de la propriété doit pouvoir être un paramètre
-				if( !URLEncoder.encode(prop, "UTF-8").equals(prop) )
+				if( !Utils.equals(URLEncoder.encode(prop, "UTF-8"), prop) )
 					continue;
 				
 				// URL Encode la valeur (s'il y en a une)

@@ -112,11 +112,11 @@ public class AuthCodeGrantServiceImpl implements GrantService {
 				throw new GrantInvalidGrantException("code has expired");
 			
 			// Check it was generated for the right clientId
-			if( !app.getClientId().equals(authCode.getClientId()) )
+			if( !Utils.equals(app.getClientId(), authCode.getClientId()) )
 				throw new GrantInvalidClientException("code generated for another app");
 			
 			// Check that the redirect_uri is the same
-			if( !redirectUri.equals(authCode.getRedirectUri()) )
+			if( !Utils.equals(redirectUri, authCode.getRedirectUri()) )
 				throw new GrantInvalidGrantException("invalid redirect_uri : It is not the same as the one stored in the authorization code");
 			
 			// Extract the user from the auth code

@@ -61,9 +61,9 @@ public class AppServiceImpl implements AppService {
 		Application app = new Application();
 		app.setClientId(entity.getClientId());
 		app.setName(entity.getName());
-		if( CLIENTTYPE_CONFIDENTIAL.equals(entity.getClientType()) )
+		if( Utils.equals(CLIENTTYPE_CONFIDENTIAL, entity.getClientType()) )
 			app.setClientType(ClientType.CONFIDENTIAL);
-		else if( CLIENTTYPE_PUBLIC.equals(entity.getClientType()) )
+		else if( Utils.equals(CLIENTTYPE_PUBLIC, entity.getClientType()) )
 			app.setClientType(ClientType.PUBLIC);
 		else
 			app.setClientType(ClientType.PUBLIC);

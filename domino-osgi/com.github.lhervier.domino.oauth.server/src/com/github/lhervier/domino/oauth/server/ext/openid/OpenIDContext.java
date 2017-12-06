@@ -1,4 +1,4 @@
-package com.github.lhervier.domino.oauth.server.ext.core;
+package com.github.lhervier.domino.oauth.server.ext.openid;
 
 public class OpenIDContext {
 

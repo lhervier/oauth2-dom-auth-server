@@ -16,7 +16,6 @@ import com.github.lhervier.domino.oauth.server.ext.AuthorizeResponseBuilder;
 import com.github.lhervier.domino.oauth.server.ext.OAuthExtension;
 import com.github.lhervier.domino.oauth.server.ext.TokenResponse;
 import com.github.lhervier.domino.oauth.server.ext.TokenResponseBuilder;
-import com.github.lhervier.domino.oauth.server.ext.core.OpenIDContext;
 import com.github.lhervier.domino.oauth.server.ext.core.TokenExt;
 import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.repo.PersonRepository;

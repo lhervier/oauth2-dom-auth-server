@@ -9,14 +9,10 @@ import static org.junit.Assert.assertThat;
 import java.util.HashMap;
 
 import org.hamcrest.collection.IsMapContaining;
-import org.junit.Before;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
 import com.github.lhervier.domino.oauth.server.ext.core.AccessToken;
-import com.github.lhervier.domino.oauth.server.services.TimeService;
-import com.github.lhervier.domino.oauth.server.services.impl.JWTServiceImpl;
 import com.github.lhervier.domino.oauth.server.testsuite.BaseTest;
 import com.github.lhervier.domino.oauth.server.testsuite.impl.DummyContext;
 import com.github.lhervier.domino.oauth.server.testsuite.impl.SecretRepositoryTestImpl;
@@ -25,26 +21,6 @@ import com.github.lhervier.domino.oauth.server.testsuite.impl.TimeServiceTestImp
 @SuppressWarnings("serial")
 public class TestJWTServiceImpl extends BaseTest {
 
-	/**
-	 * The jwt service
-	 */
-	@Autowired
-	private JWTServiceImpl jwtSvc;
-	
-	/**
-	 * The time svc
-	 */
-	@Autowired
-	private TimeService timeSvc;
-	
-	/**
-	 * Before execution of each test
-	 */
-	@Before
-	public void before() throws Exception {
-		
-	}
-	
 	/**
 	 * Invalid jwe
 	 */

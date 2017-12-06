@@ -5,7 +5,6 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -24,9 +23,6 @@ import org.springframework.test.web.servlet.MvcResult;
 import com.github.lhervier.domino.oauth.server.NotesPrincipal.AuthType;
 import com.github.lhervier.domino.oauth.server.entity.ApplicationEntity;
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
-import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
-import com.github.lhervier.domino.oauth.server.services.JWTService;
-import com.github.lhervier.domino.oauth.server.services.TimeService;
 import com.github.lhervier.domino.oauth.server.testsuite.BaseTest;
 import com.github.lhervier.domino.oauth.server.testsuite.impl.NotesPrincipalTestImpl;
 
@@ -42,24 +38,6 @@ public class TestRefreshTokenGrant extends BaseTest {
 	private ApplicationEntity normalApp;
 	
 	/**
-	 * App repo mock
-	 */
-	@Autowired
-	private ApplicationRepository appRepoMock;
-	
-	/**
-	 * Time svc
-	 */
-	@Autowired
-	private TimeService timeSvc;
-	
-	/**
-	 * JWT Service
-	 */
-	@Autowired
-	private JWTService jwtSvc;
-	
-	/**
 	 * User principal
 	 */
 	@Autowired
@@ -67,8 +45,6 @@ public class TestRefreshTokenGrant extends BaseTest {
 	
 	@Before
 	public void before() throws Exception {
-		reset(appRepoMock);
-		
 		this.normalApp = new ApplicationEntity() {{
 			this.setClientId(APP_CLIENT_ID);
 			this.setFullName(APP_FULL_NAME);

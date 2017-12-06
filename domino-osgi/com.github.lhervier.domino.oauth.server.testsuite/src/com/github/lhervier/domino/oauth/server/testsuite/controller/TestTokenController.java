@@ -1,7 +1,6 @@
 package com.github.lhervier.domino.oauth.server.testsuite.controller;
 
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -15,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.github.lhervier.domino.oauth.server.NotesPrincipal.AuthType;
 import com.github.lhervier.domino.oauth.server.entity.ApplicationEntity;
-import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
 import com.github.lhervier.domino.oauth.server.testsuite.BaseTest;
 import com.github.lhervier.domino.oauth.server.testsuite.impl.NotesPrincipalTestImpl;
 
@@ -29,14 +27,9 @@ public class TestTokenController extends BaseTest {
 	@Autowired
 	private NotesPrincipalTestImpl user;
 	
-	@Autowired
-	private ApplicationRepository appRepo;
-	
 	@Before
 	public void setUp() {
-		reset(appRepo);
-		
-		when(appRepo.findOneByName("myApp")).thenReturn(new ApplicationEntity() {{
+		when(appRepoMock.findOneByName("myApp")).thenReturn(new ApplicationEntity() {{
 			setClientId(APP_CLIENTID);
 			setName(APP_NAME);
 			setFullName(APP_FULLNAME);

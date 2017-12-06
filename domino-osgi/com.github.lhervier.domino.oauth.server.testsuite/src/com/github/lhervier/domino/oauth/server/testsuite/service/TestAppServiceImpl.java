@@ -13,7 +13,6 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -22,7 +21,6 @@ import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,27 +30,13 @@ import com.github.lhervier.domino.oauth.server.entity.ApplicationEntity;
 import com.github.lhervier.domino.oauth.server.entity.PersonEntity;
 import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.model.ClientType;
-import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
-import com.github.lhervier.domino.oauth.server.repo.PersonRepository;
 import com.github.lhervier.domino.oauth.server.services.impl.AppServiceImpl;
 import com.github.lhervier.domino.oauth.server.testsuite.BaseTest;
 
 public class TestAppServiceImpl extends BaseTest {
 
 	@Autowired
-	private ApplicationRepository appRepoMock;
-	
-	@Autowired
-	private PersonRepository personRepoMock;
-	
-	@Autowired
 	private AppServiceImpl appSvc;
-	
-	@Before
-	public void setUp() {
-		reset(appRepoMock);
-		reset(personRepoMock);
-	}
 	
 	/**
 	 * List aplications

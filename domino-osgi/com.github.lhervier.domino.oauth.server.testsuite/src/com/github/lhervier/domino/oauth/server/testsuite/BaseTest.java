@@ -1,5 +1,6 @@
 package com.github.lhervier.domino.oauth.server.testsuite;
 
+import static org.mockito.Mockito.reset;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
 import java.io.IOException;
@@ -19,6 +20,12 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
 
+import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
+import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
+import com.github.lhervier.domino.oauth.server.repo.PersonRepository;
+import com.github.lhervier.domino.oauth.server.services.ExtensionService;
+import com.github.lhervier.domino.oauth.server.services.JWTService;
+import com.github.lhervier.domino.oauth.server.services.TimeService;
 import com.github.lhervier.domino.oauth.server.testsuite.impl.SecretRepositoryTestImpl;
 import com.github.lhervier.domino.oauth.server.testsuite.impl.TimeServiceTestImpl;
 
@@ -70,6 +77,24 @@ public abstract class BaseTest {
 	@Autowired
 	protected ObjectMapper mapper;
 	
+	@Autowired
+	protected ApplicationRepository appRepoMock;
+	
+	@Autowired
+	protected PersonRepository personRepoMock;
+	
+	@Autowired
+	protected AuthCodeRepository authCodeRepoMock;
+	
+	@Autowired
+	protected ExtensionService extSvcMock;
+	
+	@Autowired
+	protected TimeService timeSvc;
+	
+	@Autowired
+	protected JWTService jwtSvc;
+	
 	protected MockMvc mockMvc;
 	
 	@Before
@@ -78,6 +103,8 @@ public abstract class BaseTest {
 		TimeServiceTestImpl.CURRENT_TIME = System.currentTimeMillis() / 1000L;
 		SecretRepositoryTestImpl.CRYPT_KEY = SecretRepositoryTestImpl.INITIAL_CRYPT_KEY;
 		SecretRepositoryTestImpl.SIGN_KEY = SecretRepositoryTestImpl.INITIAL_SIGN_KEY;
+		
+		reset(appRepoMock, authCodeRepoMock, extSvcMock, personRepoMock);
 	}
 	
 	@SuppressWarnings("unchecked")

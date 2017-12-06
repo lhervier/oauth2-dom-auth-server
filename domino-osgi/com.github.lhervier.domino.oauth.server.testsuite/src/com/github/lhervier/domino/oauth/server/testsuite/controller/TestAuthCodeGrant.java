@@ -41,11 +41,6 @@ import com.github.lhervier.domino.oauth.server.ext.TokenResponse;
 import com.github.lhervier.domino.oauth.server.ext.TokenResponseBuilder;
 import com.github.lhervier.domino.oauth.server.ext.core.AccessToken;
 import com.github.lhervier.domino.oauth.server.model.Application;
-import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
-import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
-import com.github.lhervier.domino.oauth.server.services.ExtensionService;
-import com.github.lhervier.domino.oauth.server.services.JWTService;
-import com.github.lhervier.domino.oauth.server.services.TimeService;
 import com.github.lhervier.domino.oauth.server.services.impl.AppServiceImpl;
 import com.github.lhervier.domino.oauth.server.testsuite.BaseTest;
 import com.github.lhervier.domino.oauth.server.testsuite.impl.DummyContext;
@@ -73,36 +68,6 @@ public class TestAuthCodeGrant extends BaseTest {
 	private ApplicationEntity hackyApp;
 	
 	/**
-	 * App repo mock
-	 */
-	@Autowired
-	private ApplicationRepository appRepoMock;
-	
-	/**
-	 * Auth code repo mock
-	 */
-	@Autowired
-	private AuthCodeRepository authCodeRepoMock;
-	
-	/**
-	 * Extension service mock
-	 */
-	@Autowired
-	private ExtensionService extSvcMock;
-	
-	/**
-	 * Time svc
-	 */
-	@Autowired
-	private TimeService timeSvc;
-	
-	/**
-	 * JWT Service
-	 */
-	@Autowired
-	private JWTService jwtSvc;
-	
-	/**
 	 * User principal
 	 */
 	@Autowired
@@ -113,11 +78,6 @@ public class TestAuthCodeGrant extends BaseTest {
 	 */
 	@Before
 	public void before() throws IOException {
-		// Reset repositories
-		reset(appRepoMock);
-		reset(authCodeRepoMock);
-		reset(extSvcMock);
-		
 		// Declare applications
 		this.normalApp = new ApplicationEntity() {{
 			this.setClientId(APP_CLIENT_ID);

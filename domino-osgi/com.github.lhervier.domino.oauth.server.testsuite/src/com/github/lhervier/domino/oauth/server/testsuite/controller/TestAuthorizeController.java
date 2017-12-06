@@ -16,7 +16,6 @@ import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -45,10 +44,6 @@ import com.github.lhervier.domino.oauth.server.ext.AuthorizeResponseBuilder;
 import com.github.lhervier.domino.oauth.server.ext.OAuthExtension;
 import com.github.lhervier.domino.oauth.server.ext.TokenResponse;
 import com.github.lhervier.domino.oauth.server.model.Application;
-import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
-import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
-import com.github.lhervier.domino.oauth.server.services.ExtensionService;
-import com.github.lhervier.domino.oauth.server.services.JWTService;
 import com.github.lhervier.domino.oauth.server.testsuite.BaseTest;
 import com.github.lhervier.domino.oauth.server.testsuite.impl.DummyContext;
 import com.github.lhervier.domino.oauth.server.testsuite.impl.NotesPrincipalTestImpl;
@@ -57,26 +52,10 @@ import com.github.lhervier.domino.oauth.server.testsuite.impl.TimeServiceTestImp
 public class TestAuthorizeController extends BaseTest {
 
 	@Autowired
-	private ApplicationRepository appRepoMock;
-	
-	@Autowired
-	private AuthCodeRepository authCodeRepoMock;
-	
-	@Autowired
-	protected ExtensionService extSvcMock;
-	
-	@Autowired
 	private NotesPrincipalTestImpl user;
-	
-	@Autowired
-	private JWTService jwtSvc;
 	
 	@Before
 	public void setUp() {
-		reset(appRepoMock);
-		reset(authCodeRepoMock);
-		reset(extSvcMock);
-		
 		user.setAuthType(AuthType.NOTES);
 		user.setName("CN=Lionel/O=USER");
 		user.setCommon("Lionel");

@@ -1,7 +1,6 @@
 package com.github.lhervier.domino.oauth.server.testsuite.controller;
 
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -15,22 +14,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.github.lhervier.domino.oauth.server.NotesPrincipal.AuthType;
 import com.github.lhervier.domino.oauth.server.entity.ApplicationEntity;
-import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
 import com.github.lhervier.domino.oauth.server.testsuite.BaseTest;
 import com.github.lhervier.domino.oauth.server.testsuite.impl.NotesPrincipalTestImpl;
 
 public class TestAppController extends BaseTest {
 
 	@Autowired
-	private ApplicationRepository appRepoMock;
-	
-	@Autowired
 	protected NotesPrincipalTestImpl user;
 	
 	@Before
 	public void setUp() {
-		reset(appRepoMock);
-		
 		user.setAuthType(AuthType.NOTES);
 		user.setName("CN=Lionel/O=USER");
 		user.setCommon("Lionel");

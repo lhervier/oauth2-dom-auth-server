@@ -39,6 +39,7 @@ import com.github.lhervier.domino.oauth.server.ext.AuthorizeResponse;
 import com.github.lhervier.domino.oauth.server.ext.OAuthExtension;
 import com.github.lhervier.domino.oauth.server.ext.TokenResponse;
 import com.github.lhervier.domino.oauth.server.ext.TokenResponseBuilder;
+import com.github.lhervier.domino.oauth.server.ext.core.AccessToken;
 import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
 import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
@@ -556,5 +557,51 @@ public class TestAuthCodeGrant extends BaseTest {
 		Map<String, Object> resp = this.fromJson(json);
 		assertThat(resp.size(), equalTo(1));
 		assertThat(resp, hasKey("expires_in"));
+	}
+	
+	/**
+	 * Extension adds signed property
+	 */
+	@Test
+	public void whenExtensionAddSignedProperty_thenSignedPropertyInResponse() throws Exception {
+		when(this.extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy"));
+		when(this.extSvcMock.getExtension(eq("dummy"))).thenReturn(new OAuthExtension() {
+			public List<String> getAuthorizedScopes() { return Arrays.asList(); }
+			public TokenResponse token(NotesPrincipal user, Application app, Object context, List<String> askedScopes) { 
+				return TokenResponseBuilder.newBuilder()
+						.addProperty().signedWith("KEY1").withName("test").withValue(new AccessToken() {{
+							setSub("CN=Lionel/O=USER");
+							setExpires(timeSvc.currentTimeSeconds() + 10L);
+						}}).build();
+			}
+			public AuthorizeResponse authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes) { return null; }
+		});
+		
+		when(this.authCodeRepoMock.findOne(eq("12345"))).thenReturn(new AuthCodeEntity() {{
+			setExpires(timeSvc.currentTimeSeconds() + 10L);
+			setClientId(APP_CLIENT_ID);
+			setApplication(APP_NAME);
+			setRedirectUri(APP_REDIRECT_URI);
+			setScopes(Arrays.asList("dummy"));
+			setGrantedScopes(Arrays.asList("dummy"));
+		}});
+		
+		MvcResult result = mockMvc
+		.perform(
+				post("/token")
+				.param("grant_type", "authorization_code")
+				.param("code", "12345")
+				.param("redirect_uri", APP_REDIRECT_URI)
+		).andExpect(status().is(200))
+		.andReturn();
+		
+		String json = result.getResponse().getContentAsString();
+		Map<String, Object> resp = this.fromJson(json);
+		String jws = resp.get("test").toString();
+		assertThat(jws, notNullValue());
+		
+		AccessToken tk = this.jwtSvc.fromJws(jws, "KEY1", AccessToken.class);
+		assertThat(tk, notNullValue());
+		assertThat(tk.getSub(), equalTo("CN=Lionel/O=USER"));
 	}
 }

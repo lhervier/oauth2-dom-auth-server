@@ -44,6 +44,7 @@ import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
 import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
 import com.github.lhervier.domino.oauth.server.services.ExtensionService;
 import com.github.lhervier.domino.oauth.server.services.JWTService;
+import com.github.lhervier.domino.oauth.server.services.TimeService;
 import com.github.lhervier.domino.oauth.server.services.impl.AppServiceImpl;
 import com.github.lhervier.domino.oauth.server.testsuite.BaseTest;
 import com.github.lhervier.domino.oauth.server.testsuite.impl.DummyContext;
@@ -87,6 +88,12 @@ public class TestAuthCodeGrant extends BaseTest {
 	 */
 	@Autowired
 	private ExtensionService extSvcMock;
+	
+	/**
+	 * Time svc
+	 */
+	@Autowired
+	private TimeService timeSvc;
 	
 	/**
 	 * JWT Service
@@ -173,7 +180,7 @@ public class TestAuthCodeGrant extends BaseTest {
 			setId("AZERTY");
 			setApplication(APP_NAME);
 			setClientId(APP_CLIENT_ID);
-			setExpires(timeSvcStub.currentTimeSeconds() + 10L);
+			setExpires(timeSvc.currentTimeSeconds() + 10L);
 			setRedirectUri("http://acme.com/myApp");
 		}});
 		
@@ -223,7 +230,7 @@ public class TestAuthCodeGrant extends BaseTest {
 			setId("AZERTY");
 			setApplication(APP_NAME);
 			setClientId(APP_CLIENT_ID);
-			setExpires(timeSvcStub.currentTimeSeconds() - 10L);
+			setExpires(timeSvc.currentTimeSeconds() - 10L);
 			setRedirectUri("http://acme.com/myApp");
 		}});
 		
@@ -250,7 +257,7 @@ public class TestAuthCodeGrant extends BaseTest {
 			setId("AZERTY");
 			setApplication(APP_NAME);
 			setClientId(APP_CLIENT_ID);
-			setExpires(timeSvcStub.currentTimeSeconds() + 10L);
+			setExpires(timeSvc.currentTimeSeconds() + 10L);
 			setRedirectUri("http://acme.com/myApp");
 		}});
 		
@@ -274,7 +281,7 @@ public class TestAuthCodeGrant extends BaseTest {
 			setId("AZERTY");
 			setApplication(APP_NAME);
 			setClientId(APP_CLIENT_ID);
-			setExpires(timeSvcStub.currentTimeSeconds() + 10L);
+			setExpires(timeSvc.currentTimeSeconds() + 10L);
 			setRedirectUri("http://acme.com/myApp");
 			setGrantedScopes(Arrays.asList("scope1", "scope2", "scope3"));
 			setScopes(Arrays.asList("scope1", "scope2", "scope3"));
@@ -298,7 +305,7 @@ public class TestAuthCodeGrant extends BaseTest {
 			setId("AZERTY");
 			setApplication(APP_NAME);
 			setClientId(APP_CLIENT_ID);
-			setExpires(timeSvcStub.currentTimeSeconds() + 10L);
+			setExpires(timeSvc.currentTimeSeconds() + 10L);
 			setRedirectUri("http://acme.com/myApp");
 			setGrantedScopes(Arrays.asList("scope1", "scope3"));
 			setScopes(Arrays.asList("scope1", "scope2", "scope3"));
@@ -327,7 +334,7 @@ public class TestAuthCodeGrant extends BaseTest {
 			setId("AZERTY");
 			setApplication(APP_NAME);
 			setClientId(APP_CLIENT_ID);
-			setExpires(timeSvcStub.currentTimeSeconds() + 10L);
+			setExpires(timeSvc.currentTimeSeconds() + 10L);
 			setRedirectUri("http://acme.com/myApp");
 		}});
 		
@@ -359,7 +366,7 @@ public class TestAuthCodeGrant extends BaseTest {
 			setId("AZERTY");
 			setApplication(APP_NAME);
 			setClientId(APP_CLIENT_ID);
-			setExpires(timeSvcStub.currentTimeSeconds() + 10L);
+			setExpires(timeSvc.currentTimeSeconds() + 10L);
 			setRedirectUri("http://acme.com/myApp");
 		}});
 		
@@ -391,7 +398,7 @@ public class TestAuthCodeGrant extends BaseTest {
 			setId("AZERTY");
 			setApplication(APP_NAME);
 			setClientId(APP_CLIENT_ID);
-			setExpires(timeSvcStub.currentTimeSeconds() + 10L);
+			setExpires(timeSvc.currentTimeSeconds() + 10L);
 			setRedirectUri("http://acme.com/myApp");
 		}});
 		
@@ -413,7 +420,7 @@ public class TestAuthCodeGrant extends BaseTest {
 		assertThat((Integer) resp.get("expires_in"), is(equalTo((int) this.refreshTokenLifetime)));
 		
 		AuthCodeEntity refreshToken = this.jwtSvc.fromJwe(sRefreshToken, "xx", AuthCodeEntity.class);
-		assertThat(refreshToken.getExpires(), is(Matchers.greaterThan(this.timeSvcStub.currentTimeSeconds())));
+		assertThat(refreshToken.getExpires(), is(Matchers.greaterThan(this.timeSvc.currentTimeSeconds())));
 	}
 	
 	/**
@@ -425,7 +432,7 @@ public class TestAuthCodeGrant extends BaseTest {
 			setId("AZERTY");
 			setApplication(APP_NAME);
 			setClientId(APP_CLIENT_ID);
-			setExpires(timeSvcStub.currentTimeSeconds() + 10L);
+			setExpires(timeSvc.currentTimeSeconds() + 10L);
 			setRedirectUri("http://acme.com/myApp");
 			setContextClasses(new HashMap<String, String>() {{
 				put("dummy1", DummyContext.class.getName());
@@ -499,7 +506,7 @@ public class TestAuthCodeGrant extends BaseTest {
 	@Test
 	public void whenGrant_thenAuthCodeRemoved() throws Exception {
 		when(this.authCodeRepoMock.findOne(eq("12345"))).thenReturn(new AuthCodeEntity() {{
-			setExpires(timeSvcStub.currentTimeSeconds() + 10L);
+			setExpires(timeSvc.currentTimeSeconds() + 10L);
 			setClientId(APP_CLIENT_ID);
 			setApplication(APP_NAME);
 			setRedirectUri(APP_REDIRECT_URI);
@@ -521,7 +528,7 @@ public class TestAuthCodeGrant extends BaseTest {
 	@Test
 	public void whenExtSendNullResponse_thenOK() throws Exception {
 		when(this.authCodeRepoMock.findOne(eq("12345"))).thenReturn(new AuthCodeEntity() {{
-			setExpires(timeSvcStub.currentTimeSeconds() + 10L);
+			setExpires(timeSvc.currentTimeSeconds() + 10L);
 			setClientId(APP_CLIENT_ID);
 			setApplication(APP_NAME);
 			setRedirectUri(APP_REDIRECT_URI);

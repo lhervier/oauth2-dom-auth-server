@@ -26,6 +26,7 @@ import com.github.lhervier.domino.oauth.server.entity.ApplicationEntity;
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
 import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
 import com.github.lhervier.domino.oauth.server.services.JWTService;
+import com.github.lhervier.domino.oauth.server.services.TimeService;
 import com.github.lhervier.domino.oauth.server.testsuite.BaseTest;
 import com.github.lhervier.domino.oauth.server.testsuite.impl.NotesPrincipalTestImpl;
 
@@ -45,6 +46,12 @@ public class TestRefreshTokenGrant extends BaseTest {
 	 */
 	@Autowired
 	private ApplicationRepository appRepoMock;
+	
+	/**
+	 * Time svc
+	 */
+	@Autowired
+	private TimeService timeSvc;
 	
 	/**
 	 * JWT Service
@@ -112,7 +119,7 @@ public class TestRefreshTokenGrant extends BaseTest {
 	public void whenExpiredRefreshToken_then400() throws Exception {
 		AuthCodeEntity entity = new AuthCodeEntity() {{
 			setId("012345");
-			setExpires(timeSvcStub.currentTimeSeconds() - 10L);		// Expired 10s ago
+			setExpires(timeSvc.currentTimeSeconds() - 10L);		// Expired 10s ago
 			setScopes(new ArrayList<String>());
 			setGrantedScopes(new ArrayList<String>());
 		}};
@@ -134,7 +141,7 @@ public class TestRefreshTokenGrant extends BaseTest {
 		AuthCodeEntity code = new AuthCodeEntity() {{
 			setId("012345");
 			setClientId("1234");
-			setExpires(timeSvcStub.currentTimeSeconds() + 10L);
+			setExpires(timeSvc.currentTimeSeconds() + 10L);
 			setScopes(Arrays.asList("scope1", "scope2", "scope3"));
 			setGrantedScopes(Arrays.asList("scope1", "scope2"));
 		}};
@@ -161,7 +168,7 @@ public class TestRefreshTokenGrant extends BaseTest {
 		AuthCodeEntity code = new AuthCodeEntity() {{
 			setId("012345");
 			setClientId("1234");
-			setExpires(timeSvcStub.currentTimeSeconds() + 10L);
+			setExpires(timeSvc.currentTimeSeconds() + 10L);
 			setScopes(Arrays.asList("scope1", "scope2", "scope3"));
 			setGrantedScopes(Arrays.asList("scope1", "scope2"));
 		}};
@@ -185,7 +192,7 @@ public class TestRefreshTokenGrant extends BaseTest {
 			setId("012345");
 			setApplication(APP_NAME);
 			setClientId(APP_CLIENT_ID);
-			setExpires(timeSvcStub.currentTimeSeconds() + 10L);
+			setExpires(timeSvc.currentTimeSeconds() + 10L);
 			setScopes(Arrays.asList("scope1", "scope2"));
 			setGrantedScopes(Arrays.asList("scope1"));
 		}};
@@ -215,7 +222,7 @@ public class TestRefreshTokenGrant extends BaseTest {
 			setId("012345");
 			setApplication("otherApp");
 			setClientId("5678");
-			setExpires(timeSvcStub.currentTimeSeconds() + 10L);
+			setExpires(timeSvc.currentTimeSeconds() + 10L);
 			setScopes(new ArrayList<String>());
 			setGrantedScopes(new ArrayList<String>());
 		}};

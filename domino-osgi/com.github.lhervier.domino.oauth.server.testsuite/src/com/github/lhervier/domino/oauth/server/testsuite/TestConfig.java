@@ -2,8 +2,6 @@ package com.github.lhervier.domino.oauth.server.testsuite;
 
 import static org.mockito.Mockito.mock;
 
-import java.io.UnsupportedEncodingException;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -18,6 +16,7 @@ import com.github.lhervier.domino.oauth.server.repo.PersonRepository;
 import com.github.lhervier.domino.oauth.server.repo.SecretRepository;
 import com.github.lhervier.domino.oauth.server.services.ExtensionService;
 import com.github.lhervier.domino.oauth.server.services.TimeService;
+import com.github.lhervier.domino.oauth.server.testsuite.impl.SecretRepositoryTestImpl;
 import com.github.lhervier.domino.oauth.server.testsuite.impl.TimeServiceTestImpl;
 import com.github.lhervier.domino.spring.servlet.SpringServletConfig;
 
@@ -47,25 +46,7 @@ public class TestConfig {
 	@Bean
 	@Primary
 	public SecretRepository secretRepository() {
-		return new SecretRepository() {
-			@Override
-			public byte[] findCryptSecret(String ssoConfig) {
-				try {
-					return "0123456789012345".getBytes("UTF-8");
-				} catch (UnsupportedEncodingException e) {
-					throw new RuntimeException(e);
-				}
-			}
-
-			@Override
-			public byte[] findSignSecret(String ssoConfig) {
-				try {
-					return "98765432109876543210987654321098".getBytes("UTF-8");
-				} catch (UnsupportedEncodingException e) {
-					throw new RuntimeException(e);
-				}
-			}
-		};
+		return new SecretRepositoryTestImpl();
 	}
 	
 	@Bean

@@ -19,7 +19,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
 
-import com.github.lhervier.domino.oauth.server.repo.SecretRepository;
+import com.github.lhervier.domino.oauth.server.testsuite.impl.SecretRepositoryTestImpl;
 import com.github.lhervier.domino.oauth.server.testsuite.impl.TimeServiceTestImpl;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -65,12 +65,6 @@ public abstract class BaseTest {
 	protected long openidExpiresIn;
 	
 	@Autowired
-	protected SecretRepository secretRepoStub;
-	
-	@Autowired
-	protected TimeServiceTestImpl timeSvcStub;
-	
-	@Autowired
 	private WebApplicationContext wac;
 	
 	@Autowired
@@ -82,6 +76,8 @@ public abstract class BaseTest {
 	public void baseSetUp() {
 		mockMvc = webAppContextSetup(wac).build();
 		TimeServiceTestImpl.CURRENT_TIME = System.currentTimeMillis() / 1000L;
+		SecretRepositoryTestImpl.CRYPT_KEY = SecretRepositoryTestImpl.INITIAL_CRYPT_KEY;
+		SecretRepositoryTestImpl.SIGN_KEY = SecretRepositoryTestImpl.INITIAL_SIGN_KEY;
 	}
 	
 	@SuppressWarnings("unchecked")

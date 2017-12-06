@@ -61,10 +61,8 @@ public class AppServiceImpl implements AppService {
 		Application app = new Application();
 		app.setClientId(entity.getClientId());
 		app.setName(entity.getName());
-		if( Utils.equals(CLIENTTYPE_CONFIDENTIAL, entity.getClientType()) )
-			app.setClientType(ClientType.CONFIDENTIAL);
-		else if( Utils.equals(CLIENTTYPE_PUBLIC, entity.getClientType()) )
-			app.setClientType(ClientType.PUBLIC);
+		if( entity.getClientType() != null )
+			app.setClientType(ClientType.valueOf(entity.getClientType()));
 		else
 			app.setClientType(ClientType.PUBLIC);
 		app.setReaders(entity.getReaders());
@@ -87,13 +85,10 @@ public class AppServiceImpl implements AppService {
 		entity.setName(app.getName());
 		entity.setFullName("CN=" + app.getName() + this.applicationRoot);
 		entity.setReaders(app.getReaders());
-		if( ClientType.CONFIDENTIAL == app.getClientType() )
-			entity.setClientType(CLIENTTYPE_CONFIDENTIAL);
-		else if( ClientType.PUBLIC == app.getClientType() )
-			entity.setClientType(CLIENTTYPE_PUBLIC);
+		if( app.getClientType() != null )
+			entity.setClientType(app.getClientType().name());
 		else
-			entity.setClientType(CLIENTTYPE_PUBLIC);
-		
+			entity.setClientType(ClientType.PUBLIC.name());
 		String error = Utils.checkRedirectUri(app.getRedirectUri());
 		if( error != null )
 			throw new DataIntegrityViolationException(error);

@@ -28,18 +28,18 @@ public class TokenExt extends BaseCoreExt {
 	}
 	
 	/**
-	 * @see com.github.lhervier.domino.oauth.server.ext.OAuthExtension#authorize(com.github.lhervier.domino.oauth.server.NotesPrincipal, com.github.lhervier.domino.oauth.server.model.Application, java.util.List, com.github.lhervier.domino.oauth.server.ext.IAuthorizer)
+	 * @see com.github.lhervier.domino.oauth.server.ext.OAuthExtension#authorize(com.github.lhervier.domino.oauth.server.NotesPrincipal, com.github.lhervier.domino.oauth.server.model.Application, java.util.List, java.util.List)
 	 */
 	@Override
 	public AuthorizeResponse authorize(
 			NotesPrincipal user,
 			Application app,
-			List<String> askedScopes,
+			List<String> grantedScopes,
 			List<String> responseTypes) {
 		return AuthorizeResponseBuilder.newBuilder()
 				.addProperty()
 					.withName("access_token")
-					.withValue(this.createAccessToken(app, user))
+					.withValue(this.createAccessToken(app, user, grantedScopes))
 					.signedWith(this.signKey)
 				.addProperty()
 					.withName("token_type")
@@ -58,7 +58,7 @@ public class TokenExt extends BaseCoreExt {
 			NotesPrincipal user, 
 			Application app, 
 			Object context, 
-			List<String> askedScopes) {
+			List<String> grantedScopes) {
 		return null;
 	}
 }

@@ -1,11 +1,14 @@
 package com.github.lhervier.domino.oauth.server.notes;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
@@ -97,7 +100,10 @@ public class BearerContext {
 			
 			// Extract token information
 			this.clientId = accessToken.getAud();
-			this.scopes = accessToken.getScopes();
+			if( accessToken.getScope() == null )
+				this.scopes = new ArrayList<String>();
+			else
+				this.scopes = Arrays.asList(StringUtils.split(accessToken.getScope(), ' '));
 			
 			// Create session
 			String userName = accessToken.getSub();

@@ -1,5 +1,8 @@
 package com.github.lhervier.domino.oauth.server.ext.core;
 
+import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -37,12 +40,13 @@ public abstract class BaseCoreExt implements OAuthExtension {
 	/**
 	 * Create an access token
 	 */
-	public AccessToken createAccessToken(Application app, NotesPrincipal user) {
+	public AccessToken createAccessToken(Application app, NotesPrincipal user, List<String> grantedScopes) {
 		AccessToken accessToken = new AccessToken();
 		accessToken.setAud(app.getClientId());
 		accessToken.setIss(this.iss);
 		accessToken.setSub(user.getName());
 		accessToken.setExpires(this.timeSvc.currentTimeSeconds() + this.expiresIn);
+		accessToken.setScope(StringUtils.join(grantedScopes.iterator(), ' '));
 		return accessToken;
 	}
 }

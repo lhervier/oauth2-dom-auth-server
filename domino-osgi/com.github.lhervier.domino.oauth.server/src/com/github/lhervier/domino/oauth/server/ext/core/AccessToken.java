@@ -1,8 +1,5 @@
 package com.github.lhervier.domino.oauth.server.ext.core;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import com.github.lhervier.domino.oauth.server.IExpirable;
@@ -37,15 +34,7 @@ public class AccessToken implements IExpirable {
 	/**
 	 * The scopes
 	 */
-	private List<String> scopes = new ArrayList<String>();
-
-	public List<String> getScopes() {
-		return scopes;
-	}
-
-	public void setScopes(List<String> scopes) {
-		this.scopes = scopes;
-	}
+	private String scope;
 
 	public long getExpires() {
 		return expires;
@@ -69,6 +58,14 @@ public class AccessToken implements IExpirable {
 
 	public void setAud(String aud) {
 		this.aud = aud;
+	}
+
+	public String getScope() {
+		return scope;
+	}
+
+	public void setScope(String scope) {
+		this.scope = scope;
 	}
 
 	public String getSub() {

@@ -35,7 +35,7 @@ public class CodeExt extends BaseCoreExt {
 	public AuthorizeResponse authorize(
 			NotesPrincipal user,
 			Application app,
-			List<String> askedScopes,
+			List<String> grantedScopes,
 			List<String> responseTypes) {
 		return AuthorizeResponseBuilder.newBuilder()
 				.addAuthCode()
@@ -49,8 +49,8 @@ public class CodeExt extends BaseCoreExt {
 			NotesPrincipal user,
 			Application app,
 			Object context,
-			List<String> askedScopes) {
-		AccessToken accessToken = this.createAccessToken(app, user);
+			List<String> grantedScopes) {
+		AccessToken accessToken = this.createAccessToken(app, user, grantedScopes);
 		return TokenResponseBuilder.newBuilder()
 				.addProperty()
 					.withName("access_token")

@@ -15,7 +15,7 @@ public interface OAuthExtension {
 	 * Return the list of authorized scopes.
 	 * @param scopes the asked scopes
 	 */
-	public List<String> getAuthorizedScopes(List<String> scopes);
+	public List<String> getAuthorizedScopes(List<String> askedScopes);
 	
 	/**
 	 * Authorize end point
@@ -27,7 +27,7 @@ public interface OAuthExtension {
 	public AuthorizeResponse authorize(
 			NotesPrincipal user,
 			Application app,
-			List<String> askedScopes,
+			List<String> grantedScopes,
 			List<String> responseTypes);
 	
 	/**
@@ -41,5 +41,5 @@ public interface OAuthExtension {
 			NotesPrincipal user,
 			Application app,
 			Object context, 
-			List<String> askedScopes);
+			List<String> grantedScopes);
 }

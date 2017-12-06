@@ -1,6 +1,5 @@
 package com.github.lhervier.domino.oauth.server.services.impl;
 
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -49,7 +48,7 @@ public class CheckTokenServiceImpl implements CheckTokenService {
 			resp.setTokenType("bearer");
 			resp.setUsername(tk.getSub());
 			resp.setSpringUsername(resp.getUsername());			// Spring OAUTH2 Security will look at the "user_name" property insted of the "username" property (as defined in RFC7662)
-			resp.setScope(StringUtils.join(tk.getScopes().iterator(), ' '));
+			resp.setScope(tk.getScope());
 			resp.setSub(tk.getSub());
 			resp.setIss(tk.getIss());
 			// resp.setAud(tk.getAud());						// OPTIONAL. Will make Spring Security calls fail...

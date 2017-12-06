@@ -17,6 +17,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,6 +31,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import com.github.lhervier.domino.oauth.server.NotesPrincipal.AuthType;
 import com.github.lhervier.domino.oauth.server.entity.ApplicationEntity;
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
+import com.github.lhervier.domino.oauth.server.entity.PersonEntity;
 import com.github.lhervier.domino.oauth.server.ext.core.AccessToken;
 import com.github.lhervier.domino.oauth.server.model.ClientType;
 import com.github.lhervier.domino.oauth.server.testsuite.BaseTest;
@@ -57,6 +59,19 @@ public class TestAuthCodeGrantFlow extends BaseTest {
 		}};
 		when(this.appRepoMock.findOne(eq("1234"))).thenReturn(app);
 		when(this.appRepoMock.findOneByName(eq("myApp"))).thenReturn(app);
+		
+		when(this.personRepoMock.findOne("CN=Lionel HERVIER/O=USER")).thenReturn(new PersonEntity() {{
+			setFirstName("Lionel");
+			setLastName("HERVIER");
+			setFullNames(Arrays.asList("CN=Lionel HERVIER/O=USER"));
+			setInternetAddress("lhervier@asi.fr");
+			setMiddleInitial("jr");
+			setOfficePhoneNumber("+33412345678");
+			setPhotoUrl("http://acme.com/photos/lionel");
+			setShortName("lio");
+			setTitle("Mr");
+			setWebsite("https://github.com/lhervier");
+		}});
 		
 		authCodes.clear();
 		when(this.authCodeRepoMock.findOne(anyString())).thenAnswer(new Answer<AuthCodeEntity>() {
@@ -88,8 +103,8 @@ public class TestAuthCodeGrantFlow extends BaseTest {
 	public void whenAskForToken_thenReturnTokens() throws Exception {
 		// Log in as user
 		user.setAuthType(AuthType.NOTES);
-		user.setName("CN=Lionel/O=USER");
-		user.setCommon("Lionel");
+		user.setName("CN=Lionel HERVIER/O=USER");
+		user.setCommon("Lionel HERVIER");
 		user.setClientId(null);
 		user.setScopes(null);
 		user.setCurrentDatabasePath(this.oauth2Db);
@@ -150,7 +165,7 @@ public class TestAuthCodeGrantFlow extends BaseTest {
 		AuthCodeEntity refTk = this.jwtSvc.fromJwe(refreshToken, refreshTokenConfig, AuthCodeEntity.class);
 		assertThat(refTk, notNullValue());
 		
-		assertThat(accTk.getSub(), equalTo("CN=Lionel/O=USER"));
+		assertThat(accTk.getSub(), equalTo("CN=Lionel HERVIER/O=USER"));
 		assertThat(accTk.getAud(), equalTo("1234"));
 		assertThat(accTk.getIss(), equalTo(coreIss));
 		assertThat(accTk.getExpires(), equalTo(this.timeSvc.currentTimeSeconds() + coreExpiresIn));
@@ -170,14 +185,14 @@ public class TestAuthCodeGrantFlow extends BaseTest {
 		json = result.getResponse().getContentAsString();
 		Map<String, Object> checkTkResp = this.fromJson(json);
 		assertThat(checkTkResp, hasEntry("active", (Object) true));
-		assertThat(checkTkResp, hasEntry("sub", (Object) "CN=Lionel/O=USER"));
+		assertThat(checkTkResp, hasEntry("sub", (Object) "CN=Lionel HERVIER/O=USER"));
 		assertThat(checkTkResp, hasEntry("scope", (Object) ""));
 		assertThat(checkTkResp, hasEntry("client_id", (Object) "1234"));
-		assertThat(checkTkResp, hasEntry("username", (Object) "CN=Lionel/O=USER"));
-		assertThat(checkTkResp, hasEntry("user_name", (Object) "CN=Lionel/O=USER"));		// Needed by Spring Security
+		assertThat(checkTkResp, hasEntry("username", (Object) "CN=Lionel HERVIER/O=USER"));
+		assertThat(checkTkResp, hasEntry("user_name", (Object) "CN=Lionel HERVIER/O=USER"));		// Needed by Spring Security
 		assertThat(checkTkResp, hasEntry("token_type", (Object) "bearer"));
 		assertThat(checkTkResp, hasEntry("exp", (Object) new Integer((int) (timeSvc.currentTimeSeconds() + coreExpiresIn))));
-		assertThat(checkTkResp, hasEntry("sub", (Object) "CN=Lionel/O=USER"));
+		assertThat(checkTkResp, hasEntry("sub", (Object) "CN=Lionel HERVIER/O=USER"));
 		assertThat(checkTkResp, hasEntry("iss", (Object) coreIss));
 		assertThat(checkTkResp, not(hasKey("aud")));		// Will make Spring Security fail otherwise
 		
@@ -220,7 +235,7 @@ public class TestAuthCodeGrantFlow extends BaseTest {
 		AuthCodeEntity newRefTk = this.jwtSvc.fromJwe(newRefreshToken, refreshTokenConfig, AuthCodeEntity.class);
 		assertThat(newRefTk, notNullValue());
 		
-		assertThat(newAccTk.getSub(), equalTo("CN=Lionel/O=USER"));
+		assertThat(newAccTk.getSub(), equalTo("CN=Lionel HERVIER/O=USER"));
 		assertThat(newAccTk.getAud(), equalTo("1234"));
 		assertThat(newAccTk.getIss(), equalTo(coreIss));
 		assertThat(newAccTk.getExpires(), equalTo(this.timeSvc.currentTimeSeconds() + coreExpiresIn));
@@ -228,6 +243,49 @@ public class TestAuthCodeGrantFlow extends BaseTest {
 		assertThat(newRefTk.getScopes(), containsInAnyOrder("scope1", "scope2"));
 		assertThat(newRefTk.getGrantedScopes().size(), equalTo(0));
 		assertThat(newRefTk.getExpires(), equalTo(this.timeSvc.currentTimeSeconds() + refreshTokenLifetime));
+	}
+	
+	@Test
+	public void whenScopeInAuthorizeRequest_thenScopeInAccessToken() throws Exception {
+		// Log in as user
+		user.setAuthType(AuthType.NOTES);
+		user.setName("CN=Lionel HERVIER/O=USER");
+		user.setCommon("Lionel HERVIER");
+		user.setCurrentDatabasePath(this.oauth2Db);
 		
+		// Ask for authorization code
+		MvcResult result = this.mockMvc.perform(
+				get("/authorize")
+				.param("response_type", "code id_token")
+				.param("client_id", "1234")
+				.param("redirect_uri", "http://acme.com/myApp")
+				.param("scope", "openid profile unknown_scope")
+		).andExpect(status().is(302))
+		.andReturn();
+		
+		String location = result.getResponse().getHeader("Location");
+		Map<String, String> params = urlParameters(location);
+		assertThat(params, hasKey("code"));
+		String code = params.get("code");
+		
+		// Login as application
+		user.setName("CN=myApp/O=APP");
+		user.setCommon("myApp");
+		
+		// Exchange authorization code for an access_token and a refresh_token
+		result = this.mockMvc.perform(
+				post("/token")
+				.param("grant_type", "authorization_code")
+				.param("code", code)
+		).andExpect(status().is(200))
+		.andReturn();
+		
+		String json = result.getResponse().getContentAsString();
+		Map<String, Object> tkResp = this.fromJson(json);
+		assertThat(tkResp, hasKey("access_token"));
+		String accessToken = tkResp.get("access_token").toString();
+		
+		AccessToken accTk = this.jwtSvc.fromJws(accessToken, coreSignKey, AccessToken.class);
+		assertThat(accTk.getScope(), equalTo("openid profile"));
 	}
 }

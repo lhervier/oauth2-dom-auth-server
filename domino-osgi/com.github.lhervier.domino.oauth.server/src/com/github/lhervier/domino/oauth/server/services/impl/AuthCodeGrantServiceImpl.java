@@ -131,7 +131,7 @@ public class AuthCodeGrantServiceImpl extends BaseGrantService implements GrantS
 			
 			return resp;
 		} finally {
-			// Remove auth code to prevend reuse
+			// Remove auth code to prevent reuse
 			this.authCodeRepo.delete(code);
 		}
 	}

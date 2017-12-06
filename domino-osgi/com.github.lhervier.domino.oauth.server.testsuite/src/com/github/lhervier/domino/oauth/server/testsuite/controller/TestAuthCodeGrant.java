@@ -5,11 +5,9 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
-import static org.hamcrest.collection.IsMapContaining.hasKey;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -313,7 +311,6 @@ public class TestAuthCodeGrant extends BaseTest {
 		Map<String, Object> resp = this.fromJson(json);
 		assertThat(resp.get("refresh_token"), is(nullValue()));			// No refresh token
 		assertThat(resp.get("scope"), nullValue());
-		assertThat((Integer) resp.get("expires_in"), is(equalTo(36000)));
 	}
 	
 	/**
@@ -345,7 +342,6 @@ public class TestAuthCodeGrant extends BaseTest {
 		Map<String, Object> resp = this.fromJson(json);
 		assertThat(resp.get("refresh_token"), is(nullValue()));			// No refresh token
 		assertThat(resp.get("scope"), nullValue());
-		assertThat((Integer) resp.get("expires_in"), is(equalTo(36000)));
 	}
 	
 	/**
@@ -378,7 +374,6 @@ public class TestAuthCodeGrant extends BaseTest {
 		String sRefreshToken = resp.get("refresh_token").toString();
 		assertThat(sRefreshToken, is(notNullValue()));			// Refresh token !
 		assertThat(resp.get("scope"), nullValue());
-		assertThat((Integer) resp.get("expires_in"), is(equalTo((int) this.refreshTokenLifetime)));
 		
 		AuthCodeEntity refreshToken = this.jwtSvc.fromJwe(sRefreshToken, "xx", AuthCodeEntity.class);
 		assertThat(refreshToken.getExpires(), is(Matchers.greaterThan(this.timeSvc.currentTimeSeconds())));
@@ -504,19 +499,13 @@ public class TestAuthCodeGrant extends BaseTest {
 			}
 		});
 		
-		MvcResult result = this.mockMvc
+		this.mockMvc
 		.perform(
 				post("/token")
 				.param("grant_type", "authorization_code")
 				.param("code", "12345")
 				.param("redirect_uri", APP_REDIRECT_URI)
-		).andExpect(status().is(200))
-		.andReturn();
-		
-		String json = result.getResponse().getContentAsString();
-		Map<String, Object> resp = this.fromJson(json);
-		assertThat(resp.size(), equalTo(1));
-		assertThat(resp, hasKey("expires_in"));
+		).andExpect(status().is(200));
 	}
 	
 	/**

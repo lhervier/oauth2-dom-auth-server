@@ -60,6 +60,9 @@ public class CodeExt extends BaseCoreExt {
 				.addProperty()
 					.withName("token_type")
 					.withValue("bearer")
+				.addProperty()
+					.withName("expires_in")
+					.withValue(expiresIn)
 				.build();
 	}
 }

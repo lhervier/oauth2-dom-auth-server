@@ -56,7 +56,7 @@ public class BaseGrantService {
 				if( resp.containsKey(prop.getName()) ) {
 					throw new GrantServerErrorException("Extension conflicts on setting properties");
 				} else if( prop.getSignKey() == null ) {
-					resp.put(prop.getName(), prop.getValue().toString());
+					resp.put(prop.getName(), prop.getValue());
 				} else {
 					resp.put(prop.getName(), this.jwtSvc.createJws(prop.getValue(), prop.getSignKey()));
 				}

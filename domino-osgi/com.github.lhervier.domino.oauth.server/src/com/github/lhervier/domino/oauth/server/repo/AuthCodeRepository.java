@@ -25,5 +25,5 @@ public interface AuthCodeRepository {
 	 * Remove an authorization code
 	 * @param code the auth code
 	 */
-	public void delete(String code);
+	public boolean delete(String code);
 }

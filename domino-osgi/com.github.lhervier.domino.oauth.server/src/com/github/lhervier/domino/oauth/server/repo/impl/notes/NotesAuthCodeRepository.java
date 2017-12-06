@@ -130,7 +130,7 @@ public class NotesAuthCodeRepository implements AuthCodeRepository {
 	 * Remove an authorization code
 	 * @param code the auth code
 	 */
-	public void delete(String code) {
+	public boolean delete(String code) {
 		Session session = this.authContext.getServerSession();
 		
 		View v = null;
@@ -140,9 +140,10 @@ public class NotesAuthCodeRepository implements AuthCodeRepository {
 			v = DominoUtils.getView(this.getOauth2Database(session), VIEW_AUTHCODES);
 			authDoc = v.getDocumentByKey(code, true);
 			if( authDoc == null )
-				return;
+				return false;
 			if( !authDoc.remove(true) )
 				throw new DataRetrievalFailureException("Unable to remove auth code document !");
+			return true;
 		} catch(NotesException e) {
 			throw new DataRetrievalFailureException("Error removing auth code", e);
 		} finally {

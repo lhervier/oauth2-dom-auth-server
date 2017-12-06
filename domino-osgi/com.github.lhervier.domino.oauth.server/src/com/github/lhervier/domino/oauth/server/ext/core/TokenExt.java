@@ -45,7 +45,9 @@ public class TokenExt extends BaseCoreExt {
 				.addProperty()
 					.withName("token_type")
 					.withValue("bearer")
-				.addAuthCode()
+				.addProperty()
+					.withName("expires_in")
+					.withValue(this.expiresIn)
 				.build();
 	}
 
@@ -58,6 +60,6 @@ public class TokenExt extends BaseCoreExt {
 			Application app, 
 			Object context, 
 			List<String> askedScopes) {
-		throw new RuntimeException("TokenExt: Token endpoint not available");
+		return null;
 	}
 }

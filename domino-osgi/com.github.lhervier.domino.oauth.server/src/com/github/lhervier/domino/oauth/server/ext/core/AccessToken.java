@@ -1,5 +1,6 @@
 package com.github.lhervier.domino.oauth.server.ext.core;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.codehaus.jackson.annotate.JsonProperty;
@@ -36,7 +37,7 @@ public class AccessToken implements IExpirable {
 	/**
 	 * The scopes
 	 */
-	private List<String> scopes;
+	private List<String> scopes = new ArrayList<String>();
 
 	public List<String> getScopes() {
 		return scopes;

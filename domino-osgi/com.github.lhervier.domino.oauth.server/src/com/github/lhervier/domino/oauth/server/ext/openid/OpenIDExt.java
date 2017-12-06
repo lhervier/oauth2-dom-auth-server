@@ -175,6 +175,8 @@ public class OpenIDExt implements OAuthExtension {
 			Application app,
 			Object context, 
 			List<String> askedScopes) {
+		if( context == null )
+			return null;
 		OpenIDContext oidCtx = (OpenIDContext) context;
 		IdToken idToken = this.createIdToken(user, app, askedScopes);
 		idToken.setIat(oidCtx.getIat());

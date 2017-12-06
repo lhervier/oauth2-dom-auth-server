@@ -16,7 +16,6 @@ import com.github.lhervier.domino.oauth.server.model.TokenContent;
 import com.github.lhervier.domino.oauth.server.services.AppService;
 import com.github.lhervier.domino.oauth.server.services.CheckTokenService;
 import com.github.lhervier.domino.oauth.server.services.JWTService;
-import com.github.lhervier.domino.oauth.server.services.TimeService;
 
 /**
  * Service to check for tokens
@@ -35,12 +34,6 @@ public class CheckTokenServiceImpl implements CheckTokenService {
 	 */
 	@Autowired
 	private AppService appService;
-	
-	/**
-	 * Time service
-	 */
-	@Autowired
-	private TimeService timeSvc;
 	
 	/**
 	 * JWT Service
@@ -73,16 +66,15 @@ public class CheckTokenServiceImpl implements CheckTokenService {
 		} catch (ServerErrorException e) {
 			throw new NotAuthorizedException();
 		}
-		if( tk == null )
-			throw new NotAuthorizedException();
 		
-		// Mark active/inactive
 		TokenContent resp = new TokenContent();
-		resp.setActive(tk.getExpires() > this.timeSvc.currentTimeSeconds());
-		if( resp.isActive() ) {
+		if( tk == null )
+			resp.setActive(false);
+		else {
+			resp.setActive(true);
 			resp.setClientId(tk.getAud());
 			resp.setExp(tk.getExpires());
-			resp.setTokenType("Bearer");
+			resp.setTokenType("bearer");
 			resp.setUsername(tk.getSub());
 			resp.setSpringUsername(resp.getUsername());			// Spring OAUTH2 Security will look at the "user_name" property insted of the "username" property (as defined in RFC7662)
 			resp.setScope(StringUtils.join(tk.getScopes().iterator(), ' '));

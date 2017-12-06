@@ -122,9 +122,6 @@ public class AuthCodeGrantServiceImpl extends BaseGrantService implements GrantS
 				resp.put("refresh_token", sRefreshToken);
 			}
 			
-			// expiration date
-			resp.put("expires_in", this.refreshTokenLifetime);
-			
 			// scopes only if they are different from the one asked when calling authorize end point
 			if( !authCode.getGrantedScopes().containsAll(authCode.getScopes()) )
 				resp.put("scope", StringUtils.join(authCode.getGrantedScopes().iterator(), " "));

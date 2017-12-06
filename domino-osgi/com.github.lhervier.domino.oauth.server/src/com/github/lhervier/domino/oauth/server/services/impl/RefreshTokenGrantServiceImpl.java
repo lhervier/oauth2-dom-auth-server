@@ -74,13 +74,9 @@ public class RefreshTokenGrantServiceImpl extends BaseGrantService implements Gr
 		if( refreshToken == null )
 			throw new GrantInvalidGrantException("refresh_token is mandatory");
 		
-		// Decrypt refresh token
+		// Decrypt refresh token (null if expired)
 		final AuthCodeEntity authCode = this.jwtSvc.fromJwe(refreshToken, this.refreshTokenConfig, AuthCodeEntity.class);
 		if( authCode == null )
-			throw new GrantInvalidGrantException("invalid refresh_token");
-		
-		// Check that token has not expired
-		if( authCode.getExpires() < this.timeSvc.currentTimeSeconds() )
 			throw new GrantInvalidGrantException("invalid refresh_token");
 		
 		// Extract scopes

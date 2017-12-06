@@ -14,6 +14,8 @@ import com.github.lhervier.domino.oauth.server.entity.PersonEntity;
 import com.github.lhervier.domino.oauth.server.ext.IAuthorizer;
 import com.github.lhervier.domino.oauth.server.ext.IOAuthExtension;
 import com.github.lhervier.domino.oauth.server.ext.IPropertyAdder;
+import com.github.lhervier.domino.oauth.server.ext.core.OpenIDContext;
+import com.github.lhervier.domino.oauth.server.ext.core.TokenExt;
 import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.repo.PersonRepository;
 import com.github.lhervier.domino.oauth.server.services.TimeService;
@@ -144,14 +146,21 @@ public class OpenIDExt implements IOAuthExtension {
 			NotesPrincipal user,
 			Application app,
 			List<String> askedScopes,
+			List<String> responseTypes,
 			IAuthorizer authorizer) {
-		if( askedScopes.contains(SCOPE_OPENID) ) {
-			IdToken idToken = this.createIdToken(user, app, askedScopes);
-			authorizer.addSignedProperty(TOKEN_RESPONSE_ATTR, idToken, this.signKey);
-			authorizer.setContext(idToken);
-			
-			// authorizer.saveAuthCode(We don't care)		Let other extensions decide if the auth code must be saved
-		}
+		if( !askedScopes.contains(SCOPE_OPENID) )
+			return;
+		if( !responseTypes.contains(TokenExt.TOKEN_RESPONSE_TYPE) )
+			return;
+		
+		IdToken idToken = this.createIdToken(user, app, askedScopes);
+		authorizer.addSignedProperty(TOKEN_RESPONSE_ATTR, idToken, this.signKey);
+		
+		authorizer.setContext(new OpenIDContext() {{
+			setIat(timeSvc.currentTimeSeconds());
+		}});
+		
+		// authorizer.saveAuthCode(We don't care)		Let other extensions decide if the auth code must be saved
 	}
 	
 	/**
@@ -164,8 +173,9 @@ public class OpenIDExt implements IOAuthExtension {
 			Object context, 
 			List<String> askedScopes,
 			IPropertyAdder adder) {
+		OpenIDContext oidCtx = (OpenIDContext) context;
 		IdToken idToken = this.createIdToken(user, app, askedScopes);
-		if( idToken != null )
-			adder.addSignedProperty(TOKEN_RESPONSE_ATTR, idToken, this.signKey);
+		idToken.setIat(oidCtx.getIat());
+		adder.addSignedProperty(TOKEN_RESPONSE_ATTR, idToken, this.signKey);
 	}
 }

@@ -127,10 +127,7 @@ public class AuthCodeGrantServiceImpl implements GrantService {
 			Map<String, Object> resp = new HashMap<String, Object>();
 			for( String responseType : this.extSvc.getResponseTypes() ) {
 				IOAuthExtension ext = this.extSvc.getExtension(responseType);
-				Object context = Utils.getContext(authCode, responseType);
-				if( context == null )
-					continue;
-				
+				Object context = Utils.getContext(authCode, responseType);		// May be null
 				ext.token(
 						user,
 						app,

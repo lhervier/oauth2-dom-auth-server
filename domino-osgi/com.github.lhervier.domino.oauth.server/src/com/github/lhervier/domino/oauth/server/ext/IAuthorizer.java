@@ -8,7 +8,7 @@ public interface IAuthorizer extends IPropertyAdder {
 	public void setContext(Object context);
 	
 	/**
-	 * Ask to save the auth code.
+	 * Ask to add the auth code id in the response (in the "code" attribute").
 	 */
-	public void saveAuthCode(boolean save);
+	public void addCodeToResponse(boolean save);
 }

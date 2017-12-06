@@ -473,21 +473,21 @@ public class TestAuthCodeGrant extends BaseTest {
 		when(extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy1", "dummy2", "dummy3"));
 		when(extSvcMock.getExtension(eq("dummy1"))).thenReturn(new IOAuthExtension() {
 			public List<String> getAuthorizedScopes() { return Arrays.asList(); }
-			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, IAuthorizer authorizer) { }
+			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes, IAuthorizer authorizer) { }
 			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) {
 				adder.addProperty("prop", "value");
 			}
 		});
 		when(extSvcMock.getExtension(eq("dummy2"))).thenReturn(new IOAuthExtension() {
 			public List<String> getAuthorizedScopes() { return Arrays.asList(); }
-			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, IAuthorizer authorizer) { }
+			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes, IAuthorizer authorizer) { }
 			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) {
 				adder.addProperty("prop", "value");
 			}
 		});
 		when(extSvcMock.getExtension(eq("dummy3"))).thenReturn(new IOAuthExtension() {
 			public List<String> getAuthorizedScopes() { return Arrays.asList(); }
-			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, IAuthorizer authorizer) { }
+			public void authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes, IAuthorizer authorizer) { }
 			public void token(NotesPrincipal user, Application app, Object context, List<String> askedScopes, IPropertyAdder adder) {
 				adder.addProperty("prop", "value");
 			}

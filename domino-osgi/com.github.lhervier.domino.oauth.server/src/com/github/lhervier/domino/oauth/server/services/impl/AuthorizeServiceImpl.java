@@ -175,13 +175,19 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 						user, 
 						app, 
 						authCode.getGrantedScopes(), 
+						responseTypes,
 						this.authorizer
 				);
-				if( this.authorizer.getContext() == null )
-					continue;
-				
-				authCode.getContextClasses().put(respType, this.authorizer.getContext().getClass().getName());
-				authCode.getContextObjects().put(respType, this.mapper.writeValueAsString(this.authorizer.getContext()));
+				if( this.authorizer.getContext() != null ) {
+					authCode.getContextClasses().put(
+							respType, 
+							this.authorizer.getContext().getClass().getName()
+					);
+					authCode.getContextObjects().put(
+							respType, 
+							this.mapper.writeValueAsString(this.authorizer.getContext())
+					);
+				}
 			}
 			
 			// Should we save the authorization code ?

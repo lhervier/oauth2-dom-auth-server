@@ -21,12 +21,14 @@ public interface IOAuthExtension {
 	 * @param user the currently connected user
 	 * @param app the app the user is authenticating to
 	 * @param askedScopes scopes asked by the user
+	 * @param responseTypes the response types
 	 * @param authorizer object to authorize the request
 	 */
 	public void authorize(
 			NotesPrincipal user,
 			Application app,
 			List<String> askedScopes,
+			List<String> responseTypes,
 			IAuthorizer authorizer);
 	
 	/**

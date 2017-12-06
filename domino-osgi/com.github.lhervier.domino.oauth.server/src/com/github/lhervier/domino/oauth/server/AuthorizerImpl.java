@@ -67,10 +67,10 @@ public class AuthorizerImpl implements IAuthorizer {
 	private boolean propertiesConflict = false;
 	
 	/**
-	 * @see com.github.lhervier.domino.oauth.server.ext.IAuthorizer#saveAuthCode(boolean)
+	 * @see com.github.lhervier.domino.oauth.server.ext.IAuthorizer#addCodeToResponse(boolean)
 	 */
 	@Override
-	public void saveAuthCode(boolean save) {
+	public void addCodeToResponse(boolean save) {
 		if( saveAuthCode != null )
 			this.saveAuthConflict = true;
 		else

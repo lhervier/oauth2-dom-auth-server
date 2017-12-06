@@ -17,6 +17,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -31,7 +32,6 @@ import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
 import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
 import com.github.lhervier.domino.oauth.server.services.AuthCodeService;
 import com.github.lhervier.domino.oauth.server.testsuite.BaseTest;
-import com.github.lhervier.domino.oauth.server.testsuite.controller.TestAuthCodeGrant.TkResp;
 import com.github.lhervier.domino.oauth.server.testsuite.impl.NotesPrincipalTestImpl;
 
 public class TestRefreshTokenGrant extends BaseTest {
@@ -156,8 +156,8 @@ public class TestRefreshTokenGrant extends BaseTest {
 		.andReturn();
 		
 		String json = result.getResponse().getContentAsString();
-		TkResp response = this.mapper.readValue(json, TkResp.class);
-		assertThat(response.getScope(), nullValue());
+		Map<String, Object> response = this.fromJson(json);
+		assertThat(response.get("scope"), nullValue());
 	}
 	
 	/**
@@ -207,8 +207,8 @@ public class TestRefreshTokenGrant extends BaseTest {
 		.andReturn();
 		
 		String json = result.getResponse().getContentAsString();
-		TkResp response = this.mapper.readValue(json, TkResp.class);
-		assertThat(response.getRefreshToken(), equalTo("QSDFGH"));
+		Map<String, Object> response = this.fromJson(json);
+		assertThat(response.get("refresh_token").toString(), equalTo("QSDFGH"));
 		
 		ArgumentCaptor<AuthCodeEntity> captor = ArgumentCaptor.forClass(AuthCodeEntity.class);
 		verify(authCodeSvcMock, times(1)).fromEntity(captor.capture());

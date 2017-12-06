@@ -197,10 +197,7 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 					if( Utils.equals("code", prop.getName()) ) {
 						params.put("code", authCode.getId());		// May be multiple times...
 					} else if( params.containsKey(prop.getName()) ) {
-						if( Utils.equals("code", prop.getName()) )
-							throw new AuthServerErrorException("response_type conflict on grant_type: Extension conflicts on saving the authorization code", redirectUri);
-						else
-							throw new AuthServerErrorException("response_type conflict on properties: Extension conflicts on setting properties", redirectUri);
+						throw new AuthServerErrorException("response_type conflict on properties: Extension conflicts on setting properties", redirectUri);
 					} else if( prop.getSignKey() == null ) {
 						params.put(prop.getName(), prop.getValue().toString());
 					} else {

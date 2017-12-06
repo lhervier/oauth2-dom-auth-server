@@ -2,6 +2,11 @@ package com.github.lhervier.domino.oauth.server.testsuite;
 
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
+import java.io.IOException;
+import java.util.Map;
+
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -78,4 +83,11 @@ public abstract class BaseTest {
 		mockMvc = webAppContextSetup(wac).build();
 		TimeServiceTestImpl.CURRENT_TIME = System.currentTimeMillis() / 1000L;
 	}
+	
+	@SuppressWarnings("unchecked")
+	protected Map<String, Object> fromJson(String json) throws JsonParseException, JsonMappingException, IOException {
+		return this.mapper.readValue(json, Map.class);
+	}
+	
+	
 }

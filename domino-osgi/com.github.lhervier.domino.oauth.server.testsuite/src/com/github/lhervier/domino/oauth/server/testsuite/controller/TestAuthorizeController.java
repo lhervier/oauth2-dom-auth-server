@@ -48,6 +48,7 @@ import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
 import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
 import com.github.lhervier.domino.oauth.server.services.ExtensionService;
+import com.github.lhervier.domino.oauth.server.services.JWTService;
 import com.github.lhervier.domino.oauth.server.testsuite.BaseTest;
 import com.github.lhervier.domino.oauth.server.testsuite.impl.DummyContext;
 import com.github.lhervier.domino.oauth.server.testsuite.impl.NotesPrincipalTestImpl;
@@ -66,6 +67,9 @@ public class TestAuthorizeController extends BaseTest {
 	
 	@Autowired
 	private NotesPrincipalTestImpl user;
+	
+	@Autowired
+	private JWTService jwtSvc;
 	
 	@Before
 	public void setUp() {
@@ -158,6 +162,7 @@ public class TestAuthorizeController extends BaseTest {
 				return AuthorizeResponseBuilder.newBuilder()
 						.addAuthCode()	// Will save the auth code
 						.addProperty().withName("dummy_authorize_param").withValue("authparamvalue")
+						.addProperty().withName("dummy_signed_property").withValue("valuetosign").signedWith("dummykey")
 						.build();
 			}
 		});
@@ -171,6 +176,10 @@ public class TestAuthorizeController extends BaseTest {
 		Map<String, String> params = urlParameters(location);
 		assertThat(params, hasKey("code"));
 		assertThat(params, hasEntry("dummy_authorize_param", "authparamvalue"));
+		
+		String jwt = this.jwtSvc.createJws("valuetosign", "dummykey");
+		assertThat(params, hasEntry("dummy_signed_property", jwt));
+		
 		assertThat(params, not(hasKey("error")));
 	}
 	

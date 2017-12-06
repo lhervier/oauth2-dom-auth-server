@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
+import static org.hamcrest.collection.IsMapContaining.hasKey;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.eq;
@@ -24,7 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.codehaus.jackson.annotate.JsonProperty;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -99,28 +99,6 @@ public class TestAuthCodeGrant extends BaseTest {
 	 */
 	@Autowired
 	protected NotesPrincipalTestImpl user;
-	
-	public static class TkResp {
-		@JsonProperty("refresh_token")
-		private String refreshToken;
-		@JsonProperty("expires_in")
-		private long expiresIn;
-		private String scope;
-		@JsonProperty("dummy_user")
-		private String dummyUser;
-		@JsonProperty("dummy_token_param")
-		private String dummyTokenParam;
-		public String getRefreshToken() { return refreshToken; }
-		public void setRefreshToken(String refreshToken) { this.refreshToken = refreshToken; }
-		public long getExpiresIn() { return expiresIn; }
-		public void setExpiresIn(long expiresIn) { this.expiresIn = expiresIn; }
-		public String getScope() { return scope; }
-		public void setScope(String scope) { this.scope = scope; }
-		public String getDummyUser() { return dummyUser; }
-		public void setDummyUser(String dummyUser) { this.dummyUser = dummyUser; }
-		public String getDummyTokenParam() { return dummyTokenParam; }
-		public void setDummyTokenParam(String dummyTokenParam) { this.dummyTokenParam = dummyTokenParam; }
-	};
 	
 	/**
 	 * Before
@@ -313,8 +291,8 @@ public class TestAuthCodeGrant extends BaseTest {
 		.andReturn();
 		
 		String json = result.getResponse().getContentAsString();
-		TkResp response = this.mapper.readValue(json, TkResp.class);
-		assertThat(response.getScope(), nullValue());
+		Map<String, Object> response = this.fromJson(json);
+		assertThat(response.get("scope"), nullValue());
 		
 		// Remove one scope from the granted set
 		when(this.authCodeRepoMock.findOne(eq("AZERTY"))).thenReturn(new AuthCodeEntity() {{
@@ -337,8 +315,8 @@ public class TestAuthCodeGrant extends BaseTest {
 		.andReturn();
 		
 		json = result.getResponse().getContentAsString();
-		response = this.mapper.readValue(json, TkResp.class);
-		assertThat(response.getScope(), equalTo("scope1 scope3"));
+		response = this.fromJson(json);
+		assertThat(response.get("scope").toString(), equalTo("scope1 scope3"));
 	}
 	
 	/**
@@ -368,10 +346,10 @@ public class TestAuthCodeGrant extends BaseTest {
 		
 		String json = result.getResponse().getContentAsString();
 		
-		TkResp resp = this.mapper.readValue(json, TkResp.class);
-		assertThat(resp.getRefreshToken(), is(nullValue()));			// No refresh token
-		assertThat(resp.getScope(), nullValue());
-		assertThat(resp.getExpiresIn(), is(equalTo(36000L)));
+		Map<String, Object> resp = this.fromJson(json);
+		assertThat(resp.get("refresh_token"), is(nullValue()));			// No refresh token
+		assertThat(resp.get("scope"), nullValue());
+		assertThat((Integer) resp.get("expires_in"), is(equalTo(36000)));
 	}
 	
 	/**
@@ -403,10 +381,10 @@ public class TestAuthCodeGrant extends BaseTest {
 		
 		String json = result.getResponse().getContentAsString();
 		
-		TkResp resp = this.mapper.readValue(json, TkResp.class);
-		assertThat(resp.getRefreshToken(), is(nullValue()));			// No refresh token
-		assertThat(resp.getScope(), nullValue());
-		assertThat(resp.getExpiresIn(), is(equalTo(36000L)));
+		Map<String, Object> resp = this.fromJson(json);
+		assertThat(resp.get("refresh_token"), is(nullValue()));			// No refresh token
+		assertThat(resp.get("scope"), nullValue());
+		assertThat((Integer) resp.get("expires_in"), is(equalTo(36000)));
 	}
 	
 	/**
@@ -438,10 +416,10 @@ public class TestAuthCodeGrant extends BaseTest {
 		
 		String json = result.getResponse().getContentAsString();
 		
-		TkResp resp = this.mapper.readValue(json, TkResp.class);
-		assertThat(resp.getRefreshToken(), is(notNullValue()));			// Refresh token !
-		assertThat(resp.getScope(), nullValue());
-		assertThat(resp.getExpiresIn(), is(equalTo(36000L)));
+		Map<String, Object> resp = this.fromJson(json);
+		assertThat(resp.get("refresh_token").toString(), is(notNullValue()));			// Refresh token !
+		assertThat(resp.get("scope"), nullValue());
+		assertThat((Integer) resp.get("expires_in"), is(equalTo(36000)));
 	}
 	
 	/**
@@ -521,7 +499,6 @@ public class TestAuthCodeGrant extends BaseTest {
 		assertThat(response, hasEntry("error", "server_error"));
 	}
 	
-
 	/**
 	 * AuthCode is removed after grant
 	 */
@@ -542,5 +519,41 @@ public class TestAuthCodeGrant extends BaseTest {
 		).andExpect(status().is(200));
 		
 		verify(this.authCodeRepoMock, times(1)).delete(eq("12345"));
+	}
+	
+	/**
+	 * If extension returns no response, the OK
+	 */
+	@Test
+	public void whenExtSendNullResponse_thenOK() throws Exception {
+		when(this.authCodeRepoMock.findOne(eq("12345"))).thenReturn(new AuthCodeEntity() {{
+			setExpires(timeSvcStub.currentTimeSeconds() + 10L);
+			setClientId(APP_CLIENT_ID);
+			setApplication(APP_NAME);
+			setRedirectUri(APP_REDIRECT_URI);
+		}});
+		
+		when(extSvcMock.getResponseTypes()).thenReturn(Arrays.asList("dummy1"));
+		when(extSvcMock.getExtension(eq("dummy1"))).thenReturn(new OAuthExtension() {
+			public List<String> getAuthorizedScopes() { return Arrays.asList(); }
+			public AuthorizeResponse authorize(NotesPrincipal user, Application app, List<String> askedScopes, List<String> responseTypes) { return null; }
+			public TokenResponse token(NotesPrincipal user, Application app, Object context, List<String> askedScopes) {
+				return null;
+			}
+		});
+		
+		MvcResult result = this.mockMvc
+		.perform(
+				post("/token")
+				.param("grant_type", "authorization_code")
+				.param("code", "12345")
+				.param("redirect_uri", APP_REDIRECT_URI)
+		).andExpect(status().is(200))
+		.andReturn();
+		
+		String json = result.getResponse().getContentAsString();
+		Map<String, Object> resp = this.fromJson(json);
+		assertThat(resp.size(), equalTo(1));
+		assertThat(resp, hasKey("expires_in"));
 	}
 }

@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +43,7 @@ import com.github.lhervier.domino.oauth.server.model.Application;
 import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
 import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
 import com.github.lhervier.domino.oauth.server.services.ExtensionService;
+import com.github.lhervier.domino.oauth.server.services.JWTService;
 import com.github.lhervier.domino.oauth.server.services.impl.AppServiceImpl;
 import com.github.lhervier.domino.oauth.server.testsuite.BaseTest;
 import com.github.lhervier.domino.oauth.server.testsuite.impl.DummyContext;
@@ -85,6 +87,12 @@ public class TestAuthCodeGrant extends BaseTest {
 	 */
 	@Autowired
 	private ExtensionService extSvcMock;
+	
+	/**
+	 * JWT Service
+	 */
+	@Autowired
+	private JWTService jwtSvc;
 	
 	/**
 	 * User principal
@@ -399,9 +407,13 @@ public class TestAuthCodeGrant extends BaseTest {
 		String json = result.getResponse().getContentAsString();
 		
 		Map<String, Object> resp = this.fromJson(json);
-		assertThat(resp.get("refresh_token").toString(), is(notNullValue()));			// Refresh token !
+		String sRefreshToken = resp.get("refresh_token").toString();
+		assertThat(sRefreshToken, is(notNullValue()));			// Refresh token !
 		assertThat(resp.get("scope"), nullValue());
-		assertThat((Integer) resp.get("expires_in"), is(equalTo(36000)));
+		assertThat((Integer) resp.get("expires_in"), is(equalTo((int) this.refreshTokenLifetime)));
+		
+		AuthCodeEntity refreshToken = this.jwtSvc.fromJwe(sRefreshToken, "xx", AuthCodeEntity.class);
+		assertThat(refreshToken.getExpires(), is(Matchers.greaterThan(this.timeSvcStub.currentTimeSeconds())));
 	}
 	
 	/**

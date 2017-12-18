@@ -239,6 +239,7 @@ I will show you how to declare them with any of this methods. But first, let's d
 - oauth2.server.core.expiresIn : Lifetime in seconds of the generated access tokens. Example value "1800"
 - oauth2.server.openid.signKey : Name of the SSO configuration that contains the secret we will use to sign the openid id tokens. Example value "ACME:IdToken"
 - oauth2.server.openid.iss : Issuer of the openid id token (iss property of the JWT). Example value "https://acme.com/domino/oauth2/openid/"
+- oauth2.server.openid.expiresIn : Lifetime in seconds of the generated id tokens. Example value "36000"
 
 Whatever the method you use to define those properties, when done, restart the http task. 
 

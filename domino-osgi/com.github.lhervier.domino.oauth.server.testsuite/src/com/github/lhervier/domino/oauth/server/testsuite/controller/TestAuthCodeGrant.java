@@ -6,6 +6,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.number.OrderingComparison.greaterThan;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
@@ -23,7 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -376,7 +376,7 @@ public class TestAuthCodeGrant extends BaseTest {
 		assertThat(resp.get("scope"), nullValue());
 		
 		AuthCodeEntity refreshToken = this.jwtSvc.fromJwe(sRefreshToken, "xx", AuthCodeEntity.class);
-		assertThat(refreshToken.getExpires(), is(Matchers.greaterThan(this.timeSvc.currentTimeSeconds())));
+		assertThat(refreshToken.getExpires(), is(greaterThan(this.timeSvc.currentTimeSeconds())));
 	}
 	
 	/**
@@ -401,7 +401,7 @@ public class TestAuthCodeGrant extends BaseTest {
 					setName("CN=Lionel/O=USER");
 				}}));
 				put("dummy2", mapper.writeValueAsString(new DummyContext() {{
-					setName("CN=François/O=USER");
+					setName("CN=FranÃ§ois/O=USER");
 				}}));
 				// No context for dummy3
 			}});

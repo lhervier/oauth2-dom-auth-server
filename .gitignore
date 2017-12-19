@@ -4,3 +4,6 @@ plugins
 target
 artifacts.jar
 content.jar
+.settings
+.project
+.classpath

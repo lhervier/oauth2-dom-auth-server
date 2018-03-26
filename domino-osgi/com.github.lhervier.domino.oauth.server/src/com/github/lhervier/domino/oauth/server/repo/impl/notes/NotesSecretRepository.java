@@ -4,11 +4,11 @@ import java.io.IOException;
 
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.stereotype.Repository;
 
 import com.github.lhervier.domino.oauth.server.notes.AuthContext;
 import com.github.lhervier.domino.oauth.server.notes.DominoUtils;
+import com.github.lhervier.domino.oauth.server.notes.NotesRuntimeException;
 import com.github.lhervier.domino.oauth.server.repo.SecretRepository;
 
 import lotus.domino.Database;
@@ -68,16 +68,16 @@ public class NotesSecretRepository implements SecretRepository {
 			nab = DominoUtils.openDatabase(this.authContext.getServerSession(), "names.nsf");
 			v = nab.getView(WEBSSOCONFIG_VIEW);
 			if( v == null )
-				throw new RuntimeException("La vue " + WEBSSOCONFIG_VIEW + " n'existe pas dans le NAB. Impossible de continuer.");
+				throw new NotesRuntimeException("La vue " + WEBSSOCONFIG_VIEW + " n'existe pas dans le NAB. Impossible de continuer.");
 			docSsoConfig = v.getDocumentByKey(ssoConfig);
 			if( docSsoConfig == null )
 				return null;
 			String secret = docSsoConfig.getItemValueString(SECRET_FIELD_NAME);
 			return this.genSecret(secret, size);
 		} catch(NotesException e) {
-			throw new DataRetrievalFailureException("Error extracting secret", e);
+			throw new NotesRuntimeException("Error extracting secret", e);
 		} catch(IOException e) {
-			throw new DataRetrievalFailureException("Error extracting secret", e);
+			throw new NotesRuntimeException("Error extracting secret", e);
 		} finally {
 			DominoUtils.recycleQuietly(docSsoConfig);
 			DominoUtils.recycleQuietly(v);

@@ -5,25 +5,25 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.stereotype.Repository;
+
+import com.github.lhervier.domino.oauth.server.entity.ApplicationEntity;
+import com.github.lhervier.domino.oauth.server.notes.AuthContext;
+import com.github.lhervier.domino.oauth.server.notes.DominoUtils;
+import com.github.lhervier.domino.oauth.server.notes.NotesRuntimeException;
+import com.github.lhervier.domino.oauth.server.notes.ViewIterator;
+import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
+import com.github.lhervier.domino.oauth.server.utils.Utils;
+
 import lotus.domino.Database;
 import lotus.domino.Document;
 import lotus.domino.NotesException;
 import lotus.domino.Session;
 import lotus.domino.View;
 import lotus.domino.ViewEntry;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.dao.DataRetrievalFailureException;
-import org.springframework.stereotype.Repository;
-
-import com.github.lhervier.domino.oauth.server.entity.ApplicationEntity;
-import com.github.lhervier.domino.oauth.server.notes.AuthContext;
-import com.github.lhervier.domino.oauth.server.notes.DominoUtils;
-import com.github.lhervier.domino.oauth.server.notes.ViewIterator;
-import com.github.lhervier.domino.oauth.server.repo.ApplicationRepository;
-import com.github.lhervier.domino.oauth.server.utils.Utils;
 
 /**
  * Repository to access applications
@@ -61,9 +61,8 @@ public class NotesApplicationRepository implements ApplicationRepository {
 	
 	/**
 	 * Return the oauth2 database as the user (the application)
-	 * @throws NotesException 
 	 */
-	private Database getOauth2Database(Session session) throws NotesException {
+	private Database getOauth2Database(Session session) {
 		return DominoUtils.openDatabase(session, this.oauth2db);
 	}
 	
@@ -71,14 +70,15 @@ public class NotesApplicationRepository implements ApplicationRepository {
 	 * Retourne le document associé à une app
 	 * @param appName le nom de l'app
 	 * @return le document
-	 * @throws NotesException en cas de pb
 	 */
-	private Document findOneDocByName(Session session, String appName) throws NotesException {
+	private Document findOneDocByName(Session session, String appName) {
 		View v = null;
 		try {
 			v = DominoUtils.getView(this.getOauth2Database(session), VIEW_APPLICATIONS);
 			v.resortView(COLUMN_NAME);
 			return v.getDocumentByKey(appName, true);
+		} catch(NotesException e) {
+			throw new NotesRuntimeException(e);
 		} finally {
 			DominoUtils.recycleQuietly(v);
 		}
@@ -88,14 +88,15 @@ public class NotesApplicationRepository implements ApplicationRepository {
 	 * Retourne le document associé à une app
 	 * @param clientId l'id client de l'app
 	 * @return le document
-	 * @throws NotesException en cas de pb
 	 */
-	private Document findOneDoc(Session session, String clientId) throws NotesException {
+	private Document findOneDoc(Session session, String clientId) {
 		View v = null;
 		try {
 			v = DominoUtils.getView(this.getOauth2Database(session), VIEW_APPLICATIONS);
 			v.resortView(COLUMN_CLIENTID);
 			return v.getDocumentByKey(clientId, true);
+		} catch(NotesException e) {
+			throw new NotesRuntimeException(e);
 		} finally {
 			DominoUtils.recycleQuietly(v);
 		}
@@ -123,7 +124,7 @@ public class NotesApplicationRepository implements ApplicationRepository {
 				ret.add((String) entry.getColumnValues().get(0));
 			return ret;
 		} catch(NotesException e) {
-			throw new DataRetrievalFailureException("Error getting application names", e);
+			throw new NotesRuntimeException("Error getting application names", e);
 		} finally {
 			DominoUtils.recycleQuietly(it);
 		}
@@ -142,8 +143,6 @@ public class NotesApplicationRepository implements ApplicationRepository {
 			if( doc == null )
 				return null;
 			return DominoUtils.fillObject(new ApplicationEntity(), doc);
-		} catch(NotesException e) {
-			throw new DataRetrievalFailureException("Error getting application detail", e);
 		} finally {
 			DominoUtils.recycleQuietly(doc);
 		}
@@ -163,8 +162,6 @@ public class NotesApplicationRepository implements ApplicationRepository {
 			if( doc == null )
 				return null;
 			return DominoUtils.fillObject(new ApplicationEntity(), doc);
-		} catch(NotesException e) {
-			throw new DataRetrievalFailureException("Error getting application detail", e);
 		} finally {
 			DominoUtils.recycleQuietly(doc);
 		}
@@ -224,7 +221,7 @@ public class NotesApplicationRepository implements ApplicationRepository {
 			DominoUtils.fillDocument(appDoc, app);
 			DominoUtils.computeAndSave(appDoc);
 		} catch(NotesException e) {
-			throw new DataRetrievalFailureException("Error saveing application", e);
+			throw new NotesRuntimeException("Error saveing application", e);
 		} finally {
 			DominoUtils.recycleQuietly(appDoc);
 		}
@@ -245,7 +242,7 @@ public class NotesApplicationRepository implements ApplicationRepository {
 			if( appDoc != null )
 				appDoc.remove(true);
 		} catch(NotesException e) {
-			throw new DataRetrievalFailureException("Error removing application", e);
+			throw new NotesRuntimeException("Error removing application", e);
 		} finally {
 			DominoUtils.recycleQuietly(appDoc);
 		}

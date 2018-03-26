@@ -110,9 +110,9 @@ public class BearerContext {
 			this.userNameList = NotesUtil.createUserNameList(userName);
 			this.bearerSession = XSPNative.createXPageSession(userName, this.userNameList, false, false);
 		} catch (NotesException e) {
-			throw new RuntimeException(e);
+			throw new NotesRuntimeException(e);
 		} catch (NException e) {
-			throw new RuntimeException(e);
+			throw new NotesRuntimeException(e);
 		}
 	}
 	
@@ -130,7 +130,7 @@ public class BearerContext {
 			try {
 				Os.OSMemFree(this.userNameList);
 			} catch (NException e) {
-				throw new RuntimeException(e);
+				throw new NotesRuntimeException(e);
 			}
 			this.userNameList = null;
 		}

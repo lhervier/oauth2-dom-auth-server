@@ -5,22 +5,22 @@ import java.security.SecureRandom;
 import java.util.Date;
 import java.util.Vector;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Repository;
+
+import com.github.lhervier.domino.oauth.server.entity.PersonEntity;
+import com.github.lhervier.domino.oauth.server.notes.AuthContext;
+import com.github.lhervier.domino.oauth.server.notes.DominoUtils;
+import com.github.lhervier.domino.oauth.server.notes.NotesRuntimeException;
+import com.github.lhervier.domino.oauth.server.repo.PersonRepository;
+
 import lotus.domino.Database;
 import lotus.domino.Document;
 import lotus.domino.Name;
 import lotus.domino.NotesException;
 import lotus.domino.Session;
 import lotus.domino.View;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.DataRetrievalFailureException;
-import org.springframework.stereotype.Repository;
-
-import com.github.lhervier.domino.oauth.server.entity.PersonEntity;
-import com.github.lhervier.domino.oauth.server.notes.AuthContext;
-import com.github.lhervier.domino.oauth.server.notes.DominoUtils;
-import com.github.lhervier.domino.oauth.server.repo.PersonRepository;
 
 @Repository
 public class NotesPersonRepository implements PersonRepository {
@@ -60,9 +60,8 @@ public class NotesPersonRepository implements PersonRepository {
 	 * Return the nab database where new person will be registered.
 	 * @param session the session to be used
 	 * @return the nabPath as configured in the parameters
-	 * @throws NotesException
 	 */
-	private Database getNabDatabase(Session session) throws NotesException {
+	private Database getNabDatabase(Session session) {
 		return DominoUtils.openDatabase(session, this.nabPath);
 	}
 	
@@ -71,7 +70,6 @@ public class NotesPersonRepository implements PersonRepository {
 	 * This will search in every NAB of the server (but NOT on LDAP directory assistance).
 	 * @param session the session to be used to find the user.
 	 * @param fullName One of the user full name
-	 * @throws NotesException
 	 */
 	@SuppressWarnings("unchecked")
 	private Document findPersonDoc(Session session, String fullName) throws NotesException {
@@ -82,7 +80,7 @@ public class NotesPersonRepository implements PersonRepository {
 			for( Database nab : nabs ) {
 				if( !nab.isOpen() )
 					if( !nab.open() )
-						throw new RuntimeException("Server not allowed to open nabPath ???");
+						throw new NotesRuntimeException("Server not allowed to open nabPath ???");
 				View v = null;
 				try {
 					v = nab.getView("($VIMPeople)");
@@ -159,7 +157,7 @@ public class NotesPersonRepository implements PersonRepository {
 			// Return the secret
 			return entity;
 		} catch(NotesException e) {
-			throw new DataRetrievalFailureException("Error saving person", e);
+			throw new NotesRuntimeException("Error saving person", e);
 		} finally {
 			DominoUtils.recycleQuietly(person);
 		}
@@ -191,7 +189,7 @@ public class NotesPersonRepository implements PersonRepository {
 			
 			return person;
 		} catch(NotesException e) {
-			throw new DataRetrievalFailureException("Error getting person", e);
+			throw new NotesRuntimeException("Error getting person", e);
 		}
 	}
 	
@@ -209,7 +207,7 @@ public class NotesPersonRepository implements PersonRepository {
 				DominoUtils.refreshNab(this.getNabDatabase(userSession));
 			}
 		} catch(NotesException e) {
-			throw new DataRetrievalFailureException("Error removing person", e);
+			throw new NotesRuntimeException("Error removing person", e);
 		} finally {
 			DominoUtils.recycleQuietly(doc);
 		}

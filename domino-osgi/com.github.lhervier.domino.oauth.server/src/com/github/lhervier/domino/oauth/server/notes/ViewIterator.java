@@ -63,21 +63,24 @@ public class ViewIterator implements Iterable<ViewEntry>, Base {
 		/**
 		 * Constructeur
 		 * @param nav le navigator
-		 * @throws NotesException en cas de pb
 		 */
-		private InternalIterator(ViewNavigator nav) throws NotesException {
-			this.v = nav.getParentView();
-			this.v.setAutoUpdate(false);
-			this.nav = nav;
-			
-			this.nextEntry = this.nav.getFirst();
-			this.currEntry = null;
+		private InternalIterator(ViewNavigator nav) {
+			try {
+				this.v = nav.getParentView();
+				this.v.setAutoUpdate(false);
+				this.nav = nav;
+				
+				this.nextEntry = this.nav.getFirst();
+				this.currEntry = null;
+			} catch(NotesException e) {
+				throw new NotesRuntimeException(e);
+			}
 		}
 		
 		/**
 		 * @see lotus.domino.Base#recycle()
 		 */
-		public void recycle() throws NotesException {
+		public void recycle() {
 			recycleQuietly(this.currEntry);
 			recycleQuietly(this.nextEntry);
 			recycleQuietly(this.nav);
@@ -88,7 +91,7 @@ public class ViewIterator implements Iterable<ViewEntry>, Base {
 		 * @see lotus.domino.Base#recycle(java.util.Vector)
 		 */
 		@SuppressWarnings({ "rawtypes" })
-		public void recycle(Vector arg0) throws NotesException {
+		public void recycle(Vector arg0) {
 			throw new UnsupportedOperationException();
 		}
 	
@@ -113,13 +116,14 @@ public class ViewIterator implements Iterable<ViewEntry>, Base {
 				this.nextEntry = this.nav.getNext();
 				return this.currEntry;
 			} catch(NotesException e) {
-				throw new RuntimeException(e);
+				throw new NotesRuntimeException(e);
 			}
 		}
 	
 		/**
 		 * @see java.util.Iterator#remove()
 		 */
+		@Override
 		public void remove() {
 			throw new UnsupportedOperationException("Not implemented");
 		}
@@ -217,14 +221,14 @@ public class ViewIterator implements Iterable<ViewEntry>, Base {
 			this.iterators.add(it);
 			return it;
 		} catch(NotesException e) {
-			throw new RuntimeException(e);
+			throw new NotesRuntimeException(e);
 		}
 	}
 
 	/**
 	 * @see lotus.domino.Base#recycle()
 	 */
-	public void recycle() throws NotesException {
+	public void recycle() {
 		for( InternalIterator it : this.iterators )
 			recycleQuietly(it);
 	}
@@ -233,7 +237,7 @@ public class ViewIterator implements Iterable<ViewEntry>, Base {
 	 * @see lotus.domino.Base#recycle(java.util.Vector)
 	 */
 	@SuppressWarnings({ "rawtypes" })
-	public void recycle(Vector arg0) throws NotesException {
+	public void recycle(Vector arg0) {
 		throw new UnsupportedOperationException("Not implemented");
 	}
 }

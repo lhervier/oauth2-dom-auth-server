@@ -3,21 +3,21 @@ package com.github.lhervier.domino.oauth.server.repo.impl.notes;
 import java.util.HashMap;
 import java.util.Vector;
 
-import lotus.domino.Database;
-import lotus.domino.Document;
-import lotus.domino.NotesException;
-import lotus.domino.Session;
-import lotus.domino.View;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.stereotype.Repository;
 
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
 import com.github.lhervier.domino.oauth.server.notes.AuthContext;
 import com.github.lhervier.domino.oauth.server.notes.DominoUtils;
+import com.github.lhervier.domino.oauth.server.notes.NotesRuntimeException;
 import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
+
+import lotus.domino.Database;
+import lotus.domino.Document;
+import lotus.domino.NotesException;
+import lotus.domino.Session;
+import lotus.domino.View;
 
 /**
  * Service to manage authorization codes
@@ -46,9 +46,8 @@ public class NotesAuthCodeRepository implements AuthCodeRepository {
 	/**
 	 * Return the oauth2 database as the server
 	 * @param session the session to use to open the database
-	 * @throws NotesException 
 	 */
-	private Database getOauth2Database(Session session) throws NotesException {
+	private Database getOauth2Database(Session session) {
 		return DominoUtils.openDatabase(session, this.oauth2db);
 	}
 	
@@ -79,7 +78,7 @@ public class NotesAuthCodeRepository implements AuthCodeRepository {
 			authDoc.replaceItemValue("Context_ExtIds", extIds);
 			DominoUtils.computeAndSave(authDoc);
 		} catch(NotesException e) {
-			throw new DataRetrievalFailureException("Error saving authcode", e);
+			throw new NotesRuntimeException("Error saving authcode", e);
 		} finally {
 			DominoUtils.recycleQuietly(authDoc);
 		}
@@ -119,7 +118,7 @@ public class NotesAuthCodeRepository implements AuthCodeRepository {
 			
 			return authCode;
 		} catch(NotesException e) {
-			throw new DataRetrievalFailureException("Error getting auth code", e);
+			throw new NotesRuntimeException("Error getting auth code", e);
 		} finally {
 			DominoUtils.recycleQuietly(authDoc);
 			DominoUtils.recycleQuietly(v);
@@ -142,10 +141,10 @@ public class NotesAuthCodeRepository implements AuthCodeRepository {
 			if( authDoc == null )
 				return false;
 			if( !authDoc.remove(true) )
-				throw new DataRetrievalFailureException("Unable to remove auth code document !");
+				throw new NotesRuntimeException("Unable to remove auth code document !");
 			return true;
 		} catch(NotesException e) {
-			throw new DataRetrievalFailureException("Error removing auth code", e);
+			throw new NotesRuntimeException("Error removing auth code", e);
 		} finally {
 			DominoUtils.recycleQuietly(authDoc);
 			DominoUtils.recycleQuietly(v);

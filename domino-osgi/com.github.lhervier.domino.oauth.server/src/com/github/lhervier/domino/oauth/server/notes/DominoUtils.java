@@ -117,21 +117,24 @@ public class DominoUtils {
 	 * @param session la session pour ouvrir la base
 	 * @param filePath le chemin vers la base
 	 * @return la database ou null si elle n'existe pas
-	 * @throws NotesException si on n'a pas les droits
 	 */
-	public static final Database openDatabase(Session session, String name) throws NotesException {
-		Database db;
+	public static final Database openDatabase(Session session, String name) {
 		try {
-			db = session.getDatabase(null, name, false);		// createOnFail = false
-		} catch(NotesException e) {
-			return null;
-		}
-		if( db == null )
-			return null;
-		if( !db.isOpen() )
-			if( !db.open() ) 
+			Database db;
+			try {
+				db = session.getDatabase(null, name, false);		// createOnFail = false
+			} catch(NotesException e) {
 				return null;
-		return db;
+			}
+			if( db == null )
+				return null;
+			if( !db.isOpen() )
+				if( !db.open() ) 
+					return null;
+			return db;
+		} catch(NotesException e) {
+			throw new NotesRuntimeException(e);
+		}
 	}
 	
 	/**
@@ -140,16 +143,19 @@ public class DominoUtils {
 	 * @param field le nom du champ
 	 * @param cl le type d'objet que l'on attend
 	 * @return la liste des valeurs
-	 * @throws NotesException en cas de pb
 	 */
 	@SuppressWarnings("unchecked")
-	public static final <T> List<T> getItemValue(Document doc, String field, Class<T> cl) throws NotesException {
-		List<T> ret = new ArrayList<T>();
-		Vector<T> values = doc.getItemValue(field);
-		if( values == null )
+	public static final <T> List<T> getItemValue(Document doc, String field, Class<T> cl) {
+		try {
+			List<T> ret = new ArrayList<T>();
+			Vector<T> values = doc.getItemValue(field);
+			if( values == null )
+				return ret;
+			ret.addAll(values);
 			return ret;
-		ret.addAll(values);
-		return ret;
+		} catch(NotesException e) {
+			throw new NotesRuntimeException(e);
+		}
 	}
 	
 	/**
@@ -157,13 +163,16 @@ public class DominoUtils {
 	 * @param doc le document
 	 * @param field le nom du champ
 	 * @param values les valeurs sous forme d'une liste
-	 * @throws NotesException en cas de pb
 	 */
-	public static final <T> void replaceItemValue(Document doc, String field, List<T> values) throws NotesException {
-		Vector<T> v = new Vector<T>();
-		if( values != null )
-			v.addAll(values);
-		doc.replaceItemValue(field, v);
+	public static final <T> void replaceItemValue(Document doc, String field, List<T> values) {
+		try {
+			Vector<T> v = new Vector<T>();
+			if( values != null )
+				v.addAll(values);
+			doc.replaceItemValue(field, v);
+		} catch(NotesException e) {
+			throw new NotesRuntimeException(e);
+		}
 	}
 	
 	/**
@@ -171,59 +180,72 @@ public class DominoUtils {
 	 * @param db le nom de la base
 	 * @param name le nom de la vue
 	 * @return la vue
-	 * @throws NotesException en cas de pb
 	 */
-	public static final View getView(Database db, String name) throws NotesException {
-		View v = db.getView(name);
-		if( v == null )
-			throw new RuntimeException("Je ne trouve pas la vue '" + name + "' dans la base '" + db + "'");
-		v.setAutoUpdate(false);
-		return v;
+	public static final View getView(Database db, String name) {
+		try {
+			View v = db.getView(name);
+			if( v == null )
+				throw new NotesRuntimeException("Je ne trouve pas la vue '" + name + "' dans la base '" + db + "'");
+			v.setAutoUpdate(false);
+			return v;
+		} catch(NotesException e) {
+			throw new NotesRuntimeException(e);
+		}
 	}
 	
 	/**
 	 * Pour enregistrer un document en forcant un computeWithForm
 	 * @param doc le doc à sauver
-	 * @throws NotesException en cas de pb
 	 */
-	public static final void computeAndSave(Document doc) throws NotesException {
-		if( !doc.computeWithForm(true, true) )
-			throw new NotesException(-1, "Error while executing computeWithForm on person document");
-		doc.save(true, false);
+	public static final void computeAndSave(Document doc) {
+		try {
+			if( !doc.computeWithForm(true, true) )
+				throw new NotesRuntimeException("Error while executing computeWithForm on person document");
+			doc.save(true, false);
+		} catch(NotesException e) {
+			throw new NotesRuntimeException(e);
+		}
 	}
 	
 	/**
 	 * Attend que la tâche updall ai terminé
 	 * @param session la session Notes
 	 */
-	public static final void waitForUpdall(Session session) throws NotesException {
-		String tasks = session.sendConsoleCommand(session.getServerName(), "sh ta");
-		while( tasks.indexOf("Index All") != -1 ) {
-			try {
-				Thread.sleep(500);
-			} catch (InterruptedException e) {
-				throw new RuntimeException(e);
+	public static final void waitForUpdall(Session session) {
+		try {
+			String tasks = session.sendConsoleCommand(session.getServerName(), "sh ta");
+			while( tasks.indexOf("Index All") != -1 ) {
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					throw new NotesRuntimeException(e);
+				}
+				tasks = session.sendConsoleCommand(session.getServerName(), "sh ta");
 			}
-			tasks = session.sendConsoleCommand(session.getServerName(), "sh ta");
+		} catch(NotesException e) {
+			throw new NotesRuntimeException(e);
 		}
 	}
 	
 	/**
 	 * Pour forcer un rafraîchissement du NAB
 	 * @param nab la nab à rafraîchir
-	 * @throws NotesException en cas de pb
 	 */
-	public static final void refreshNab(Database nab) throws NotesException {
-		Session session = nab.getParent();
-		
-		session.sendConsoleCommand(session.getServerName(), "load updall " + nab.getFilePath() + " -t \"($ServerAccess)\"");
-		waitForUpdall(session);
-		
-		session.sendConsoleCommand(session.getServerName(), "load updall " + nab.getFilePath() + " -t \"($Users)\"");
-		waitForUpdall(session);
-		
-		session.sendConsoleCommand(session.getServerName(), "dbcache flush");
-		session.sendConsoleCommand(session.getServerName(), "show nlcache reset");
+	public static final void refreshNab(Database nab) {
+		try {
+			Session session = nab.getParent();
+			
+			session.sendConsoleCommand(session.getServerName(), "load updall " + nab.getFilePath() + " -t \"($ServerAccess)\"");
+			waitForUpdall(session);
+			
+			session.sendConsoleCommand(session.getServerName(), "load updall " + nab.getFilePath() + " -t \"($Users)\"");
+			waitForUpdall(session);
+			
+			session.sendConsoleCommand(session.getServerName(), "dbcache flush");
+			session.sendConsoleCommand(session.getServerName(), "show nlcache reset");
+		} catch(NotesException e) {
+			throw new NotesRuntimeException(e);
+		}
 	}
 	
 	/**
@@ -262,15 +284,14 @@ public class DominoUtils {
 	 * @param doc le document qui contient les champs
 	 * @param prefix le préfixe des champs
 	 * @return l'objet rempli
-	 * @throws NotesException en cas de problème
 	 */
-	public static final <T> T fillObject(T o, Document doc) throws NotesException {
+	public static final <T> T fillObject(T o, Document doc) {
 		return fillObject(o, doc, "", null);
 	}
-	public static final <T> T fillObject(T o, Document doc, String prefix) throws NotesException {
+	public static final <T> T fillObject(T o, Document doc, String prefix) {
 		return fillObject(o, doc, prefix, null);
 	}
-	public static final <T> T fillObject(T o, Document doc, String prefix, DateFormat fmt) throws NotesException {
+	public static final <T> T fillObject(T o, Document doc, String prefix, DateFormat fmt) {
 		try {
 			// On l'introspecte pour ne pas mettre les champs en dur
 			Class<?> cl = o.getClass();
@@ -377,20 +398,22 @@ public class DominoUtils {
 			
 			// Retourne l'objet
 			return o;
+		} catch(NotesException e) {
+			throw new NotesRuntimeException(e);
 		} catch (IntrospectionException e) {
-			throw new RuntimeException(e);
+			throw new NotesRuntimeException(e);
 		} catch (IllegalArgumentException e) {
-			throw new RuntimeException(e);
+			throw new NotesRuntimeException(e);
 		} catch (IllegalAccessException e) {
-			throw new RuntimeException(e);
+			throw new NotesRuntimeException(e);
 		} catch (InvocationTargetException e) {
-			throw new RuntimeException(e);
+			throw new NotesRuntimeException(e);
 		} catch (SecurityException e) {
-			throw new RuntimeException(e);
+			throw new NotesRuntimeException(e);
 		} catch (NoSuchMethodException e) {
-			throw new RuntimeException(e);
+			throw new NotesRuntimeException(e);
 		} catch (InstantiationException e) {
-			throw new RuntimeException(e);
+			throw new NotesRuntimeException(e);
 		}
 	}
 	
@@ -401,9 +424,8 @@ public class DominoUtils {
 	 * On créé un champ par propriété.
 	 * @param doc le document à remplir
 	 * @param o la bean d'où extraire les propriétés
-	 * @throws NotesException en cas de problème
 	 */
-	public static final void fillDocument(Document doc, Object o) throws NotesException {
+	public static final void fillDocument(Document doc, Object o) {
 		fillDocument(doc, o, null, null, null);
 	}
 	
@@ -413,9 +435,8 @@ public class DominoUtils {
 	 * @param doc le document à remplir
 	 * @param o la bean d'où extraire les propriétés
 	 * @param prefix un préfixe à ajouter devant les noms de champs
-	 * @throws NotesException en cas de problème
 	 */
-	public static final void fillDocument(Document doc, Object o, String prefix) throws NotesException {
+	public static final void fillDocument(Document doc, Object o, String prefix) {
 		fillDocument(doc, o, prefix, null, null);
 	}
 	
@@ -426,9 +447,8 @@ public class DominoUtils {
 	 * @param o la bean d'où extraire les propriétés
 	 * @param prefix un préfixe à ajouter devant les noms de champs
 	 * @param fmt un formateur pour transformer les dates en texte (si null, on créé des champs NotesDateTime)
-	 * @throws NotesException en cas de problème
 	 */
-	public static final void fillDocument(Document doc, Object o, String prefix, DateFormat fmt) throws NotesException {
+	public static final void fillDocument(Document doc, Object o, String prefix, DateFormat fmt) {
 		fillDocument(doc, o, prefix, fmt, null);
 	}
 	
@@ -440,10 +460,9 @@ public class DominoUtils {
 	 * @param prefix un préfixe à ajouter devant les noms de champs
 	 * @param fmt un formateur pour transformer les dates en texte (si null, on créé des champs NotesDateTime)
 	 * @param rtFields champs rich text à générer
-	 * @throws NotesException en cas de problème
 	 */
 	@SuppressWarnings("unchecked")
-	public static final void fillDocument(Document doc, Object o, String prefix, DateFormat fmt, String[] rtFields) throws NotesException {
+	public static final void fillDocument(Document doc, Object o, String prefix, DateFormat fmt, String[] rtFields) {
 		try {
 			Set<String> sRtFields = new HashSet<String>();
 			if( rtFields != null ) {
@@ -550,14 +569,16 @@ public class DominoUtils {
 				} else
 					doc.replaceItemValue(prefix == null ? name : prefix + name, convertedValues);
 			}
+		} catch(NotesException e) {
+			throw new NotesRuntimeException(e);
 		} catch (IntrospectionException e) {
-			throw new RuntimeException(e);
+			throw new NotesRuntimeException(e);
 		} catch (IllegalArgumentException e) {
-			throw new RuntimeException(e);
+			throw new NotesRuntimeException(e);
 		} catch (IllegalAccessException e) {
-			throw new RuntimeException(e);
+			throw new NotesRuntimeException(e);
 		} catch (InvocationTargetException e) {
-			throw new RuntimeException(e);
+			throw new NotesRuntimeException(e);
 		}
 	}
 }

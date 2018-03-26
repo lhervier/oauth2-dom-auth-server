@@ -7,6 +7,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.security.SecureRandom;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -131,5 +134,18 @@ public class Utils {
 		if( o1 != null && o2 == null )
 			return false;
 		return o1.equals(o2);
+	}
+	
+	/**
+	 * Parse a given string as a date
+	 * @param sthe string to parse
+	 * @param fmt the date formatter
+	 */
+	public static final Date parseDate(String s, DateFormat fmt) {
+		try {
+			return fmt.parse(s);
+		} catch(ParseException e) {
+			return null;
+		}
 	}
 }

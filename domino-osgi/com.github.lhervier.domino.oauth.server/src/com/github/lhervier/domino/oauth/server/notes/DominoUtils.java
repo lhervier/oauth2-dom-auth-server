@@ -8,7 +8,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -385,11 +384,10 @@ public class DominoUtils {
 						
 					// Un champ texte qu'on va interprêter en date
 					} else if( it.getType() == Item.TEXT ) {
-						String s = doc.getItemValueString(name);
-						try {
-							dt = fmt.parse(s);
-						} catch(ParseException e) {
-						}
+						dt = Utils.parseDate(
+								doc.getItemValueString(name),
+								fmt
+						);
 					}
 					setter.invoke(o, dt);
 				

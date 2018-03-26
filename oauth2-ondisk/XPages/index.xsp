@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xp:view rendered="false" xmlns:xp="http://www.ibm.com/xsp/core">
+	<xp:this.beforePageLoad><![CDATA[#{javascript:
+		var db = database.getFilePath().replace('\\', '/');
+		facesContext.externalContext.redirect("/" + db + "/oauth2-server/html/listApplications");
+	}]]></xp:this.beforePageLoad>
+</xp:view>

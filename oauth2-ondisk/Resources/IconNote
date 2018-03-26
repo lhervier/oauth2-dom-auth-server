@@ -1,13 +1,14 @@
 <?xml version='1.0' encoding='utf-8'?>
 <note default='true' class='icon' xmlns='http://www.lotus.com/dxl' version='9.0'
- maintenanceversion='1.8' replicaid='C125812300595872'>
-<noteinfo noteid='122' unid='4FF2DE50B9AE561BC125811C003E1A7F' sequence='29'>
-<created><datetime dst='true'>20170510T131820,15+02</datetime></created>
-<modified><datetime>20171205T144239,09+01</datetime></modified>
-<revised><datetime>20171205T144239,08+01</datetime></revised>
-<lastaccessed><datetime>20171205T144239,09+01</datetime></lastaccessed>
-<addedtofile><datetime dst='true'>20170517T181553,56+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=admin admin/O=AFER</name></updatedby>
+ maintenanceversion='1.10' replicaid='C125824900474123'>
+<noteinfo noteid='11a' unid='1E69E266666956A0C12582490047412A' sequence='10'>
+<created><datetime>20180307T135817,38+01</datetime></created>
+<modified><datetime>20180315T150656,68+01</datetime></modified>
+<revised><datetime>20180315T150656,67+01</datetime></revised>
+<lastaccessed><datetime>20180315T150656,68+01</datetime></lastaccessed>
+<addedtofile><datetime>20180307T135817,41+01</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=admin admin/O=ACME</name></updatedby>
+<wassignedby><name>CN=admin admin/O=ACME</name></wassignedby>
 <item name='IconBitmap' summary='true'>
 <rawitemdata type='6'>
 AiAgAQAA///////wD///4Af//8AD//4AAH/8AAA/+AAAH/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAA
@@ -26,6 +27,8 @@ AAAAAAACICABAAD/////+A4DgA==
 <item name='$Daos'><text>0</text></item>
 <item name='$LargeSummary'><text>0</text></item>
 <item name='$TITLE'><text>oauth2</text></item>
-<item name='$Flags'><text>J</text></item>
-<item name='$FlagsNoRefresh'><text>rv</text></item></note>
+<item name='$Flags'><text>J!</text></item>
+<item name='$LaunchXPageRunOnServer'><text>0</text></item>
+<item name='$FlagsNoRefresh'><text>rv</text></item>
+<item name='$DefaultXPage'><text>index.xsp</text></item></note>
 

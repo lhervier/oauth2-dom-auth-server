@@ -25,6 +25,7 @@ import com.github.lhervier.domino.oauth.server.ext.AuthorizeResponse;
 import com.github.lhervier.domino.oauth.server.ext.OAuthExtension;
 import com.github.lhervier.domino.oauth.server.ext.OAuthProperty;
 import com.github.lhervier.domino.oauth.server.model.Application;
+import com.github.lhervier.domino.oauth.server.model.AuthorizeRequest;
 import com.github.lhervier.domino.oauth.server.repo.AuthCodeRepository;
 import com.github.lhervier.domino.oauth.server.services.AppService;
 import com.github.lhervier.domino.oauth.server.services.AuthorizeService;
@@ -85,170 +86,220 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 	// ========================================================================================================
 	
 	/**
-	 * @see com.github.lhervier.domino.oauth.server.services.AuthorizeService#authorize(com.github.lhervier.domino.oauth.server.NotesPrincipal, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+	 * Check the authorize request object.
+	 * WARNING: This method will update the object as needed.
 	 */
-	public String authorize(
-			NotesPrincipal user,
-    		String responseType,
-    		String clientId,
-    		String scope,
-    		String state,
-    		String redirectUri) throws BaseAuthException, InvalidUriException {
+	private void checkAuthRequest(AuthorizeRequest authReq) throws BaseAuthException, InvalidUriException {
 		// client_id is mandatory
-		if( StringUtils.isEmpty(clientId) ) 
+		if( StringUtils.isEmpty(authReq.getClientId()) ) 
 			throw new ServerErrorException("client_id is mandatory");
-		Application app = this.appSvc.getApplicationFromClientId(clientId);
+		Application app = this.appSvc.getApplicationFromClientId(authReq.getClientId());
 		if( app == null )
 			throw new ServerErrorException("client_id is invalid");
 		
 		// redirect_uri is mandatory (except if app only have one may redirect uri)
-		if( StringUtils.isEmpty(redirectUri) && app.getRedirectUris().isEmpty() )
-			redirectUri = app.getRedirectUri();
-		if( StringUtils.isEmpty(redirectUri) )
+		if( StringUtils.isEmpty(authReq.getRedirectUri()) && app.getRedirectUris().isEmpty() )
+			authReq.setRedirectUri(app.getRedirectUri());
+		if( StringUtils.isEmpty(authReq.getRedirectUri()) )
 			throw new InvalidUriException("redirect_uri is mandatory");
 		
 		// redirect_uri must be one the redirect_uris registered in the app
-		if( !Utils.isRegistered(redirectUri, app) )
+		if( !Utils.isRegistered(authReq.getRedirectUri(), app) )
 			throw new InvalidUriException("redirect_uri is invalid");
 		
 		// response_type is mandatory
-		if( StringUtils.isEmpty(responseType) )
-			throw new AuthInvalidRequestException("response_type is mandatory", redirectUri);
-		List<String> responseTypes = new ArrayList<String>();
-		for( String r : responseType.split(" ") )
-			responseTypes.add(r);
-		if( !this.extSvc.getResponseTypes().containsAll(responseTypes) )
-			throw new AuthUnsupportedResponseTypeException("response_type is invalid", redirectUri);
+		if( authReq.getResponseTypes().isEmpty() )
+			throw new AuthInvalidRequestException("response_type is mandatory", authReq.getRedirectUri());
+		if( !this.extSvc.getResponseTypes().containsAll(authReq.getResponseTypes()) )
+			throw new AuthUnsupportedResponseTypeException("response_type is invalid", authReq.getRedirectUri());
+	}
+	
+	/**
+	 * Prepare an authorization code from an authorize request
+	 */
+	private AuthCodeEntity prepareAuthCode(NotesPrincipal user, AuthorizeRequest authReq) {
+		Application app = this.appSvc.getApplicationFromClientId(authReq.getClientId());
 		
-		// Extract the scopes
-		List<String> scopes = new ArrayList<String>();
-		if( !StringUtils.isEmpty(scope) ) {
-			String[] tbl = scope.split(" ");
-			for( String s : tbl )
-				scopes.add(s);
+		AuthCodeEntity authCode = new AuthCodeEntity();
+		authCode.setId(Utils.generateCode());
+		authCode.setFullName(user.getName());
+		authCode.setCommonName(user.getCommon());
+		authCode.setRoles(user.getRoles());
+		authCode.setAuthType(user.getAuthType().toString());
+		authCode.setDatabasePath(user.getCurrentDatabasePath());
+		authCode.setApplication(app.getFullName());
+		authCode.setClientId(app.getClientId());
+		authCode.setRedirectUri(authReq.getRedirectUri());
+		authCode.setExpires(this.timeSvc.currentTimeSeconds() + this.authCodeLifeTime);
+		authCode.setScopes(authReq.getScopes());
+		authCode.setResponseTypes(authReq.getResponseTypes());
+		
+		return authCode;
+	}
+	
+	/**
+	 * Get the scopes granted by the extensions for a given request
+	 */
+	private List<String> extractGrantedScopes(AuthorizeRequest authReq) {
+		List<String> grantedScopes = new ArrayList<String>();
+		for( String respType : authReq.getResponseTypes() ) {
+			OAuthExtension ext = this.extSvc.getExtension(respType);
+			if( ext.getAuthorizedScopes(authReq.getScopes()) == null )
+				continue;
+			for( String s : ext.getAuthorizedScopes(authReq.getScopes()) ) {
+				if( !grantedScopes.contains(s) )
+					grantedScopes.add(s);
+			}
 		}
-		
-		// Create an authorization code
-		AuthCodeEntity authCode;
+		return grantedScopes;
+	}
+	
+	/**
+	 * Get the extensions responses to the authorize request
+	 */
+	private Map<String, AuthorizeResponse> extractExtResponses(NotesPrincipal user, AuthorizeRequest authReq, List<String> grantedScopes) {
+		Application app = this.appSvc.getApplicationFromClientId(authReq.getClientId());
+		Map<String, AuthorizeResponse> responses = new HashMap<String, AuthorizeResponse>();
+		for( String respType : authReq.getResponseTypes() ) {
+			OAuthExtension ext = this.extSvc.getExtension(respType);
+			AuthorizeResponse response = ext.authorize(
+					user, 
+					app, 
+					grantedScopes, 
+					authReq.getResponseTypes()
+			);
+			if( response != null )
+				responses.put(respType, response);
+		}
+		return responses;
+	}
+	
+	/**
+	 * Save a context into an auth code
+	 */
+	private void saveContext(AuthCodeEntity authCode, String respType, AuthorizeResponse response) {
 		try {
-			String id = Utils.generateCode();
+			if( response.getContext() == null )
+				return;
 			
-			authCode = new AuthCodeEntity();
-			authCode.setId(id);
-			
-			authCode.setFullName(user.getName());
-			authCode.setCommonName(user.getCommon());
-			authCode.setRoles(user.getRoles());
-			authCode.setAuthType(user.getAuthType().toString());
-			authCode.setDatabasePath(user.getCurrentDatabasePath());
-			
-			authCode.setApplication(app.getFullName());
-			authCode.setClientId(app.getClientId());
-			authCode.setRedirectUri(redirectUri);
-			
-			authCode.setExpires(this.timeSvc.currentTimeSeconds() + this.authCodeLifeTime);
-			
-			// Define scopes
-			authCode.setScopes(scopes);
-			
-			// Keep response types in auth code
-			authCode.setResponseTypes(responseTypes);
-			
-			// Get granted scopes
-			authCode.setGrantedScopes(new ArrayList<String>());
-			for( String respType : responseTypes ) {
-				OAuthExtension ext = this.extSvc.getExtension(respType);
-				if( ext.getAuthorizedScopes(scopes) == null )
-					continue;
-				for( String s : ext.getAuthorizedScopes(scopes) ) {
-					if( !authCode.getGrantedScopes().contains(s) )
-						authCode.getGrantedScopes().add(s);
-				}
-			}
-			
-			// Run extensions
-			Map<String, String> params = new HashMap<String, String>();
-			for( String respType : responseTypes ) {
-				OAuthExtension ext = this.extSvc.getExtension(respType);
-				
-				AuthorizeResponse response = ext.authorize(
-						user, 
-						app, 
-						authCode.getGrantedScopes(), 
-						responseTypes
-				);
-				if( response == null )
-					continue;
-				
-				// Persist an eventual context
-				if( response.getContext() != null ) {
-					authCode.getContextClasses().put(
-							respType, 
-							response.getContext().getClass().getName()
-					);
-					authCode.getContextObjects().put(
-							respType, 
-							this.mapper.writeValueAsString(response.getContext())
-					);
-				}
-				
-				// Save properties, detecting conflicts
-				for( OAuthProperty prop : response.getProperties().values() ) {
-					if( Utils.equals("code", prop.getName()) ) {
-						params.put("code", authCode.getId());		// May be multiple times...
-					} else if( params.containsKey(prop.getName()) ) {
-						throw new AuthServerErrorException("response_type conflict on properties: Extension conflicts on setting properties", redirectUri);
-					} else if( prop.getSignKey() == null ) {
-						params.put(prop.getName(), prop.getValue().toString());
-					} else {
-						params.put(prop.getName(), this.jwtSvc.createJws(prop.getValue(), prop.getSignKey()));
-					}
-				}
-			}
-			
-			// Not sending code into URL with fragment
-			if( params.containsKey("code") && redirectUri.contains("#") )
-				throw new InvalidUriException("invalid redirect_uri : Auth code flow not allowed when a fragment is present in URI");
-			
-			// Don't forget the state
-			params.put("state", state);		// May be null
-			
-			// Save auth Code if needed
-			if( params.containsKey("code") )
-				this.authCodeRepo.save(authCode);
-			
-			// If granted scopes are different from asked scopes, then add scope parameter
-			if( !params.containsKey("code") && !authCode.getGrantedScopes().containsAll(scopes) )
-				params.put("scope", StringUtils.join(authCode.getGrantedScopes().iterator(), ' '));
-			
-			// Compute the query string
-			StringBuilder sbRedirect = new StringBuilder();
-			sbRedirect.append(redirectUri);
-			char sep;
-			if( params.containsKey("code") ) {
-				if( redirectUri.indexOf('?') == -1 )
-					sep = '?';
-				else
-					sep = '&';
-			} else {
-				if( redirectUri.indexOf('#') == -1 )
-					sep = '#';
-				else
-					sep = '&';
-			}
-			for( Entry<String, String> entry : params.entrySet() ) {
-				if( entry.getValue() == null )
-					continue;
-				String key = Utils.urlEncode(entry.getKey());
-				String value = Utils.urlEncode(entry.getValue());
-				sbRedirect.append(sep).append(key).append('=').append(value);
-				sep = '&';
-			}
-			
-			// Redirect
-			return sbRedirect.toString();
-		} catch (IOException e) {
-			throw new ServerErrorException(e);			// May not happen
+			authCode.getContextClasses().put(
+					respType, 
+					response.getContext().getClass().getName()
+			);
+			authCode.getContextObjects().put(
+					respType, 
+					this.mapper.writeValueAsString(response.getContext())
+			);
+		} catch(IOException e) {
+			throw new ServerErrorException(e);
 		}
+	}
+	
+	/**
+	 * Add a parameter to an existing list
+	 */
+	private void addParameters(AuthCodeEntity authCode, OAuthProperty prop, Map<String, String> params) throws AuthServerErrorException {
+		// Multiple "code" property is allowed
+		if( Utils.equals("code", prop.getName()) ) {
+			params.put("code", authCode.getId());
+			return;
+		}
+		
+		// Other keys must only be extracted once per extension
+		if( params.containsKey(prop.getName()) )
+			throw new AuthServerErrorException("response_type conflict on properties: Extension conflicts on setting properties", authCode.getRedirectUri());
+		
+		// Sign the value if it is needed
+		String propValue;
+		if( prop.getSignKey() == null ) {
+			propValue = prop.getValue().toString();
+		} else {
+			propValue = this.jwtSvc.createJws(prop.getValue(), prop.getSignKey());
+		}
+		
+		// Set the value in the parameters list
+		params.put(prop.getName(), propValue);
+	}
+	
+	/**
+	 * Compute the final redirect uri
+	 */
+	private String computeFullRedirectUri(AuthCodeEntity authCode, Map<String, String> params) {
+		StringBuilder sbRedirect = new StringBuilder();
+		sbRedirect.append(authCode.getRedirectUri());
+		char sep;
+		if( params.containsKey("code") ) {
+			if( authCode.getRedirectUri().indexOf('?') == -1 )
+				sep = '?';
+			else
+				sep = '&';
+		} else {
+			if( authCode.getRedirectUri().indexOf('#') == -1 )
+				sep = '#';
+			else
+				sep = '&';
+		}
+		for( Entry<String, String> entry : params.entrySet() ) {
+			if( entry.getValue() == null )
+				continue;
+			String key = Utils.urlEncode(entry.getKey());
+			String value = Utils.urlEncode(entry.getValue());
+			sbRedirect.append(sep).append(key).append('=').append(value);
+			sep = '&';
+		}
+		return sbRedirect.toString();
+	}
+	
+	/**
+	 * @see com.github.lhervier.domino.oauth.server.services.AuthorizeService#authorize(NotesPrincipal, AuthorizeRequest)
+	 */
+	public String authorize(
+			NotesPrincipal user,
+    		AuthorizeRequest authReq) throws BaseAuthException, InvalidUriException {
+		// Check auth request
+		this.checkAuthRequest(authReq);
+		
+		// Prepare an authorization code
+		AuthCodeEntity authCode = this.prepareAuthCode(user, authReq);
+		
+		// Extract the granted scopes from the extensions
+		authCode.setGrantedScopes(this.extractGrantedScopes(authReq));
+		
+		// Run extensions
+		Map<String, AuthorizeResponse> responses = this.extractExtResponses(user, authReq, authCode.getGrantedScopes());
+		
+		// Save extension contexts into auth code
+		for( Entry<String, AuthorizeResponse> entry : responses.entrySet() ) {
+			String respType = entry.getKey();
+			AuthorizeResponse response = entry.getValue();
+			
+			// Save the context into the auth code
+			this.saveContext(authCode, respType, response);
+		}
+		
+		// Extract query parameters from extensions answers
+		Map<String, String> params = new HashMap<String, String>();
+		for( AuthorizeResponse response : responses.values() ) {
+			for( OAuthProperty prop : response.getProperties().values() )
+				this.addParameters(authCode, prop, params);
+		}
+		
+		// Not allowed to send code into URL with fragment
+		if( params.containsKey("code") && authReq.getRedirectUri().contains("#") )
+			throw new InvalidUriException("invalid redirect_uri : Auth code flow not allowed when a fragment is present in URI");
+		
+		// Don't forget the state
+		params.put("state", authReq.getState());		// May be null
+		
+		// Save auth Code if needed
+		if( params.containsKey("code") )
+			this.authCodeRepo.save(authCode);
+		
+		// If granted scopes are different from asked scopes, then add scope parameter
+		if( !params.containsKey("code") && !authCode.getGrantedScopes().containsAll(authReq.getScopes()) )
+			params.put("scope", StringUtils.join(authCode.getGrantedScopes().iterator(), ' '));
+		
+		// Compute the full redirect uri
+		return this.computeFullRedirectUri(authCode, params);
 	}
 }

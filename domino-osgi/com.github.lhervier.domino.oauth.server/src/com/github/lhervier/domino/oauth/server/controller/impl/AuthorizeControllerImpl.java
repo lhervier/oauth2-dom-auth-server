@@ -1,5 +1,8 @@
 package com.github.lhervier.domino.oauth.server.controller.impl;
 
+import java.util.ArrayList;
+
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +19,7 @@ import com.github.lhervier.domino.oauth.server.ex.ForbiddenException;
 import com.github.lhervier.domino.oauth.server.ex.InvalidUriException;
 import com.github.lhervier.domino.oauth.server.ex.NotAuthorizedException;
 import com.github.lhervier.domino.oauth.server.ex.WrongPathException;
+import com.github.lhervier.domino.oauth.server.model.AuthorizeRequest;
 import com.github.lhervier.domino.oauth.server.services.AuthorizeService;
 
 /**
@@ -69,13 +73,27 @@ public class AuthorizeControllerImpl implements AuthorizeController {
     		String scope,
     		String state,
     		String redirectUri) throws NotAuthorizedException, ForbiddenException, WrongPathException, BaseAuthException, InvalidUriException {
+		AuthorizeRequest authReq = new AuthorizeRequest();
+		authReq.setClientId(clientId);
+		authReq.setState(state);
+		authReq.setRedirectUri(redirectUri);
+		
+		authReq.setResponseTypes(new ArrayList<String>());
+		if( !StringUtils.isEmpty(responseType) ) { 
+			for( String r : responseType.split(" ") )
+				authReq.getResponseTypes().add(r);
+		}
+		
+		authReq.setScopes(new ArrayList<String>());
+		if( !StringUtils.isEmpty(scope) ) {
+			String[] tbl = scope.split(" ");
+			for( String s : tbl )
+				authReq.getScopes().add(s);
+		}
+		
 		return new ModelAndView("redirect:" + this.authSvc.authorize(
 				authorizeUser, 
-				responseType, 
-				clientId, 
-				scope, 
-				state, 
-				redirectUri
+				authReq
 		));
 	}
 }

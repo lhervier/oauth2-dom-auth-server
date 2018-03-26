@@ -12,7 +12,7 @@ public class BaseGrantException extends Exception {
 	/**
 	 * L'erreur
 	 */
-	private GrantError error;
+	private final GrantError error;
 	
 	/**
 	 * Constructeur

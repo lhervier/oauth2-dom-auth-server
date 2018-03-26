@@ -16,12 +16,12 @@ public abstract class BaseAuthException extends Exception {
 	/**
 	 * L'erreur associée
 	 */
-	private AuthorizeError error;
+	private final AuthorizeError error;
 	
 	/**
 	 * The redirect uri
 	 */
-	private String redirectUri;
+	private final String redirectUri;
 	
 	/**
 	 * Constructeur

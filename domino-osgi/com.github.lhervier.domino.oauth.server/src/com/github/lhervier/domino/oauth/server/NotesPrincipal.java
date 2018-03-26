@@ -5,7 +5,7 @@ import java.util.List;
 
 public interface NotesPrincipal extends Principal {
 
-	public static enum AuthType {
+	public enum AuthType {
 		NOTES, BEARER
 	}
 	

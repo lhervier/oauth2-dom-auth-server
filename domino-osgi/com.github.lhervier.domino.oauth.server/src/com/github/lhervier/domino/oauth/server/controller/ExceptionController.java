@@ -34,6 +34,17 @@ public class ExceptionController {
 	private static final Log LOG = LogFactory.getLog(ExceptionController.class);
 	
 	/**
+	 * Model attributes
+	 */
+	private static final String MODEL_ATTR_ERROR = "error";
+	private static final String MODEL_ATTR_STATUS = "status";
+	
+	/**
+	 * View names
+	 */
+	private static final String VIEW_ERROR = "error";
+	
+	/**
 	 * Domino v9.0.1 no longer trace stack traces...
 	 * @return the stack trace
 	 */
@@ -76,9 +87,9 @@ public class ExceptionController {
 	public ModelAndView handleWrongPathException(WrongPathException e) {
 		LOG.info(getStackTrace(e));
 		Map<String, Object> model = new HashMap<String, Object>();
-		model.put("error", e);
-		model.put("status", HttpStatus.NOT_FOUND.value());
-		return new ModelAndView("error", model);
+		model.put(MODEL_ATTR_ERROR, e);
+		model.put(MODEL_ATTR_STATUS, HttpStatus.NOT_FOUND.value());
+		return new ModelAndView(VIEW_ERROR, model);
 	}
 	
 	// ======================================================================================
@@ -94,9 +105,9 @@ public class ExceptionController {
 		LOG.info(getStackTrace(e));
 		response.addHeader("Access-Control-Allow-Origin", "*");
 		Map<String, Object> model = new HashMap<String, Object>();
-		model.put("error", e.getMessage());
-		model.put("status", HttpStatus.UNAUTHORIZED.value());
-		return new ModelAndView("error", model);
+		model.put(MODEL_ATTR_ERROR, e.getMessage());
+		model.put(MODEL_ATTR_STATUS, HttpStatus.UNAUTHORIZED.value());
+		return new ModelAndView(VIEW_ERROR, model);
 	}
 	
 	/**
@@ -108,9 +119,9 @@ public class ExceptionController {
 	public ModelAndView processForbiddenException(ForbiddenException e) {
 		LOG.info(getStackTrace(e));
 		Map<String, Object> model = new HashMap<String, Object>();
-		model.put("error", e.getMessage());
-		model.put("status", HttpStatus.FORBIDDEN.value());
-		return new ModelAndView("error", model);
+		model.put(MODEL_ATTR_ERROR, e.getMessage());
+		model.put(MODEL_ATTR_STATUS, HttpStatus.FORBIDDEN.value());
+		return new ModelAndView(VIEW_ERROR, model);
 	}
 	
 	// ==========================================================================================
@@ -123,8 +134,8 @@ public class ExceptionController {
 	public ModelAndView processException(Exception e) {
 		LOG.fatal(getStackTrace(e));
 		Map<String, Object> model = new HashMap<String, Object>();
-		model.put("error", e.getMessage());
-		model.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-		return new ModelAndView("error", model);
+		model.put(MODEL_ATTR_ERROR, e.getMessage());
+		model.put(MODEL_ATTR_STATUS, HttpStatus.INTERNAL_SERVER_ERROR.value());
+		return new ModelAndView(VIEW_ERROR, model);
 	}	
 }

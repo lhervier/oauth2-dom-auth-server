@@ -40,6 +40,25 @@ public class AppControllerImpl implements AppController {
 	 * Redirect URIs attribute
 	 */
 	private static final String ATTR_REDIRECT_URIS = "REDIRECT_URIS";
+
+	/**
+	 * Model attributes
+	 */
+	private static final String MODEL_ATTR_APPS = "apps";
+	private static final String MODEL_ATTR_APP = "app";
+	private static final String MODEL_ATTR_EDIT = "edit";
+	private static final String MODEL_ATTR_NEWAPP = "newApp";
+	
+	/**
+	 * Actions
+	 */
+	private static final String ACTION_ADDREDIRECTURI = "addRedirectUri";
+	
+	/**
+	 * View names
+	 */
+	private static final String VIEW_APPLICATION = "application";
+	private static final String VIEW_APPLICATIONS = "applications";
 	
 	/**
 	 * The app service
@@ -107,8 +126,8 @@ public class AppControllerImpl implements AppController {
 	@RequestMapping(value = "/listApplications")
 	public ModelAndView listApplications() throws NotAuthorizedException, ForbiddenException, WrongPathException {
 		Map<String, Object> model = new HashMap<String, Object>();
-		model.put("apps", this.appSvc.getApplicationsNames());
-		return new ModelAndView("applications", model);
+		model.put(MODEL_ATTR_APPS, this.appSvc.getApplicationsNames());
+		return new ModelAndView(VIEW_APPLICATIONS, model);
 	}
 	
 	/**
@@ -118,11 +137,11 @@ public class AppControllerImpl implements AppController {
 	public ModelAndView createApplication() throws NotAuthorizedException, ForbiddenException, WrongPathException {
 		Map<String, Object> model = new HashMap<String, Object>();
 		ApplicationForm app = fromApplication(this.appSvc.prepareApplication());
-		model.put("app", app);
-		model.put("edit", true);
-		model.put("newApp", true);
+		model.put(MODEL_ATTR_APP, app);
+		model.put(MODEL_ATTR_EDIT, true);
+		model.put(MODEL_ATTR_NEWAPP, true);
 		this.initSessionRedirectUris(app.getExistingRedirectUris());
-		return new ModelAndView("application", model);
+		return new ModelAndView(VIEW_APPLICATION, model);
 	}
 	
 	/**
@@ -132,11 +151,11 @@ public class AppControllerImpl implements AppController {
 	public ModelAndView editApplication(@RequestParam(value = "name", required = true) String appName) throws NotAuthorizedException, ForbiddenException, WrongPathException {
 		Map<String, Object> model = new HashMap<String, Object>();
 		ApplicationForm app = fromApplication(this.appSvc.getApplicationFromName(appName));
-		model.put("app", app);
-		model.put("edit", true);
-		model.put("newApp", false);
+		model.put(MODEL_ATTR_APP, app);
+		model.put(MODEL_ATTR_EDIT, true);
+		model.put(MODEL_ATTR_NEWAPP, false);
 		this.initSessionRedirectUris(app.getExistingRedirectUris());
-		return new ModelAndView("application", model);
+		return new ModelAndView(VIEW_APPLICATION, model);
 	}
 	
 	/**
@@ -145,10 +164,10 @@ public class AppControllerImpl implements AppController {
 	@RequestMapping(value = "/viewApplication", method = RequestMethod.GET)
 	public ModelAndView viewApplication(@RequestParam(value = "name", required = true) String appName) throws NotAuthorizedException, ForbiddenException, WrongPathException {
 		Map<String, Object> model = new HashMap<String, Object>();
-		model.put("app", fromApplication(this.appSvc.getApplicationFromName(appName)));
-		model.put("edit", false);
-		model.put("newApp", false);
-		return new ModelAndView("application", model);
+		model.put(MODEL_ATTR_APP, fromApplication(this.appSvc.getApplicationFromName(appName)));
+		model.put(MODEL_ATTR_EDIT, false);
+		model.put(MODEL_ATTR_NEWAPP, false);
+		return new ModelAndView(VIEW_APPLICATION, model);
 	}
 	
 	// ===============================================================
@@ -181,17 +200,17 @@ public class AppControllerImpl implements AppController {
 			app.setClientId(form.getClientId());
 			newApp = true;
 		}
-		model.put("newApp", newApp);
+		model.put(MODEL_ATTR_NEWAPP, newApp);
 		app.setName(form.getName());
 		app.setReaders(form.getReaders());
 		app.setRedirectUri(form.getRedirectUri());
 		app.setClientType(clientType(form.getClientType()));
 		app.setRedirectUris(this.getSessionRedirectUris());
 		ApplicationForm newForm = fromApplication(app);
-		model.put("app", newForm);
+		model.put(MODEL_ATTR_APP, newForm);
 		
 		// Just want to add a redirectUri
-		if( Utils.equals("addRedirectUri", form.getAction()) ) {
+		if( Utils.equals(ACTION_ADDREDIRECTURI, form.getAction()) ) {
 			
 			newForm.setNewRedirectUriError(Utils.checkRedirectUri(form.getNewRedirectUri()));
 			if( newForm.getNewRedirectUriError() == null ) {
@@ -200,15 +219,15 @@ public class AppControllerImpl implements AppController {
 			} else
 				newForm.setNewRedirectUri(form.getNewRedirectUri());				// Send value back to the browser
 			
-			model.put("edit", true);
-			return new ModelAndView("application", model);
+			model.put(MODEL_ATTR_EDIT, true);
+			return new ModelAndView(VIEW_APPLICATION, model);
 		}
 		
 		// Check for errors
 		this.checkForm(newForm);
 		if( newForm.isError() ) {
-			model.put("edit", true);
-			return new ModelAndView("application", model);
+			model.put(MODEL_ATTR_EDIT, true);
+			return new ModelAndView(VIEW_APPLICATION, model);
 		}
 		
 		// Save a new application
@@ -219,8 +238,8 @@ public class AppControllerImpl implements AppController {
 			newForm.setSecret(secret);
 			
 			// Display app in read only
-			model.put("edit", false);
-			return new ModelAndView("application", model);
+			model.put(MODEL_ATTR_EDIT, false);
+			return new ModelAndView(VIEW_APPLICATION, model);
 		}
 		
 		// Update an existing application => Goto the list

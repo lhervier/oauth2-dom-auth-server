@@ -1,6 +1,7 @@
 package com.github.lhervier.domino.oauth.server.ext.openid;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -83,7 +84,7 @@ public class OpenIDExt implements OAuthExtension {
 	@Override
 	public List<String> getAuthorizedScopes(List<String> scopes) {
 		if( !scopes.contains(SCOPE_OPENID) )
-			return null;
+			return Collections.emptyList();
 		
 		List<String> ret = new ArrayList<String>();
 		ret.add(SCOPE_OPENID);

@@ -34,6 +34,11 @@ public class NotesSecretRepository implements SecretRepository {
 	public static final String SECRET_FIELD_NAME = "LTPA_DominoSecret";
 	
 	/**
+	 * Empty secret
+	 */
+	private static final byte[] EMPTY_SECRET = new byte[0];
+	
+	/**
 	 * The notes context
 	 */
 	@Autowired
@@ -60,7 +65,7 @@ public class NotesSecretRepository implements SecretRepository {
 	 */
 	private byte[] getSecret(String ssoConfig, int size) {
 		if( ssoConfig == null )
-			return null;
+			return EMPTY_SECRET;
 		Database nab = null;
 		View v = null;
 		Document docSsoConfig = null;
@@ -71,7 +76,7 @@ public class NotesSecretRepository implements SecretRepository {
 				throw new NotesRuntimeException("La vue " + WEBSSOCONFIG_VIEW + " n'existe pas dans le NAB. Impossible de continuer.");
 			docSsoConfig = v.getDocumentByKey(ssoConfig);
 			if( docSsoConfig == null )
-				return null;
+				return EMPTY_SECRET;
 			String secret = docSsoConfig.getItemValueString(SECRET_FIELD_NAME);
 			return this.genSecret(secret, size);
 		} catch(NotesException e) {

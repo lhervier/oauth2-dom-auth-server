@@ -1,5 +1,6 @@
 package com.github.lhervier.domino.oauth.server.ext.core;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.stereotype.Component;
@@ -25,7 +26,7 @@ public class CodeExt extends BaseCoreExt {
 	 */
 	@Override
 	public List<String> getAuthorizedScopes(List<String> scopes) {
-		return null;
+		return Collections.emptyList();
 	}
 	
 	/**

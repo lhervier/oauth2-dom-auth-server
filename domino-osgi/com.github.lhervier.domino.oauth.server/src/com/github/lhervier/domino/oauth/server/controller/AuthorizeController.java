@@ -2,6 +2,7 @@ package com.github.lhervier.domino.oauth.server.controller;
 
 import org.springframework.web.servlet.ModelAndView;
 
+import com.github.lhervier.domino.oauth.server.NotesPrincipal;
 import com.github.lhervier.domino.oauth.server.ex.BaseAuthException;
 import com.github.lhervier.domino.oauth.server.ex.ForbiddenException;
 import com.github.lhervier.domino.oauth.server.ex.InvalidUriException;
@@ -17,10 +18,10 @@ public interface AuthorizeController {
 
 	/**
 	 * Authorize endpoint.
-	 * Unable to inject user bean as a method argument...
 	 */
 	public ModelAndView authorize(
-    		String responseType,
+			NotesPrincipal authorizeUser,
+			String responseType,
     		String clientId,
     		String scope,
     		String state,

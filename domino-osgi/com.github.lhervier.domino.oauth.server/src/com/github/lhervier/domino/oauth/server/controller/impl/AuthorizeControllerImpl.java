@@ -53,8 +53,25 @@ public class AuthorizeControllerImpl implements AuthorizeController {
     		@RequestParam(value = "scope", required = false) String scope,
     		@RequestParam(value = "state", required = false) String state,
     		@RequestParam(value = "redirect_uri", required = false) String redirectUri) throws NotAuthorizedException, ForbiddenException, WrongPathException, BaseAuthException, InvalidUriException, ServerErrorException {
-		return new ModelAndView("redirect:" + this.authSvc.authorize(
+		return this.authorize(
 				this.authorizeUser, 
+				responseType, 
+				clientId, 
+				scope, 
+				state, 
+				redirectUri
+		);
+	}
+	@Override
+	public ModelAndView authorize(
+			NotesPrincipal authorizeUser,
+			String responseType,
+    		String clientId,
+    		String scope,
+    		String state,
+    		String redirectUri) throws NotAuthorizedException, ForbiddenException, WrongPathException, BaseAuthException, InvalidUriException, ServerErrorException {
+		return new ModelAndView("redirect:" + this.authSvc.authorize(
+				authorizeUser, 
 				responseType, 
 				clientId, 
 				scope, 

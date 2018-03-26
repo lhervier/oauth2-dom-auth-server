@@ -222,7 +222,7 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 				params.put("scope", StringUtils.join(authCode.getGrantedScopes().iterator(), ' '));
 			
 			// Compute the query string
-			StringBuffer sbRedirect = new StringBuffer();
+			StringBuilder sbRedirect = new StringBuilder();
 			sbRedirect.append(redirectUri);
 			char sep;
 			if( params.containsKey("code") ) {

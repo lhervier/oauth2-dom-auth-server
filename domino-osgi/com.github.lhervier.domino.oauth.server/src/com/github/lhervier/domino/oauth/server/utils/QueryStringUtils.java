@@ -76,7 +76,7 @@ public class QueryStringUtils {
 			}
 			
 			// Serialise tout dans l'uri de base
-			StringBuffer sb = new StringBuffer();
+			StringBuilder sb = new StringBuilder();
 			sb.append(baseUri);
 			if( baseUri.indexOf('?') == -1 )
 				sb.append('?');

@@ -67,7 +67,7 @@ public class TokenControllerImpl implements TokenController {
 	public Map<String, Object> token(
 			NotesPrincipal user,
 			String clientId,
-			String grantType) throws BaseGrantException, ServerErrorException {
+			String grantType) throws NotAuthorizedException, ForbiddenException, WrongPathException, BaseGrantException, ServerErrorException {
 		// Extract application from current user (the application)
 		// Must not be null as @AppAuth has already checked that the app exists
 		Application app = this.appSvc.getApplicationFromName(user.getCommon()); 

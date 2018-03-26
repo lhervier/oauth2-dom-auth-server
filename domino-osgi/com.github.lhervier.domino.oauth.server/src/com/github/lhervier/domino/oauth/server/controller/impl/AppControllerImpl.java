@@ -71,6 +71,21 @@ public class AppControllerImpl implements AppController {
 	}
 	
 	/**
+	 * Returns a ClientType from its name
+	 * @param name the client type name
+	 * @return the client type
+	 */
+	private ClientType clientType(String name) {
+		if( name == null )
+			return ClientType.PUBLIC;
+		try {
+			return ClientType.valueOf(name);
+		} catch(IllegalArgumentException e) {
+			return ClientType.PUBLIC;
+		}
+	}
+	
+	/**
 	 * Convert an application to a form
 	 */
 	private ApplicationForm fromApplication(Application app) {
@@ -80,12 +95,7 @@ public class AppControllerImpl implements AppController {
 		ret.setReaders(app.getReaders());
 		ret.setRedirectUri(app.getRedirectUri());
 		ret.setExistingRedirectUris(app.getRedirectUris());
-		if( app.getClientType() == ClientType.CONFIDENTIAL )
-			ret.setClientType("CONFIDENTIAL");
-		else if( app.getClientType() == ClientType.PUBLIC )
-			ret.setClientType("PUBLIC");
-		else
-			ret.setClientType("PUBLIC");
+		ret.setClientId(app.getClientType().name());
 		return ret;
 	}
 	
@@ -175,12 +185,7 @@ public class AppControllerImpl implements AppController {
 		app.setName(form.getName());
 		app.setReaders(form.getReaders());
 		app.setRedirectUri(form.getRedirectUri());
-		if( Utils.equals("CONFIDENTIAL", form.getClientType()) )
-			app.setClientType(ClientType.CONFIDENTIAL);
-		else if( Utils.equals("PUBLIC", form.getClientType()) )
-			app.setClientType(ClientType.PUBLIC);
-		else
-			app.setClientType(ClientType.PUBLIC);
+		app.setClientType(clientType(form.getClientType()));
 		app.setRedirectUris(this.getSessionRedirectUris());
 		ApplicationForm newForm = fromApplication(app);
 		model.put("app", newForm);

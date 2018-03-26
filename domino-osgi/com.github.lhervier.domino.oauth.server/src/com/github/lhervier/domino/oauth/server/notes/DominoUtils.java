@@ -375,7 +375,7 @@ public class DominoUtils {
 					Item it = doc.getFirstItem(name);
 					if( it.getType() == Item.DATETIMES ) {
 						List<DateTime> values = getItemValue(doc, name, DateTime.class);
-						if( values != null && values.size() != 0 )
+						if( values != null && values.isEmpty() )
 							dt = values.get(0).toJavaDate();
 						
 					// Un champ texte qu'on va interprêter en date

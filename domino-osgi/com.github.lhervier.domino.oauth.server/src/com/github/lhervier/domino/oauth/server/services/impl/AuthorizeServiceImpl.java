@@ -102,7 +102,7 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 			throw new ServerErrorException("client_id is invalid");
 		
 		// redirect_uri is mandatory (except if app only have one may redirect uri)
-		if( StringUtils.isEmpty(redirectUri) && app.getRedirectUris().size() == 0 )
+		if( StringUtils.isEmpty(redirectUri) && app.getRedirectUris().isEmpty() )
 			redirectUri = app.getRedirectUri();
 		if( StringUtils.isEmpty(redirectUri) )
 			throw new InvalidUriException("redirect_uri is mandatory");

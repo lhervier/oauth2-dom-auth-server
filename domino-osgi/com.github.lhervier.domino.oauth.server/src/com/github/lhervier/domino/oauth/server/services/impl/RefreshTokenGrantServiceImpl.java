@@ -91,7 +91,7 @@ public class RefreshTokenGrantServiceImpl extends BaseGrantService implements Gr
 			throw new GrantInvalidScopeException("invalid scope: Must be a subset of already granted scopes");
 		
 		// If no scope, use the scopes originally granted by the resource owner 
-		if( scopes.size() == 0 )
+		if( scopes.isEmpty() )
 			scopes = authCode.getGrantedScopes();
 		
 		// Check that the token has been generated for the current application

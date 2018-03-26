@@ -78,7 +78,7 @@ public class AuthCodeGrantServiceImpl extends BaseGrantService implements GrantS
 	public Map<String, Object> createGrant(Application app, String redirectUri, String code) throws BaseGrantException {
 		// Get URI from app if it only have one
 		if( StringUtils.isEmpty(redirectUri) )
-			if( app.getRedirectUris().size() == 0 )
+			if( app.getRedirectUris().isEmpty() )
 				redirectUri = app.getRedirectUri();
 		
 		// RedirectURI must not be empty

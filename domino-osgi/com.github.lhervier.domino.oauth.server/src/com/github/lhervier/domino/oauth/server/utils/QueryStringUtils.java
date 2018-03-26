@@ -1,5 +1,7 @@
 package com.github.lhervier.domino.oauth.server.utils;
 
+import static java.net.URLEncoder.encode;
+
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
@@ -11,9 +13,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.List;
 
 import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
 
@@ -39,6 +38,37 @@ public class QueryStringUtils {
 	}
 	
 	/**
+	 * Return the value of a property
+	 * @param desc the property descriptor
+	 * @param bean the object
+	 * @return the value
+	 */
+	private static final String getPropertyValue(PropertyDescriptor desc, Object bean) {
+		try {
+			String name = desc.getName();
+			
+			// No value for "class" property
+			if( Utils.equals("class", name) )
+				return null;
+			
+			// No value if no read method
+			Method m = desc.getReadMethod();
+			if( m == null )
+				return null;
+			
+			// Return the value as String
+			Object value = m.invoke(bean);
+			return value == null ? null : value.toString();
+		} catch (IllegalAccessException e) {
+			throw new ServerErrorException(e);
+		} catch (IllegalArgumentException e) {
+			throw new ServerErrorException(e);
+		} catch (InvocationTargetException e) {
+			throw new ServerErrorException(e);
+		}
+	}
+	
+	/**
 	 * Serialise une bean dans une url
 	 * @param baseUri l'url de base
 	 * @param b la bean
@@ -46,57 +76,30 @@ public class QueryStringUtils {
 	 */
 	public static final <T> String addBeanToQueryString(String baseUri, T bean) {
 		try {
-			BeanInfo beanInfo = Introspector.getBeanInfo(bean.getClass());
-			PropertyDescriptor[] descs = beanInfo.getPropertyDescriptors();
-			List<String> params = new ArrayList<String>();
-			for( PropertyDescriptor desc : descs ) {
-				String name = desc.getName();
-				
-				// On filtre la propriété "class"
-				if( Utils.equals("class", name) )
-					continue;
-				
-				// On doit avoir une méthode pour lire la valeur
-				Method m = desc.getReadMethod();
-				if( m == null )
-					continue;
-				
-				// Récupère le nom de la propriété
-				QueryStringName ann = m.getAnnotation(QueryStringName.class);
-				String prop = ann == null ? name: ann.value();
-				
-				// Le nom de la propriété doit pouvoir être un paramètre
-				if( !Utils.equals(URLEncoder.encode(prop, "UTF-8"), prop) )
-					continue;
-				
-				// URL Encode la valeur (s'il y en a une)
-				Object value = m.invoke(bean);
-				if( value != null )
-					params.add(prop + '=' + URLEncoder.encode(value.toString(), "UTF-8"));
-			}
-			
-			// Serialise tout dans l'uri de base
 			StringBuilder sb = new StringBuilder();
 			sb.append(baseUri);
-			if( baseUri.indexOf('?') == -1 )
-				sb.append('?');
-			else
-				sb.append('&');
-			for( int i=0; i<params.size(); i++ ) {
-				sb.append(params.get(i));
-				if( i != params.size() - 1 )
-					sb.append('&');
+			char sep = baseUri.indexOf('?') == -1 ? '?' : '&';
+			
+			BeanInfo beanInfo = Introspector.getBeanInfo(bean.getClass());
+			PropertyDescriptor[] descs = beanInfo.getPropertyDescriptors();
+			for( PropertyDescriptor desc : descs ) {
+				String value = getPropertyValue(desc, bean);
+				if( value == null )
+					continue;
+				
+				QueryStringName ann = desc.getReadMethod().getAnnotation(QueryStringName.class);
+				String prop = ann == null ? desc.getName(): ann.value();
+				
+				if( Utils.equals(encode(prop, "UTF-8"), prop) ) {
+					sb.append(sep).append(prop).append('=').append(encode(value, "UTF-8"));
+					sep = '&';
+				}
 			}
+			
 			return sb.toString();
 		} catch (IntrospectionException e) {
 			throw new ServerErrorException(e);
 		} catch (UnsupportedEncodingException e) {
-			throw new ServerErrorException(e);
-		} catch (IllegalArgumentException e) {
-			throw new ServerErrorException(e);
-		} catch (IllegalAccessException e) {
-			throw new ServerErrorException(e);
-		} catch (InvocationTargetException e) {
 			throw new ServerErrorException(e);
 		}
 	}

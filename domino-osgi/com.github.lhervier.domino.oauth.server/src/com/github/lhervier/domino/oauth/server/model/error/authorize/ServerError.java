@@ -4,6 +4,11 @@ package com.github.lhervier.domino.oauth.server.model.error.authorize;
 public class ServerError extends AuthorizeError {
 
 	/**
+	 * Serial UID
+	 */
+	private static final long serialVersionUID = -8007740778881734109L;
+
+	/**
 	 * Constructeur
 	 */
 	public ServerError() {

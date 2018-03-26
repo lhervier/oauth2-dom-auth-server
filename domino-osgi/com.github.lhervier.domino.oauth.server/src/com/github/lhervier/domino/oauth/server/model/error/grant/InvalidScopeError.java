@@ -4,6 +4,11 @@ package com.github.lhervier.domino.oauth.server.model.error.grant;
 public class InvalidScopeError extends GrantError {
 
 	/**
+	 * Serial UID
+	 */
+	private static final long serialVersionUID = -7456026187273995408L;
+
+	/**
 	 * Constructeur
 	 */
 	public InvalidScopeError() {

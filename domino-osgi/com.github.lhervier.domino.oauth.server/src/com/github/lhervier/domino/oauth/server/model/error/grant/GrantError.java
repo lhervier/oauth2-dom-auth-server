@@ -1,8 +1,15 @@
 package com.github.lhervier.domino.oauth.server.model.error.grant;
 
+import java.io.Serializable;
+
 import org.codehaus.jackson.annotate.JsonProperty;
 
-public class GrantError {
+public class GrantError implements Serializable {
+
+	/**
+	 * Serial UID
+	 */
+	private static final long serialVersionUID = -1911358217878713013L;
 
 	/**
 	 * L'erreur

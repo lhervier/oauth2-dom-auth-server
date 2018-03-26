@@ -4,6 +4,11 @@ package com.github.lhervier.domino.oauth.server.model.error.authorize;
 public class UnsupportedResponseTypeError extends AuthorizeError {
 
 	/**
+	 * Serial UID
+	 */
+	private static final long serialVersionUID = -5949256261966452195L;
+
+	/**
 	 * Constructeur
 	 */
 	public UnsupportedResponseTypeError() {

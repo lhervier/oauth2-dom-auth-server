@@ -10,6 +10,11 @@ import com.github.lhervier.domino.oauth.server.utils.QueryStringUtils.QueryStrin
 public class AuthorizeError extends StateResponse {
 
 	/**
+	 * Serial UID
+	 */
+	private static final long serialVersionUID = -6887185022402436851L;
+
+	/**
 	 * L'erreur. Cf RFC OAUTH2 pour la liste possible des valeurs
 	 */
 	private String error;

@@ -4,6 +4,11 @@ package com.github.lhervier.domino.oauth.server.model.error.grant;
 public class InvalidRequestError extends GrantError {
 
 	/**
+	 * Serial UID
+	 */
+	private static final long serialVersionUID = 4257759249634823251L;
+
+	/**
 	 * Constructeur
 	 */
 	public InvalidRequestError() {

@@ -8,6 +8,11 @@ package com.github.lhervier.domino.oauth.server.model.error.authorize;
 public class AccessDeniedError extends AuthorizeError {
 
 	/**
+	 * Serial UID
+	 */
+	private static final long serialVersionUID = 319254282380254073L;
+
+	/**
 	 * Constructeur
 	 */
 	public AccessDeniedError() {

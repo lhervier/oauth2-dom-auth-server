@@ -1,7 +1,14 @@
 package com.github.lhervier.domino.oauth.server.model;
 
-public class StateResponse {
+import java.io.Serializable;
 
+public class StateResponse implements Serializable {
+
+	/**
+	 * Serial UID
+	 */
+	private static final long serialVersionUID = -7649047910583898257L;
+	
 	/**
 	 * Le state
 	 */

@@ -8,6 +8,11 @@ package com.github.lhervier.domino.oauth.server.model.error.authorize;
 public class InvalidRequestError extends AuthorizeError {
 
 	/**
+	 * Serial UID
+	 */
+	private static final long serialVersionUID = 8113822386578394299L;
+
+	/**
 	 * Constructeur
 	 */
 	public InvalidRequestError() {

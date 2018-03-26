@@ -221,13 +221,12 @@ public class DominoUtils {
 		try {
 			String tasks = session.sendConsoleCommand(session.getServerName(), "sh ta");
 			while( tasks.indexOf("Index All") != -1 ) {
-				try {
-					Thread.sleep(500);
-				} catch (InterruptedException e) {
-					throw new NotesRuntimeException(e);
-				}
+				Thread.sleep(500);
 				tasks = session.sendConsoleCommand(session.getServerName(), "sh ta");
 			}
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw new NotesRuntimeException(e);
 		} catch(NotesException e) {
 			throw new NotesRuntimeException(e);
 		}

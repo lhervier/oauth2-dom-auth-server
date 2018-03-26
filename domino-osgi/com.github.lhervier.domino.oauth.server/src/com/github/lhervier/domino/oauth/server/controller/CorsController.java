@@ -10,9 +10,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.github.lhervier.domino.oauth.server.aop.ann.ctx.Oauth2DbContext;
 import com.github.lhervier.domino.oauth.server.aop.ann.ctx.ServerRootContext;
-import com.github.lhervier.domino.oauth.server.ex.ForbiddenException;
-import com.github.lhervier.domino.oauth.server.ex.NotAuthorizedException;
-import com.github.lhervier.domino.oauth.server.ex.WrongPathException;
 
 /**
  * To handle cors requests
@@ -39,7 +36,7 @@ public class CorsController {
 	@RequestMapping(value = "/userInfo")
     @ResponseStatus(HttpStatus.OK)
     @ServerRootContext					// userInfo endpoint is available at the server root context only
-	public void handleUserInfoCors(HttpServletResponse response) throws NotAuthorizedException, ForbiddenException, WrongPathException {
+	public void handleUserInfoCors(HttpServletResponse response) {
        this.addCrosHeaders(response);
     }
 	
@@ -50,7 +47,7 @@ public class CorsController {
 	@RequestMapping(value = "/checkToken")
     @ResponseStatus(HttpStatus.OK)
     @Oauth2DbContext					// checkToken is available at the oauth2.nsf db context only
-	public void handleCheckTokenCors(HttpServletResponse response) throws NotAuthorizedException, ForbiddenException, WrongPathException {
+	public void handleCheckTokenCors(HttpServletResponse response) {
         this.addCrosHeaders(response);
     }
 }

@@ -69,7 +69,7 @@ public class RefreshTokenGrantServiceImpl extends BaseGrantService implements Gr
 				this.request.getParameter("refresh_token")
 		);
 	}
-	public Map<String, Object> createGrant(Application app, String scope, String refreshToken) throws BaseGrantException, ServerErrorException {
+	public Map<String, Object> createGrant(Application app, String scope, String refreshToken) throws BaseGrantException {
 		// Sanity check
 		if( refreshToken == null )
 			throw new GrantInvalidGrantException("refresh_token is mandatory");

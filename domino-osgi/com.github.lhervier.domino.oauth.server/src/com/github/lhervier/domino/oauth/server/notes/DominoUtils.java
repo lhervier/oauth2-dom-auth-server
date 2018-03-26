@@ -40,7 +40,7 @@ public class DominoUtils {
 	/**
 	 * Pour la convertion des types primitifs en types Objets
 	 */
-	private final static Map<Class<?>, Class<?>> PRIMITIVES = new HashMap<Class<?>, Class<?>>();
+	private static final Map<Class<?>, Class<?>> PRIMITIVES = new HashMap<Class<?>, Class<?>>();
 	static {
 		PRIMITIVES.put(boolean.class, Boolean.class);
 		PRIMITIVES.put(byte.class, Byte.class);
@@ -55,7 +55,7 @@ public class DominoUtils {
 	/**
 	 * La liste des objets supportés pour stocker dans un champ
 	 */
-	private final static Set<Class<?>> supported = new HashSet<Class<?>>();
+	private static final Set<Class<?>> supported = new HashSet<Class<?>>();
 	static {
 		supported.add(String.class);
 		supported.add(int.class);
@@ -264,13 +264,13 @@ public class DominoUtils {
 	 * @return l'objet rempli
 	 * @throws NotesException en cas de problème
 	 */
-	public final static <T> T fillObject(T o, Document doc) throws NotesException {
+	public static final <T> T fillObject(T o, Document doc) throws NotesException {
 		return fillObject(o, doc, "", null);
 	}
-	public final static <T> T fillObject(T o, Document doc, String prefix) throws NotesException {
+	public static final <T> T fillObject(T o, Document doc, String prefix) throws NotesException {
 		return fillObject(o, doc, prefix, null);
 	}
-	public final static <T> T fillObject(T o, Document doc, String prefix, DateFormat fmt) throws NotesException {
+	public static final <T> T fillObject(T o, Document doc, String prefix, DateFormat fmt) throws NotesException {
 		try {
 			// On l'introspecte pour ne pas mettre les champs en dur
 			Class<?> cl = o.getClass();
@@ -403,7 +403,7 @@ public class DominoUtils {
 	 * @param o la bean d'où extraire les propriétés
 	 * @throws NotesException en cas de problème
 	 */
-	public final static void fillDocument(Document doc, Object o) throws NotesException {
+	public static final void fillDocument(Document doc, Object o) throws NotesException {
 		fillDocument(doc, o, null, null, null);
 	}
 	
@@ -415,7 +415,7 @@ public class DominoUtils {
 	 * @param prefix un préfixe à ajouter devant les noms de champs
 	 * @throws NotesException en cas de problème
 	 */
-	public final static void fillDocument(Document doc, Object o, String prefix) throws NotesException {
+	public static final void fillDocument(Document doc, Object o, String prefix) throws NotesException {
 		fillDocument(doc, o, prefix, null, null);
 	}
 	
@@ -428,7 +428,7 @@ public class DominoUtils {
 	 * @param fmt un formateur pour transformer les dates en texte (si null, on créé des champs NotesDateTime)
 	 * @throws NotesException en cas de problème
 	 */
-	public final static void fillDocument(Document doc, Object o, String prefix, DateFormat fmt) throws NotesException {
+	public static final void fillDocument(Document doc, Object o, String prefix, DateFormat fmt) throws NotesException {
 		fillDocument(doc, o, prefix, fmt, null);
 	}
 	
@@ -443,7 +443,7 @@ public class DominoUtils {
 	 * @throws NotesException en cas de problème
 	 */
 	@SuppressWarnings("unchecked")
-	public final static void fillDocument(Document doc, Object o, String prefix, DateFormat fmt, String[] rtFields) throws NotesException {
+	public static final void fillDocument(Document doc, Object o, String prefix, DateFormat fmt, String[] rtFields) throws NotesException {
 		try {
 			Set<String> sRtFields = new HashSet<String>();
 			if( rtFields != null ) {

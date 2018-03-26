@@ -218,10 +218,8 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 				this.authCodeRepo.save(authCode);
 			
 			// If granted scopes are different from asked scopes, then add scope parameter
-			if( !params.containsKey("code") ) {
-				if( !authCode.getGrantedScopes().containsAll(scopes) )
-					params.put("scope", StringUtils.join(authCode.getGrantedScopes().iterator(), ' '));
-			}
+			if( !params.containsKey("code") && !authCode.getGrantedScopes().containsAll(scopes) )
+				params.put("scope", StringUtils.join(authCode.getGrantedScopes().iterator(), ' '));
 			
 			// Compute the query string
 			StringBuffer sbRedirect = new StringBuffer();

@@ -99,11 +99,9 @@ public class AccessCheckAspect {
 			return;
 		
 		// If using bearer authentication, check that user is logged in
-		if( this.user.getAuthType() == AuthType.BEARER ) {
-			if( this.user.getName() == null ) {
-				LOG.info("Accessing method '" + method.getName() + "' with an incorrect bearer token");
-				throw new NotAuthorizedException();
-			}
+		if( this.user.getAuthType() == AuthType.BEARER && this.user.getName() == null ) {
+			LOG.info("Accessing method '" + method.getName() + "' with an incorrect bearer token");
+			throw new NotAuthorizedException();
 		}
 		
 		// Check method is executed in the context of the oauth2 database

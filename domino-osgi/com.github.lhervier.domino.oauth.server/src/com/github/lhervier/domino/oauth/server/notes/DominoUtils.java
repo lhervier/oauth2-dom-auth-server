@@ -142,9 +142,8 @@ public class DominoUtils {
 			Database db = getDatabase(session, name);
 			if( db == null )
 				return null;
-			if( !db.isOpen() )
-				if( !db.open() ) 
-					return null;
+			if( !db.isOpen() && !db.open() ) 
+				return null;
 			return db;
 		} catch(NotesException e) {
 			throw new NotesRuntimeException(e);
@@ -569,10 +568,11 @@ public class DominoUtils {
 				
 				// Stock la valeur dans le champ.
 				boolean inRichText = false;
-				if( convertedValues.size() == 1 )
-					if( Utils.equals(convertedValues.get(0).getClass(), String.class) )
-						if( sRtFields.contains(name) )
-							inRichText = true;
+				if( 
+						convertedValues.size() == 1 && 
+						Utils.equals(convertedValues.get(0).getClass(), String.class)  && 
+						sRtFields.contains(name) )
+					inRichText = true;
 				
 				if( inRichText ) {
 					doc.removeItem(prefix == null ? name : prefix + name);

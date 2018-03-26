@@ -78,9 +78,8 @@ public class NotesPersonRepository implements PersonRepository {
 			nn = session.createName(fullName);
 			Vector<Database> nabs = session.getAddressBooks();
 			for( Database nab : nabs ) {
-				if( !nab.isOpen() )
-					if( !nab.open() )
-						throw new NotesRuntimeException("Server not allowed to open nabPath ???");
+				if( !nab.isOpen() && !nab.open() )
+					throw new NotesRuntimeException("Server not allowed to open nabPath ???");
 				View v = null;
 				try {
 					v = nab.getView("($VIMPeople)");

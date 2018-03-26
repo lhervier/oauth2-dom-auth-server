@@ -101,7 +101,7 @@ public class AccessCheckAspect {
 		
 		// If using bearer authentication, check that user is logged in
 		if( this.user.getAuthType() == AuthType.BEARER && this.user.getName() == null ) {
-			LOG.info("Accessing method '" + method.getName() + "' with an incorrect bearer token");
+			LOG.info(String.format("Accessing method '%s' with an incorrect bearer token", method.getName()));
 			throw new NotAuthorizedException();
 		}
 		
@@ -120,7 +120,7 @@ public class AccessCheckAspect {
 		if( roles != null ) {
 			for( String role : roles.value() ) {
 				if( !this.user.getRoles().contains("[" + role + "]") ) {
-					LOG.info("User '" + this.user.getName() + "' tries to access method '" + method.getName() + "' but it does not have the required roles");
+					LOG.info(String.format("User '%s' tries to access method '%s' but it does not have the required roles", this.user.getName(), method.getName()));
 					throw new ForbiddenException();
 				}
 			}
@@ -130,7 +130,7 @@ public class AccessCheckAspect {
 		Bearer bearer = findAnnotation(method, Bearer.class);
 		if( bearer != null ) {
 			if( this.user.getAuthType() != AuthType.BEARER ) {
-				LOG.info("User '" + this.user.getName() + "' tries to access method '" + method.getName() + "' but it is not authenticated with a bearer token");
+				LOG.info(String.format("User '%s' tries to access method '%s' but it is not authenticated with a bearer token", this.user.getName(), method.getName()));
 				throw new NotAuthorizedException();
 			}
 		} else if( this.user.getAuthType() != AuthType.NOTES )
@@ -142,11 +142,11 @@ public class AccessCheckAspect {
 		if( userAuth != null || appAuth != null ) {
 			Application app = this.appService.getApplicationFromName(user.getCommon());
 			if( userAuth != null && app != null ) {
-				LOG.info("Application '" + this.user.getName() + "' tries to access method '" + method.getName() + "', but only regular users can access it!");
+				LOG.info(String.format("Application '%s' tries to access method '%s', but only regular users can access it!", this.user.getName(), method.getName()));
 				throw new ForbiddenException();
 			}
 			if( appAuth != null && app == null ) {
-				LOG.info("Regular user '" + this.user.getName() + "' tries to access method '" + method.getName() + "', but only applications can access it!");
+				LOG.info(String.format("Regular user '%s' tries to access method '%s', but only applications can access it!", this.user.getName(), method.getName()));
 				throw new ForbiddenException();
 			}
 		}

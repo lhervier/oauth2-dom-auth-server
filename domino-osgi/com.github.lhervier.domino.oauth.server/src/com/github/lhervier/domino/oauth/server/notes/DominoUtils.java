@@ -118,6 +118,20 @@ public class DominoUtils {
 	}
 	
 	/**
+	 * Get a (eventually not opened) database
+	 * @param session the session
+	 * @param name path to the database
+	 * @return the database (or null if it cannot be opened)
+	 */
+	public static final Database getDatabase(Session session, String name) {
+		try {
+			return session.getDatabase(null, name, false);		// createOnFail = false
+		} catch(NotesException e) {
+			return null;
+		}
+	}
+	
+	/**
 	 * Ouvre une database
 	 * @param session la session pour ouvrir la base
 	 * @param filePath le chemin vers la base
@@ -125,12 +139,7 @@ public class DominoUtils {
 	 */
 	public static final Database openDatabase(Session session, String name) {
 		try {
-			Database db;
-			try {
-				db = session.getDatabase(null, name, false);		// createOnFail = false
-			} catch(NotesException e) {
-				return null;
-			}
+			Database db = getDatabase(session, name);
 			if( db == null )
 				return null;
 			if( !db.isOpen() )

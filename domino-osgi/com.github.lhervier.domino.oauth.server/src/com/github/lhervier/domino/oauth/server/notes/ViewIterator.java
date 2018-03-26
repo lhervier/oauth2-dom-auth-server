@@ -3,6 +3,7 @@ package com.github.lhervier.domino.oauth.server.notes;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Vector;
 
 import lotus.domino.Base;
@@ -102,6 +103,9 @@ public class ViewIterator implements Iterable<ViewEntry>, Base {
 		 * @see java.util.Iterator#next()
 		 */
 		public ViewEntry next() {
+			if( !this.hasNext() ) {
+				throw new NoSuchElementException();
+			}
 			try {
 				recycleQuietly(this.currEntry);
 				this.currEntry = this.nextEntry;

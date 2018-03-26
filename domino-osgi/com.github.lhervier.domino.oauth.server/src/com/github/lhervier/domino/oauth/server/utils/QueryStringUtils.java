@@ -15,6 +15,8 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
+
 /**
  * Méthode utiles pour gérer les utls
  * @author Lionel HERVIER
@@ -87,15 +89,15 @@ public class QueryStringUtils {
 			}
 			return sb.toString();
 		} catch (IntrospectionException e) {
-			throw new RuntimeException(e);
+			throw new ServerErrorException(e);
 		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException(e);
+			throw new ServerErrorException(e);
 		} catch (IllegalArgumentException e) {
-			throw new RuntimeException(e);
+			throw new ServerErrorException(e);
 		} catch (IllegalAccessException e) {
-			throw new RuntimeException(e);
+			throw new ServerErrorException(e);
 		} catch (InvocationTargetException e) {
-			throw new RuntimeException(e);
+			throw new ServerErrorException(e);
 		}
 	}
 }

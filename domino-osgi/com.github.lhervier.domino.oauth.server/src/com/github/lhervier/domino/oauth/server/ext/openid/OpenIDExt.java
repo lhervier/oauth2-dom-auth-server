@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import com.github.lhervier.domino.oauth.server.NotesPrincipal;
 import com.github.lhervier.domino.oauth.server.entity.PersonEntity;
+import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
 import com.github.lhervier.domino.oauth.server.ext.AuthorizeResponse;
 import com.github.lhervier.domino.oauth.server.ext.AuthorizeResponseBuilder;
 import com.github.lhervier.domino.oauth.server.ext.OAuthExtension;
@@ -103,7 +104,7 @@ public class OpenIDExt implements OAuthExtension {
 			String nonce) {
 		PersonEntity person = this.personRepo.findOne(user.getName());
 		if( person == null )
-			throw new RuntimeException("OpenID: User '" + user.getName() + "' not found in person repo. Unable to authorize.");
+			throw new ServerErrorException("OpenID: User '" + user.getName() + "' not found in person repo. Unable to authorize.");
 		
 		IdToken ctx = new IdToken();
 		ctx.setExpires(this.timeSvc.currentTimeSeconds() + this.expiresIn);

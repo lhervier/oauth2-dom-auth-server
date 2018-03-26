@@ -250,7 +250,7 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 			// Redirect
 			return sbRedirect.toString();
 		} catch (IOException e) {
-			throw new RuntimeException(e);			// May not happen
+			throw new ServerErrorException(e);			// May not happen
 		}
 	}
 }

@@ -1,5 +1,6 @@
 package com.github.lhervier.domino.oauth.server.ext;
 
+import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
 import com.github.lhervier.domino.oauth.server.utils.Utils;
 
 public abstract class BaseResponseBuilder<B extends BaseResponseBuilder<B, R>, R extends BaseResponse> {
@@ -13,7 +14,7 @@ public abstract class BaseResponseBuilder<B extends BaseResponseBuilder<B, R>, R
 		if( this.currProperty == null )
 			return;
 		if( this.currProperty.getName() == null )
-			throw new RuntimeException("Property must have a name");
+			throw new ServerErrorException("Property must have a name");
 		getBuildedObject().properties.put(this.currProperty.getName(), this.currProperty);
 	}
 	
@@ -29,31 +30,31 @@ public abstract class BaseResponseBuilder<B extends BaseResponseBuilder<B, R>, R
 	}
 	public B withName(String name) {
 		if( this.currProperty == null )
-			throw new RuntimeException("You must add a property before giving it a name...");
+			throw new ServerErrorException("You must add a property before giving it a name...");
 		if( Utils.equals("code", name) )
-			throw new RuntimeException("'code' is a restricted property name...");
+			throw new ServerErrorException("'code' is a restricted property name...");
 		this.currProperty.setName(name);
 		return thisObject();
 	}
 	public B withValue(Object value) {
 		if( this.currProperty == null )
-			throw new RuntimeException("You must add a property before assigning it a value...");
+			throw new ServerErrorException("You must add a property before assigning it a value...");
 		if( Utils.equals("code", this.currProperty.getName()) )
-			throw new RuntimeException("You cannot set the value of the property that will contain the AuthCode");
+			throw new ServerErrorException("You cannot set the value of the property that will contain the AuthCode");
 		this.currProperty.setValue(value);
 		return thisObject();
 	}
 	public B signedWith(String signKey) {
 		if( this.currProperty == null )
-			throw new RuntimeException("You must add a property before deciding if it must be signed...");
+			throw new ServerErrorException("You must add a property before deciding if it must be signed...");
 		if( Utils.equals("code", this.currProperty.getName()) )
-			throw new RuntimeException("You cannot decide to sign the auth code property...");
+			throw new ServerErrorException("You cannot decide to sign the auth code property...");
 		this.currProperty.setSignKey(signKey);
 		return thisObject();
 	}
 	public B addAuthCode() {
 		if( getBuildedObject().properties.containsKey("code") )
-			throw new RuntimeException("AuthCode already included in response...");
+			throw new ServerErrorException("AuthCode already included in response...");
 		this.addProperty();
 		this.currProperty.setName("code");
 		return thisObject();

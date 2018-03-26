@@ -17,6 +17,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig.Feature;
 
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
+import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
 import com.github.lhervier.domino.oauth.server.model.Application;
 
 public class Utils {
@@ -77,13 +78,13 @@ public class Utils {
 				return null;
 			return MAPPER.readValue(json, contextClass);
 		} catch (ClassNotFoundException e) {
-			throw new RuntimeException(e);
+			throw new ServerErrorException(e);
 		} catch (JsonParseException e) {
-			throw new RuntimeException(e);
+			throw new ServerErrorException(e);
 		} catch (JsonMappingException e) {
-			throw new RuntimeException(e);
+			throw new ServerErrorException(e);
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new ServerErrorException(e);
 		}
 	}
 	
@@ -97,7 +98,7 @@ public class Utils {
 		try {
 			return URLEncoder.encode(s, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException(e);			// UTF-8 is supported !!
+			throw new ServerErrorException(e);			// UTF-8 is supported !!
 		}
 	}
 	

@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.github.lhervier.domino.oauth.server.IExpirable;
+import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
 import com.github.lhervier.domino.oauth.server.repo.SecretRepository;
 import com.github.lhervier.domino.oauth.server.services.JWTService;
 import com.github.lhervier.domino.oauth.server.services.TimeService;
@@ -59,11 +60,11 @@ public class JWTServiceImpl implements JWTService {
 			jwsObject.sign(new MACSigner(secret));
 			return jwsObject.serialize();
 		} catch (KeyLengthException e) {
-			throw new RuntimeException(e);
+			throw new ServerErrorException(e);
 		} catch (JOSEException e) {
-			throw new RuntimeException(e);
+			throw new ServerErrorException(e);
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new ServerErrorException(e);
 		}
 	}
 
@@ -86,15 +87,15 @@ public class JWTServiceImpl implements JWTService {
 			));
 			return jweObject.serialize();
 		} catch (KeyLengthException e) {
-			throw new RuntimeException(e);
+			throw new ServerErrorException(e);
 		} catch (JOSEException e) {
-			throw new RuntimeException(e);
+			throw new ServerErrorException(e);
 		} catch (JsonGenerationException e) {
-			throw new RuntimeException(e);
+			throw new ServerErrorException(e);
 		} catch (JsonMappingException e) {
-			throw new RuntimeException(e);
+			throw new ServerErrorException(e);
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new ServerErrorException(e);
 		}
 	}
 
@@ -137,9 +138,9 @@ public class JWTServiceImpl implements JWTService {
 			
 			return obj;
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new ServerErrorException(e);
 		} catch (JOSEException e) {
-			throw new RuntimeException(e);
+			throw new ServerErrorException(e);
 		} catch (ParseException e) {
 			return null;
 		}
@@ -170,15 +171,15 @@ public class JWTServiceImpl implements JWTService {
 		} catch (ParseException e) {
 			return null;								// Invalid JWE
 		} catch (JsonParseException e) {
-			throw new RuntimeException(e);				// Invalid json in JWE. May not happen (we generated the JWE)
+			throw new ServerErrorException(e);				// Invalid json in JWE. May not happen (we generated the JWE)
 		} catch (JsonMappingException e) {
-			throw new RuntimeException(e);
+			throw new ServerErrorException(e);
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new ServerErrorException(e);
 		} catch (KeyLengthException e) {
-			throw new RuntimeException(e);
+			throw new ServerErrorException(e);
 		} catch (JOSEException e) {
-			throw new RuntimeException(e);
+			throw new ServerErrorException(e);
 		}
 	}
 

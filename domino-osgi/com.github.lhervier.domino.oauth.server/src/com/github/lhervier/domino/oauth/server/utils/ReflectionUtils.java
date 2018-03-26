@@ -12,7 +12,7 @@ public class ReflectionUtils {
 	 * @param clAnn the annotation class
 	 * @return the annotation or null if it does not exist
 	 */
-	public final static <T extends Annotation> T findAnnotation(Method m, Class<T> clAnn) {
+	public static final <T extends Annotation> T findAnnotation(Method m, Class<T> clAnn) {
 		T ann = m.getAnnotation(clAnn);
 		if( ann != null )
 			return ann;

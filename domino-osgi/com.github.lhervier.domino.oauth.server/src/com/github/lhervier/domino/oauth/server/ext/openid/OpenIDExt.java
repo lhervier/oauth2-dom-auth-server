@@ -30,7 +30,7 @@ public class OpenIDExt implements OAuthExtension {
 
 	public static final String RESPONSE_TYPE = "id_token";
 	
-	public final static String PARAM_NONCE = "nonce";
+	public static final String PARAM_NONCE = "nonce";
 	
 	public static final String TOKEN_RESPONSE_ATTR = "id_token";
 	

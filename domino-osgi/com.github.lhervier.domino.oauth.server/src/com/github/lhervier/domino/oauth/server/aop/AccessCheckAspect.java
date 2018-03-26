@@ -109,17 +109,13 @@ public class AccessCheckAspect {
 		
 		// Check method is executed in the context of the oauth2 database
 		Oauth2DbContext o2Ctx = findAnnotation(method, Oauth2DbContext.class);
-		if( o2Ctx != null ) {
-			if( !Utils.equals(this.oauth2Db, this.user.getCurrentDatabasePath()) )
-				throw new WrongPathException("oauth2 server endpoints must be called on the database declared in the oauth2.server.db property.");
-		}
+		if( o2Ctx != null && !Utils.equals(this.oauth2Db, this.user.getCurrentDatabasePath()) )
+			throw new WrongPathException("oauth2 server endpoints must be called on the database declared in the oauth2.server.db property.");
 		
 		// Check if method is called at the server root
 		ServerRootContext srCtx = findAnnotation(method, ServerRootContext.class);
-		if( srCtx != null ) {
-			if( this.user.getCurrentDatabasePath() != null )
-				throw new WrongPathException("This method must be called on the server root, without NSF context.");
-		}
+		if( srCtx != null && this.user.getCurrentDatabasePath() != null )
+			throw new WrongPathException("This method must be called on the server root, without NSF context.");
 		
 		// Check that we have the right roles
 		Roles roles = findAnnotation(method, Roles.class);

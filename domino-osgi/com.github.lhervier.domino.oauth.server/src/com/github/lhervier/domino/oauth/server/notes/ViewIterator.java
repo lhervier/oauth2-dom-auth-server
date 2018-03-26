@@ -1,5 +1,7 @@
 package com.github.lhervier.domino.oauth.server.notes;
 
+import static com.github.lhervier.domino.oauth.server.notes.DominoUtils.recycleQuietly;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -18,21 +20,6 @@ import lotus.domino.ViewNavigator;
  * @author Lionel HERVIER
  */
 public class ViewIterator implements Iterable<ViewEntry>, Base {
-	
-	/**
-	 * Pour recycler un objet, même s'il est null
-	 * et sans lever d'exception
-	 * @param o
-	 */
-	private static void recycleQuietly(Base o) {
-		if( o == null )
-			return;
-		try {
-			o.recycle();
-		} catch(NotesException e) {
-			e.printStackTrace(System.err);
-		}
-	}
 	
 	/**
 	 * L'itérateur interne

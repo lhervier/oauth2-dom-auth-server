@@ -19,7 +19,6 @@ import org.springframework.web.servlet.ModelAndView;
 import com.github.lhervier.domino.oauth.server.ex.BaseAuthException;
 import com.github.lhervier.domino.oauth.server.ex.BaseGrantException;
 import com.github.lhervier.domino.oauth.server.ex.ForbiddenException;
-import com.github.lhervier.domino.oauth.server.ex.InvalidUriException;
 import com.github.lhervier.domino.oauth.server.ex.NotAuthorizedException;
 import com.github.lhervier.domino.oauth.server.ex.WrongPathException;
 import com.github.lhervier.domino.oauth.server.model.error.grant.GrantError;
@@ -64,7 +63,7 @@ public class ExceptionController {
 	 */
 	@ExceptionHandler(BaseAuthException.class)
 	@ResponseStatus(value = HttpStatus.OK)
-	public ModelAndView processAuthorizedException(BaseAuthException e) throws InvalidUriException {
+	public ModelAndView processAuthorizedException(BaseAuthException e) {
 		LOG.error(e.getMessage());
 		return new ModelAndView("redirect:" + QueryStringUtils.addBeanToQueryString(e.getRedirectUri(), e.getError()));
 	}

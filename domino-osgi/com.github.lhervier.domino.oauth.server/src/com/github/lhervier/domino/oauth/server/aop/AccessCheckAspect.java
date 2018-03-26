@@ -78,6 +78,7 @@ public class AccessCheckAspect {
 	 */
 	@Pointcut("within(com.github.lhervier.domino.oauth.server.controller.*) || within(com.github.lhervier.domino.oauth.server.controller.impl.*)")
 	private void controller() {
+		// As a pointcut, this method is never called 
 	}
 	
 	/**

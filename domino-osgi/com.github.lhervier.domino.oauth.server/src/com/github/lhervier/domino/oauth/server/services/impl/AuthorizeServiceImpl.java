@@ -115,11 +115,8 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 		if( StringUtils.isEmpty(responseType) )
 			throw new AuthInvalidRequestException("response_type is mandatory", redirectUri);
 		List<String> responseTypes = new ArrayList<String>();
-		{
-			String[] tbl = responseType.split(" ");
-			for( String r : tbl )
-				responseTypes.add(r);
-		}
+		for( String r : responseType.split(" ") )
+			responseTypes.add(r);
 		if( !this.extSvc.getResponseTypes().containsAll(responseTypes) )
 			throw new AuthUnsupportedResponseTypeException("response_type is invalid", redirectUri);
 		

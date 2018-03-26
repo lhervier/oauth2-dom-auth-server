@@ -93,7 +93,7 @@ public class AuthorizeServiceImpl implements AuthorizeService {
     		String clientId,
     		String scope,
     		String state,
-    		String redirectUri) throws BaseAuthException, InvalidUriException, ServerErrorException {
+    		String redirectUri) throws BaseAuthException, InvalidUriException {
 		// client_id is mandatory
 		if( StringUtils.isEmpty(clientId) ) 
 			throw new ServerErrorException("client_id is mandatory");

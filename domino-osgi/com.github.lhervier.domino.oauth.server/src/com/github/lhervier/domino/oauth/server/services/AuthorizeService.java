@@ -3,7 +3,6 @@ package com.github.lhervier.domino.oauth.server.services;
 import com.github.lhervier.domino.oauth.server.NotesPrincipal;
 import com.github.lhervier.domino.oauth.server.ex.BaseAuthException;
 import com.github.lhervier.domino.oauth.server.ex.InvalidUriException;
-import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
 
 /**
  * Authorize endpoint
@@ -23,5 +22,5 @@ public interface AuthorizeService {
     		String clientId,
     		String scope,
     		String state,
-    		String redirectUri) throws BaseAuthException, InvalidUriException, ServerErrorException;
+    		String redirectUri) throws BaseAuthException, InvalidUriException;
 }

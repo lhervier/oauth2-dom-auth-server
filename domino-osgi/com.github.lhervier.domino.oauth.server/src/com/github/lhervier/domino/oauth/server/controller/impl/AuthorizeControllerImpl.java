@@ -15,7 +15,6 @@ import com.github.lhervier.domino.oauth.server.ex.BaseAuthException;
 import com.github.lhervier.domino.oauth.server.ex.ForbiddenException;
 import com.github.lhervier.domino.oauth.server.ex.InvalidUriException;
 import com.github.lhervier.domino.oauth.server.ex.NotAuthorizedException;
-import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
 import com.github.lhervier.domino.oauth.server.ex.WrongPathException;
 import com.github.lhervier.domino.oauth.server.services.AuthorizeService;
 
@@ -52,7 +51,7 @@ public class AuthorizeControllerImpl implements AuthorizeController {
     		@RequestParam(value = "client_id", required = false) String clientId,
     		@RequestParam(value = "scope", required = false) String scope,
     		@RequestParam(value = "state", required = false) String state,
-    		@RequestParam(value = "redirect_uri", required = false) String redirectUri) throws NotAuthorizedException, ForbiddenException, WrongPathException, BaseAuthException, InvalidUriException, ServerErrorException {
+    		@RequestParam(value = "redirect_uri", required = false) String redirectUri) throws NotAuthorizedException, ForbiddenException, WrongPathException, BaseAuthException, InvalidUriException {
 		return this.authorize(
 				this.authorizeUser, 
 				responseType, 
@@ -69,7 +68,7 @@ public class AuthorizeControllerImpl implements AuthorizeController {
     		String clientId,
     		String scope,
     		String state,
-    		String redirectUri) throws NotAuthorizedException, ForbiddenException, WrongPathException, BaseAuthException, InvalidUriException, ServerErrorException {
+    		String redirectUri) throws NotAuthorizedException, ForbiddenException, WrongPathException, BaseAuthException, InvalidUriException {
 		return new ModelAndView("redirect:" + this.authSvc.authorize(
 				authorizeUser, 
 				responseType, 

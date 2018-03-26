@@ -4,7 +4,7 @@ package com.github.lhervier.domino.oauth.server.ex;
  * Exception en cas d'erreur irratrapable sur le serveur
  * @author Lionel HERVIER
  */
-public class ServerErrorException extends Exception {
+public class ServerErrorException extends RuntimeException {
 
 	/**
 	 * Serial UID

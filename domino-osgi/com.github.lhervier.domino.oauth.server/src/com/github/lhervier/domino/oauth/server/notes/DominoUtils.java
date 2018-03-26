@@ -260,7 +260,7 @@ public class DominoUtils {
 			String value = session.getEnvironmentString(var, true);
 			if( value == null )
 				return nullValue;
-			return (T) cl.getConstructor(String.class).newInstance(value);
+			return cl.getConstructor(String.class).newInstance(value);
 		} catch (IllegalArgumentException e) {
 			return nullValue;
 		} catch (SecurityException e) {

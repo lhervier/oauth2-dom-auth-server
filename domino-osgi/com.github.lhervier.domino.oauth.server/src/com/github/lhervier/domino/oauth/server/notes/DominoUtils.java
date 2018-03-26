@@ -260,7 +260,7 @@ public class DominoUtils {
 			String value = session.getEnvironmentString(var, true);
 			if( value == null )
 				return nullValue;
-			return (T) cl.getConstructor(String.class).newInstance(new Object[] {value});
+			return (T) cl.getConstructor(String.class).newInstance(value);
 		} catch (IllegalArgumentException e) {
 			return nullValue;
 		} catch (SecurityException e) {
@@ -334,19 +334,19 @@ public class DominoUtils {
 						v = ((RichTextItem) it).getUnformattedText();
 					else
 						v = doc.getItemValueString(name);
-					setter.invoke(o, new Object[] {v});
+					setter.invoke(o, v);
 				
 				// Nombre
 				} else if( paramClass.isAssignableFrom(Integer.class) )
-					setter.invoke(o, new Object[] {doc.getItemValueInteger(name)});
+					setter.invoke(o, doc.getItemValueInteger(name));
 				else if( paramClass.isAssignableFrom(Double.class) )
-					setter.invoke(o, new Object[] {doc.getItemValueDouble(name)});
+					setter.invoke(o, doc.getItemValueDouble(name));
 				else if( paramClass.isAssignableFrom(Long.class) )
-					setter.invoke(o, new Object[] {(long) doc.getItemValueDouble(name)});
+					setter.invoke(o, (long) doc.getItemValueDouble(name));
 				
 				// Boolean: On regarde la valeur "1"
 				else if( paramClass.isAssignableFrom(Boolean.class) )
-					setter.invoke(o, new Object[] {Utils.equals("1", doc.getItemValueString(name))});
+					setter.invoke(o, Utils.equals("1", doc.getItemValueString(name)));
 				
 				// Un champ multi valué => Attention aux DateTime qu'on converti en dates java 
 				else if( paramClass.isAssignableFrom(List.class) ) {
@@ -365,7 +365,7 @@ public class DominoUtils {
 						DominoUtils.recycleQuietly(dts);
 					}
 					
-					setter.invoke(o, new Object[] {values});
+					setter.invoke(o, values);
 					
 				// DateTime: On converti en date java
 				} else if( paramClass.isAssignableFrom(Date.class) ) {
@@ -386,13 +386,13 @@ public class DominoUtils {
 						} catch(ParseException e) {
 						}
 					}
-					setter.invoke(o, new Object[] {dt});
+					setter.invoke(o, dt);
 				
 				// Sinon, on utilise un constructeur depuis une chaîne
 				} else if( supported.contains(paramClass) ) {
 					String v = doc.getItemValueString(name);
 					Constructor<?> c = paramClass.getConstructor(String.class);
-					setter.invoke(o, new Object[] {c.newInstance(v)});
+					setter.invoke(o, c.newInstance(v));
 				}
 			}
 			
@@ -493,7 +493,7 @@ public class DominoUtils {
 				
 				// Récupère la future valeure du champ. On récupère quoi qu'il se passe une valeur multi 
 				// (quitte à n'avoir qu'un élément dans ce vecteur)
-				Object v = getter.invoke(o, new Object[] {});
+				Object v = getter.invoke(o);
 				
 				// Gestion du cas null => On supprime le champ
 				if( v == null ) {

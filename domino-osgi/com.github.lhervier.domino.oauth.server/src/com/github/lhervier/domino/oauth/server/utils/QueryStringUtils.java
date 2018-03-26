@@ -62,7 +62,7 @@ public class QueryStringUtils {
 					continue;
 				
 				// URL Encode la valeur (s'il y en a une)
-				Object value = m.invoke(bean, new Object[] {});
+				Object value = m.invoke(bean);
 				if( value != null )
 					params.add(prop + '=' + URLEncoder.encode(value.toString(), "UTF-8"));
 			}

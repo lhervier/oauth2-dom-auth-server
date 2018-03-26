@@ -27,6 +27,12 @@ public class Utils {
 	private static final SecureRandom RANDOM = new SecureRandom();
 	
 	/**
+	 * Private constructor
+	 */
+	private Utils() {
+	}
+	
+	/**
 	 * Jackson mapper
 	 */
 	private static final ObjectMapper MAPPER = new ObjectMapper();

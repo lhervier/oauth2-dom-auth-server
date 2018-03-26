@@ -22,6 +22,12 @@ import java.util.List;
 public class QueryStringUtils {
 	
 	/**
+	 * Private constructor
+	 */
+	private QueryStringUtils() {
+	}
+	
+	/**
 	 * Annotation pour la serialisation
 	 */
 	@Retention(RetentionPolicy.RUNTIME)

@@ -6,6 +6,12 @@ import java.lang.reflect.Method;
 public class ReflectionUtils {
 
 	/**
+	 * Private constructor
+	 */
+	private ReflectionUtils() {
+	}
+	
+	/**
 	 * Find an annotation on a method or on the parent class
 	 * @param <T> the annotation type
 	 * @param m the method

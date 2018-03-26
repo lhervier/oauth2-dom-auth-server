@@ -38,6 +38,12 @@ import lotus.domino.View;
 public class DominoUtils {
 
 	/**
+	 * Private constructor
+	 */
+	private DominoUtils() {
+	}
+	
+	/**
 	 * Pour la convertion des types primitifs en types Objets
 	 */
 	private static final Map<Class<?>, Class<?>> PRIMITIVES = new HashMap<Class<?>, Class<?>>();

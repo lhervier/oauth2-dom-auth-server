@@ -154,11 +154,10 @@ public class DominoUtils {
 	 * Retourne la liste des valeurs d'un champ
 	 * @param doc le document
 	 * @param field le nom du champ
-	 * @param cl le type d'objet que l'on attend
 	 * @return la liste des valeurs
 	 */
 	@SuppressWarnings("unchecked")
-	public static final <T> List<T> getItemValue(Document doc, String field, Class<T> cl) {
+	public static final <T> List<T> getItemValue(Document doc, String field) {
 		try {
 			List<T> ret = new ArrayList<T>();
 			Vector<T> values = doc.getItemValue(field);
@@ -366,10 +365,10 @@ public class DominoUtils {
 					
 					Item it = doc.getFirstItem(name);
 					if( it.getType() != Item.DATETIMES )
-						values = getItemValue(doc, name, Object.class);
+						values = getItemValue(doc, name);
 					else {
 						values = new ArrayList<Object>();
-						List<DateTime> dts = getItemValue(doc, name, DateTime.class);
+						List<DateTime> dts = getItemValue(doc, name);
 						for( Iterator<DateTime> iterator = dts.iterator(); iterator.hasNext(); ) {
 							DateTime dt = iterator.next();
 							values.add(dt.toJavaDate());
@@ -386,7 +385,7 @@ public class DominoUtils {
 					// Un vrai champ date
 					Item it = doc.getFirstItem(name);
 					if( it.getType() == Item.DATETIMES ) {
-						List<DateTime> values = getItemValue(doc, name, DateTime.class);
+						List<DateTime> values = getItemValue(doc, name);
 						if( values != null && values.isEmpty() )
 							dt = values.get(0).toJavaDate();
 						

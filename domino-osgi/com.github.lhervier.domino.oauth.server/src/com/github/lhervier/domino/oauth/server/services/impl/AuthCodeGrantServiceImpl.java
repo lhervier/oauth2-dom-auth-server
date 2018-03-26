@@ -13,7 +13,6 @@ import com.github.lhervier.domino.oauth.server.AuthCodeNotesPrincipal;
 import com.github.lhervier.domino.oauth.server.NotesPrincipal;
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
 import com.github.lhervier.domino.oauth.server.ex.BaseGrantException;
-import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
 import com.github.lhervier.domino.oauth.server.ex.grant.GrantInvalidClientException;
 import com.github.lhervier.domino.oauth.server.ex.grant.GrantInvalidGrantException;
 import com.github.lhervier.domino.oauth.server.ex.grant.GrantInvalidRequestException;
@@ -68,7 +67,7 @@ public class AuthCodeGrantServiceImpl extends BaseGrantService implements GrantS
 	 * @see com.github.lhervier.domino.oauth.server.services.GrantService#createGrant(com.github.lhervier.domino.oauth.server.model.Application, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public Map<String, Object> createGrant(Application app) throws BaseGrantException, ServerErrorException {
+	public Map<String, Object> createGrant(Application app) throws BaseGrantException {
 		return this.createGrant(
 				app, 
 				this.request.getParameter("redirect_uri"),

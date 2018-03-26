@@ -17,7 +17,6 @@ import com.github.lhervier.domino.oauth.server.controller.TokenController;
 import com.github.lhervier.domino.oauth.server.ex.BaseGrantException;
 import com.github.lhervier.domino.oauth.server.ex.ForbiddenException;
 import com.github.lhervier.domino.oauth.server.ex.NotAuthorizedException;
-import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
 import com.github.lhervier.domino.oauth.server.ex.WrongPathException;
 import com.github.lhervier.domino.oauth.server.ex.grant.GrantInvalidClientException;
 import com.github.lhervier.domino.oauth.server.ex.grant.GrantInvalidRequestException;
@@ -61,13 +60,13 @@ public class TokenControllerImpl implements TokenController {
 	@RequestMapping(value = "/token", method = RequestMethod.POST)
 	public @ResponseBody Map<String, Object> token(
 			@RequestParam(value = "client_id", required = false) String clientId,
-			@RequestParam(value = "grant_type", required = false) String grantType) throws NotAuthorizedException, ForbiddenException, WrongPathException, BaseGrantException, ServerErrorException {
+			@RequestParam(value = "grant_type", required = false) String grantType) throws NotAuthorizedException, ForbiddenException, WrongPathException, BaseGrantException {
 		return this.token(this.tokenUser, clientId, grantType);
 	}
 	public Map<String, Object> token(
 			NotesPrincipal user,
 			String clientId,
-			String grantType) throws NotAuthorizedException, ForbiddenException, WrongPathException, BaseGrantException, ServerErrorException {
+			String grantType) throws NotAuthorizedException, ForbiddenException, WrongPathException, BaseGrantException {
 		// Extract application from current user (the application)
 		// Must not be null as @AppAuth has already checked that the app exists
 		Application app = this.appSvc.getApplicationFromName(user.getCommon()); 

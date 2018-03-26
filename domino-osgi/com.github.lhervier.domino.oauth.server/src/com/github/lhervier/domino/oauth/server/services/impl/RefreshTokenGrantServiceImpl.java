@@ -16,7 +16,6 @@ import com.github.lhervier.domino.oauth.server.AuthCodeNotesPrincipal;
 import com.github.lhervier.domino.oauth.server.NotesPrincipal;
 import com.github.lhervier.domino.oauth.server.entity.AuthCodeEntity;
 import com.github.lhervier.domino.oauth.server.ex.BaseGrantException;
-import com.github.lhervier.domino.oauth.server.ex.ServerErrorException;
 import com.github.lhervier.domino.oauth.server.ex.grant.GrantInvalidGrantException;
 import com.github.lhervier.domino.oauth.server.ex.grant.GrantInvalidScopeException;
 import com.github.lhervier.domino.oauth.server.model.Application;
@@ -62,7 +61,7 @@ public class RefreshTokenGrantServiceImpl extends BaseGrantService implements Gr
 	 * @see com.github.lhervier.domino.oauth.server.services.GrantService#createGrant(com.github.lhervier.domino.oauth.server.model.Application, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public Map<String, Object> createGrant(Application app) throws BaseGrantException, ServerErrorException {
+	public Map<String, Object> createGrant(Application app) throws BaseGrantException {
 		return this.createGrant(
 				app,
 				this.request.getParameter("scope"),

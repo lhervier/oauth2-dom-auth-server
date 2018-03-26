@@ -16,7 +16,6 @@ public interface AuthorizeService {
 	 * @return the redirect url.
 	 * @throws BaseAuthException If an error occur
 	 * @throws InvalidUriException if the uri is invalid
-	 * @throws ServerErrorException 
 	 */
 	public String authorize(
 			NotesPrincipal user,

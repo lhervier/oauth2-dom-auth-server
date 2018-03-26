@@ -82,6 +82,78 @@ public class AccessCheckAspect {
 	}
 	
 	/**
+	 * Check that the database context if the oauth2 db
+	 * @throws WrongPathException 
+	 */
+	private void checkOauth2DbContext(Method m) throws WrongPathException {
+		if( findAnnotation(m, Oauth2DbContext.class) == null )
+			return;
+		if( !Utils.equals(this.oauth2Db, this.user.getCurrentDatabasePath()) )
+			throw new WrongPathException("OAuth2 server endpoints must be called on the database declared in the oauth2.server.db property.");
+	}
+	
+	/**
+	 * Check that we are at the root of the server
+	 */
+	private void checkRootContext(Method m) throws WrongPathException {
+		if( findAnnotation(m, ServerRootContext.class) == null )
+			return;
+		if( this.user.getCurrentDatabasePath() != null )
+			throw new WrongPathException(String.format("The method '%s' must be called on the server root, without NSF context.", m.getName()));
+	}
+	
+	/**
+	 * Check that the current user has the given roles
+	 */
+	private void checkUserRoles(Method m) throws ForbiddenException {
+		Roles roles = findAnnotation(m, Roles.class);
+		if( roles == null )
+			return;
+		for( String role : roles.value() ) {
+			if( !this.user.getRoles().contains("[" + role + "]") ) {
+				LOG.info(String.format("User '%s' does not have the required roles to access method '%s'", this.user.getName(), m.getName()));
+				throw new ForbiddenException();
+			}
+		}
+	}
+	
+	/**
+	 * Check that the current user is authenticated.
+	 * No annotation = Check Notes authentication
+	 */
+	private void checkUserAuthenticated(Method m) throws NotAuthorizedException {
+		Bearer bearer = findAnnotation(m, Bearer.class);
+		if( bearer != null ) {
+			if( this.user.getAuthType() != AuthType.BEARER ) {
+				LOG.info(String.format("User '%s' is not authenticated with a bearer token when accessing method '%s'", this.user.getName(), m.getName()));
+				throw new NotAuthorizedException();
+			}
+		} else if( this.user.getAuthType() != AuthType.NOTES )
+			throw new NotAuthorizedException();
+	}
+	
+	/**
+	 * Check that current user type (App or User)
+	 * is coherent with the annotations
+	 */
+	private void checkUserType(Method m) throws ForbiddenException {
+		UserAuth userAuth = findAnnotation(m, UserAuth.class);
+		AppAuth appAuth = findAnnotation(m, AppAuth.class);
+		if( userAuth == null && appAuth == null )
+			return;
+		
+		Application app = this.appService.getApplicationFromName(user.getCommon());
+		if( userAuth != null && app != null ) {
+			LOG.info(String.format("Application '%s' tries to access method '%s', but only regular users can access it!", this.user.getName(), m.getName()));
+			throw new ForbiddenException();
+		}
+		if( appAuth != null && app == null ) {
+			LOG.info(String.format("Regular user '%s' tries to access method '%s', but only applications can access it!", this.user.getName(), m.getName()));
+			throw new ForbiddenException();
+		}
+	}
+	
+	/**
 	 * Before controller calls.
 	 * FIXME: Modularize this aspect. I haven't found how to select :
 	 * - methods that have a given annotation
@@ -106,49 +178,18 @@ public class AccessCheckAspect {
 		}
 		
 		// Check method is executed in the context of the oauth2 database
-		Oauth2DbContext o2Ctx = findAnnotation(method, Oauth2DbContext.class);
-		if( o2Ctx != null && !Utils.equals(this.oauth2Db, this.user.getCurrentDatabasePath()) )
-			throw new WrongPathException("oauth2 server endpoints must be called on the database declared in the oauth2.server.db property.");
+		this.checkOauth2DbContext(method);
 		
 		// Check if method is called at the server root
-		ServerRootContext srCtx = findAnnotation(method, ServerRootContext.class);
-		if( srCtx != null && this.user.getCurrentDatabasePath() != null )
-			throw new WrongPathException("This method must be called on the server root, without NSF context.");
+		this.checkRootContext(method);
 		
 		// Check that we have the right roles
-		Roles roles = findAnnotation(method, Roles.class);
-		if( roles != null ) {
-			for( String role : roles.value() ) {
-				if( !this.user.getRoles().contains("[" + role + "]") ) {
-					LOG.info(String.format("User '%s' tries to access method '%s' but it does not have the required roles", this.user.getName(), method.getName()));
-					throw new ForbiddenException();
-				}
-			}
-		}
+		this.checkUserRoles(method);
 		
 		// Check if we need bearer authentication
-		Bearer bearer = findAnnotation(method, Bearer.class);
-		if( bearer != null ) {
-			if( this.user.getAuthType() != AuthType.BEARER ) {
-				LOG.info(String.format("User '%s' tries to access method '%s' but it is not authenticated with a bearer token", this.user.getName(), method.getName()));
-				throw new NotAuthorizedException();
-			}
-		} else if( this.user.getAuthType() != AuthType.NOTES )
-			throw new NotAuthorizedException();
+		this.checkUserAuthenticated(method);
 		
 		// Check if method is for a user or an application
-		UserAuth userAuth = findAnnotation(method, UserAuth.class);
-		AppAuth appAuth = findAnnotation(method, AppAuth.class);
-		if( userAuth != null || appAuth != null ) {
-			Application app = this.appService.getApplicationFromName(user.getCommon());
-			if( userAuth != null && app != null ) {
-				LOG.info(String.format("Application '%s' tries to access method '%s', but only regular users can access it!", this.user.getName(), method.getName()));
-				throw new ForbiddenException();
-			}
-			if( appAuth != null && app == null ) {
-				LOG.info(String.format("Regular user '%s' tries to access method '%s', but only applications can access it!", this.user.getName(), method.getName()));
-				throw new ForbiddenException();
-			}
-		}
+		this.checkUserType(method);
 	}
 }

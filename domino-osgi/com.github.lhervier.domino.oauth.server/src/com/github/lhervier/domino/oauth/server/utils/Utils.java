@@ -39,7 +39,7 @@ public class Utils {
 	 */
 	public static final boolean isRegistered(String redirectUri, Application app) {
 		Set<String> redirectUris = new HashSet<String>();
-		redirectUris.add(app.getRedirectUri().toString());
+		redirectUris.add(app.getRedirectUri());
 		for( String u : app.getRedirectUris() )
 			redirectUris.add(u);
 		return redirectUris.contains(redirectUri);

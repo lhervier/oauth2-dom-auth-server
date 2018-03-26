@@ -87,7 +87,6 @@ public class AccessCheckAspect {
 	 * - or methods whose class have the same given annotation
 	 * So, I'm extracting annotations myself...
 	 * @param joinPoint
-	 * @throws Throwable
 	 */
 	@Before("controller()")
 	public void checkEcriturenBefore(JoinPoint joinPoint) throws NotAuthorizedException, ForbiddenException, WrongPathException {

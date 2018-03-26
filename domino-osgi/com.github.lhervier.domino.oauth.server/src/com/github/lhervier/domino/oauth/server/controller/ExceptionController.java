@@ -37,7 +37,7 @@ public class ExceptionController {
 	 * Domino v9.0.1 no longer trace stack traces...
 	 * @return the stack trace
 	 */
-	private String getStackTrace(Throwable e) {
+	private String getStackTrace(Exception e) {
 		StringWriter wrt = new StringWriter();
 		PrintWriter pw = new PrintWriter(wrt);
 		e.printStackTrace(pw);
@@ -118,9 +118,9 @@ public class ExceptionController {
 	/**
 	 * Other exception. We cannot handle that...
 	 */
-	@ExceptionHandler(Throwable.class)
+	@ExceptionHandler(Exception.class)
 	@ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
-	public ModelAndView processThrowable(Throwable e) {
+	public ModelAndView processException(Exception e) {
 		LOG.fatal(getStackTrace(e));
 		Map<String, Object> model = new HashMap<String, Object>();
 		model.put("error", e.getMessage());

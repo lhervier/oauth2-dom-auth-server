@@ -24,7 +24,7 @@ public class NotesRuntimeException extends RuntimeException {
 	 * Constructor
 	 * @param cause the cause
 	 */
-	public NotesRuntimeException(Throwable cause) {
+	public NotesRuntimeException(Exception cause) {
 		super(cause);
 	}
 	
@@ -33,7 +33,7 @@ public class NotesRuntimeException extends RuntimeException {
 	 * @param message the message
 	 * @param cause the cause
 	 */
-	public NotesRuntimeException(String message, Throwable cause) {
+	public NotesRuntimeException(String message, Exception cause) {
 		super(message, cause);
 	}
 }

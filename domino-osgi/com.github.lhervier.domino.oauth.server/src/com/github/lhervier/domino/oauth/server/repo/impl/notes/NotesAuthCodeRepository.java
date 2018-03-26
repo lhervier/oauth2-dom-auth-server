@@ -63,7 +63,7 @@ public class NotesAuthCodeRepository implements AuthCodeRepository {
 			authDoc = this.getOauth2Database(session).createDocument();
 			authDoc.replaceItemValue("Form", "AuthorizationCode");
 			DominoUtils.fillDocument(authDoc, authCode);		// Will not persist Map properties
-			Vector<String> extIds = new Vector<String>();		// Domino need Vector...
+			Vector<String> extIds = new Vector<String>();		// NOSONAR
 			for( String extId : authCode.getContextClasses().keySet() ) {
 				authDoc.replaceItemValue(
 						"Context_Class_" + extId, 
@@ -103,7 +103,7 @@ public class NotesAuthCodeRepository implements AuthCodeRepository {
 				return null;
 			AuthCodeEntity authCode = DominoUtils.fillObject(new AuthCodeEntity(), authDoc);		// Maps are not persisted
 			
-			Vector<String> extIds = authDoc.getItemValue("Context_ExtIds");
+			Vector<String> extIds = authDoc.getItemValue("Context_ExtIds");	// NOSONAR
 			authCode.setContextClasses(new HashMap<String, String>());
 			authCode.setContextObjects(new HashMap<String, String>());
 			for( String extId : extIds ) {

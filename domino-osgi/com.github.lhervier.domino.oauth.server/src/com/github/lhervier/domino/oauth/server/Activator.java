@@ -18,7 +18,7 @@ public class Activator extends Plugin {
 	 * Constructor
 	 */
 	public Activator() {
-		instance = this;
+		instance = this;	// NOSONAR
 	}
 	
 }

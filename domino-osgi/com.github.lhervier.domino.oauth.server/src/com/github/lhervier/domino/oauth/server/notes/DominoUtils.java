@@ -160,7 +160,7 @@ public class DominoUtils {
 	public static final <T> List<T> getItemValue(Document doc, String field) {
 		try {
 			List<T> ret = new ArrayList<T>();
-			Vector<T> values = doc.getItemValue(field);
+			Vector<T> values = doc.getItemValue(field);	// NOSONAR
 			if( values == null )
 				return ret;
 			ret.addAll(values);
@@ -178,7 +178,7 @@ public class DominoUtils {
 	 */
 	public static final <T> void replaceItemValue(Document doc, String field, List<T> values) {
 		try {
-			Vector<T> v = new Vector<T>();
+			Vector<T> v = new Vector<T>();	// NOSONAR
 			if( values != null )
 				v.addAll(values);
 			doc.replaceItemValue(field, v);
@@ -522,7 +522,7 @@ public class DominoUtils {
 				
 				// Converti les dates, et on vérifie qu'on n'a que des types supportés
 				// Domino attend un vecteur
-				Vector<Object> convertedValues = new Vector<Object>();
+				Vector<Object> convertedValues = new Vector<Object>();	// NOSONAR
 				for( Object value : values ) {
 					Object convertedValue;
 					Class<?> valueClass = value.getClass();
@@ -546,7 +546,7 @@ public class DominoUtils {
 						
 					// Si c'est une liste, on le converti les dates
 					} else if( valueClass.isAssignableFrom(List.class) ) {
-						Vector<Object> vec = new Vector<Object>();
+						Vector<Object> vec = new Vector<Object>();	// NOSONAR
 						List<Object> lst = (List<Object>) value;
 						for( Object obj : lst ) {
 							if( obj.getClass().isAssignableFrom(Date.class) )

@@ -76,7 +76,7 @@ public class NotesPersonRepository implements PersonRepository {
 		Name nn = null;
 		try {
 			nn = session.createName(fullName);
-			Vector<Database> nabs = session.getAddressBooks();
+			Vector<Database> nabs = session.getAddressBooks();	// NOSONAR
 			for( Database nab : nabs ) {
 				if( !nab.isOpen() && !nab.open() )
 					throw new NotesRuntimeException("Server not allowed to open nabPath ???");
@@ -111,7 +111,7 @@ public class NotesPersonRepository implements PersonRepository {
 			person.replaceItemValue("Type", "Person");
 			
 			if( entity.getFullNames() != null ) {
-				Vector<String> fullNames = new Vector<String>();
+				Vector<String> fullNames = new Vector<String>();	// NOSONAR
 				fullNames.addAll(entity.getFullNames());
 				person.replaceItemValue(FULL_NAME, fullNames);
 			}

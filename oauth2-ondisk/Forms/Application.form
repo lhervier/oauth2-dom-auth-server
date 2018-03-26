@@ -1,14 +1,14 @@
 <?xml version='1.0' encoding='utf-8'?>
-<note class='form' xmlns='http://www.lotus.com/dxl' version='9.0' maintenanceversion='1.8'
- replicaid='C125812300595872'>
-<noteinfo noteid='18a' unid='8E7CC12F8ED5769FC125811D00540FFB' sequence='17'>
-<created><datetime dst='true'>20170511T171811,15+02</datetime></created>
-<modified><datetime>20171205T144318,71+01</datetime></modified>
-<revised><datetime>20171205T144318,70+01</datetime></revised>
-<lastaccessed><datetime>20171205T144318,71+01</datetime></lastaccessed>
-<addedtofile><datetime dst='true'>20170517T181554,08+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=admin admin/O=AFER</name></updatedby>
-<wassignedby><name>CN=admin admin/O=AFER</name></wassignedby>
+<note class='form' xmlns='http://www.lotus.com/dxl' version='9.0' maintenanceversion='1.10'
+ replicaid='C125824900474123'>
+<noteinfo noteid='166' unid='262F72FA47056581C12582490047483A' sequence='3'>
+<created><datetime>20180307T135835,46+01</datetime></created>
+<modified><datetime>20180309T161222,32+01</datetime></modified>
+<revised><datetime>20180309T161222,31+01</datetime></revised>
+<lastaccessed><datetime>20180309T161222,32+01</datetime></lastaccessed>
+<addedtofile><datetime>20180307T135835,47+01</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=admin admin/O=ACME</name></updatedby>
+<wassignedby><name>CN=admin admin/O=ACME</name></wassignedby>
 <item name='$Comment' sign='true'><text/></item>
 <item name='$HTMLCode' sign='true'>
 <rawitemdata type='1'>
@@ -28,6 +28,9 @@ hhgBAIAAAAAAgAAAAQABAP///wAQAAAA
 <item name='ClientId' placeholder='true'>
 <rawitemdata type='0'>
 </rawitemdata></item>
+<item name='ClientType' placeholder='true'>
+<rawitemdata type='0'>
+</rawitemdata></item>
 <item name='RedirectUri' placeholder='true'>
 <rawitemdata type='0'>
 </rawitemdata></item>
@@ -43,11 +46,8 @@ hhgBAIAAAAAAgAAAAQABAP///wAQAAAA
 <item name='AdminReaders' placeholder='true'>
 <rawitemdata type='0'>
 </rawitemdata></item>
-<item name='ClientType' placeholder='true'>
-<rawitemdata type='0'>
-</rawitemdata></item>
-<item name='$Fields'><textlist><text>ClientType</text><text>AdminReaders</text><text
->AppReader</text><text>Readers</text><text>RedirectUris</text><text>RedirectUri</text><text
+<item name='$Fields'><textlist><text>AdminReaders</text><text>AppReader</text><text
+>Readers</text><text>RedirectUris</text><text>RedirectUri</text><text>ClientType</text><text
 >ClientId</text><text>Name</text></textlist></item>
 <item name='$Body' sign='true'>
 <rawitemdata type='1'>
@@ -57,14 +57,14 @@ AAAAAAAAoAUAAKAFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEA
 AAAAlIUAAAAAoAUFAAAAAAABAAAABAAAAIMEAgDdBgEA+//7/ywAAAAAAAYDAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAEAAAAAAAAAAAAAAFz/PgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAOAAAAAAAAAAEAAAoAAAAAAQAAAAAA3gYBAPv/ow6gBSgAPAAAAAAAAgCkEgAAoAUODQAA
-VQIREQEBAACBAoL/WgADAAAAAAAAAAAAqgUODaoFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+VQIREQEBAACBAoL/WgADAAAAAAAAAAAArwUODa8FAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAhgEAAAAAVIcAAAAAAAAAAAAAAAABAAAABAAAAIMEAwCF/w4AAQAACk5h
-bWUgOqQSAAEODcQhAABVAhERAQEAAIECgv9aAAQAAAAAAAAAAAAYDcQhGA0AAAAAAAAAAAAAAAAA
+bWUgOqQSAAEODcQhAABVAhERAQEAAIECgv9aAAQAAAAAAAAAAAAdDcQhHQ0AAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACGAQAAAABUhwAAAAAAAAAAAAAAAAEAAAAEAAAA
 gwQEAIX/CAABAAAK3QYAAIr//v9QAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 eAB4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACK/ygAigAABQAwAgAAAAAA
 AAIBAAAKAAAAAAAAAAAEAAAAAABOYW1lYg4BAIQAAAAAAAAAAADeBgAAiv+F/wgAAQAACqQSAALE
-IXo2AABVAhERAQEAAIECgv9aAAUAAAAAAAAAAADOIXo2ziEAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+IXo2AABVAhERAQEAAIECgv9aAAUAAAAAAAAAAADTIXo20yEAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAACGAQAAAABUhwAAAAAAAAAAAAAAAAEAAAAEAAAAgwQFAIX/HwAB
 AAAKTGUgbm9tIGRlIGwnYXBwbGljYXRpb24ApBIBAKAFDg0AAFUCEREBAQAAgQKDBAMAhf8SAAEA
 AApDbGllbnRJZCA6pBIBAQ4NxCEAAFUCEREBAQAAgQKDBAQAhf8IAAEAAArdBgAAiv/+/1AAAAAA
@@ -76,7 +76,7 @@ eXBlIDqkEgIBDg3EIQAAVQIREQEBAACBAoMEBACF/wgAAQAACt0GAACK//7/UAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHgAeAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAiv9AAIoAAAUAMAIAAAAAAAACAQAAChIAAAAAAAAACgAAAAAAEgAAABAAAQAGAHB1
 YmxpYwMAQ2xpZW50VHlwZWIOAQCEAAAAAAAAAAAA3gYAAIr/hf8IAAEAAAqkEgICxCF6NgAAVQIR
-EQEBAACBAoMEBQCF/yIAAQAACiJjb25maWRlbnRpYWwiIG9yICJwdWJsaWMipBIDAKAFDg0AAFUC
+EQEBAACBAoMEBQCF/yIAAQAACiJDT05GSURFTlRJQUwiIG9yICJQVUJMSUMipBIDAKAFDg0AAFUC
 EREBAQAAgQKDBAMAhf8VAAEAAApSZWRpcmVjdFVyaSA6AKQSAwEODcQhAABVAhERAQEAAIECgwQE
 AIX/CAABAAAK3QYAAIr//v9QAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAeAB4
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACK/zAAigAABQAwAgAAAAAAAAIB

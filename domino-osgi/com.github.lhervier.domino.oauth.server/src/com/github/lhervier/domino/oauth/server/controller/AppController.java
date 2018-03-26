@@ -81,11 +81,11 @@ public class AppController {
 		ret.setRedirectUri(app.getRedirectUri());
 		ret.setExistingRedirectUris(app.getRedirectUris());
 		if( app.getClientType() == ClientType.CONFIDENTIAL )
-			ret.setClientType("confidential");
+			ret.setClientType("CONFIDENTIAL");
 		else if( app.getClientType() == ClientType.PUBLIC )
-			ret.setClientType("public");
+			ret.setClientType("PUBLIC");
 		else
-			ret.setClientType("public");
+			ret.setClientType("PUBLIC");
 		return ret;
 	}
 	
@@ -175,9 +175,9 @@ public class AppController {
 		app.setName(form.getName());
 		app.setReaders(form.getReaders());
 		app.setRedirectUri(form.getRedirectUri());
-		if( Utils.equals("confidential", form.getClientType()) )
+		if( Utils.equals("CONFIDENTIAL", form.getClientType()) )
 			app.setClientType(ClientType.CONFIDENTIAL);
-		else if( Utils.equals("public", form.getClientType()) )
+		else if( Utils.equals("PUBLIC", form.getClientType()) )
 			app.setClientType(ClientType.PUBLIC);
 		else
 			app.setClientType(ClientType.PUBLIC);

@@ -72,17 +72,17 @@
 			<td>
 				<#if edit == true>
 					<select name="clientType">
-						<option value="PUBLIC" <#if app.clientType == 'public'>selected</#if>>
+						<option value="PUBLIC" <#if app.clientType == 'PUBLIC'>selected</#if>>
 							Public (Clients incapable of maintaining the confidentiality of their credentials)
 						</option>
-						<option value="CONFIDENTIAL" <#if app.clientType == 'confidential'>selected</#if>>
+						<option value="CONFIDENTIAL" <#if app.clientType == 'CONFIDENTIAL'>selected</#if>>
 							Confidential (Clients capable of maintaining the confidentiality of their credentials)
 						</option>
 					</select>
 				<#else>
-					<#if app.clientType == 'public'>
+					<#if app.clientType == 'PUBLIC'>
 						Public (Clients incapable of maintaining the confidentiality of their credentials)
-					<#elseif app.clientType == 'confidential'>
+					<#elseif app.clientType == 'CONFIDENTIAL'>
 						Confidential (Clients capable of maintaining the confidentiality of their credentials)
 					<#else>
 						Public (Clients incapable of maintaining the confidentiality of their credentials)

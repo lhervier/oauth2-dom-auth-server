@@ -29,6 +29,12 @@
     - [Generate the update site](#generate-the-update-site)
   - [Using maven](#using-maven)
 - [Generate the oauth2.nsf database yourself (from source)](#generate-the-oauth2nsf-database-yourself-from-source)
+- [Using the Rest API](#using-the-rest-api)
+  - [List all the declared applications :](#list-all-the-declared-applications)
+  - [Get the details of a given application](#get-the-details-of-a-given-application)
+  - [Create a new application](#create-a-new-application)
+  - [Update an existing application](#update-an-existing-application)
+  - [Remove an application](#remove-an-application)
 - [Ask the local domino Server to load plugin code from the workspace](#ask-the-local-domino-server-to-load-plugin-code-from-the-workspace)
 
 The goal of this project is to transform a standard IBM Domino v9.0.1 server into an OAUTH2 authorization server (also know as an OAUTH2 provider), with OpenID extensions. 
@@ -312,6 +318,77 @@ The update site will be generated in
 Instead of copying it from github, in Domino Designer (you cannot use Eclipse here !), import the project named "oauth2-ondisk".
 
 Then, create a new NSF on the server using the standard Domino Designer tool (right click/Team Development/etc...)
+
+
+# Using the Rest API
+
+A rest API is provided. For the moment, it does not work with a bearer token :) You will have to send the username and the password of an authorized user (ie, 
+a user with the [AppsManager] role, in the "Authorization Basic" header :
+
+	Authorization: Basic <username:password encoded in base 64>
+
+You will then have the following APIs :
+
+## List all the declared applications :
+
+	GET /api/applications : 
+
+Sample return value :
+
+	[
+		{name:"app1", clientId:"azerty"},
+		{name:"app2", clientId:"qsdfgh"}
+	]
+
+## Get the details of a given application
+
+	GET /api/applications/<client id>
+	
+Sample return value :
+
+	{
+		"name": "app1",
+		"clientId: "azerty",
+		"redirectUri": "http://acme.com",
+		"redirectUris": ["http://acme.com/login", "http://acme.com/init"]
+		"readers": "*"
+	}
+
+## Create a new application
+
+	POST /api/applications
+	{
+		"name": "app1",
+		"redirectUri": "http://acme.com",
+		"redirectUris": ["http://acme.com/login", "http://acme.com/init"]
+		"readers": "*"
+	}
+
+Sample return value :
+
+	{
+		"clientId": "azerty",
+		"secret": "a generated super secret password"
+	}
+	
+## Update an existing application
+
+	POST /api/applications/<client id>/put
+	{
+		"redirectUri": "http://acme.com",
+		"redirectUris": ["http://acme.com/login", "http://acme.com/init"]
+		"readers": "*"
+	}
+
+You cannot change nor the name, nor the client id with this API.
+Note that we are not using a PUT request because the Domino Servers don't allow such requests by default (and I don't want to add
+a mandatory configuration update)
+
+## Remove an application
+
+	GET /api/applications/<client id>/delete
+	
+Again, the API is using a GET request instead of a DELETE request because DELETE request are forbidden at the server level by default.
 
 
 

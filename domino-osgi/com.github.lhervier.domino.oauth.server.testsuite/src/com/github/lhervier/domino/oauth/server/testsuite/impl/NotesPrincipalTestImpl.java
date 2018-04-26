@@ -1,5 +1,6 @@
 package com.github.lhervier.domino.oauth.server.testsuite.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.context.annotation.Primary;
@@ -15,8 +16,8 @@ public class NotesPrincipalTestImpl implements NotesPrincipal {
 	private String clientId;
 	private String common;
 	private String currentDatabasePath;
-	private List<String> roles;
-	private List<String> scopes;
+	private List<String> roles = new ArrayList<String>();
+	private List<String> scopes = new ArrayList<String>();
 	private String name;
 	
 	@Override

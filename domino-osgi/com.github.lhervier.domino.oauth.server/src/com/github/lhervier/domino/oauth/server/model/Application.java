@@ -7,22 +7,12 @@ import java.util.List;
  * Une application OAUTH2
  * @author Lionel HERVIER
  */
-public class Application {
+public class Application extends BaseApplication {
 
 	/**
 	 * Application full name
 	 */
 	private String fullName;
-	
-	/**
-	 * Son nom
-	 */
-	private String name;
-	
-	/**
-	 * Son client_id
-	 */
-	private String clientId;
 	
 	/**
 	 * Client type
@@ -56,34 +46,6 @@ public class Application {
 	 */
 	public void setReaders(String readers) {
 		this.readers = readers;
-	}
-
-	/**
-	 * @return the name
-	 */
-	public String getName() {
-		return name;
-	}
-
-	/**
-	 * @param name the name to set
-	 */
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	/**
-	 * @return the clientId
-	 */
-	public String getClientId() {
-		return clientId;
-	}
-
-	/**
-	 * @param clientId the clientId to set
-	 */
-	public void setClientId(String clientId) {
-		this.clientId = clientId;
 	}
 
 	/**

@@ -644,11 +644,11 @@ public class TestAppServiceImpl extends BaseTest {
 	/**
 	 * Remove a non existing app
 	 */
-	@Test
-	public void whenRemovingNonExistingApp_thenOK() throws Exception {
+	@Test(expected = DataIntegrityViolationException.class)
+	public void whenRemovingNonExistingApp_thenError() throws Exception {
 		doThrow(RuntimeException.class).when(appRepoMock).deleteByName(anyString());
 		doThrow(RuntimeException.class).when(personRepoMock).delete(anyString());
-		appSvc.removeApplication("non_existing");		// Should just do nothing
+		appSvc.removeApplication("non_existing");
 	}
 	
 	/**

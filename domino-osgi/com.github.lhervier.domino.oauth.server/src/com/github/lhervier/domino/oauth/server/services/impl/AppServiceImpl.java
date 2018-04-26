@@ -158,13 +158,12 @@ public class AppServiceImpl implements AppService {
 		person.setFullNames(Arrays.asList(app.getFullName(), app.getClientId()));
 		person.setLastName(app.getName());
 		person.setShortName(app.getName());
-		person = this.personRepo.save(person);
-		String pwd = person.getHttpPassword();
 		
-		// Save the application
+		// Save the application and the user
 		this.appRepo.save(this.toEntity(app));
+		person = this.personRepo.save(person);
 		
-		return pwd;
+		return person.getHttpPassword();
 	}
 	
 	/**
@@ -176,6 +175,7 @@ public class AppServiceImpl implements AppService {
 			throw new DataIntegrityViolationException("Application does not exist...");
 		if( !Utils.equals(app.getName(), existing.getName()) )
 			throw new DataIntegrityViolationException("Cannot change name of application...");
+		app.setFullName(existing.getFullName());	// Not changing full name
 		
 		this.appRepo.save(this.toEntity(app));
 	}
@@ -186,9 +186,22 @@ public class AppServiceImpl implements AppService {
 	public void removeApplication(String name) {
 		Application app = this.getApplicationFromName(name);
 		if( app == null )
-			return;
+			throw new DataIntegrityViolationException("Application does not exist...");
 		
 		this.personRepo.delete(app.getFullName());
 		this.appRepo.deleteByName(name);
+	}
+
+	/**
+	 * @see com.github.lhervier.domino.oauth.server.services.AppService#removeApplicationFromClientId(java.lang.String)
+	 */
+	@Override
+	public void removeApplicationFromClientId(String clientId) {
+		Application app = this.getApplicationFromClientId(clientId);
+		if( app == null )
+			throw new DataIntegrityViolationException("Application does not exist...");
+		
+		this.personRepo.delete(app.getFullName());
+		this.appRepo.deleteByName(app.getName());
 	}
 }

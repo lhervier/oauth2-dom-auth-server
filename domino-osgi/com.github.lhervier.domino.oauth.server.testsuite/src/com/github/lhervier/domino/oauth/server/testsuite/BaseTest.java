@@ -112,5 +112,9 @@ public abstract class BaseTest {
 		return this.mapper.readValue(json, Map.class);
 	}
 	
+	@SuppressWarnings("unchecked")
+	protected Map<String, Object>[] arrayFromJson(String json) throws JsonParseException, JsonMappingException, IOException {
+		return this.mapper.readValue(json, Map[].class);
+	}
 	
 }

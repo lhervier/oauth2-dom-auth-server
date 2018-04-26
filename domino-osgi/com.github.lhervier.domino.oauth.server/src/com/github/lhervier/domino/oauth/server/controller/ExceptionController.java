@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.github.lhervier.domino.oauth.server.ex.APIException;
 import com.github.lhervier.domino.oauth.server.ex.BaseAuthException;
 import com.github.lhervier.domino.oauth.server.ex.BaseGrantException;
 import com.github.lhervier.domino.oauth.server.ex.ForbiddenException;
@@ -125,6 +126,26 @@ public class ExceptionController {
 	
 	// ==========================================================================================
 	
+	public static class APIExceptionResponse {
+		private String error;
+		public String getError() { return error; }
+		public void setError(String error) { this.error = error;}
+	}
+	
+	/**
+	 * API Exception
+	 */
+	@ExceptionHandler(APIException.class)
+	@ResponseStatus(value = HttpStatus.BAD_REQUEST)
+	public @ResponseBody APIExceptionResponse processAPIException(APIException e) {
+		LOG.info(getStackTrace(e));
+		APIExceptionResponse ret = new APIExceptionResponse();
+		ret.setError(e.getMessage());
+		return ret;
+	}
+	
+	// ==========================================================================================
+	
 	/**
 	 * Other exception. We cannot handle that...
 	 */
@@ -136,5 +157,5 @@ public class ExceptionController {
 		model.put(MODEL_ATTR_ERROR, e.getMessage());
 		model.put(MODEL_ATTR_STATUS, HttpStatus.INTERNAL_SERVER_ERROR.value());
 		return new ModelAndView(VIEW_ERROR, model);
-	}	
+	}
 }

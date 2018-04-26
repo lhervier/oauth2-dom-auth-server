@@ -54,4 +54,10 @@ public interface AppService {
 	 * @param name le nom de l'application
 	 */
 	public void removeApplication(String name);
+	
+	/**
+	 * Remove an application
+	 * @param clientId the app clientId
+	 */
+	public void removeApplicationFromClientId(String clientId);
 }

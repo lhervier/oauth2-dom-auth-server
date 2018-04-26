@@ -134,6 +134,7 @@ public class AppServiceImpl implements AppService {
 		ret.setClientId(UUID.randomUUID().toString());
 		ret.setRedirectUri("");
 		ret.setReaders("*");
+		ret.setClientType(ClientType.PUBLIC);
 		return ret;
 	}
 	

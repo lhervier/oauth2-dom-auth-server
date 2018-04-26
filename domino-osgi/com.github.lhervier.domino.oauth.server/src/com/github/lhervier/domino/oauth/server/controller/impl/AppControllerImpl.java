@@ -114,7 +114,7 @@ public class AppControllerImpl implements AppController {
 		ret.setReaders(app.getReaders());
 		ret.setRedirectUri(app.getRedirectUri());
 		ret.setExistingRedirectUris(app.getRedirectUris());
-		ret.setClientId(app.getClientType().name());
+		ret.setClientType(app.getClientType().name());
 		return ret;
 	}
 	
